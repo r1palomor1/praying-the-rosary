@@ -1,0 +1,152 @@
+.mystery-screen-container {
+    font-size: var(--font-size-lg);
+}
+
+.mystery-screen-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.mystery-intro {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.mystery-title {
+    text-align: center;
+    color: var(--color-primary);
+    font-size: var(--font-size-3xl);
+    margin-bottom: var(--spacing-xl);
+}
+
+.mystery-image-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.mystery-image-placeholder {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-xl);
+}
+
+.mystery-number {
+    font-family: var(--font-heading);
+    font-size: 5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.scripture-section,
+.reflection-section {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.section-label {
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--spacing-md);
+}
+
+.scripture-reference {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    color: var(--color-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.scripture-text,
+.reflection-text {
+    font-size: var(--font-size-lg);
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+}
+
+.prayer-section {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--color-primary);
+}
+
+.prayer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.prayer-name {
+    font-size: var(--font-size-xl);
+    color: var(--color-primary);
+    margin: 0;
+}
+
+.audio-btn {
+    background: var(--color-primary);
+    color: white;
+}
+
+.audio-btn:hover {
+    background: var(--color-primary-light);
+}
+
+.prayer-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.9;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+    font-style: italic;
+}
+
+.navigation-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+}
+
+.navigation-buttons .btn {
+    flex: 1;
+}
+
+.navigation-buttons .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .mystery-title {
+        font-size: var(--font-size-2xl);
+    }
+
+    .mystery-image-placeholder {
+        width: 150px;
+        height: 150px;
+    }
+
+    .mystery-number {
+        font-size: 4rem;
+    }
+
+    .prayer-text {
+        font-size: var(--font-size-lg);
+    }
+}

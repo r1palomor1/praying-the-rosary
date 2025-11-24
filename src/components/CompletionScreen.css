@@ -1,0 +1,128 @@
+.completion-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 50%, var(--color-secondary) 100%);
+    padding: var(--spacing-lg);
+}
+
+.completion-content {
+    max-width: 700px;
+    width: 100%;
+    text-align: center;
+}
+
+.completion-icon {
+    color: white;
+    margin-bottom: var(--spacing-xl);
+    animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.completion-title {
+    color: white;
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--spacing-sm);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.completion-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-3xl);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.closing-prayers-section {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.section-title {
+    color: white;
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-xl);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.prayer-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    text-align: left;
+    box-shadow: var(--shadow-xl);
+}
+
+.prayer-title {
+    color: var(--color-primary);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-md);
+}
+
+.prayer-text {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-lg);
+    line-height: 1.8;
+    margin: 0;
+}
+
+.completion-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.completion-actions .btn {
+    min-width: 200px;
+}
+
+.completion-actions .btn-outline {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: white;
+    color: var(--color-primary);
+}
+
+.completion-actions .btn-outline:hover {
+    background: white;
+}
+
+.completion-actions .btn-primary {
+    background: white;
+    color: var(--color-primary);
+}
+
+.completion-actions .btn-primary:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 480px) {
+    .completion-title {
+        font-size: var(--font-size-3xl);
+    }
+
+    .completion-subtitle {
+        font-size: var(--font-size-lg);
+    }
+
+    .completion-actions {
+        flex-direction: column;
+    }
+
+    .completion-actions .btn {
+        width: 100%;
+    }
+}
