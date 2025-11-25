@@ -1,5 +1,5 @@
 
-import { X, Moon, Sun, Volume2, VolumeX, Languages, Trash2 } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Languages, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress } from '../utils/storage';
 import './SettingsModal.css';
@@ -61,8 +61,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>{t.title}</h2>
-                    <button className="btn-icon" onClick={onClose} aria-label={t.close}>
-                        <X size={24} />
+                    <button className="btn btn-outline" onClick={onClose} style={{ padding: '0.5rem 1rem', minWidth: 'auto' }}>
+                        {t.close}
                     </button>
                 </div>
 

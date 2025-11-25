@@ -171,25 +171,13 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         mysteryOrdinal: ''
     };
 
-    const getStepTypeLabel = (): string => {
-        const decadeInfo = flowEngine.getCurrentDecadeInfo();
-        if (decadeInfo) {
-            return `${decadeInfo.number}${t.mysteryOrdinal} ${t.mystery}`;
-        }
-        return '';
-    };
-
     const renderStepContent = () => {
         const step = currentStep;
 
         // Special rendering for decade announcement
         if (step.type === 'decade_announcement') {
-            const decadeInfo = flowEngine.getCurrentDecadeInfo();
             return (
                 <div className="mystery-intro">
-                    <div className="mystery-badge">{getStepTypeLabel()}</div>
-                    <h2 className="mystery-title">{decadeInfo?.title}</h2>
-
                     <div className="mystery-image-container">
                         <div className="mystery-image-placeholder">
                             <span className="mystery-number">{step.decadeNumber}</span>
