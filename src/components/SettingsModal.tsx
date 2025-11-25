@@ -59,11 +59,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>{t.title}</h2>
-                    <button className="btn btn-outline" onClick={onClose} style={{ padding: '0.5rem 1rem', minWidth: 'auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', width: '100%' }}>
+                    <button className="btn btn-outline" onClick={onClose} style={{ minWidth: '120px' }}>
                         {t.close}
                     </button>
+                </div>
+                <div className="modal-header" style={{ justifyContent: 'center' }}>
+                    <h2>{t.title}</h2>
                 </div>
 
                 <div className="settings-section">

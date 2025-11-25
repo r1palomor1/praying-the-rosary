@@ -68,11 +68,9 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
     const getAudioText = (step: any) => {
         if (step.type === 'decade_announcement') {
-            const decadeInfo = flowEngine.getCurrentDecadeInfo();
-            if (decadeInfo) {
-                // Construct full text: "First Joyful Mystery: The Annunciation. [Reflection Text]"
-                return `${step.title}. ${decadeInfo.title}. ${step.text}`;
-            }
+            // Construct full text: "First Joyful Mystery: The Annunciation. [Reflection Text]"
+            // step.title already contains "1st Mystery: The Annunciation"
+            return `${step.title}. ${step.text}`;
         }
         return step.text;
     };
