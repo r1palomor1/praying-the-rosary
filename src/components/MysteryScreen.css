@@ -633,51 +633,6 @@
     /* Ensure icons fill the button proportionally */
     .btn-icon svg,
     .audio-controls svg {
-        width: 24px;
-        height: 24px;
-        stroke-width: 2px;
-    }
-
-    /* --- Navigation Buttons (Compact & Consistent) --- */
-    .navigation-buttons {
-        margin-top: var(--spacing-xl);
-        gap: var(--spacing-md);
-        justify-content: center;
-        /* Center them */
-    }
-
-    .navigation-buttons .btn {
-        flex: 0 0 auto;
-        /* Don't stretch */
-        width: 56px;
-        /* Slightly larger than audio for prominence */
-        height: 56px;
-        padding: 0;
-        border-radius: 50%;
-        /* Circle shape like Home/Audio */
-        min-width: auto;
-        aspect-ratio: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: var(--shadow-md);
-    }
-
-    /* Hide text completely */
-    .btn-text {
-        display: none;
-    }
-
-    /* Make nav icons slightly larger */
-    .navigation-buttons .btn svg {
-        width: 28px;
-        height: 28px;
-    }
-
-    /* Primary action (Next) gets accent color */
-    .navigation-buttons .btn-primary {
-        background: var(--color-primary);
-        color: white;
         border: none;
     }
 

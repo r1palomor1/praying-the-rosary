@@ -66,6 +66,17 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         savePrayerProgress(progress);
     }, [currentStep, currentMysterySet, language, flowEngine]);
 
+    const getAudioText = (step: any) => {
+        if (step.type === 'decade_announcement') {
+            const decadeInfo = flowEngine.getCurrentDecadeInfo();
+            if (decadeInfo) {
+                // Construct full text: "First Joyful Mystery: The Annunciation. [Reflection Text]"
+                return `${step.title}. ${decadeInfo.title}. ${step.text}`;
+            }
+        }
+        return step.text;
+    };
+
     // Handle continuous audio mode
     useEffect(() => {
         if (continuousMode && !isPlaying && audioEndedRef.current) {
@@ -76,7 +87,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                 setCurrentStep(nextStep);
                 if (nextStep.type !== 'complete') {
                     setTimeout(() => {
-                        playAudio(nextStep.text);
+                        playAudio(getAudioText(nextStep));
                         audioEndedRef.current = true;
                     }, 500); // Small delay between prayers
                 } else {
@@ -111,7 +122,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             stopAudio();
             setContinuousMode(false);
         } else {
-            playAudio(currentStep.text);
+            playAudio(getAudioText(currentStep));
         }
     };
 
@@ -124,7 +135,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             // Start continuous mode
             setContinuousMode(true);
             audioEndedRef.current = true;
-            playAudio(currentStep.text);
+            playAudio(getAudioText(currentStep));
         }
     };
 
