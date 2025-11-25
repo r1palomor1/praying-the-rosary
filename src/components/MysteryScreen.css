@@ -348,72 +348,98 @@
 
     /* --- Typography Scale --- */
     .mystery-title {
-        font-size: 1.5rem;
-        /* 24px */
-        line-height: 1.3;
-        margin-bottom: var(--spacing-lg);
+        font-size: 1.25rem;
+        /* Reduced from 1.5rem */
+        line-height: 1.2;
+        margin-bottom: var(--spacing-md);
     }
 
     .prayer-name {
-        font-size: 1.25rem;
-        /* 20px */
+        font-size: 1.125rem;
+        /* Reduced from 1.25rem */
         font-weight: 700;
     }
 
     .prayer-text-main {
-        font-size: 1.125rem;
-        /* 18px */
-        line-height: 1.6;
+        font-size: 1rem;
+        /* Reduced from 1.125rem */
+        line-height: 1.5;
         text-align: justify;
-        /* Better reading experience */
+        margin-bottom: var(--spacing-md);
+        /* Reduced margin */
     }
 
     .litany-call,
     .litany-response {
-        font-size: 1rem;
-        /* 16px */
+        font-size: 0.9375rem;
+        /* Reduced from 1rem */
     }
 
     .section-label {
         font-size: 0.75rem;
-        /* 12px */
         letter-spacing: 0.1em;
     }
 
-    /* --- Layout & Spacing --- */
+    /* --- Layout & Spacing Compactness --- */
+    .mystery-screen-container {
+        padding: var(--spacing-sm);
+        /* Reduced padding */
+    }
+
+    .mystery-screen-header {
+        margin-bottom: var(--spacing-sm);
+        /* Reduced margin */
+        padding: 0;
+    }
+
+    .progress-bar-container {
+        margin-bottom: var(--spacing-md);
+        /* Reduced margin */
+    }
+
     .mystery-screen-content {
-        padding: var(--spacing-md);
+        padding: 0 var(--spacing-xs);
     }
 
     .prayer-section {
-        padding: var(--spacing-lg);
-        border-radius: var(--radius-xl);
+        padding: var(--spacing-md);
+        /* Reduced from lg */
+        margin-bottom: var(--spacing-md);
+        /* Reduced margin */
+        border-radius: var(--radius-lg);
     }
 
     /* --- Header Layout --- */
     .prayer-header {
         flex-direction: column;
-        gap: var(--spacing-md);
+        gap: var(--spacing-sm);
+        /* Reduced gap */
         text-align: center;
         border-bottom: none;
-        /* Cleaner look */
         padding-bottom: 0;
+        margin-bottom: var(--spacing-md);
+        /* Reduced margin */
     }
 
-    /* --- Audio Controls (Polished) --- */
-    .audio-controls {
+    /* --- Button Resizing (15% Smaller -> ~40px) --- */
+
+    /* Home Button (in header) */
+    .mystery-screen-header .btn-icon {
+        width: 40px;
+        height: 40px;
+        padding: 0;
         display: flex;
+        align-items: center;
         justify-content: center;
-        gap: var(--spacing-md);
-        width: 100%;
     }
 
+    /* Audio Buttons */
     .btn-icon,
     .audio-btn,
     .continuous-btn {
-        width: 48px;
-        /* Standard Touch Target */
-        height: 48px;
+        width: 40px;
+        /* Reduced from 48px */
+        height: 40px;
         padding: 0;
         display: flex;
         align-items: center;
@@ -421,34 +447,23 @@
         border-radius: 50%;
         background: var(--color-bg-tertiary);
         box-shadow: var(--shadow-sm);
-        /* Subtle depth */
     }
 
-    /* Ensure icons fill the button proportionally */
-    .btn-icon svg,
-    .audio-controls svg {
-        width: 24px;
-        height: 24px;
-        stroke-width: 2px;
-    }
-
-    /* --- Navigation Buttons (Compact & Consistent) --- */
+    /* Navigation Buttons */
     .navigation-buttons {
-        margin-top: var(--spacing-xl);
+        margin-top: var(--spacing-md);
+        /* Reduced margin */
         gap: var(--spacing-md);
         justify-content: center;
-        /* Center them */
     }
 
     .navigation-buttons .btn {
         flex: 0 0 auto;
-        /* Don't stretch */
-        width: 48px;
-        /* Match audio buttons */
-        height: 48px;
+        width: 40px;
+        /* Reduced from 48px */
+        height: 40px;
         padding: 0;
         border-radius: 50%;
-        /* Circle shape like Home/Audio */
         min-width: auto;
         aspect-ratio: 1;
         display: flex;
@@ -457,15 +472,20 @@
         box-shadow: var(--shadow-md);
     }
 
+    /* Ensure icons fit nicely */
+    .btn-icon svg,
+    .audio-controls svg,
+    .navigation-buttons .btn svg,
+    .mystery-screen-header .btn-icon svg {
+        width: 20px;
+        /* Reduced from 24px */
+        height: 20px;
+        stroke-width: 2px;
+    }
+
     /* Hide text completely */
     .btn-text {
         display: none;
-    }
-
-    /* Make nav icons match audio icons */
-    .navigation-buttons .btn svg {
-        width: 24px;
-        height: 24px;
     }
 
     /* Primary action (Next) gets accent color */
