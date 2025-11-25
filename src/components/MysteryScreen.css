@@ -1,153 +1,149 @@
 .mystery-screen-container {
-    font-size: var(--font-size-lg);
-    min-height: 100vh;
-    background: var(--color-bg-primary);
     display: flex;
     flex-direction: column;
+    height: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+.mystery-screen-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-sm);
 }
 
 .mystery-progress {
+    text-align: center;
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: var(--spacing-xs);
 }
 
 .mystery-set-name {
-    font-family: var(--font-heading);
-    font-size: var(--font-size-lg);
-    font-weight: 700;
-    color: white;
-    letter-spacing: var(--letter-spacing-wide);
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(124, 58, 237, 0.6);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xs);
 }
 
 .progress-info {
     font-size: var(--font-size-lg);
+    font-weight: 600;
     color: white;
-    font-weight: 700;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(236, 72, 153, 0.6);
+    text-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+}
+
+.mystery-header-spacer {
+    width: 24px;
 }
 
 .progress-bar-container {
-    width: 100%;
     height: 4px;
     background: var(--color-bg-tertiary);
-    position: relative;
+    border-radius: var(--radius-full);
+    margin-bottom: var(--spacing-xl);
     overflow: hidden;
 }
 
 .progress-bar-fill {
     height: 100%;
-    width: var(--progress, 0%);
     background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    width: var(--progress);
     transition: width 0.3s ease;
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
 }
 
 .mystery-screen-content {
     flex: 1;
     overflow-y: auto;
-    padding: var(--spacing-xl) var(--spacing-lg);
-    max-width: 800px;
-    width: 100%;
-    margin: 0 auto;
-    animation: fadeIn var(--transition-base);
-    scroll-behavior: smooth;
+    padding: var(--spacing-sm);
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }
 
 .mystery-intro {
-    margin-bottom: var(--spacing-2xl);
     text-align: center;
+    padding: var(--spacing-2xl) var(--spacing-lg);
+    animation: fadeIn var(--transition-slow);
 }
 
 .mystery-badge {
     display: inline-block;
     padding: var(--spacing-xs) var(--spacing-md);
-    background: var(--color-primary-light);
-    color: white;
+    background: rgba(124, 58, 237, 0.1);
+    color: var(--color-primary);
     border-radius: var(--radius-full);
     font-size: var(--font-size-sm);
     font-weight: 600;
-    margin-bottom: var(--spacing-md);
-    letter-spacing: var(--letter-spacing-wide);
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid rgba(124, 58, 237, 0.2);
 }
 
 .mystery-title {
-    text-align: center;
-    color: var(--color-primary);
     font-size: var(--font-size-3xl);
-    margin-bottom: var(--spacing-xl);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    letter-spacing: var(--letter-spacing-wide);
+    color: white;
+    margin-bottom: var(--spacing-2xl);
+    line-height: 1.2;
+    text-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
 }
 
 .mystery-image-container {
-    margin: var(--spacing-xl) 0;
-    display: flex;
-    justify-content: center;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto var(--spacing-2xl);
+    position: relative;
 }
 
 .mystery-image-placeholder {
-    width: 120px;
-    height: 120px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: linear-gradient(135deg, var(--color-bg-tertiary), var(--color-bg-secondary));
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 2px solid var(--color-border-light);
     box-shadow: var(--shadow-xl);
 }
 
 .mystery-number {
     font-size: var(--font-size-4xl);
     font-weight: 700;
-    color: white;
-    font-family: var(--font-heading);
+    color: var(--color-primary);
+    opacity: 0.5;
 }
 
 .reflection-section {
     background: var(--color-bg-elevated);
-    border-radius: var(--radius-xl);
     padding: var(--spacing-xl);
-    margin-bottom: var(--spacing-lg);
-    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-border-light);
-    transition: transform var(--transition-base);
-    position: relative;
-    overflow: hidden;
-}
-
-.reflection-section:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-.reflection-section::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: var(--color-primary);
+    margin-top: var(--spacing-xl);
 }
 
 .section-label {
     font-size: var(--font-size-xs);
     text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-widest);
-    color: var(--color-text-tertiary);
+    letter-spacing: var(--letter-spacing-wider);
+    color: var(--color-text-secondary);
     margin-bottom: var(--spacing-md);
-    font-weight: 600;
+    display: block;
 }
 
 .reflection-text {
     font-size: var(--font-size-lg);
     line-height: 1.8;
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
     font-style: italic;
 }
 
@@ -201,6 +197,14 @@
     background: var(--color-bg-tertiary);
     color: var(--color-text-secondary);
     transition: all var(--transition-base);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
 .audio-btn:hover,
@@ -351,201 +355,8 @@
 
 .navigation-buttons .btn:disabled {
     opacity: 0.5;
-    box-shadow: var(--shadow-xl);
-    border: 1px solid var(--color-primary-light);
-    position: relative;
-    overflow: hidden;
-}
-
-.prayer-section::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle at top right, rgba(91, 33, 182, 0.05) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.prayer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-xl);
-    padding-bottom: var(--spacing-md);
-    border-bottom: 1px solid var(--color-border-light);
-}
-
-.prayer-name {
-    font-size: var(--font-size-xl);
-    color: var(--color-primary);
-    margin: 0;
-    font-weight: 600;
-    letter-spacing: var(--letter-spacing-wide);
-}
-
-.audio-controls {
-    display: flex;
-    gap: var(--spacing-sm);
-    align-items: center;
-}
-
-.audio-btn,
-.continuous-btn {
-    background: var(--color-bg-tertiary);
-    color: var(--color-text-secondary);
-    transition: all var(--transition-base);
-}
-
-.audio-btn:hover,
-.continuous-btn:hover {
-    transform: scale(1.1);
-}
-
-.audio-btn:hover {
-    background: var(--color-primary);
-    color: white;
-}
-
-.continuous-btn:hover {
-    background: var(--color-secondary);
-    color: white;
-}
-
-.audio-btn[aria-label="Detener audio"],
-.audio-btn[aria-label="Stop audio"] {
-    background: var(--color-primary-light);
-    color: white;
-    animation: pulse-audio 2s infinite;
-}
-
-.continuous-btn.active {
-    background: var(--color-secondary);
-    color: white;
-    animation: pulse-continuous 2s infinite;
-}
-
-@keyframes pulse-audio {
-    0% {
-        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4);
-    }
-
-    70% {
-        box-shadow: 0 0 0 10px rgba(124, 58, 237, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
-    }
-}
-
-@keyframes pulse-continuous {
-    0% {
-        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4);
-    }
-
-    70% {
-        box-shadow: 0 0 0 10px rgba(236, 72, 153, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
-    }
-}
-
-.prayer-content {
-    position: relative;
-    z-index: 1;
-}
-
-.prayer-text-main {
-    font-size: var(--font-size-xl);
-    line-height: 2;
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-xl);
-    text-align: center;
-    font-family: var(--font-body);
-    font-weight: 400;
-}
-
-/* Litany specific styles */
-.litany-content {
-    text-align: center;
-}
-
-.litany-call {
-    font-size: var(--font-size-xl);
-    color: var(--color-primary);
-    font-weight: 600;
-    margin-bottom: var(--spacing-sm);
-}
-
-.litany-response {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-secondary);
-    font-style: italic;
-}
-
-/* Final Hail Mary intro styles */
-.final-hail-mary-content {
-    text-align: center;
-}
-
-.invocation-text {
-    font-size: var(--font-size-lg);
-    color: var(--color-secondary);
-    font-weight: 500;
-    margin-bottom: var(--spacing-lg);
-    font-style: italic;
-    line-height: 1.8;
-}
-
-/* Bead counter */
-.bead-counter {
-    display: flex;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-lg);
-    flex-wrap: wrap;
-}
-
-.bead {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--color-bg-tertiary);
-    border: 2px solid var(--color-border-light);
-    transition: all var(--transition-base);
-}
-
-.bead-active {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
-    transform: scale(1.1);
-}
-
-.navigation-buttons {
-    display: flex;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-2xl);
-}
-
-.navigation-buttons .btn {
-    flex: 1;
-    padding: var(--spacing-lg) var(--spacing-xl);
-    font-size: var(--font-size-base);
-    letter-spacing: var(--letter-spacing-normal);
-    min-width: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-}
-
-.navigation-buttons .btn:disabled {
-    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
     box-shadow: none;
 }
 
@@ -633,6 +444,51 @@
     /* Ensure icons fill the button proportionally */
     .btn-icon svg,
     .audio-controls svg {
+        width: 24px;
+        height: 24px;
+        stroke-width: 2px;
+    }
+
+    /* --- Navigation Buttons (Compact & Consistent) --- */
+    .navigation-buttons {
+        margin-top: var(--spacing-xl);
+        gap: var(--spacing-md);
+        justify-content: center;
+        /* Center them */
+    }
+
+    .navigation-buttons .btn {
+        flex: 0 0 auto;
+        /* Don't stretch */
+        width: 48px;
+        /* Match audio buttons */
+        height: 48px;
+        padding: 0;
+        border-radius: 50%;
+        /* Circle shape like Home/Audio */
+        min-width: auto;
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Hide text completely */
+    .btn-text {
+        display: none;
+    }
+
+    /* Make nav icons match audio icons */
+    .navigation-buttons .btn svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Primary action (Next) gets accent color */
+    .navigation-buttons .btn-primary {
+        background: var(--color-primary);
+        color: white;
         border: none;
     }
 
