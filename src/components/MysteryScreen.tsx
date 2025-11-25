@@ -46,9 +46,13 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
     // Scroll to top when step changes
     useEffect(() => {
-        if (contentRef.current) {
-            contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        // Small timeout to ensure DOM has updated before scrolling
+        const timer = setTimeout(() => {
+            if (contentRef.current) {
+                contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }, 100);
+        return () => clearTimeout(timer);
     }, [currentStep]);
 
     // Save progress whenever step changes
@@ -297,18 +301,20 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                         className="btn btn-outline"
                         onClick={handlePrevious}
                         disabled={flowEngine.isFirstStep()}
+                        aria-label={t.previous}
                     >
-                        <ChevronLeft size={20} />
-                        {t.previous}
+                        <ChevronLeft size={24} />
+                        <span className="btn-text">{t.previous}</span>
                     </button>
 
                     <button
                         className="btn btn-primary"
                         onClick={handleNext}
                         disabled={flowEngine.isLastStep()}
+                        aria-label={flowEngine.isLastStep() ? t.finish : t.next}
                     >
-                        {flowEngine.isLastStep() ? t.finish : t.next}
-                        <ChevronRight size={20} />
+                        <span className="btn-text">{flowEngine.isLastStep() ? t.finish : t.next}</span>
+                        <ChevronRight size={24} />
                     </button>
                 </div>
             </div>
