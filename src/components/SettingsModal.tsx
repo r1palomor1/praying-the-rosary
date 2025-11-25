@@ -1,6 +1,7 @@
 
-import { X, Moon, Sun, Volume2, VolumeX, Languages } from 'lucide-react';
+import { X, Moon, Sun, Volume2, VolumeX, Languages, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { clearPrayerProgress } from '../utils/storage';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
@@ -13,6 +14,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
     if (!isOpen) return null;
 
+    const handleClearProgress = () => {
+        if (confirm(language === 'es'
+            ? '¿Estás seguro de que quieres borrar tu progreso de oración?'
+            : 'Are you sure you want to clear your prayer progress?')) {
+            clearPrayerProgress();
+            alert(language === 'es'
+                ? 'Progreso borrado exitosamente'
+                : 'Progress cleared successfully');
+        }
+    };
+
     const translations = {
         en: {
             title: 'Settings',
@@ -24,6 +36,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             dark: 'Dark',
             enabled: 'Enabled',
             disabled: 'Disabled',
+            clearProgress: 'Clear Prayer Progress',
             close: 'Close'
         },
         es: {
@@ -36,6 +49,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             dark: 'Oscuro',
             enabled: 'Activado',
             disabled: 'Desactivado',
+            clearProgress: 'Borrar Progreso de Oración',
             close: 'Cerrar'
         }
     };
@@ -124,11 +138,27 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     value={volume * 100}
                                     onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
                                     aria-label={t.volume}
+                                    className="volume-slider"
                                 />
                                 <span className="volume-value">{Math.round(volume * 100)}%</span>
                             </div>
                         </div>
                     )}
+
+                    <div className="setting-item">
+                        <div className="setting-label">
+                            <Trash2 size={20} />
+                            <span>{t.clearProgress}</span>
+                        </div>
+                        <div className="setting-control">
+                            <button
+                                className="setting-btn danger"
+                                onClick={handleClearProgress}
+                            >
+                                {t.clearProgress}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

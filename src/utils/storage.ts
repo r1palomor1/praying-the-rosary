@@ -3,8 +3,16 @@ import type { UserSession, AppSettings, Language } from '../types';
 const STORAGE_KEYS = {
     SESSION: 'rosary_session',
     SETTINGS: 'rosary_settings',
-    LANGUAGE: 'rosary_language'
+    LANGUAGE: 'rosary_language',
+    PRAYER_PROGRESS: 'rosary_prayer_progress'
 } as const;
+
+export interface PrayerProgress {
+    mysteryType: string;
+    currentStepIndex: number;
+    date: string;
+    language: string;
+}
 
 /**
  * Save user session to localStorage
@@ -110,4 +118,50 @@ export function loadLanguage(): Language | null {
         console.error('Failed to load language:', error);
         return null;
     }
+}
+
+/**
+ * Save prayer progress (current step in prayer flow)
+ */
+export function savePrayerProgress(progress: PrayerProgress): void {
+    try {
+        localStorage.setItem(STORAGE_KEYS.PRAYER_PROGRESS, JSON.stringify(progress));
+    } catch (error) {
+        console.error('Failed to save prayer progress:', error);
+    }
+}
+
+/**
+ * Load prayer progress
+ */
+export function loadPrayerProgress(): PrayerProgress | null {
+    try {
+        const data = localStorage.getItem(STORAGE_KEYS.PRAYER_PROGRESS);
+        return data ? JSON.parse(data) : null;
+    } catch (error) {
+        console.error('Failed to load prayer progress:', error);
+        return null;
+    }
+}
+
+/**
+ * Clear prayer progress
+ */
+export function clearPrayerProgress(): void {
+    try {
+        localStorage.removeItem(STORAGE_KEYS.PRAYER_PROGRESS);
+    } catch (error) {
+        console.error('Failed to clear prayer progress:', error);
+    }
+}
+
+/**
+ * Check if there's valid prayer progress for today
+ */
+export function hasValidPrayerProgress(): boolean {
+    const progress = loadPrayerProgress();
+    if (!progress) return false;
+
+    const today = new Date().toISOString().split('T')[0];
+    return progress.date === today;
 }

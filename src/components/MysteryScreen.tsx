@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, VolumeX, Home } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Volume2, VolumeX, Home, Play, Pause } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
+import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
 import './MysteryScreen.css';
 
 interface MysteryScreenProps {
@@ -20,8 +21,21 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         audioEnabled
     } = useApp();
 
-    const [flowEngine] = useState(() => new PrayerFlowEngine(currentMysterySet as MysteryType, language));
+    const [flowEngine] = useState(() => {
+        const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
+
+        // Load saved progress if available
+        const savedProgress = loadPrayerProgress();
+        if (savedProgress && hasValidPrayerProgress() && savedProgress.mysteryType === currentMysterySet) {
+            engine.jumpToStep(savedProgress.currentStepIndex);
+        }
+
+        return engine;
+    });
+
     const [currentStep, setCurrentStep] = useState(flowEngine.getCurrentStep());
+    const [continuousMode, setContinuousMode] = useState(false);
+    const audioEndedRef = useRef(false);
 
     // Update language when it changes
     useEffect(() => {
@@ -29,7 +43,40 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         setCurrentStep(flowEngine.getCurrentStep());
     }, [language, flowEngine]);
 
+    // Save progress whenever step changes
+    useEffect(() => {
+        const progress = {
+            mysteryType: currentMysterySet,
+            currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
+            date: new Date().toISOString().split('T')[0],
+            language
+        };
+        savePrayerProgress(progress);
+    }, [currentStep, currentMysterySet, language, flowEngine]);
+
+    // Handle continuous audio mode
+    useEffect(() => {
+        if (continuousMode && !isPlaying && audioEndedRef.current) {
+            audioEndedRef.current = false;
+            // Auto-advance to next step
+            const nextStep = flowEngine.getNextStep();
+            if (nextStep) {
+                setCurrentStep(nextStep);
+                if (nextStep.type !== 'complete') {
+                    setTimeout(() => {
+                        playAudio(nextStep.text);
+                        audioEndedRef.current = true;
+                    }, 500); // Small delay between prayers
+                } else {
+                    setContinuousMode(false);
+                    onComplete();
+                }
+            }
+        }
+    }, [isPlaying, continuousMode, flowEngine, playAudio, onComplete]);
+
     const handleNext = () => {
+        stopAudio(); // Stop any playing audio
         const nextStep = flowEngine.getNextStep();
         if (nextStep) {
             setCurrentStep(nextStep);
@@ -40,6 +87,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
     };
 
     const handlePrevious = () => {
+        stopAudio(); // Stop any playing audio
         const prevStep = flowEngine.getPreviousStep();
         if (prevStep) {
             setCurrentStep(prevStep);
@@ -49,7 +97,21 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
     const handlePlayAudio = () => {
         if (isPlaying) {
             stopAudio();
+            setContinuousMode(false);
         } else {
+            playAudio(currentStep.text);
+        }
+    };
+
+    const handleToggleContinuous = () => {
+        if (continuousMode) {
+            // Stop continuous mode
+            setContinuousMode(false);
+            stopAudio();
+        } else {
+            // Start continuous mode
+            setContinuousMode(true);
+            audioEndedRef.current = true;
             playAudio(currentStep.text);
         }
     };
@@ -58,11 +120,14 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         back: 'Volver',
         step: 'Paso',
         of: 'de',
+        complete: 'completo',
         previous: 'Anterior',
         next: 'Siguiente',
         finish: 'Finalizar',
         stopAudio: 'Detener audio',
         playAudio: 'Reproducir audio',
+        continuousMode: 'Modo Continuo',
+        stopContinuous: 'Detener Continuo',
         reflection: 'Reflexión',
         mystery: 'Misterio',
         mysteryOrdinal: 'º'
@@ -70,11 +135,14 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         back: 'Back',
         step: 'Step',
         of: 'of',
+        complete: 'complete',
         previous: 'Previous',
         next: 'Next',
         finish: 'Finish',
         stopAudio: 'Stop audio',
         playAudio: 'Play audio',
+        continuousMode: 'Continuous Mode',
+        stopContinuous: 'Stop Continuous',
         reflection: 'Reflection',
         mystery: 'Mystery',
         mysteryOrdinal: ''
@@ -171,7 +239,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                 <div className="mystery-progress">
                     <div className="mystery-set-name">{flowEngine.getMysteryName()}</div>
                     <div className="progress-info">
-                        {t.step} {flowEngine.getCurrentStepNumber()} {t.of} {flowEngine.getTotalSteps()}
+                        {Math.round(flowEngine.getProgress())}% {t.complete}
                     </div>
                 </div>
                 <div className="mystery-header-spacer" />
@@ -188,15 +256,28 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                 <div className="prayer-section">
                     <div className="prayer-header">
                         <h3 className="prayer-name">{currentStep.title}</h3>
-                        {audioEnabled && (
-                            <button
-                                className="btn-icon audio-btn"
-                                onClick={handlePlayAudio}
-                                aria-label={isPlaying ? t.stopAudio : t.playAudio}
-                            >
-                                {isPlaying ? <VolumeX size={24} /> : <Volume2 size={24} />}
-                            </button>
-                        )}
+                        <div className="audio-controls">
+                            {audioEnabled && (
+                                <>
+                                    <button
+                                        className="btn-icon audio-btn"
+                                        onClick={handlePlayAudio}
+                                        aria-label={isPlaying ? t.stopAudio : t.playAudio}
+                                        title={isPlaying ? t.stopAudio : t.playAudio}
+                                    >
+                                        {isPlaying ? <VolumeX size={24} /> : <Volume2 size={24} />}
+                                    </button>
+                                    <button
+                                        className={`btn-icon continuous-btn ${continuousMode ? 'active' : ''}`}
+                                        onClick={handleToggleContinuous}
+                                        aria-label={continuousMode ? t.stopContinuous : t.continuousMode}
+                                        title={continuousMode ? t.stopContinuous : t.continuousMode}
+                                    >
+                                        {continuousMode ? <Pause size={24} /> : <Play size={24} />}
+                                    </button>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     {renderStepContent()}
