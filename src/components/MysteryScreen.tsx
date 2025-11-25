@@ -212,6 +212,28 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             );
         }
 
+        // Special rendering for Litany of Loreto
+        if ((step.type as any) === 'litany_of_loreto' && step.litanyData) {
+            const litany = step.litanyData;
+            const renderSection = (items: any[], prefix: string) => (
+                items.map((item: any, i: number) => (
+                    <div key={`${prefix}-${i}`} className="litany-item">
+                        <div className="litany-call">{item.call}</div>
+                        <div className="litany-response">{item.response}</div>
+                    </div>
+                ))
+            );
+
+            return (
+                <div className="litany-scroll-container">
+                    {renderSection(litany.initial_petitions, 'init')}
+                    {renderSection(litany.trinity_invocations, 'trin')}
+                    {renderSection(litany.mary_invocations, 'mary')}
+                    {renderSection(litany.agnus_dei, 'agnus')}
+                </div>
+            );
+        }
+
         // Default rendering for all other prayers
         return (
             <div className="prayer-content">

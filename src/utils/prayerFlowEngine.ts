@@ -19,7 +19,7 @@ export type PrayerStepType =
     | 'final_jaculatory_start'
     | 'final_hail_mary_intro' // 3 special Hail Marys
     | 'hail_holy_queen'
-    | 'litany_of_loreto'
+    | 'litany_of_loreto' // Consolidated litany step
     | 'closing_under_your_protection'
     | 'final_collect'
     | 'sign_of_cross_end'
@@ -34,6 +34,7 @@ export interface PrayerStep {
     finalHailMaryNumber?: number; // 1-3 for final Hail Marys
     litanySection?: 'initial' | 'trinity' | 'mary' | 'agnus'; // For litany subsections
     litanyIndex?: number; // Index within litany section
+    litanyData?: any; // Full litany data for scrollable view
 }
 
 export type MysteryType = 'joyful' | 'luminous' | 'sorrowful' | 'glorious';
@@ -175,51 +176,30 @@ export class PrayerFlowEngine {
             title: t.hailHolyQueen
         });
 
-        // Litany of Loreto - broken into subsections for better UX
+        // Litany of Loreto - Consolidated into one scrollable step
         const litany = fixed_prayers.litany_of_loreto;
 
-        // Initial petitions
-        litany.initial_petitions.forEach((item, idx) => {
-            this.steps.push({
-                type: 'litany_of_loreto',
-                text: `${item.call}\n${item.response}`,
-                title: t.litanyOfLoreto,
-                litanySection: 'initial',
-                litanyIndex: idx
-            });
-        });
+        // Construct a full text representation for audio/accessibility if needed, 
+        // but primarily we will use litanyData for rendering.
+        let fullLitanyText = '';
 
-        // Trinity invocations
-        litany.trinity_invocations.forEach((item, idx) => {
-            this.steps.push({
-                type: 'litany_of_loreto',
-                text: `${item.call}\n${item.response}`,
-                title: t.litanyOfLoreto,
-                litanySection: 'trinity',
-                litanyIndex: idx
+        // Helper to append text
+        const appendSection = (items: any[]) => {
+            items.forEach(item => {
+                fullLitanyText += `${item.call}. ${item.response}.\n`;
             });
-        });
+        };
 
-        // Mary invocations
-        litany.mary_invocations.forEach((item, idx) => {
-            this.steps.push({
-                type: 'litany_of_loreto',
-                text: `${item.call}\n${item.response}`,
-                title: t.litanyOfLoreto,
-                litanySection: 'mary',
-                litanyIndex: idx
-            });
-        });
+        appendSection(litany.initial_petitions);
+        appendSection(litany.trinity_invocations);
+        appendSection(litany.mary_invocations);
+        appendSection(litany.agnus_dei);
 
-        // Agnus Dei
-        litany.agnus_dei.forEach((item, idx) => {
-            this.steps.push({
-                type: 'litany_of_loreto',
-                text: `${item.call}\n${item.response}`,
-                title: t.litanyOfLoreto,
-                litanySection: 'agnus',
-                litanyIndex: idx
-            });
+        this.steps.push({
+            type: 'litany_of_loreto',
+            text: fullLitanyText,
+            title: t.litanyOfLoreto,
+            litanyData: litany // Pass the structured data for rendering
         });
 
         this.steps.push({
