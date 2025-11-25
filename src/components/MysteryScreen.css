@@ -9,16 +9,40 @@
 .mystery-progress {
     flex: 1;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: var(--spacing-xs);
 }
 
-.mystery-progress span {
+.mystery-set-name {
     font-family: var(--font-heading);
     font-size: var(--font-size-lg);
     font-weight: 600;
     color: var(--color-primary);
     letter-spacing: var(--letter-spacing-wide);
+}
+
+.progress-info {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    font-weight: 500;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 4px;
+    background: var(--color-bg-tertiary);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: var(--progress, 0%);
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
 }
 
 .mystery-screen-content {
@@ -36,6 +60,18 @@
     text-align: center;
 }
 
+.mystery-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-primary-light);
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    letter-spacing: var(--letter-spacing-wide);
+}
+
 .mystery-title {
     text-align: center;
     color: var(--color-primary);
@@ -48,20 +84,30 @@
 }
 
 .mystery-image-container {
-    display: none;
+    margin: var(--spacing-xl) 0;
+    display: flex;
+    justify-content: center;
 }
 
 .mystery-image-placeholder {
-    display: none;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-xl);
 }
 
 .mystery-number {
-    display: none;
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    color: white;
+    font-family: var(--font-heading);
 }
 
-.scripture-section,
-.reflection-section,
-.fruit-section {
+.reflection-section {
     background: var(--color-bg-elevated);
     border-radius: var(--radius-xl);
     padding: var(--spacing-xl);
@@ -73,21 +119,9 @@
     overflow: hidden;
 }
 
-.scripture-section:hover,
-.reflection-section:hover,
-.fruit-section:hover {
+.reflection-section:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
-}
-
-.scripture-section::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: var(--color-secondary);
 }
 
 .reflection-section::before {
@@ -98,16 +132,6 @@
     bottom: 0;
     width: 4px;
     background: var(--color-primary);
-}
-
-.fruit-section::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: var(--color-accent);
 }
 
 .section-label {
@@ -122,17 +146,7 @@
     gap: var(--spacing-sm);
 }
 
-.scripture-reference {
-    font-family: var(--font-heading);
-    font-weight: 600;
-    color: var(--color-secondary-dark);
-    margin-bottom: var(--spacing-sm);
-    font-size: var(--font-size-lg);
-}
-
-.scripture-text,
-.reflection-text,
-.fruit-text {
+.reflection-text {
     font-size: var(--font-size-lg);
     line-height: 1.8;
     color: var(--color-text-secondary);
@@ -150,7 +164,6 @@
     overflow: hidden;
 }
 
-/* Prayer section decorative background */
 .prayer-section::after {
     content: '';
     position: absolute;
@@ -191,7 +204,7 @@
     transform: scale(1.1);
 }
 
-.audio-btn[aria-label="Stop audio"] {
+.audio-btn[aria-label="Detener audio"] {
     background: var(--color-primary-light);
     color: white;
     animation: pulse-audio 2s infinite;
@@ -211,7 +224,12 @@
     }
 }
 
-.prayer-text {
+.prayer-content {
+    position: relative;
+    z-index: 1;
+}
+
+.prayer-text-main {
     font-size: var(--font-size-xl);
     line-height: 2;
     color: var(--color-text-primary);
@@ -219,6 +237,63 @@
     text-align: center;
     font-family: var(--font-body);
     font-weight: 400;
+}
+
+/* Litany specific styles */
+.litany-content {
+    text-align: center;
+}
+
+.litany-call {
+    font-size: var(--font-size-xl);
+    color: var(--color-primary);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.litany-response {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    font-style: italic;
+}
+
+/* Final Hail Mary intro styles */
+.final-hail-mary-content {
+    text-align: center;
+}
+
+.invocation-text {
+    font-size: var(--font-size-lg);
+    color: var(--color-secondary);
+    font-weight: 500;
+    margin-bottom: var(--spacing-lg);
+    font-style: italic;
+    line-height: 1.8;
+}
+
+/* Bead counter */
+.bead-counter {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.bead {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-bg-tertiary);
+    border: 2px solid var(--color-border-light);
+    transition: all var(--transition-base);
+}
+
+.bead-active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+    transform: scale(1.1);
 }
 
 .navigation-buttons {
@@ -229,11 +304,14 @@
 
 .navigation-buttons .btn {
     flex: 1;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-lg) var(--spacing-xl);
     font-size: var(--font-size-base);
     letter-spacing: var(--letter-spacing-normal);
-    min-width: 100px;
-    max-width: 200px;
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
 }
 
 .navigation-buttons .btn:disabled {
@@ -248,12 +326,20 @@
         font-size: var(--font-size-2xl);
     }
 
-    .prayer-text {
+    .prayer-text-main {
         font-size: var(--font-size-lg);
         line-height: 1.8;
     }
 
     .prayer-section {
         padding: var(--spacing-lg);
+    }
+
+    .litany-call {
+        font-size: var(--font-size-lg);
+    }
+
+    .litany-response {
+        font-size: var(--font-size-base);
     }
 }
