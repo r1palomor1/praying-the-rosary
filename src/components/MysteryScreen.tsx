@@ -39,7 +39,8 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             next: 'Next',
             complete: 'Complete Rosary',
             scripture: 'Scripture',
-            reflection: 'Reflection'
+            reflection: 'Reflection',
+            fruit: 'Fruit of the Mystery'
         },
         es: {
             mysteryOf: 'Misterio',
@@ -51,7 +52,8 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             next: 'Siguiente',
             complete: 'Completar Rosario',
             scripture: 'Escritura',
-            reflection: 'Reflexión'
+            reflection: 'Reflexión',
+            fruit: 'Fruto del Misterio'
         }
     };
 
@@ -110,7 +112,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                     <ChevronLeft size={24} />
                 </button>
                 <div className="mystery-progress">
-                    <span>{t.mysteryOf} {currentMysteryNumber} / 5</span>
+                    <span>{t.mysteryOf} {currentMysteryNumber} of 5</span>
                 </div>
                 <div className="mystery-header-spacer" />
             </div>
@@ -135,6 +137,13 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                         <h3 className="section-label">{t.reflection}</h3>
                         <p className="reflection-text">{mystery.reflection[language]}</p>
                     </div>
+
+                    {mystery.fruit && (
+                        <div className="fruit-section">
+                            <h3 className="section-label">{t.fruit}</h3>
+                            <p className="fruit-text">{mystery.fruit[language]}</p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="prayer-section">

@@ -51,17 +51,22 @@ export function CompletionScreen({ onHome, onRestart }: CompletionScreenProps) {
                     <h2 className="section-title">{t.closingPrayers}</h2>
 
                     <div className="prayer-card">
-                        <h3 className="prayer-title">{t.hailHolyQueen}</h3>
+                        <h3 className="prayer-title">{prayers.closing.hailHolyQueen.name[language]}</h3>
                         <p className="prayer-text">{prayers.closing.hailHolyQueen.text[language]}</p>
                     </div>
 
                     <div className="prayer-card">
-                        <h3 className="prayer-title">{t.finalPrayer}</h3>
+                        <h3 className="prayer-title">{prayers.closing.litany.name[language]}</h3>
+                        <p className="prayer-text" style={{ whiteSpace: 'pre-line' }}>{prayers.closing.litany.text[language]}</p>
+                    </div>
+
+                    <div className="prayer-card">
+                        <h3 className="prayer-title">{prayers.closing.finalPrayer.name[language]}</h3>
                         <p className="prayer-text">{prayers.closing.finalPrayer.text[language]}</p>
                     </div>
 
                     <div className="prayer-card">
-                        <h3 className="prayer-title">{t.signOfTheCross}</h3>
+                        <h3 className="prayer-title">{prayers.closing.signOfTheCross.name[language]}</h3>
                         <p className="prayer-text">{prayers.closing.signOfTheCross.text[language]}</p>
                     </div>
                 </div>

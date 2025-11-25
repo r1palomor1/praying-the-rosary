@@ -29,6 +29,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'Mary\'s "yes" to God changed the course of human history. In her humility and trust, she became the Mother of God. Let us pray for the grace to say "yes" to God\'s will in our own lives, trusting in His perfect plan.',
                     es: 'El "sí" de María a Dios cambió el curso de la historia humana. En su humildad y confianza, se convirtió en la Madre de Dios. Pidamos la gracia de decir "sí" a la voluntad de Dios en nuestras propias vidas, confiando en Su plan perfecto.'
                 },
+                fruit: {
+                    en: 'Humility',
+                    es: 'Humildad'
+                },
                 imageUrl: '/images/mysteries/annunciation.jpg'
             },
             {
@@ -50,6 +54,10 @@ export const mysterySets: MysterySet[] = [
                 reflection: {
                     en: 'Mary, carrying Jesus within her, brings joy and the Holy Spirit to Elizabeth and John the Baptist. Through her charity and service, she shows us how to bring Christ to others. May we, like Mary, carry Christ to all we meet.',
                     es: 'María, llevando a Jesús en su seno, trae alegría y el Espíritu Santo a Isabel y a Juan el Bautista. A través de su caridad y servicio, nos muestra cómo llevar a Cristo a los demás. Que nosotros, como María, llevemos a Cristo a todos los que encontremos.'
+                },
+                fruit: {
+                    en: 'Love of Neighbor',
+                    es: 'Amor al Prójimo'
                 },
                 imageUrl: '/images/mysteries/visitation.jpg'
             },
@@ -73,6 +81,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'The King of Kings is born in poverty and humility. God becomes man in the most humble circumstances, teaching us that true greatness lies in humility and simplicity. Let us welcome Jesus into our hearts as the shepherds welcomed Him in Bethlehem.',
                     es: 'El Rey de Reyes nace en la pobreza y la humildad. Dios se hace hombre en las circunstancias más humildes, enseñándonos que la verdadera grandeza reside en la humildad y la sencillez. Acojamos a Jesús en nuestros corazones como los pastores lo acogieron en Belén.'
                 },
+                fruit: {
+                    en: 'Poverty',
+                    es: 'Pobreza'
+                },
                 imageUrl: '/images/mysteries/nativity.jpg'
             },
             {
@@ -94,6 +106,10 @@ export const mysterySets: MysterySet[] = [
                 reflection: {
                     en: 'Mary and Joseph obediently fulfill the Law, presenting Jesus in the Temple. Simeon recognizes the Messiah and prophesies that a sword will pierce Mary\'s heart. Let us offer ourselves to God as Mary and Joseph offered Jesus.',
                     es: 'María y José cumplen obedientemente la Ley, presentando a Jesús en el Templo. Simeón reconoce al Mesías y profetiza que una espada atravesará el corazón de María. Ofrezcámonos a Dios como María y José ofrecieron a Jesús.'
+                },
+                fruit: {
+                    en: 'Obedience',
+                    es: 'Obediencia'
                 },
                 imageUrl: '/images/mysteries/presentation.jpg'
             },
@@ -149,6 +165,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'At His baptism, Jesus begins His public ministry. The Father proclaims Him as His beloved Son, and the Holy Spirit descends upon Him. We too are beloved children of God through our baptism. Let us live worthy of this great gift.',
                     es: 'En su bautismo, Jesús comienza su ministerio público. El Padre lo proclama como su Hijo amado, y el Espíritu Santo desciende sobre Él. Nosotros también somos hijos amados de Dios por nuestro bautismo. Vivamos dignos de este gran don.'
                 },
+                fruit: {
+                    en: 'Openness to the Holy Spirit',
+                    es: 'Apertura al Espíritu Santo'
+                },
                 imageUrl: '/images/mysteries/baptism-jesus.jpg'
             },
             {
@@ -170,6 +190,10 @@ export const mysterySets: MysterySet[] = [
                 reflection: {
                     en: 'At Mary\'s request, Jesus performs His first miracle, changing water into wine. Mary\'s words, "Do whatever He tells you," are a guide for our lives. Through her intercession, Jesus continues to work miracles in our lives.',
                     es: 'A petición de María, Jesús realiza su primer milagro, convirtiendo el agua en vino. Las palabras de María, "Haced lo que Él os diga", son una guía para nuestras vidas. Por su intercesión, Jesús continúa obrando milagros en nuestras vidas.'
+                },
+                fruit: {
+                    en: 'To Jesus through Mary',
+                    es: 'A Jesús por María'
                 },
                 imageUrl: '/images/mysteries/wedding-cana.jpg'
             },
@@ -193,6 +217,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'Jesus proclaims the Kingdom of God and calls us to repentance and faith. His message is urgent and transformative. Let us open our hearts to His word and live as citizens of His Kingdom.',
                     es: 'Jesús proclama el Reino de Dios y nos llama al arrepentimiento y la fe. Su mensaje es urgente y transformador. Abramos nuestros corazones a su palabra y vivamos como ciudadanos de su Reino.'
                 },
+                fruit: {
+                    en: 'Repentance and Trust in God',
+                    es: 'Arrepentimiento y confianza en Dios'
+                },
                 imageUrl: '/images/mysteries/proclamation-kingdom.jpg'
             },
             {
@@ -215,6 +243,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'On Mount Tabor, Jesus reveals His divine glory to strengthen the apostles for the trials ahead. This glimpse of heaven reminds us of our ultimate destiny. May we keep our eyes fixed on the glory that awaits us.',
                     es: 'En el Monte Tabor, Jesús revela su gloria divina para fortalecer a los apóstoles ante las pruebas venideras. Este vislumbre del cielo nos recuerda nuestro destino final. Que mantengamos nuestros ojos fijos en la gloria que nos espera.'
                 },
+                fruit: {
+                    en: 'Desire for Holiness',
+                    es: 'Deseo de santidad'
+                },
                 imageUrl: '/images/mysteries/transfiguration.jpg'
             },
             {
@@ -236,6 +268,10 @@ export const mysterySets: MysterySet[] = [
                 reflection: {
                     en: 'At the Last Supper, Jesus gives us the greatest gift: Himself in the Eucharist. He becomes our spiritual food, uniting us to Him and to each other. Let us receive Him worthily and with deep gratitude.',
                     es: 'En la Última Cena, Jesús nos da el mayor regalo: Él mismo en la Eucaristía. Se convierte en nuestro alimento espiritual, uniéndonos a Él y entre nosotros. Recibámoslo dignamente y con profunda gratitud.'
+                },
+                fruit: {
+                    en: 'Adoration',
+                    es: 'Adoración'
                 },
                 imageUrl: '/images/mysteries/eucharist.jpg'
             }
@@ -269,6 +305,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'In the Garden of Gethsemane, Jesus experiences profound anguish, yet He submits to the Father\'s will. He shows us how to face our own trials with prayer and surrender to God\'s plan.',
                     es: 'En el Huerto de Getsemaní, Jesús experimenta una profunda angustia, pero se somete a la voluntad del Padre. Nos muestra cómo enfrentar nuestras propias pruebas con oración y entrega al plan de Dios.'
                 },
+                fruit: {
+                    en: 'Sorrow for Sin',
+                    es: 'Dolor por los pecados'
+                },
                 imageUrl: '/images/mysteries/agony-garden.jpg'
             },
             {
@@ -290,6 +330,10 @@ export const mysterySets: MysterySet[] = [
                 reflection: {
                     en: 'Jesus endures brutal scourging for our sins. Each lash was for our healing and redemption. Let us contemplate the price of our salvation and turn away from sin.',
                     es: 'Jesús soporta una brutal flagelación por nuestros pecados. Cada latigazo fue para nuestra sanación y redención. Contemplemos el precio de nuestra salvación y alejémonos del pecado.'
+                },
+                fruit: {
+                    en: 'Purity',
+                    es: 'Pureza'
                 },
                 imageUrl: '/images/mysteries/scourging.jpg'
             },
@@ -313,6 +357,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'Jesus, the true King, is mocked and crowned with thorns. He accepts this humiliation out of love for us. May we honor Him as our King and reject the pride that led to His suffering.',
                     es: 'Jesús, el verdadero Rey, es burlado y coronado con espinas. Acepta esta humillación por amor a nosotros. Honrémoslo como nuestro Rey y rechacemos el orgullo que llevó a su sufrimiento.'
                 },
+                fruit: {
+                    en: 'Moral Courage',
+                    es: 'Coraje moral'
+                },
                 imageUrl: '/images/mysteries/crowning-thorns.jpg'
             },
             {
@@ -335,6 +383,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'Jesus carries His cross to Calvary, falling under its weight yet rising again. He invites us to take up our own crosses and follow Him. With His help, we can bear any burden.',
                     es: 'Jesús lleva su cruz al Calvario, cayendo bajo su peso pero levantándose de nuevo. Nos invita a tomar nuestras propias cruces y seguirlo. Con su ayuda, podemos soportar cualquier carga.'
                 },
+                fruit: {
+                    en: 'Patience',
+                    es: 'Paciencia'
+                },
                 imageUrl: '/images/mysteries/carrying-cross.jpg'
             },
             {
@@ -356,6 +408,10 @@ export const mysterySets: MysterySet[] = [
                 reflection: {
                     en: 'On the cross, Jesus offers the perfect sacrifice for our sins. His last words are of forgiveness and trust. Through His death, we receive eternal life. Let us never forget the price of our redemption.',
                     es: 'En la cruz, Jesús ofrece el sacrificio perfecto por nuestros pecados. Sus últimas palabras son de perdón y confianza. Por su muerte, recibimos la vida eterna. Nunca olvidemos el precio de nuestra redención.'
+                },
+                fruit: {
+                    en: 'Perseverance',
+                    es: 'Perseverancia'
                 },
                 imageUrl: '/images/mysteries/crucifixion.jpg'
             }
@@ -389,6 +445,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'Christ is risen! Death is conquered, and we have hope of eternal life. The Resurrection is the foundation of our faith. Let us live as Easter people, filled with joy and hope.',
                     es: '¡Cristo ha resucitado! La muerte es vencida, y tenemos esperanza de vida eterna. La Resurrección es el fundamento de nuestra fe. Vivamos como pueblo de Pascua, llenos de alegría y esperanza.'
                 },
+                fruit: {
+                    en: 'Faith',
+                    es: 'Fe'
+                },
                 imageUrl: '/images/mysteries/resurrection.jpg'
             },
             {
@@ -410,6 +470,10 @@ export const mysterySets: MysterySet[] = [
                 reflection: {
                     en: 'Jesus ascends to heaven to prepare a place for us. Though He is no longer visible, He remains with us always. Let us keep our eyes on heaven, our true home.',
                     es: 'Jesús asciende al cielo para prepararnos un lugar. Aunque ya no es visible, permanece con nosotros siempre. Mantengamos nuestros ojos en el cielo, nuestro verdadero hogar.'
+                },
+                fruit: {
+                    en: 'Hope',
+                    es: 'Esperanza'
                 },
                 imageUrl: '/images/mysteries/ascension.jpg'
             },
@@ -433,6 +497,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'The Holy Spirit descends upon the apostles, transforming them from fearful men into bold witnesses. The same Spirit dwells in us through baptism. Let us open our hearts to His gifts and guidance.',
                     es: 'El Espíritu Santo desciende sobre los apóstoles, transformándolos de hombres temerosos en testigos valientes. El mismo Espíritu habita en nosotros por el bautismo. Abramos nuestros corazones a sus dones y guía.'
                 },
+                fruit: {
+                    en: 'Love of God',
+                    es: 'Amor a Dios'
+                },
                 imageUrl: '/images/mysteries/pentecost.jpg'
             },
             {
@@ -455,6 +523,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'Mary, preserved from sin, is assumed body and soul into heaven. She is our mother and our hope, showing us the glory that awaits the faithful. May we follow her example of holiness.',
                     es: 'María, preservada del pecado, es asunta en cuerpo y alma al cielo. Ella es nuestra madre y nuestra esperanza, mostrándonos la gloria que espera a los fieles. Sigamos su ejemplo de santidad.'
                 },
+                fruit: {
+                    en: 'Grace of a Happy Death',
+                    es: 'Gracia de una buena muerte'
+                },
                 imageUrl: '/images/mysteries/assumption.jpg'
             },
             {
@@ -476,6 +548,10 @@ export const mysterySets: MysterySet[] = [
                 reflection: {
                     en: 'Mary is crowned Queen of Heaven and Earth. She reigns with her Son and intercedes for us constantly. Let us honor her as our Queen and trust in her maternal care.',
                     es: 'María es coronada Reina del Cielo y de la Tierra. Reina con su Hijo e intercede por nosotros constantemente. Honrémosla como nuestra Reina y confiemos en su cuidado maternal.'
+                },
+                fruit: {
+                    en: 'Trust in Mary\'s Intercession',
+                    es: 'Confianza en la intercesión de María'
                 },
                 imageUrl: '/images/mysteries/coronation.jpg'
             }

@@ -1,0 +1,127 @@
+.mysteries-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-primary);
+    max-width: 600px;
+    margin: 0 auto;
+    padding-bottom: 100px;
+}
+
+/* Header */
+.mysteries-header {
+    padding: var(--spacing-lg);
+    background: var(--color-bg-primary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    text-align: center;
+}
+
+.mysteries-title {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+    letter-spacing: var(--letter-spacing-tight);
+}
+
+/* Main Content */
+.mysteries-main {
+    flex: 1;
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+}
+
+.mysteries-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+}
+
+/* Mystery Cards */
+.mystery-card-btn {
+    position: relative;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    background: var(--color-bg-elevated);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-align: left;
+    padding: 0;
+    width: 100%;
+}
+
+.mystery-card-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.mystery-card-btn:active {
+    transform: translateY(-2px);
+}
+
+.mystery-card-gradient {
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    background-size: cover;
+    background-position: center;
+}
+
+.mystery-card-gradient.mystery-joyful {
+    background-image: url('/joyful_gradient_1764034316288.png');
+}
+
+.mystery-card-gradient.mystery-sorrowful {
+    background-image: url('/sorrowful_gradient_1764034329652.png');
+}
+
+.mystery-card-gradient.mystery-glorious {
+    background-image: url('/glorious_gradient_1764033317128.png');
+}
+
+.mystery-card-gradient.mystery-luminous {
+    background-image: url('/luminous_gradient_1764034342389.png');
+}
+
+.mystery-card-content {
+    padding: var(--spacing-lg) var(--spacing-xl);
+}
+
+.mystery-card-title {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-xs) 0;
+    letter-spacing: var(--letter-spacing-tight);
+}
+
+.mystery-card-days {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (min-width: 640px) {
+    .mysteries-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .mystery-card-title {
+        font-size: var(--font-size-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .mysteries-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .mystery-card-title {
+        font-size: var(--font-size-base);
+    }
+}

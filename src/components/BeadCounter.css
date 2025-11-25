@@ -1,78 +1,128 @@
-.bead-counter {
+.bead-counter-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-lg) 0;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+    margin-top: auto;
+    border: 1px solid var(--color-border-light);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Decorative background for bead counter */
+.bead-counter-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-primary-light) 0%, var(--color-secondary-light) 100%);
+}
+
+.bead-row {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm);
+    position: relative;
+}
+
+/* String connecting beads */
+.bead-row::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    right: 10px;
+    height: 2px;
+    background: var(--color-text-tertiary);
+    z-index: 0;
+    opacity: 0.3;
 }
 
 .bead {
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    transition: all var(--transition-base);
     background: var(--color-bg-tertiary);
+    border: 2px solid var(--color-border);
+    transition: all var(--transition-base);
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
     box-shadow: var(--shadow-sm);
 }
 
 .bead:hover {
-    transform: scale(1.1);
-    box-shadow: var(--shadow-md);
-}
-
-.bead.active {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-    box-shadow: 0 0 0 4px rgba(91, 33, 182, 0.3), var(--shadow-lg);
     transform: scale(1.2);
-    animation: pulse 1.5s ease-in-out infinite;
+    border-color: var(--color-primary-light);
 }
 
 .bead.completed {
-    background: linear-gradient(135deg, var(--color-secondary-dark) 0%, var(--color-secondary) 100%);
+    background: var(--color-primary);
+    border-color: var(--color-primary-dark);
+    box-shadow: 0 0 10px rgba(91, 33, 182, 0.4);
 }
 
-.bead-our-father {
-    width: 50px;
-    height: 50px;
+.bead.active {
+    background: var(--color-secondary);
+    border-color: var(--color-secondary-light);
+    transform: scale(1.3);
+    box-shadow: 0 0 15px rgba(217, 119, 6, 0.6);
+    animation: pulse-bead 2s infinite;
 }
 
-.hail-mary-beads {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--spacing-md);
-    max-width: 400px;
+.bead.our-father {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
 }
 
-.bead-hail-mary {
-    width: 40px;
-    height: 40px;
+.bead-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
 }
 
-@keyframes pulse {
-
-    0%,
-    100% {
-        box-shadow: 0 0 0 4px rgba(91, 33, 182, 0.3), var(--shadow-lg);
+@keyframes pulse-bead {
+    0% {
+        box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7);
     }
 
-    50% {
-        box-shadow: 0 0 0 8px rgba(91, 33, 182, 0.2), var(--shadow-xl);
+    70% {
+        box-shadow: 0 0 0 6px rgba(217, 119, 6, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
     }
 }
 
 @media (max-width: 480px) {
-    .bead-our-father {
-        width: 45px;
-        height: 45px;
+    .bead-counter-container {
+        padding: var(--spacing-md);
+        gap: var(--spacing-sm);
     }
 
-    .bead-hail-mary {
-        width: 35px;
-        height: 35px;
+    .bead {
+        width: 20px;
+        height: 20px;
     }
 
-    .hail-mary-beads {
+    .bead.our-father {
+        width: 28px;
+        height: 28px;
+    }
+
+    .bead-row {
         gap: var(--spacing-sm);
     }
 }

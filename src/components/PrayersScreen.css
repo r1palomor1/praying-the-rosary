@@ -1,0 +1,79 @@
+.prayers-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-primary);
+    max-width: 600px;
+    margin: 0 auto;
+    padding-bottom: 100px;
+}
+
+/* Header */
+.prayers-header {
+    padding: var(--spacing-lg);
+    background: var(--color-bg-primary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    text-align: center;
+}
+
+.prayers-title {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+    letter-spacing: var(--letter-spacing-tight);
+}
+
+/* Main Content */
+.prayers-main {
+    flex: 1;
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+/* Prayer Card */
+.prayer-card {
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+}
+
+.prayer-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.prayer-name {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-sm) 0;
+    letter-spacing: var(--letter-spacing-tight);
+}
+
+.prayer-text {
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    margin: 0;
+    white-space: pre-wrap;
+    /* Preserve line breaks if any */
+}
+
+/* Section Headers (Optional, if we want to group them) */
+.prayers-section-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-widest);
+    margin: var(--spacing-md) 0 var(--spacing-xs) 0;
+}

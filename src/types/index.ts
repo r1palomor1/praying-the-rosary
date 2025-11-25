@@ -28,6 +28,10 @@ export interface Mystery {
         en: string;
         es: string;
     };
+    fruit?: {
+        en: string;
+        es: string;
+    };
     imageUrl: string;
 }
 
@@ -40,11 +44,15 @@ export interface MysterySet {
     };
     days: DayOfWeek[];
     mysteries: Mystery[];
+    gradientImage?: string; // Optional gradient background for mystery card
 }
 
 // Prayer text
 export interface Prayer {
-    name: string;
+    name: {
+        en: string;
+        es: string;
+    };
     text: {
         en: string;
         es: string;
@@ -62,6 +70,7 @@ export interface PrayerSequence {
 // Closing prayers
 export interface ClosingPrayers {
     hailHolyQueen: Prayer;
+    litany: Prayer;
     finalPrayer: Prayer;
     signOfTheCross: Prayer;
 }

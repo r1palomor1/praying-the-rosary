@@ -1,32 +1,36 @@
 import { useState } from 'react';
-import { Play, RotateCcw, Settings as SettingsIcon, Calendar } from 'lucide-react';
+import { Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { getTodaysMysterySet, getFormattedDate, getCurrentDay, getMysteryForDay } from '../utils/mysterySelector';
+import { mysterySets } from '../data/mysteries';
 import { hasActiveSession } from '../utils/storage';
 import { SettingsModal } from './SettingsModal';
-import type { DayOfWeek } from '../types';
+import { BottomNav } from './BottomNav';
+import { getTodaysDevotion } from '../data/devotions';
 import './HomeScreen.css';
 
 interface HomeScreenProps {
     onStartPrayer: () => void;
+    onNavigateToMysteries: () => void;
+    onNavigateToPrayers: () => void;
 }
 
-export function HomeScreen({ onStartPrayer }: HomeScreenProps) {
-    const { language, currentMysterySet, setCurrentMysterySet, startNewSession, resumeSession } = useApp();
+export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToPrayers }: HomeScreenProps) {
+    const { language, currentMysterySet, startNewSession, resumeSession } = useApp();
     const [showSettings, setShowSettings] = useState(false);
-    const [showDaySelector, setShowDaySelector] = useState(false);
 
     const hasSession = hasActiveSession();
-    const mysterySet = getTodaysMysterySet();
+    const mysterySet = mysterySets.find(m => m.type === currentMysterySet);
+    const devotion = getTodaysDevotion();
 
     const translations = {
         en: {
-            title: 'Praying the Rosary',
-            subtitle: 'Daily Catholic Prayer Guide',
-            todaysMystery: "Today's Mystery",
+            title: 'The Rosary',
+            todaysMystery: 'Today\'s Mystery',
+            forDays: 'For',
             start: 'Start Praying',
-            resume: 'Resume Prayer',
-            changeDay: 'Change Day',
+            dailyDevotion: 'DAILY DEVOTION',
+            readMore: 'Read More',
+            readLess: 'Read Less',
             settings: 'Settings',
             days: {
                 monday: 'Monday',
@@ -36,21 +40,16 @@ export function HomeScreen({ onStartPrayer }: HomeScreenProps) {
                 friday: 'Friday',
                 saturday: 'Saturday',
                 sunday: 'Sunday'
-            },
-            mysteries: {
-                joyful: 'Joyful Mysteries',
-                sorrowful: 'Sorrowful Mysteries',
-                glorious: 'Glorious Mysteries',
-                luminous: 'Luminous Mysteries'
             }
         },
         es: {
-            title: 'Rezando el Rosario',
-            subtitle: 'Guía Diaria de Oración Católica',
+            title: 'El Rosario',
             todaysMystery: 'Misterio de Hoy',
+            forDays: 'Para',
             start: 'Comenzar a Rezar',
-            resume: 'Continuar Oración',
-            changeDay: 'Cambiar Día',
+            dailyDevotion: 'DEVOCIÓN DIARIA',
+            readMore: 'Leer Más',
+            readLess: 'Leer Menos',
             settings: 'Configuración',
             days: {
                 monday: 'Lunes',
@@ -60,101 +59,83 @@ export function HomeScreen({ onStartPrayer }: HomeScreenProps) {
                 friday: 'Viernes',
                 saturday: 'Sábado',
                 sunday: 'Domingo'
-            },
-            mysteries: {
-                joyful: 'Misterios Gozosos',
-                sorrowful: 'Misterios Dolorosos',
-                glorious: 'Misterios Gloriosos',
-                luminous: 'Misterios Luminosos'
             }
         }
     };
 
     const t = translations[language];
-    const currentDate = getFormattedDate(language === 'en' ? 'en-US' : 'es-ES');
 
     const handleStart = () => {
-        startNewSession(currentMysterySet);
+        if (hasSession) {
+            resumeSession();
+        } else {
+            startNewSession(currentMysterySet);
+        }
         onStartPrayer();
     };
 
-    const handleResume = () => {
-        resumeSession();
-        onStartPrayer();
+    const getDaysText = () => {
+        if (!mysterySet) return '';
+        return mysterySet.days.map(day => t.days[day]).join(' & ');
     };
-
-    const handleDayChange = (day: DayOfWeek) => {
-        const mysteryType = getMysteryForDay(day);
-        setCurrentMysterySet(mysteryType);
-        setShowDaySelector(false);
-    };
-
-    const dayOptions: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
     return (
         <div className="home-container">
-            <div className="home-header">
-                <div className="home-title-section">
-                    <h1 className="home-title">{t.title}</h1>
-                    <p className="home-subtitle">{t.subtitle}</p>
-                </div>
-
+            {/* Header */}
+            <header className="home-header">
+                <div className="header-spacer"></div>
+                <h1 className="home-title">{t.title}</h1>
                 <button
-                    className="btn-icon settings-btn"
+                    className="btn-icon settings-btn-header"
                     onClick={() => setShowSettings(true)}
                     aria-label={t.settings}
                 >
-                    <SettingsIcon size={24} />
+                    <SettingsIcon size={20} />
                 </button>
-            </div>
+            </header>
 
-            <div className="home-content">
-                <div className="date-card">
-                    <Calendar size={24} />
-                    <span>{currentDate}</span>
+            {/* Main Content */}
+            <main className="home-main">
+                {/* Hero Image */}
+                <div className="hero-image"></div>
+
+                {/* Mystery Card */}
+                <div className="mystery-card-new">
+                    <div className="mystery-gradient"></div>
+                    <div className="mystery-content">
+                        <h2 className="mystery-title-new">{mysterySet ? mysterySet.name[language] : ''}</h2>
+                        <p className="mystery-days">{t.forDays} {getDaysText()}</p>
+                    </div>
                 </div>
 
-                <div className="mystery-card">
-                    <h2 className="mystery-label">{t.todaysMystery}</h2>
-                    <h3 className="mystery-name">{mysterySet ? mysterySet.name[language] : ''}</h3>
-
-                    <button
-                        className="btn-outline change-day-btn"
-                        onClick={() => setShowDaySelector(!showDaySelector)}
-                    >
-                        <Calendar size={20} />
-                        {t.changeDay}
-                    </button>
-
-                    {showDaySelector && (
-                        <div className="day-selector">
-                            {dayOptions.map((day) => (
-                                <button
-                                    key={day}
-                                    className={`day-option ${getCurrentDay() === day ? 'current' : ''}`}
-                                    onClick={() => handleDayChange(day)}
-                                >
-                                    <span className="day-name">{t.days[day]}</span>
-                                    <span className="day-mystery">{t.mysteries[getMysteryForDay(day)]}</span>
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                {/* Daily Devotion */}
+                <div className="devotion-card">
+                    <p className="devotion-label">{t.dailyDevotion}</p>
+                    <h3 className="devotion-title">{devotion.title[language]}</h3>
+                    <div className="devotion-content">
+                        <p className="devotion-text">
+                            {devotion.fullText[language]}
+                        </p>
+                    </div>
                 </div>
+            </main>
 
-                <div className="action-buttons">
-                    {hasSession ? (
-                        <button className="btn btn-primary" onClick={handleResume}>
-                            <RotateCcw size={20} />
-                            {t.resume}
-                        </button>
-                    ) : null}
-
-                    <button className="btn btn-primary" onClick={handleStart}>
-                        <Play size={20} />
-                        {t.start}
-                    </button>
-                </div>
+            {/* Sticky Bottom Section */}
+            <div className="bottom-section">
+                <button className="start-prayer-btn" onClick={handleStart}>
+                    <span className="material-icons">add</span>
+                    <span>{t.start}</span>
+                </button>
+                <BottomNav
+                    activeTab="home"
+                    onTabChange={(tab) => {
+                        if (tab === 'mysteries') {
+                            onNavigateToMysteries();
+                        } else if (tab === 'prayers') {
+                            onNavigateToPrayers();
+                        }
+                    }}
+                />
             </div>
 
             <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
