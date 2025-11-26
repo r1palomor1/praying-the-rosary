@@ -2,7 +2,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--color-bg-primary);
+    background: transparent;
     max-width: 600px;
     margin: 0 auto;
 }
