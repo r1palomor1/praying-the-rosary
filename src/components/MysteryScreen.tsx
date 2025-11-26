@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
+import { prayers } from '../data/prayers';
 import './MysteryScreen.css';
 
 interface MysteryScreenProps {
@@ -29,6 +30,8 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         if (savedProgress && hasValidPrayerProgress() && savedProgress.mysteryType === currentMysterySet) {
             engine.jumpToStep(savedProgress.currentStepIndex);
         }
+
+
 
         return engine;
     });
@@ -190,16 +193,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             );
         }
 
-        // Special rendering for litany (call and response format)
-        if (step.type === 'litany_of_loreto') {
-            const lines = step.text.split('\n');
-            return (
-                <div className="litany-content">
-                    <div className="litany-call">{lines[0]}</div>
-                    <div className="litany-response">{lines[1]}</div>
-                </div>
-            );
-        }
+
 
         // Special rendering for final Hail Mary intros
         if (step.type === 'final_hail_mary_intro') {
@@ -213,23 +207,15 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         }
 
         // Special rendering for Litany of Loreto
-        if ((step.type as any) === 'litany_of_loreto' && step.litanyData) {
-            const litany = step.litanyData;
-            const renderSection = (items: any[], prefix: string) => (
-                items.map((item: any, i: number) => (
-                    <div key={`${prefix}-${i}`} className="litany-item">
-                        <div className="litany-call">{item.call}</div>
-                        <div className="litany-response">{item.response}</div>
-                    </div>
-                ))
-            );
-
+        if ((step.type as any) === 'litany_of_loreto') {
             return (
-                <div className="litany-scroll-container">
-                    {renderSection(litany.initial_petitions, 'init')}
-                    {renderSection(litany.trinity_invocations, 'trin')}
-                    {renderSection(litany.mary_invocations, 'mary')}
-                    {renderSection(litany.agnus_dei, 'agnus')}
+                <div className="prayer-section">
+                    <h3 className="prayer-name" style={{ marginBottom: '1rem', textAlign: 'center' }}>
+                        {prayers.closing.litany.name[language]}
+                    </h3>
+                    <p className="prayer-text-main" style={{ whiteSpace: 'pre-line', fontSize: '1rem', lineHeight: '1.6' }}>
+                        {prayers.closing.litany.text[language]}
+                    </p>
                 </div>
             );
         }
@@ -313,28 +299,28 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
                     {renderStepContent()}
                     {renderBeadCounter()}
-                </div>
 
-                <div className="navigation-buttons">
-                    <button
-                        className="btn btn-outline"
-                        onClick={handlePrevious}
-                        disabled={flowEngine.isFirstStep()}
-                        aria-label={t.previous}
-                    >
-                        <ChevronLeft size={24} />
-                        <span className="btn-text">{t.previous}</span>
-                    </button>
+                    <div className="navigation-buttons">
+                        <button
+                            className="btn btn-outline"
+                            onClick={handlePrevious}
+                            disabled={flowEngine.isFirstStep()}
+                            aria-label={t.previous}
+                            title={t.previous}
+                        >
+                            <ChevronLeft size={32} />
+                        </button>
 
-                    <button
-                        className="btn btn-primary"
-                        onClick={handleNext}
-                        disabled={flowEngine.isLastStep()}
-                        aria-label={flowEngine.isLastStep() ? t.finish : t.next}
-                    >
-                        <span className="btn-text">{flowEngine.isLastStep() ? t.finish : t.next}</span>
-                        <ChevronRight size={24} />
-                    </button>
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleNext}
+                            disabled={flowEngine.isLastStep()}
+                            aria-label={flowEngine.isLastStep() ? t.finish : t.next}
+                            title={flowEngine.isLastStep() ? t.finish : t.next}
+                        >
+                            <ChevronRight size={32} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

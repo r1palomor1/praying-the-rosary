@@ -2,6 +2,7 @@
 // Flow: Opening Prayers → 5 Decades (each with Our Father, 10 Hail Marys, Glory Be, Fatima Prayer) → Closing Prayers
 
 import { prayerData, type Language } from '../data/prayerData';
+import { prayers } from '../data/prayers';
 
 export type PrayerStepType =
     | 'sign_of_cross_start'
@@ -49,6 +50,16 @@ export class PrayerFlowEngine {
         this.mysteryType = mysteryType;
         this.language = language;
         this.buildPrayerSequence();
+    }
+
+    private getOrdinal(num: number): string {
+        if (this.language === 'es') {
+            const ordinals = ['Primer', 'Segundo', 'Tercer', 'Cuarto', 'Quinto'];
+            return ordinals[num - 1] || `${num}º`;
+        }
+        // English ordinals
+        const ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth'];
+        return ordinals[num - 1] || `${num}th`;
     }
 
     private buildPrayerSequence(): void {
@@ -101,10 +112,12 @@ export class PrayerFlowEngine {
             const decade = mysteries.decades[decadeNum - 1];
 
             // Decade announcement (mystery title + reflection)
+            // Use full ordinal word for better audio (e.g., "First Mystery" instead of "1st Mystery")
+            const ordinal = this.getOrdinal(decadeNum);
             this.steps.push({
                 type: 'decade_announcement',
                 text: decade.reflection,
-                title: `${decadeNum}${t.mysteryOrdinal} ${t.mystery}: ${decade.title}`,
+                title: `${ordinal} ${t.mystery}: ${decade.title}`,
                 decadeNumber: decadeNum
             });
 
@@ -179,25 +192,9 @@ export class PrayerFlowEngine {
         // Litany of Loreto - Consolidated into one scrollable step
         const litany = fixed_prayers.litany_of_loreto;
 
-        // Construct a full text representation for audio/accessibility if needed, 
-        // but primarily we will use litanyData for rendering.
-        let fullLitanyText = '';
-
-        // Helper to append text
-        const appendSection = (items: any[]) => {
-            items.forEach(item => {
-                fullLitanyText += `${item.call}. ${item.response}.\n`;
-            });
-        };
-
-        appendSection(litany.initial_petitions);
-        appendSection(litany.trinity_invocations);
-        appendSection(litany.mary_invocations);
-        appendSection(litany.agnus_dei);
-
         this.steps.push({
             type: 'litany_of_loreto',
-            text: fullLitanyText,
+            text: prayers.closing.litany.text[this.language],
             title: t.litanyOfLoreto,
             litanyData: litany // Pass the structured data for rendering
         });
