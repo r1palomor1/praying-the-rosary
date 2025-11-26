@@ -254,10 +254,9 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                     <Home size={24} />
                 </button>
                 <div className="mystery-progress">
+                    {/* First row: mystery set name (large) */}
                     <div className="mystery-set-name">{flowEngine.getMysteryName()}</div>
-                    <div className="progress-info">
-                        {Math.round(flowEngine.getProgress())}% {t.complete}
-                    </div>
+                    {/* Second row: current decade subheader, same size as mystery name */}
                     {(() => {
                         const decadeInfo = flowEngine.getCurrentDecadeInfo();
                         if (decadeInfo) {
@@ -267,13 +266,17 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                                 return num + (s[(v - 20) % 10] || s[v] || s[0]);
                             };
                             return (
-                                <div className="current-decade-info">
+                                <div className="mystery-set-name current-decade-info">
                                     {getOrdinal(decadeInfo.number)} Mystery: {decadeInfo.title}
                                 </div>
                             );
                         }
                         return null;
                     })()}
+                    {/* Third row: progress info, smaller */}
+                    <div className="progress-info progress-info-small">
+                        {Math.round(flowEngine.getProgress())}% {t.complete}
+                    </div>
                 </div>
                 <div className="mystery-header-spacer" />
             </div>
