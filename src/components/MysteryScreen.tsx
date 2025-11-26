@@ -261,9 +261,14 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                     {(() => {
                         const decadeInfo = flowEngine.getCurrentDecadeInfo();
                         if (decadeInfo) {
+                            const getOrdinal = (num: number) => {
+                                const s = ['th', 'st', 'nd', 'rd'];
+                                const v = num % 100;
+                                return num + (s[(v - 20) % 10] || s[v] || s[0]);
+                            };
                             return (
                                 <div className="current-decade-info">
-                                    {decadeInfo.title}
+                                    {getOrdinal(decadeInfo.number)} Mystery: {decadeInfo.title}
                                 </div>
                             );
                         }
