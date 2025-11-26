@@ -258,6 +258,17 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                     <div className="progress-info">
                         {Math.round(flowEngine.getProgress())}% {t.complete}
                     </div>
+                    {(() => {
+                        const decadeInfo = flowEngine.getCurrentDecadeInfo();
+                        if (decadeInfo) {
+                            return (
+                                <div className="current-decade-info">
+                                    {decadeInfo.title}
+                                </div>
+                            );
+                        }
+                        return null;
+                    })()}
                 </div>
                 <div className="mystery-header-spacer" />
             </div>
