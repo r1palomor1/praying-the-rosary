@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
-import { prayers } from '../data/prayers';
+
 import './MysteryScreen.css';
 
 interface MysteryScreenProps {
