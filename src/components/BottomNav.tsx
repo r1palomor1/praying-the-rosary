@@ -4,9 +4,10 @@ import './BottomNav.css';
 interface BottomNavProps {
     activeTab: 'home' | 'mysteries' | 'prayers' | 'settings';
     onTabChange?: (tab: 'home' | 'mysteries' | 'prayers' | 'settings') => void;
+    onStartPrayer?: () => void;
 }
 
-export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
+export function BottomNav({ activeTab, onTabChange, onStartPrayer }: BottomNavProps) {
     const { language } = useApp();
 
     const translations = {
@@ -14,13 +15,13 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             home: 'Home',
             mysteries: 'Mysteries',
             prayers: 'Prayers',
-            settings: 'Placeholder'
+            start: 'Start'
         },
         es: {
             home: 'Inicio',
             mysteries: 'Misterios',
             prayers: 'Oraciones',
-            settings: 'Marcador'
+            start: 'Rezar'
         }
     };
 
@@ -62,12 +63,12 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             </button>
 
             <button
-                className={`nav-tab ${activeTab === 'settings' ? 'active' : ''}`}
-                onClick={() => handleTabClick('settings')}
-                aria-label={t.settings}
+                className="nav-tab start-action-tab"
+                onClick={onStartPrayer}
+                aria-label={t.start}
             >
-                <span className="material-icons">more_horiz</span>
-                <span className="nav-label">{t.settings}</span>
+                <span className="material-icons">play_arrow</span>
+                <span className="nav-label">{t.start}</span>
             </button>
         </nav>
     );

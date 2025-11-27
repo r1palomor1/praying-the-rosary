@@ -172,13 +172,15 @@ export class PrayerFlowEngine {
             title: t.finalJaculatory
         });
 
-        // Three special Hail Marys with invocations
-        for (let i = 0; i < 3; i++) {
+        // Final Hail Marys with invocations (now 4 instead of 3)
+        for (let i = 0; i < fixed_prayers.final_hail_marys_intro.length; i++) {
             const intro = fixed_prayers.final_hail_marys_intro[i];
+            // Only concatenate prayer if it exists (4th item has no prayer)
+            const prayerText = intro.prayer ? `${intro.invocation}\n\n${intro.prayer}` : intro.invocation;
             this.steps.push({
                 type: 'final_hail_mary_intro',
-                text: `${intro.invocation}\n\n${intro.prayer}${fixed_prayers.decade_hail_mary}`,
-                title: `${t.hailMary} ${i + 1}/3`,
+                text: prayerText,
+                title: `${t.hailMary} ${i + 1}/${fixed_prayers.final_hail_marys_intro.length}`,
                 finalHailMaryNumber: i + 1
             });
         }
@@ -195,7 +197,7 @@ export class PrayerFlowEngine {
         this.steps.push({
             type: 'litany_of_loreto',
             text: prayers.closing.litany.text[this.language],
-            title: t.litanyOfLoreto,
+            title: prayers.closing.litany.name[this.language],
             litanyData: litany // Pass the structured data for rendering
         });
 

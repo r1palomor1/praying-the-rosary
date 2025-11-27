@@ -35,11 +35,15 @@
 .settings-btn-header {
     background: transparent;
     color: var(--color-text-secondary);
-    padding: var(--spacing-sm);
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    transition: color var(--transition-base);
 }
 
 .settings-btn-header:hover {
-    background: var(--color-bg-tertiary);
+    background: transparent;
     color: var(--color-primary);
 }
 
@@ -50,7 +54,7 @@
     flex-direction: column;
     gap: var(--spacing-lg);
     padding: 0 var(--spacing-lg) var(--spacing-lg);
-    padding-bottom: 180px;
+    padding-bottom: 120px;
 }
 
 /* Hero Image */
@@ -131,7 +135,7 @@
 }
 
 .devotion-text {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     line-height: 1.6;
     color: var(--color-text-secondary);
     margin: 0;
@@ -150,46 +154,6 @@
     backdrop-filter: blur(10px);
     background: rgba(255, 255, 255, 0.95);
     z-index: 100;
-}
-
-[data-theme="dark"] .bottom-section {
-    background: rgba(16, 22, 34, 0.95);
-}
-
-.start-prayer-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    width: calc(100% - var(--spacing-2xl));
-    margin: var(--spacing-md) var(--spacing-lg);
-    padding: var(--spacing-md) var(--spacing-xl);
-    background: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-lg);
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(91, 33, 182, 0.3);
-    transition: all var(--transition-base);
-}
-
-.start-prayer-btn:hover {
-    background: var(--color-primary-light);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(91, 33, 182, 0.4);
-}
-
-.start-prayer-btn .material-icons {
-    font-size: 28px;
-}
-
-/* Responsive Design */
-@media (max-width: 480px) {
-    .home-title {
-        font-size: var(--font-size-xl);
-    }
 
     .hero-image {
         height: 180px;

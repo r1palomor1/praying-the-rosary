@@ -8,7 +8,7 @@ export interface CallResponse {
 
 export interface FinalHailMaryIntro {
     invocation: string;
-    prayer: string;
+    prayer?: string;
 }
 
 export interface LitanyOfLoreto {
@@ -82,16 +82,19 @@ export const prayerData: Record<Language, PrayerDataStructure> = {
             final_jaculatory_start: "O Sovereign Sanctuary, Tabernacle of the Eternal Word! O Virgin, deliver us from Hell, those of us who pray your Holy Rosary! O powerful Empress, Consolation of mortals! O Virgin, open Heaven to us with a happy death! Grant us purity of soul, O you who are so powerful.",
             final_hail_marys_intro: [
                 {
-                    invocation: "Daughter of God the Father, Virgin most pure and chaste before birth; into your hands we commend our Faith, that you may enlighten it.",
-                    prayer: "Hail, Holy Mary, "
+                    invocation: "Hail, Most Holy Mary, Daughter of God the Father, Virgin most pure and chaste before birth; into your hands we commend our Faith, that you may enlighten it. Full of grace, the Lord is with thee; blessed art thou among women, and blessed is the fruit of thy womb, Jesus.",
+                    prayer: "Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen."
                 },
                 {
-                    invocation: "Mother of God the Son, Virgin most pure and chaste at birth; into your hands we commend our Hope, that you may encourage it.",
-                    prayer: "Hail, Holy Mary, "
+                    invocation: "Hail, Most Holy Mary, Mother of God the Son, Virgin most pure and chaste at birth; into your hands we commend our Hope, that you may encourage it. Full of grace, the Lord is with thee; blessed art thou among women, and blessed is the fruit of thy womb, Jesus.",
+                    prayer: "Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen."
                 },
                 {
-                    invocation: "Spouse of the Holy Spirit, Virgin most pure and chaste after birth; into your hands we commend our Charity, that you may inflame it.",
-                    prayer: "Hail, Holy Mary, "
+                    invocation: "Hail, Most Holy Mary, Spouse of the Holy Spirit, Virgin most pure and chaste after birth; into your hands we commend our Charity, that you may inflame it. Full of grace, the Lord is with thee; blessed art thou among women, and blessed is the fruit of thy womb, Jesus.",
+                    prayer: "Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen."
+                },
+                {
+                    invocation: "Hail, Most Holy Mary, Temple, Throne, and Tabernacle of the Most Holy Trinity, Virgin conceived without original sin."
                 }
             ],
             hail_holy_queen: "Hail, Holy Queen, Mother of Mercy, our life, our sweetness, and our hope. To thee do we cry, poor banished children of Eve. To thee do we send up our sighs, mourning and weeping in this valley of tears. Turn then, most gracious advocate, thine eyes of mercy toward us, and after this our exile, show unto us the blessed fruit of thy womb, Jesus. O clement, O loving, O sweet Virgin Mary. Pray for us, O holy Mother of God, that we may be made worthy of the promises of Christ. Amen.",
@@ -315,16 +318,19 @@ export const prayerData: Record<Language, PrayerDataStructure> = {
             final_jaculatory_start: "¡Oh, Soberano Santuario, Sagrario del Verbo eterno! ¡Libra, Virgen, del Infierno, a los que rezamos tu Santo Rosario! ¡Emperatriz poderosa, de los mortales Consuelo! ¡Ábrenos, Virgen, el Cielo, con una muerte dichosa! Danos pureza de alma tú que eres tan poderosa.",
             final_hail_marys_intro: [
                 {
-                    invocation: "Hija de Dios Padre, Virgen purísima y castísima antes del parto; en tus manos encomendamos nuestra Fe, para que la alumbres.",
-                    prayer: "Dios te salve, María Santísima, "
+                    invocation: "Dios te salve María Santísima, Hija de Dios Padre, Virgen purísima y castísima antes del parto; en tus manos encomendamos nuestra Fe, para que la alumbres. Llena eres de gracia; el Señor es contigo; bendita Tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús.",
+                    prayer: "Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén."
                 },
                 {
-                    invocation: "Madre de Dios Hijo, Virgen purísima y castísima en el parto; en tus manos encomendamos nuestra Esperanza, para que la alientes.",
-                    prayer: "Dios te salve, María Santísima, "
+                    invocation: "Dios te salve María Santísima, Madre de Dios Hijo, Virgen purísima y castísima en el parto; en tus manos encomendamos nuestra Esperanza, para que la alientes. Llena eres de gracia; el Señor es contigo; bendita Tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús.",
+                    prayer: "Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén."
                 },
                 {
-                    invocation: "Esposa del Espíritu Santo, Virgen purísima y castísima después del parto; en tus manos encomendamos nuestra Caridad, para que la inflames.",
-                    prayer: "Dios te salve, María Santísima, "
+                    invocation: "Dios te salve, María Santísima, Esposa del Espíritu Santo, Virgen purísima y castísima después del parto; en tus manos encomendamos nuestra Caridad, para que la inflames. Llena eres de gracia; el Señor es contigo; bendita Tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús.",
+                    prayer: "Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén."
+                },
+                {
+                    invocation: "Dios te salve, María Santísima, templo, trono y sagrario de la Santisima Trinidad, Virgen concebida sin la culpa original."
                 }
             ],
             hail_holy_queen: "Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra. Dios te salve. A ti clamamos los desterrados hijos de Eva, a ti suspiramos, gimiendo y llorando, en este valle de lágrimas. ¡Ea, pues, Señora, Abogada nuestra!, vuelve a nosotros esos tus ojos misericordiosos, y después de este destierro, muéstranos a Jesús, fruto bendito de tu vientre. ¡Oh, clemente, oh piadosa, oh dulce Virgen María! Ruega por nosotros Santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Amén.",

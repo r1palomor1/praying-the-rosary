@@ -85,8 +85,8 @@ export const prayers: {
         },
         litany: {
             name: {
-                en: 'Litany of the Blessed Virgin Mary (Litany of Loreto)',
-                es: 'Letanías de la Santísima Virgen María (Letanías de Loreto)'
+                en: 'Litany of the Blessed Virgin Mary',
+                es: 'Letanías de la Santísima Virgen María'
             },
             text: {
                 en: `Lord, have mercy.
@@ -154,9 +154,12 @@ Queen of the most holy Rosary, pray for us.
 Queen of the Family, pray for us.
 Queen of Peace, pray for us.
 
-Lamb of God, who takes away the sins of the world, spare us, O Lord.
-Lamb of God, who takes away the sins of the world, graciously hear us, O Lord.
-Lamb of God, who takes away the sins of the world, have mercy on us.
+Lamb of God, who takes away the sins of the world,
+spare us, O Lord.
+Lamb of God, who takes away the sins of the world,
+graciously hear us, O Lord.
+Lamb of God, who takes away the sins of the world,
+have mercy on us.
 
 Pray for us, O Holy Mother of God.
 That we may be made worthy of the promises of Christ.
@@ -228,9 +231,12 @@ Reina del Santísimo Rosario, ruega por nosotros.
 Reina de la familia, ruega por nosotros.
 Reina de la Paz, ruega por nosotros.
 
-Cordero de Dios, que quitas el pecado del mundo, Perdónanos, Señor.
-Cordero de Dios, que quitas el pecado del mundo, Escúchanos, Señor.
-Cordero de Dios, que quitas el pecado del mundo, Ten misericordia de nosotros.
+Cordero de Dios, que quitas el pecado del mundo,
+Perdónanos, Señor.
+Cordero de Dios, que quitas el pecado del mundo,
+Escúchanos, Señor.
+Cordero de Dios, que quitas el pecado del mundo,
+Ten misericordia de nosotros.
 
 Ruega por nosotros, Santa Madre de Dios.
 Para que seamos dignos de alcanzar las promesas de Jesucristo.

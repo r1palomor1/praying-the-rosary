@@ -27,7 +27,6 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
             title: 'The Rosary',
             todaysMystery: 'Today\'s Mystery',
             forDays: 'For',
-            start: 'Start Praying',
             dailyDevotion: 'DAILY DEVOTION',
             readMore: 'Read More',
             readLess: 'Read Less',
@@ -46,7 +45,6 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
             title: 'El Rosario',
             todaysMystery: 'Misterio de Hoy',
             forDays: 'Para',
-            start: 'Comenzar a Rezar',
             dailyDevotion: 'DEVOCIÓN DIARIA',
             readMore: 'Leer Más',
             readLess: 'Leer Menos',
@@ -86,7 +84,7 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
                 <div className="header-spacer"></div>
                 <h1 className="home-title">{t.title}</h1>
                 <button
-                    className="btn-icon settings-btn-header"
+                    className="settings-btn-header"
                     onClick={() => setShowSettings(true)}
                     aria-label={t.settings}
                 >
@@ -122,10 +120,6 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
 
             {/* Sticky Bottom Section */}
             <div className="bottom-section">
-                <button className="start-prayer-btn" onClick={handleStart}>
-                    <span className="material-icons">add</span>
-                    <span>{t.start}</span>
-                </button>
                 <BottomNav
                     activeTab="home"
                     onTabChange={(tab) => {
@@ -135,6 +129,7 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
                             onNavigateToPrayers();
                         }
                     }}
+                    onStartPrayer={handleStart}
                 />
             </div>
 
