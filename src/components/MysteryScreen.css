@@ -558,12 +558,10 @@
         padding: 0;
     }
 
-    /* Big Number Circle - Reduce spacing */
-    .mystery-image-container {
-        margin: 0 auto var(--spacing-md);
-        width: 100px;
-        height: 100px;
+    .mystery-content-card {
+        margin-bottom: var(--spacing-sm);
     }
+
 
     .mystery-intro {
         padding: var(--spacing-md) 0;
