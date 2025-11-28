@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, VolumeX, Play, Pause } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, Pause } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
@@ -65,13 +65,20 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
     const [flowEngine] = useState(() => {
         const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
 
-        // Load saved progress if available
-        const savedProgress = loadPrayerProgress();
-        if (savedProgress && hasValidPrayerProgress() && savedProgress.mysteryType === currentMysterySet) {
-            engine.jumpToStep(savedProgress.currentStepIndex);
+        // Load saved progress for this specific mystery type
+        const savedProgress = loadPrayerProgress(currentMysterySet);
+        if (savedProgress && hasValidPrayerProgress(currentMysterySet) && savedProgress.mysteryType === currentMysterySet) {
+            // Check if the saved progress is at the complete step (last step)
+            // If so, we should immediately show the completion screen
+            if (savedProgress.currentStepIndex >= engine.getTotalSteps() - 1) {
+                // Trigger completion immediately
+                setTimeout(() => {
+                    onComplete();
+                }, 0);
+            } else {
+                engine.jumpToStep(savedProgress.currentStepIndex);
+            }
         }
-
-
 
         return engine;
     });
@@ -167,15 +174,6 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         const prevStep = flowEngine.getPreviousStep();
         if (prevStep) {
             setCurrentStep(prevStep);
-        }
-    };
-
-    const handlePlayAudio = () => {
-        if (isPlaying) {
-            stopAudio();
-            setContinuousMode(false);
-        } else {
-            playAudio(getAudioText(currentStep));
         }
     };
 
@@ -405,24 +403,14 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                         )}
                         <div className="audio-controls">
                             {audioEnabled && (
-                                <>
-                                    <button
-                                        className="btn-icon audio-btn"
-                                        onClick={handlePlayAudio}
-                                        aria-label={isPlaying ? t.stopAudio : t.playAudio}
-                                        title={isPlaying ? t.stopAudio : t.playAudio}
-                                    >
-                                        {isPlaying ? <VolumeX size={24} /> : <Volume2 size={24} />}
-                                    </button>
-                                    <button
-                                        className={`btn-icon continuous-btn ${continuousMode ? 'active' : ''}`}
-                                        onClick={handleToggleContinuous}
-                                        aria-label={continuousMode ? t.stopContinuous : t.continuousMode}
-                                        title={continuousMode ? t.stopContinuous : t.continuousMode}
-                                    >
-                                        {continuousMode ? <Pause size={24} /> : <Play size={24} />}
-                                    </button>
-                                </>
+                                <button
+                                    className={`btn-icon continuous-btn ${continuousMode ? 'active' : ''}`}
+                                    onClick={handleToggleContinuous}
+                                    aria-label={continuousMode ? t.stopContinuous : t.continuousMode}
+                                    title={continuousMode ? t.stopContinuous : t.continuousMode}
+                                >
+                                    {continuousMode ? <Pause size={24} /> : <Volume2 size={24} />}
+                                </button>
                             )}
                         </div>
                     </div>

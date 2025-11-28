@@ -6,13 +6,14 @@ import { MysteriesScreen } from './components/MysteriesScreen';
 import { MysteryScreen } from './components/MysteryScreen';
 import { CompletionScreen } from './components/CompletionScreen';
 import { PrayersScreen } from './components/PrayersScreen';
+import { clearPrayerProgress } from './utils/storage';
 
 import './styles/index.css';
 
 type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete';
 
 function AppContent() {
-  const { language, clearSession, completeSession } = useApp();
+  const { language, clearSession, completeSession, currentMysterySet } = useApp();
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
   const [hasSelectedLanguage, setHasSelectedLanguage] = useState(false);
 
@@ -42,6 +43,7 @@ function AppContent() {
 
   const handleCompletePrayer = () => {
     completeSession();
+    clearPrayerProgress(); // Clear the step-by-step progress
     setCurrentScreen('complete');
   };
 
@@ -93,7 +95,7 @@ function AppContent() {
         <MysteryScreen onComplete={handleCompletePrayer} onBack={handleBackToHome} />
       )}
       {currentScreen === 'complete' && (
-        <CompletionScreen onHome={handleBackToHome} onRestart={handleRestart} />
+        <CompletionScreen onHome={handleBackToHome} onRestart={handleRestart} mysteryType={currentMysterySet} />
       )}
     </div>
   );

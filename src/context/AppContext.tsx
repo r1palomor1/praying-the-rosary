@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Language, MysterySetType, AppSettings, UserSession } from '../types';
 import { getTodaysMystery, getISODate } from '../utils/mysterySelector';
-import { loadSettings, saveSettings, getDefaultSettings, loadSession, saveSession, clearSession as clearStoredSession } from '../utils/storage';
+import { loadSettings, saveSettings, getDefaultSettings, loadSession, saveSession, clearSession as clearStoredSession, clearPrayerProgress } from '../utils/storage';
 import { audioPlayer } from '../utils/audioPlayer';
 
 interface AppContextType {
@@ -65,14 +65,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // Apply theme to document
         document.documentElement.setAttribute('data-theme', settings.theme);
 
+        // Always set today's mystery first
+        const todaysMystery = getTodaysMystery();
+        setCurrentMysterySet(todaysMystery);
+
         // Check for existing session
         const session = loadSession();
         if (session && session.date === getISODate() && !session.completed) {
-            setCurrentMysterySet(session.mysterySetType);
-            setCurrentMysteryNumber(session.currentMysteryNumber);
-            setCurrentBeadNumber(session.currentBeadNumber);
-            setIsSessionActive(true);
+            // Session is from today - restore it if it matches today's mystery
+            if (session.mysterySetType === todaysMystery) {
+                setCurrentMysteryNumber(session.currentMysteryNumber);
+                setCurrentBeadNumber(session.currentBeadNumber);
+                setIsSessionActive(true);
+            }
+            // Note: We don't clear the session if it's a different mystery from today
+            // This allows users to manually select and resume it
         }
+        // Note: We intentionally DON'T clear old sessions from previous days
+        // They will be preserved so users can resume unfinished mysteries
+        // Old sessions will be cleared when today's mystery is completed
     }, []);
 
     // Save settings whenever they change
@@ -157,6 +168,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         };
         saveSession(session);
         setIsSessionActive(false);
+
+        // Clear old prayer progress when completing today's mystery
+        // This resets any unfinished mysteries from previous days
+        clearPrayerProgress();
     };
 
     const clearSession = () => {

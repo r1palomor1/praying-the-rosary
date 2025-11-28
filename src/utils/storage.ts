@@ -122,22 +122,33 @@ export function loadLanguage(): Language | null {
 
 /**
  * Save prayer progress (current step in prayer flow)
+ * Now supports per-mystery storage
  */
 export function savePrayerProgress(progress: PrayerProgress): void {
     try {
-        localStorage.setItem(STORAGE_KEYS.PRAYER_PROGRESS, JSON.stringify(progress));
+        // Store progress with mystery type in the key for independent tracking
+        const key = `${STORAGE_KEYS.PRAYER_PROGRESS}_${progress.mysteryType}`;
+        localStorage.setItem(key, JSON.stringify(progress));
     } catch (error) {
         console.error('Failed to save prayer progress:', error);
     }
 }
 
 /**
- * Load prayer progress
+ * Load prayer progress for a specific mystery type
  */
-export function loadPrayerProgress(): PrayerProgress | null {
+export function loadPrayerProgress(mysteryType?: string): PrayerProgress | null {
     try {
-        const data = localStorage.getItem(STORAGE_KEYS.PRAYER_PROGRESS);
-        return data ? JSON.parse(data) : null;
+        if (mysteryType) {
+            // Load progress for specific mystery
+            const key = `${STORAGE_KEYS.PRAYER_PROGRESS}_${mysteryType}`;
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : null;
+        } else {
+            // Legacy: try to load from old single-key storage
+            const data = localStorage.getItem(STORAGE_KEYS.PRAYER_PROGRESS);
+            return data ? JSON.parse(data) : null;
+        }
     } catch (error) {
         console.error('Failed to load prayer progress:', error);
         return null;
@@ -145,21 +156,33 @@ export function loadPrayerProgress(): PrayerProgress | null {
 }
 
 /**
- * Clear prayer progress
+ * Clear prayer progress for a specific mystery type, or all if not specified
  */
-export function clearPrayerProgress(): void {
+export function clearPrayerProgress(mysteryType?: string): void {
     try {
-        localStorage.removeItem(STORAGE_KEYS.PRAYER_PROGRESS);
+        if (mysteryType) {
+            // Clear specific mystery progress
+            const key = `${STORAGE_KEYS.PRAYER_PROGRESS}_${mysteryType}`;
+            localStorage.removeItem(key);
+        } else {
+            // Clear all prayer progress (all mystery types)
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith(STORAGE_KEYS.PRAYER_PROGRESS)) {
+                    localStorage.removeItem(key);
+                }
+            });
+        }
     } catch (error) {
         console.error('Failed to clear prayer progress:', error);
     }
 }
 
 /**
- * Check if there's valid prayer progress for today
+ * Check if there's valid prayer progress for today for a specific mystery
  */
-export function hasValidPrayerProgress(): boolean {
-    const progress = loadPrayerProgress();
+export function hasValidPrayerProgress(mysteryType?: string): boolean {
+    const progress = loadPrayerProgress(mysteryType);
     if (!progress) return false;
 
     const today = new Date().toISOString().split('T')[0];

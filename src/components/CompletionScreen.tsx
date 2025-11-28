@@ -1,15 +1,21 @@
 
 import { CheckCircle, Home } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { prayerData } from '../data/prayerData';
+import type { MysterySetType } from '../types';
 import './CompletionScreen.css';
 
 interface CompletionScreenProps {
     onHome: () => void;
     onRestart: () => void;
+    mysteryType: MysterySetType;
 }
 
-export function CompletionScreen({ onHome }: CompletionScreenProps) {
+export function CompletionScreen({ onHome, mysteryType }: CompletionScreenProps) {
     const { language } = useApp();
+
+    // Get the mystery name
+    const mysteryName = prayerData[language].mysteries_data[mysteryType].name;
 
     const translations = {
         en: {
@@ -33,7 +39,7 @@ export function CompletionScreen({ onHome }: CompletionScreenProps) {
                     <CheckCircle size={80} />
                 </div>
 
-                <h1 className="completion-title">{t.title}</h1>
+                <h1 className="completion-title">{t.title}: {mysteryName}</h1>
                 <p className="completion-subtitle">{t.subtitle}</p>
 
 
