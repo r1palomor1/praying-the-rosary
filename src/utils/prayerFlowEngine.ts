@@ -3,6 +3,7 @@
 
 import { prayerData, type Language } from '../data/prayerData';
 import { prayers } from '../data/prayers';
+import { mysterySets } from '../data/mysteries';
 
 export type PrayerStepType =
     | 'sign_of_cross_start'
@@ -36,6 +37,7 @@ export interface PrayerStep {
     litanySection?: 'initial' | 'trinity' | 'mary' | 'agnus'; // For litany subsections
     litanyIndex?: number; // Index within litany section
     litanyData?: any; // Full litany data for scrollable view
+    imageUrl?: string; // Image URL for the mystery
 }
 
 export type MysteryType = 'joyful' | 'luminous' | 'sorrowful' | 'glorious';
@@ -111,6 +113,11 @@ export class PrayerFlowEngine {
         for (let decadeNum = 1; decadeNum <= 5; decadeNum++) {
             const decade = mysteries.decades[decadeNum - 1];
 
+            // Find image URL from mysterySets
+            const mysterySet = mysterySets.find(s => s.type === this.mysteryType);
+            const mystery = mysterySet?.mysteries.find(m => m.number === decadeNum);
+            const imageUrl = mystery?.imageUrl;
+
             // Decade announcement (mystery title + reflection)
             // Use full ordinal word for better audio (e.g., "First Mystery" instead of "1st Mystery")
             const ordinal = this.getOrdinal(decadeNum);
@@ -118,7 +125,8 @@ export class PrayerFlowEngine {
                 type: 'decade_announcement',
                 text: decade.reflection,
                 title: `${ordinal} ${t.mystery}: ${decade.title}`,
-                decadeNumber: decadeNum
+                decadeNumber: decadeNum,
+                imageUrl: imageUrl
             });
 
             // Our Father

@@ -22,22 +22,6 @@
 .mystery-set-name {
     font-size: var(--font-size-xl);
     text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wider);
-    color: var(--color-text-secondary);
-    margin-bottom: var(--spacing-xs);
-    font-weight: 600;
-}
-
-.progress-info {
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-    color: white;
-    text-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
-}
-
-.current-decade-info {
-    font-size: var(--font-size-xl);
-    color: var(--color-secondary-lighter);
     margin-top: var(--spacing-xs);
     font-weight: 500;
     text-align: center;
@@ -46,96 +30,6 @@
 
 .progress-bar-container {
     height: 4px;
-    background: var(--color-bg-tertiary);
-    border-radius: var(--radius-full);
-    margin-bottom: var(--spacing-xl);
-    overflow: hidden;
-}
-
-.progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-    width: var(--progress);
-    transition: width 0.3s ease;
-}
-
-.mystery-screen-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: var(--spacing-sm);
-
-    /* Hide scrollbar for Chrome, Safari and Opera */
-    .mystery-screen-content::-webkit-scrollbar {
-        display: none;
-    }
-
-    /* Hide scrollbar for IE, Edge and Firefox */
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
-}
-
-.mystery-intro {
-    text-align: center;
-    padding: var(--spacing-2xl) var(--spacing-lg);
-    animation: fadeIn var(--transition-slow);
-}
-
-.mystery-badge {
-    display: inline-block;
-    padding: var(--spacing-xs) var(--spacing-md);
-    background: rgba(124, 58, 237, 0.1);
-    color: var(--color-secondary-light);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    margin-bottom: var(--spacing-lg);
-    border: 1px solid rgba(124, 58, 237, 0.2);
-}
-
-.mystery-title {
-    font-size: var(--font-size-3xl);
-    color: white;
-    margin-bottom: var(--spacing-2xl);
-    line-height: 1.2;
-    text-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
-}
-
-.mystery-image-container {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto var(--spacing-2xl);
-    position: relative;
-}
-
-.mystery-image-placeholder {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-bg-tertiary), var(--color-bg-secondary));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--color-border-light);
-    box-shadow: var(--shadow-xl);
-}
-
-.mystery-number {
-    letter-spacing: var(--letter-spacing-wider);
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle at top right, rgba(91, 33, 182, 0.05) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.prayer-header {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-xl);
     padding-bottom: var(--spacing-md);
@@ -150,86 +44,6 @@
     letter-spacing: var(--letter-spacing-wide);
 }
 
-.audio-controls {
-    display: flex;
-    gap: var(--spacing-sm);
-    align-items: center;
-}
-
-.audio-btn,
-.continuous-btn {
-    background: var(--color-bg-tertiary);
-    color: var(--color-text-secondary);
-    transition: all var(--transition-base);
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.audio-btn:hover,
-.continuous-btn:hover {
-    transform: scale(1.1);
-}
-
-.audio-btn:hover {
-    background: var(--color-primary);
-    color: white;
-}
-
-.continuous-btn:hover {
-    background: var(--color-secondary);
-    color: white;
-}
-
-.audio-btn[aria-label="Detener audio"],
-.audio-btn[aria-label="Stop audio"] {
-    background: var(--color-primary-light);
-    color: white;
-    animation: pulse-audio 2s infinite;
-}
-
-.continuous-btn.active {
-    background: var(--color-secondary-light);
-    color: white;
-}
-
-@keyframes pulse-audio {
-    0% {
-        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4);
-    }
-
-    70% {
-        box-shadow: 0 0 0 10px rgba(124, 58, 237, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
-    }
-}
-
-@keyframes pulse-continuous {
-    0% {
-        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4);
-    }
-
-    70% {
-        box-shadow: 0 0 0 10px rgba(236, 72, 153, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
-    }
-}
-
-.prayer-content {
-    position: relative;
-    z-index: 1;
-}
 
 .prayer-text-main {
     font-size: var(--font-size-xl);
@@ -302,46 +116,94 @@
 
 .navigation-buttons .btn {
     flex: 1;
-    padding: var(--spacing-lg) var(--spacing-xl);
-    font-size: var(--font-size-base);
-    letter-spacing: var(--letter-spacing-normal);
-    min-width: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-}
-
-.navigation-buttons .btn:disabled {
-    opacity: 0.5;
-}
-
-.prayer-section::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle at top right, rgba(91, 33, 182, 0.05) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.prayer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-xl);
-    padding-bottom: var(--spacing-md);
-    border-bottom: 1px solid var(--color-border-light);
-}
-
-.prayer-name {
-    font-size: var(--font-size-xl);
-    color: var(--color-secondary-light);
     margin: 0;
     font-weight: 600;
     letter-spacing: var(--letter-spacing-wide);
+}
+
+/* Mystery Card Layout */
+.mystery-content-card {
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin-bottom: var(--spacing-xl);
+    border: 1px solid var(--color-border-light);
+    width: 100%;
+}
+
+.mystery-image-bg {
+    width: 100%;
+    height: 35vh;
+    /* Dynamic height: 35% of screen height */
+    min-height: 200px;
+    /* Safety minimum */
+    max-height: 400px;
+    /* Safety maximum */
+    background-size: contain;
+    /* Show FULL image, no cropping */
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    position: relative;
+    background-color: var(--color-bg-tertiary);
+    /* Fallback */
+}
+
+/* Create the blurred background effect using a pseudo-element */
+.mystery-image-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: inherit;
+    /* Inherit the same image */
+    background-size: cover;
+    /* Zoom to fill */
+    background-position: center;
+    filter: blur(20px) brightness(0.7);
+    /* Blur and darken */
+    z-index: 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+/* Ensure the main image sits ON TOP of the blur */
+.mystery-image-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: inherit;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 1;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    /* Drop shadow to pop the main image */
+}
+
+.mystery-card-body {
+    padding: var(--spacing-lg);
+}
+
+.mystery-image-placeholder {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, var(--color-bg-tertiary), var(--color-bg-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mystery-number {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--color-text-tertiary);
+    opacity: 0.3;
 }
 
 .audio-controls {
@@ -560,6 +422,138 @@
         margin-bottom: var(--spacing-sm);
     }
 
+}
+
+.prayer-section {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    border-radius: var(--radius-lg);
+}
+
+/* --- Header Layout --- */
+.prayer-header {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    text-align: center;
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: var(--spacing-sm);
+}
+
+/* --- Button Resizing (15% Smaller -> ~40px) --- */
+
+/* Home Button (in header) */
+.mystery-screen-header .btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Audio Buttons */
+.btn-icon,
+.audio-btn,
+.continuous-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    border: none;
+}
+
+/* Secondary action (Prev) gets subtle style */
+.navigation-buttons .btn-outline {
+    background: var(--color-bg-elevated);
+    border-radius: 50%;
+    background: var(--color-bg-tertiary);
+    border: 2px solid var(--color-border-light);
+    transition: all var(--transition-base);
+}
+
+.bead-active {
+    background: var(--color-primary);
+    border-color: var(--color-secondary-light);
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+    transform: scale(1.1);
+}
+
+.navigation-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-2xl);
+}
+
+.navigation-buttons .btn {
+    flex: 1;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    font-size: var(--font-size-base);
+    letter-spacing: var(--letter-spacing-normal);
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.navigation-buttons .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Mobile optimizations & Design Polish */
+@media (max-width: 768px) {
+
+    /* --- Typography Scale --- */
+    .mystery-title {
+        font-size: 1.25rem;
+        line-height: 1.2;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .prayer-name {
+        font-size: 1.125rem;
+        font-weight: 700;
+    }
+
+    .prayer-text-main {
+        font-size: 1rem;
+        line-height: 1.5;
+        text-align: justify;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .litany-call,
+    .litany-response {
+        font-size: 0.9375rem;
+    }
+
+    .section-label {
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+    }
+
+    /* --- Layout & Spacing Compactness --- */
+    .mystery-screen-container {
+        padding: var(--spacing-xs);
+    }
+
+    .mystery-screen-header {
+        margin-bottom: var(--spacing-xs);
+        padding: 0;
+    }
+
+    .progress-bar-container {
+        margin-bottom: var(--spacing-sm);
+    }
+
     .mystery-screen-content {
         padding: 0;
     }
@@ -671,658 +665,463 @@
     /* Secondary action (Prev) gets subtle style */
     .navigation-buttons .btn-outline {
         background: var(--color-bg-elevated);
-        border-radius: 50%;
-        background: var(--color-bg-tertiary);
-        border: 2px solid var(--color-border-light);
-        transition: all var(--transition-base);
+        border: 1px solid var(--color-border-light);
+        color: var(--color-text-secondary);
+    }
+}
+
+.current-decade-info {
+    font-size: var(--font-size-xl);
+    color: var(--color-secondary-lighter);
+    margin-top: var(--spacing-xs);
+    font-weight: 500;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Final Hail Mary Intro Styling */
+.final-hail-mary-content {
+    text-align: left;
+}
+
+.invocation-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-weight: 400;
+    text-align: left;
+}
+
+.prayer-spacer {
+    height: var(--spacing-lg);
+}
+
+.prayer-response-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-secondary-light);
+    font-family: var(--font-body);
+    font-weight: 500;
+    text-align: left;
+    font-style: italic;
+}
+
+/* Final Hail Mary Intro Styles */
+.final-hail-mary-container {
+    text-align: left;
+}
+
+.final-hail-mary-invocation {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    margin-bottom: 0;
+}
+
+.final-hail-mary-spacer {
+    height: 2rem;
+}
+
+.final-hail-mary-prayer {
+    font-size: var(--font-size-xl);
+
+    .litany-call,
+    .litany-response {
+        font-size: 0.9375rem;
     }
 
-    .bead-active {
-        background: var(--color-primary);
-        border-color: var(--color-secondary-light);
-        box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
-        transform: scale(1.1);
+    .section-label {
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
     }
 
-    .navigation-buttons {
-        display: flex;
-        gap: var(--spacing-md);
-        margin-top: var(--spacing-2xl);
+    /* --- Layout & Spacing Compactness --- */
+    .mystery-screen-container {
+        padding: var(--spacing-xs);
     }
 
-    .navigation-buttons .btn {
-        flex: 1;
-        padding: var(--spacing-lg) var(--spacing-xl);
-        font-size: var(--font-size-base);
-        letter-spacing: var(--letter-spacing-normal);
-        min-width: 120px;
+    .mystery-screen-header {
+        margin-bottom: var(--spacing-xs);
+        padding: 0;
+    }
+
+    .progress-bar-container {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .mystery-screen-content {
+        padding: 0;
+    }
+
+    /* Big Number Circle - Reduce spacing */
+    .mystery-image-container {
+        margin: 0 auto var(--spacing-md);
+        width: 100px;
+        height: 100px;
+    }
+
+    .mystery-intro {
+        padding: var(--spacing-md) 0;
+    }
+
+    .reflection-section {
+        margin-top: var(--spacing-sm);
+        padding: var(--spacing-md);
+    }
+
+    .prayer-section {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-sm);
+        border-radius: var(--radius-lg);
+    }
+
+    /* --- Header Layout --- */
+    .prayer-header {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        text-align: center;
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    /* --- Button Resizing (15% Smaller -> ~40px) --- */
+
+    /* Home Button (in header) */
+    .mystery-screen-header .btn-icon {
+        width: 40px;
+        height: 40px;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: var(--spacing-sm);
     }
 
-    .navigation-buttons .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
+    /* Audio Buttons */
+    .btn-icon,
+    .audio-btn,
+    .continuous-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--color-bg-tertiary);
+        box-shadow: var(--shadow-sm);
     }
 
-    /* Mobile optimizations & Design Polish */
-    @media (max-width: 768px) {
-
-        /* --- Typography Scale --- */
-        .mystery-title {
-            font-size: 1.25rem;
-            line-height: 1.2;
-            margin-bottom: var(--spacing-xs);
-        }
-
-        .prayer-name {
-            font-size: 1.125rem;
-            font-weight: 700;
-        }
-
-        .prayer-text-main {
-            font-size: 1rem;
-            line-height: 1.5;
-            text-align: justify;
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .litany-call,
-        .litany-response {
-            font-size: 0.9375rem;
-        }
-
-        .section-label {
-            font-size: 0.75rem;
-            letter-spacing: 0.1em;
-        }
-
-        /* --- Layout & Spacing Compactness --- */
-        .mystery-screen-container {
-            padding: var(--spacing-xs);
-        }
-
-        .mystery-screen-header {
-            margin-bottom: var(--spacing-xs);
-            padding: 0;
-        }
-
-        .progress-bar-container {
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .mystery-screen-content {
-            padding: 0;
-        }
-
-        /* Big Number Circle - Reduce spacing */
-        .mystery-image-container {
-            margin: 0 auto var(--spacing-md);
-            width: 100px;
-            height: 100px;
-        }
-
-        .mystery-intro {
-            padding: var(--spacing-md) 0;
-        }
-
-        .reflection-section {
-            margin-top: var(--spacing-sm);
-            padding: var(--spacing-md);
-        }
-
-        .prayer-section {
-            padding: var(--spacing-md);
-            margin-bottom: var(--spacing-sm);
-            border-radius: var(--radius-lg);
-        }
-
-        /* --- Header Layout --- */
-        .prayer-header {
-            flex-direction: column;
-            gap: var(--spacing-xs);
-            text-align: center;
-            border-bottom: none;
-            padding-bottom: 0;
-            margin-bottom: var(--spacing-sm);
-        }
-
-        /* --- Button Resizing (15% Smaller -> ~40px) --- */
-
-        /* Home Button (in header) */
-        .mystery-screen-header .btn-icon {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Audio Buttons */
-        .btn-icon,
-        .audio-btn,
-        .continuous-btn {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: var(--color-bg-tertiary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* Navigation Buttons */
-        .navigation-buttons {
-            margin-top: var(--spacing-md);
-            gap: var(--spacing-md);
-            justify-content: center;
-            padding-bottom: var(--spacing-md);
-        }
-
-        .navigation-buttons .btn {
-            flex: 0 0 auto;
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border-radius: 50%;
-            min-width: auto;
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-md);
-        }
-
-        /* Ensure icons fit nicely */
-        .btn-icon svg,
-        .audio-controls svg,
-        .navigation-buttons .btn svg,
-        .mystery-screen-header .btn-icon svg {
-            width: 20px;
-            height: 20px;
-            stroke-width: 2px;
-        }
-
-        /* Hide text completely */
-        .btn-text,
-        .navigation-buttons .btn span {
-            display: none !important;
-        }
-
-        /* Primary action (Next) gets accent color */
-        .navigation-buttons .btn-primary {
-            background: var(--color-primary);
-            color: white;
-            border: none;
-        }
-
-        /* Secondary action (Prev) gets subtle style */
-        .navigation-buttons .btn-outline {
-            background: var(--color-bg-elevated);
-            border: 1px solid var(--color-border-light);
-            color: var(--color-text-secondary);
-        }
+    /* Navigation Buttons */
+    .navigation-buttons {
+        margin-top: var(--spacing-md);
+        gap: var(--spacing-md);
+        justify-content: center;
+        padding-bottom: var(--spacing-md);
     }
 
-    .current-decade-info {
-        font-size: var(--font-size-xl);
-        color: var(--color-secondary-lighter);
-        margin-top: var(--spacing-xs);
-        font-weight: 500;
-        text-align: center;
-        font-style: italic;
+    .navigation-buttons .btn {
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border-radius: 50%;
+        min-width: auto;
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-md);
     }
 
-    /* Final Hail Mary Intro Styling */
-    .final-hail-mary-content {
-        text-align: left;
+    /* Ensure icons fit nicely */
+    .btn-icon svg,
+    .audio-controls svg,
+    .navigation-buttons .btn svg,
+    .mystery-screen-header .btn-icon svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 2px;
     }
 
-    .invocation-text {
-        font-size: var(--font-size-xl);
-        line-height: 1.8;
-        color: var(--color-text-primary);
-        font-family: var(--font-body);
-        font-weight: 400;
-        text-align: left;
+    /* Hide text completely */
+    .btn-text,
+    .navigation-buttons .btn span {
+        display: none !important;
     }
 
-    .prayer-spacer {
-        height: var(--spacing-lg);
+    /* Primary action (Next) gets accent color */
+    .navigation-buttons .btn-primary {
+        background: var(--color-primary);
+        color: white;
+        border: none;
     }
 
-    .prayer-response-text {
-        font-size: var(--font-size-xl);
-        line-height: 1.8;
-        color: var(--color-secondary-light);
-        font-family: var(--font-body);
-        font-weight: 500;
-        text-align: left;
-        font-style: italic;
-    }
-
-    /* Final Hail Mary Intro Styles */
-    .final-hail-mary-container {
-        text-align: left;
-    }
-
-    .final-hail-mary-invocation {
-        font-size: var(--font-size-xl);
-        line-height: 1.8;
-        color: var(--color-text-primary);
-        margin-bottom: 0;
-    }
-
-    .final-hail-mary-spacer {
-        height: 2rem;
-    }
-
-    .final-hail-mary-prayer {
-        font-size: var(--font-size-xl);
-
-        .litany-call,
-        .litany-response {
-            font-size: 0.9375rem;
-        }
-
-        .section-label {
-            font-size: 0.75rem;
-            letter-spacing: 0.1em;
-        }
-
-        /* --- Layout & Spacing Compactness --- */
-        .mystery-screen-container {
-            padding: var(--spacing-xs);
-        }
-
-        .mystery-screen-header {
-            margin-bottom: var(--spacing-xs);
-            padding: 0;
-        }
-
-        .progress-bar-container {
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .mystery-screen-content {
-            padding: 0;
-        }
-
-        /* Big Number Circle - Reduce spacing */
-        .mystery-image-container {
-            margin: 0 auto var(--spacing-md);
-            width: 100px;
-            height: 100px;
-        }
-
-        .mystery-intro {
-            padding: var(--spacing-md) 0;
-        }
-
-        .reflection-section {
-            margin-top: var(--spacing-sm);
-            padding: var(--spacing-md);
-        }
-
-        .prayer-section {
-            padding: var(--spacing-md);
-            margin-bottom: var(--spacing-sm);
-            border-radius: var(--radius-lg);
-        }
-
-        /* --- Header Layout --- */
-        .prayer-header {
-            flex-direction: column;
-            gap: var(--spacing-xs);
-            text-align: center;
-            border-bottom: none;
-            padding-bottom: 0;
-            margin-bottom: var(--spacing-sm);
-        }
-
-        /* --- Button Resizing (15% Smaller -> ~40px) --- */
-
-        /* Home Button (in header) */
-        .mystery-screen-header .btn-icon {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Audio Buttons */
-        .btn-icon,
-        .audio-btn,
-        .continuous-btn {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: var(--color-bg-tertiary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* Navigation Buttons */
-        .navigation-buttons {
-            margin-top: var(--spacing-md);
-            gap: var(--spacing-md);
-            justify-content: center;
-            padding-bottom: var(--spacing-md);
-        }
-
-        .navigation-buttons .btn {
-            flex: 0 0 auto;
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border-radius: 50%;
-            min-width: auto;
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-md);
-        }
-
-        /* Ensure icons fit nicely */
-        .btn-icon svg,
-        .audio-controls svg,
-        .navigation-buttons .btn svg,
-        .mystery-screen-header .btn-icon svg {
-            width: 20px;
-            height: 20px;
-            stroke-width: 2px;
-        }
-
-        /* Hide text completely */
-        .btn-text,
-        .navigation-buttons .btn span {
-            display: none !important;
-        }
-
-        /* Primary action (Next) gets accent color */
-        .navigation-buttons .btn-primary {
-            background: var(--color-primary);
-            color: white;
-            border: none;
-        }
-
-        /* Secondary action (Prev) gets subtle style */
-        .navigation-buttons .btn-outline {
-            background: var(--color-bg-elevated);
-            border: 1px solid var(--color-border-light);
-            color: var(--color-text-secondary);
-        }
-    }
-
-    .current-decade-info {
-        font-size: var(--font-size-xl);
-        color: var(--color-secondary-lighter);
-        margin-top: var(--spacing-xs);
-        font-weight: 500;
-        text-align: center;
-        font-style: italic;
-    }
-
-    /* Final Hail Mary Intro Styling */
-    .final-hail-mary-content {
-        text-align: left;
-    }
-
-    .invocation-text {
-        font-size: var(--font-size-xl);
-        line-height: 1.8;
-        color: var(--color-text-primary);
-        font-family: var(--font-body);
-        font-weight: 400;
-        text-align: left;
-    }
-
-    .prayer-spacer {
-        height: var(--spacing-lg);
-    }
-
-    .prayer-response-text {
-        font-size: var(--font-size-xl);
-        line-height: 1.8;
-        color: var(--color-secondary-light);
-        font-family: var(--font-body);
-        font-weight: 500;
-        text-align: left;
-        font-style: italic;
-    }
-
-    /* Final Hail Mary Intro Styles */
-    .final-hail-mary-container {
-        text-align: left;
-    }
-
-    .final-hail-mary-invocation {
-        font-size: var(--font-size-xl);
-        line-height: 1.8;
-        color: var(--color-text-primary);
-        margin-bottom: 0;
-    }
-
-    .final-hail-mary-spacer {
-        height: 2rem;
-    }
-
-    .final-hail-mary-prayer {
-        font-size: var(--font-size-xl);
-
-        .litany-call,
-        .litany-response {
-            font-size: 0.9375rem;
-        }
-
-        .section-label {
-            font-size: 0.75rem;
-            letter-spacing: 0.1em;
-        }
-
-        /* --- Layout & Spacing Compactness --- */
-        .mystery-screen-container {
-            padding: var(--spacing-xs);
-        }
-
-        .mystery-screen-header {
-            margin-bottom: var(--spacing-xs);
-            padding: 0;
-        }
-
-        .progress-bar-container {
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .mystery-screen-content {
-            padding: 0;
-        }
-
-        /* Big Number Circle - Reduce spacing */
-        .mystery-image-container {
-            margin: 0 auto var(--spacing-md);
-            width: 100px;
-            height: 100px;
-        }
-
-        .mystery-intro {
-            padding: var(--spacing-md) 0;
-        }
-
-        .reflection-section {
-            margin-top: var(--spacing-sm);
-            padding: var(--spacing-md);
-        }
-
-        .prayer-section {
-            padding: var(--spacing-md);
-            margin-bottom: var(--spacing-sm);
-            border-radius: var(--radius-lg);
-        }
-
-        /* --- Header Layout --- */
-        .prayer-header {
-            flex-direction: column;
-            gap: var(--spacing-xs);
-            text-align: center;
-            border-bottom: none;
-            padding-bottom: 0;
-            margin-bottom: var(--spacing-sm);
-        }
-
-        /* --- Button Resizing (15% Smaller -> ~40px) --- */
-
-        /* Home Button (in header) */
-        .mystery-screen-header .btn-icon {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Audio Buttons */
-        .btn-icon,
-        .audio-btn,
-        .continuous-btn {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: var(--color-bg-tertiary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* Navigation Buttons */
-        .navigation-buttons {
-            margin-top: var(--spacing-md);
-            gap: var(--spacing-md);
-            justify-content: center;
-            padding-bottom: var(--spacing-md);
-        }
-
-        .navigation-buttons .btn {
-            flex: 0 0 auto;
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border-radius: 50%;
-            min-width: auto;
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-md);
-        }
-
-        /* Ensure icons fit nicely */
-        .btn-icon svg,
-        .audio-controls svg,
-        .navigation-buttons .btn svg,
-        .mystery-screen-header .btn-icon svg {
-            width: 20px;
-            height: 20px;
-            stroke-width: 2px;
-        }
-
-        /* Hide text completely */
-        .btn-text,
-        .navigation-buttons .btn span {
-            display: none !important;
-        }
-
-        /* Primary action (Next) gets accent color */
-        .navigation-buttons .btn-primary {
-            background: var(--color-primary);
-            color: white;
-            border: none;
-        }
-
-        /* Secondary action (Prev) gets subtle style */
-        .navigation-buttons .btn-outline {
-            background: var(--color-bg-elevated);
-            border: 1px solid var(--color-border-light);
-            color: var(--color-text-secondary);
-        }
-    }
-
-    .current-decade-info {
-        font-size: var(--font-size-xl);
-        color: var(--color-secondary-lighter);
-        margin-top: var(--spacing-xs);
-        font-weight: 500;
-        text-align: center;
-        font-style: italic;
-    }
-
-    /* Final Hail Mary Intro Styling */
-    .final-hail-mary-content {
-        text-align: left;
-    }
-
-    .invocation-text {
-        font-size: var(--font-size-xl);
-        line-height: 1.8;
-        color: var(--color-text-primary);
-        font-family: var(--font-body);
-        font-weight: 400;
-        text-align: left;
-    }
-
-    .prayer-spacer {
-        height: var(--spacing-lg);
-    }
-
-    .prayer-response-text {
-        font-size: var(--font-size-xl);
-        line-height: 1.8;
-        color: var(--color-secondary-light);
-        font-family: var(--font-body);
-        font-weight: 500;
-        text-align: left;
-        font-style: italic;
-    }
-
-    /* Final Hail Mary Intro Styles */
-    .final-hail-mary-container {
-        text-align: left;
-    }
-
-    .final-hail-mary-invocation {
-        font-size: var(--font-size-xl);
-        line-height: 1.8;
-        color: var(--color-text-primary);
-        margin-bottom: 0;
-    }
-
-    .final-hail-mary-spacer {
-        height: 2rem;
-    }
-
-    .final-hail-mary-prayer {
-        font-size: var(--font-size-xl);
-        line-height: 1.8;
-        color: #FBBF24;
-        font-weight: 600;
+    /* Secondary action (Prev) gets subtle style */
+    .navigation-buttons .btn-outline {
+        background: var(--color-bg-elevated);
+        border: 1px solid var(--color-border-light);
+        color: var(--color-text-secondary);
     }
 }
+
+.current-decade-info {
+    font-size: var(--font-size-xl);
+    color: var(--color-secondary-lighter);
+    margin-top: var(--spacing-xs);
+    font-weight: 500;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Final Hail Mary Intro Styling */
+.final-hail-mary-content {
+    text-align: left;
+}
+
+.invocation-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-weight: 400;
+    text-align: left;
+}
+
+.prayer-spacer {
+    height: var(--spacing-lg);
+}
+
+.prayer-response-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-secondary-light);
+    font-family: var(--font-body);
+    font-weight: 500;
+    text-align: left;
+    font-style: italic;
+}
+
+/* Final Hail Mary Intro Styles */
+.final-hail-mary-container {
+    text-align: left;
+}
+
+.final-hail-mary-invocation {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    margin-bottom: 0;
+}
+
+.final-hail-mary-spacer {
+    height: 2rem;
+}
+
+.final-hail-mary-prayer {
+    font-size: var(--font-size-xl);
+
+    .litany-call,
+    .litany-response {
+        font-size: 0.9375rem;
+    }
+
+    .section-label {
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+    }
+
+    /* --- Layout & Spacing Compactness --- */
+    .mystery-screen-container {
+        padding: var(--spacing-xs);
+    }
+
+    .mystery-screen-header {
+        margin-bottom: var(--spacing-xs);
+        padding: 0;
+    }
+
+    .progress-bar-container {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .mystery-screen-content {
+        padding: 0;
+    }
+
+    /* Big Number Circle - Reduce spacing */
+    .mystery-image-container {
+        margin: 0 auto var(--spacing-md);
+        width: 100px;
+        height: 100px;
+    }
+
+    .mystery-intro {
+        padding: var(--spacing-md) 0;
+    }
+
+    .reflection-section {
+        margin-top: var(--spacing-sm);
+        padding: var(--spacing-md);
+    }
+
+    .prayer-section {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-sm);
+        border-radius: var(--radius-lg);
+    }
+
+    /* --- Header Layout --- */
+    .prayer-header {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        text-align: center;
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    /* --- Button Resizing (15% Smaller -> ~40px) --- */
+
+    /* Home Button (in header) */
+    .mystery-screen-header .btn-icon {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Audio Buttons */
+    .btn-icon,
+    .audio-btn,
+    .continuous-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--color-bg-tertiary);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Navigation Buttons */
+    .navigation-buttons {
+        margin-top: var(--spacing-md);
+        gap: var(--spacing-md);
+        justify-content: center;
+        padding-bottom: var(--spacing-md);
+    }
+
+    .navigation-buttons .btn {
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border-radius: 50%;
+        min-width: auto;
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Ensure icons fit nicely */
+    .btn-icon svg,
+    .audio-controls svg,
+    .navigation-buttons .btn svg,
+    .mystery-screen-header .btn-icon svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 2px;
+    }
+
+    /* Hide text completely */
+    .btn-text,
+    .navigation-buttons .btn span {
+        display: none !important;
+    }
+
+    /* Primary action (Next) gets accent color */
+    .navigation-buttons .btn-primary {
+        background: var(--color-primary);
+        color: white;
+        border: none;
+    }
+
+    /* Secondary action (Prev) gets subtle style */
+    .navigation-buttons .btn-outline {
+        background: var(--color-bg-elevated);
+        border: 1px solid var(--color-border-light);
+        color: var(--color-text-secondary);
+    }
+}
+
+.current-decade-info {
+    font-size: var(--font-size-xl);
+    color: var(--color-secondary-lighter);
+    margin-top: var(--spacing-xs);
+    font-weight: 500;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Final Hail Mary Intro Styling */
+.final-hail-mary-content {
+    text-align: left;
+}
+
+.invocation-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-weight: 400;
+    text-align: left;
+}
+
+.prayer-spacer {
+    height: var(--spacing-lg);
+}
+
+.prayer-response-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-secondary-light);
+    font-family: var(--font-body);
+    font-weight: 500;
+    text-align: left;
+    font-style: italic;
+}
+
+/* Final Hail Mary Intro Styles */
+.final-hail-mary-container {
+    text-align: left;
+}
+
+.final-hail-mary-invocation {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    margin-bottom: 0;
+}
+
+.final-hail-mary-spacer {
+    height: 2rem;
+}
+
+.final-hail-mary-prayer {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: #FBBF24;
+    font-weight: 600;
+}
+
 
 /* Navigation Action Buttons (Larger & Centered) */
 .navigation-buttons {
@@ -1364,6 +1163,7 @@
     /* Remove uppercase if desired, or keep it */
     margin-bottom: var(--spacing-sm);
 }
+
 /* Center Audio Controls */
 .audio-controls {
     justify-content: center !important;
@@ -1407,15 +1207,213 @@
     width: auto !important;
     text-align: left !important;
     margin-bottom: 0 !important;
-    flex: 1 !important; /* Take up available space */
-    padding-right: var(--spacing-sm) !important; /* Space between text and buttons */
+    flex: 1 !important;
+    /* Take up available space */
+    padding-right: var(--spacing-sm) !important;
+    /* Space between text and buttons */
 }
 
 .audio-controls {
     justify-content: flex-end !important;
     width: auto !important;
     margin-top: 0 !important;
-    flex-shrink: 0 !important; /* Don't shrink buttons */
+    flex-shrink: 0 !important;
+    /* Don't shrink buttons */
+}
+
+/* Force Audio Controls to Right */
+.audio-controls {
+    margin-left: auto !important;
+}
+
+/* Global Final Hail Mary Intro Styles */
+.final-hail-mary-container {
+    text-align: left !important;
+}
+
+.final-hail-mary-invocation {
+    font-size: var(--font-size-xl) !important;
+    line-height: 1.8 !important;
+    color: var(--color-text-primary) !important;
+    margin-bottom: 0 !important;
+}
+
+.final-hail-mary-spacer {
+    height: 2rem !important;
+}
+
+.final-hail-mary-prayer {
+    font-size: var(--font-size-xl) !important;
+    line-height: 1.8 !important;
+    color: #FBBF24 !important;
+    font-weight: 600 !important;
+}
+
+/* Center Final Hail Mary Intro */
+.final-hail-mary-container {
+    text-align: center !important;
+}
+
+.final-hail-mary-invocation {
+    text-align: center !important;
+}
+
+.current-decade-info {
+    font-size: var(--font-size-xl);
+    color: var(--color-secondary-lighter);
+    margin-top: var(--spacing-xs);
+    font-weight: 500;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Final Hail Mary Intro Styling */
+.final-hail-mary-content {
+    text-align: left;
+}
+
+.invocation-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-weight: 400;
+    text-align: left;
+}
+
+.prayer-spacer {
+    height: var(--spacing-lg);
+}
+
+.prayer-response-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-secondary-light);
+    font-family: var(--font-body);
+    font-weight: 500;
+    text-align: left;
+    font-style: italic;
+}
+
+/* Final Hail Mary Intro Styles */
+.final-hail-mary-container {
+    text-align: left;
+}
+
+.final-hail-mary-invocation {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    margin-bottom: 0;
+}
+
+.final-hail-mary-spacer {
+    height: 2rem;
+}
+
+.final-hail-mary-prayer {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: #FBBF24;
+    font-weight: 600;
+}
+
+/* Navigation Action Buttons (Larger & Centered) */
+.navigation-buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xl);
+    width: 100%;
+    margin-top: var(--spacing-xl);
+}
+
+.nav-action-btn {
+    width: 56px !important;
+    height: 56px !important;
+    flex: 0 0 auto;
+}
+
+.nav-action-btn svg {
+    width: 28px !important;
+    height: 28px !important;
+}
+
+/* Reflection Text Styling */
+.reflection-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    text-align: left;
+    margin-top: var(--spacing-sm);
+}
+
+.section-label {
+    font-size: var(--font-size-xl);
+    color: var(--color-secondary-light);
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: none;
+    /* Remove uppercase if desired, or keep it */
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Center Audio Controls */
+.audio-controls {
+    justify-content: center !important;
+    width: 100% !important;
+    margin-top: var(--spacing-sm);
+}
+
+/* Stacked Prayer Header Layout */
+.prayer-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    gap: var(--spacing-sm) !important;
+}
+
+.prayer-name {
+    width: 100% !important;
+    text-align: center !important;
+    margin-bottom: 0 !important;
+}
+
+.audio-controls {
+    justify-content: center !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+}
+
+/* Split Prayer Header Layout (Left Title, Right Audio) */
+.prayer-header {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    text-align: left !important;
+    gap: var(--spacing-sm) !important;
+}
+
+.prayer-name {
+    width: auto !important;
+    text-align: left !important;
+    margin-bottom: 0 !important;
+    flex: 1 !important;
+    /* Take up available space */
+    padding-right: var(--spacing-sm) !important;
+    /* Space between text and buttons */
+}
+
+.audio-controls {
+    justify-content: flex-end !important;
+    width: auto !important;
+    margin-top: 0 !important;
+    flex-shrink: 0 !important;
+    /* Don't shrink buttons */
 }
 
 /* Force Audio Controls to Right */
@@ -1472,8 +1470,222 @@
     align-items: baseline;
     margin-bottom: 0.5rem;
     gap: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Subtle separator */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding-bottom: 0.25rem;
+}
+
+/* Stacked layout for initial/trinity/agnus sections */
+.litany-row-stacked {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.litany-row-stacked .litany-call,
+.litany-row-stacked .litany-response {
+    width: 100%;
+    text-align: left;
+}
+
+/* Call-only layout for mary invocations (except first) */
+.litany-row-call-only {
+    border-bottom: none;
+    padding-bottom: 0.5rem;
+}
+
+.litany-call {
+    text-align: left;
+    flex: 1;
+    color: var(--color-text-primary);
+}
+
+.litany-response {
+    text-align: right;
+    font-weight: 600;
+    height: 2rem;
+}
+
+.final-hail-mary-prayer {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: #FBBF24;
+    font-weight: 600;
+}
+
+/* Navigation Action Buttons (Larger & Centered) */
+.navigation-buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xl);
+    width: 100%;
+    margin-top: var(--spacing-xl);
+}
+
+.nav-action-btn {
+    width: 56px !important;
+    height: 56px !important;
+    flex: 0 0 auto;
+}
+
+.nav-action-btn svg {
+    width: 28px !important;
+    height: 28px !important;
+}
+
+/* Reflection Text Styling */
+.reflection-text {
+    font-size: var(--font-size-xl);
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    text-align: left;
+    margin-top: var(--spacing-sm);
+}
+
+.section-label {
+    font-size: var(--font-size-xl);
+    color: var(--color-secondary-light);
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: none;
+    /* Remove uppercase if desired, or keep it */
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Center Audio Controls */
+.audio-controls {
+    justify-content: center !important;
+    width: 100% !important;
+    margin-top: var(--spacing-sm);
+}
+
+/* Stacked Prayer Header Layout */
+.prayer-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    gap: var(--spacing-sm) !important;
+}
+
+.prayer-name {
+    width: 100% !important;
+    text-align: center !important;
+    margin-bottom: 0 !important;
+}
+
+.audio-controls {
+    justify-content: center !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+}
+
+/* Split Prayer Header Layout (Left Title, Right Audio) */
+.prayer-header {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    text-align: left !important;
+    gap: var(--spacing-sm) !important;
+}
+
+.prayer-name {
+    width: auto !important;
+    text-align: left !important;
+    margin-bottom: 0 !important;
+    flex: 1 !important;
+    /* Take up available space */
+    padding-right: var(--spacing-sm) !important;
+    /* Space between text and buttons */
+}
+
+.audio-controls {
+    justify-content: flex-end !important;
+    width: auto !important;
+    margin-top: 0 !important;
+    flex-shrink: 0 !important;
+    /* Don't shrink buttons */
+}
+
+/* Force Audio Controls to Right */
+.audio-controls {
+    margin-left: auto !important;
+}
+
+/* Global Final Hail Mary Intro Styles */
+.final-hail-mary-container {
+    text-align: left !important;
+}
+
+.final-hail-mary-invocation {
+    font-size: var(--font-size-xl) !important;
+    line-height: 1.8 !important;
+    color: var(--color-text-primary) !important;
+    margin-bottom: 0 !important;
+}
+
+.final-hail-mary-spacer {
+    height: 2rem !important;
+}
+
+.final-hail-mary-prayer {
+    font-size: var(--font-size-xl) !important;
+    line-height: 1.8 !important;
+    color: #FBBF24 !important;
+    font-weight: 600 !important;
+}
+
+/* Center Final Hail Mary Intro */
+.final-hail-mary-container {
+    text-align: center !important;
+}
+
+.final-hail-mary-invocation {
+    text-align: center !important;
+}
+
+.final-hail-mary-prayer {
+    text-align: center !important;
+}
+
+/* Litany Structured Styling */
+.litany-container {
+    padding-bottom: 120px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.litany-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.25rem;
+}
+
+/* Stacked layout for initial/trinity/agnus sections */
+.litany-row-stacked {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.litany-row-stacked .litany-call,
+.litany-row-stacked .litany-response {
+    width: 100%;
+    text-align: left;
+}
+
+/* Call-only layout for mary invocations (except first) */
+.litany-row-call-only {
+    border-bottom: none;
+    padding-bottom: 0.5rem;
 }
 
 .litany-call {
@@ -1488,6 +1700,15 @@
     color: var(--color-secondary-light);
     flex-shrink: 0;
     max-width: 50%;
+}
+
+.litany-instruction {
+    font-size: var(--font-size-base);
+    font-style: italic;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+    text-align: left;
 }
 
 .litany-spacer {

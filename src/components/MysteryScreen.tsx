@@ -1,16 +1,56 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, VolumeX, Home, Play, Pause } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, VolumeX, Play, Pause } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
 
 import './MysteryScreen.css';
+import './MysteryBottomNav.css';
 
 interface MysteryScreenProps {
     onComplete: () => void;
     onBack: () => void;
 }
+
+interface MysteryImageProps {
+    src?: string;
+    alt?: string;
+    number?: number;
+}
+
+const MysteryImage = ({ src, alt, number }: MysteryImageProps) => {
+    const [error, setError] = useState(false);
+
+    // Reset error state if src changes
+    useEffect(() => {
+        setError(false);
+    }, [src]);
+
+    if (src && !error) {
+        return (
+            <div
+                className="mystery-image-bg"
+                style={{ backgroundImage: `url('${src}')` }}
+                role="img"
+                aria-label={alt}
+            >
+                <img
+                    src={src}
+                    style={{ display: 'none' }}
+                    onError={() => setError(true)}
+                    alt=""
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div className="mystery-image-placeholder">
+            <span className="mystery-number">{number}</span>
+        </div>
+    );
+};
 
 export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
     const {
@@ -71,10 +111,22 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
     const getAudioText = (step: any) => {
         if (step.type === 'decade_announcement') {
-            // Construct full text: "First Joyful Mystery: The Annunciation. [Reflection Text]"
-            // step.title already contains "1st Mystery: The Annunciation"
             return `${step.title}. ${step.text}`;
         }
+
+        // Build audio text for litany from structured data
+        if (step.type === 'litany_of_loreto' && step.litanyData) {
+            const data = step.litanyData;
+            const parts: string[] = [];
+
+            // Add all sections with call and response
+            [...data.initial_petitions, ...data.trinity_invocations, ...data.mary_invocations, ...data.agnus_dei].forEach(item => {
+                parts.push(`${item.call} ${item.response}`);
+            });
+
+            return parts.join('. ');
+        }
+
         return step.text;
     };
 
@@ -141,7 +193,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
     };
 
     const t = language === 'es' ? {
-        back: 'Volver',
+        back: 'Inicio',
         step: 'Paso',
         of: 'de',
         complete: 'completo',
@@ -156,7 +208,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         mystery: 'Misterio',
         mysteryOrdinal: 'º'
     } : {
-        back: 'Back',
+        back: 'Home',
         step: 'Step',
         of: 'of',
         complete: 'complete',
@@ -179,20 +231,23 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         if (step.type === 'decade_announcement') {
             return (
                 <div className="mystery-intro">
-                    <div className="mystery-image-container">
-                        <div className="mystery-image-placeholder">
-                            <span className="mystery-number">{step.decadeNumber}</span>
+                    <div className="mystery-content-card">
+                        <div className="mystery-image-container">
+                            <MysteryImage
+                                src={step.imageUrl}
+                                alt={step.title}
+                                number={step.decadeNumber}
+                            />
                         </div>
-                    </div>
 
-                    <div className="reflection-section">
-                        <h3 className="section-label">{t.reflection}</h3>
-                        <p className="reflection-text">{step.text}</p>
+                        <div className="mystery-card-body">
+                            <h3 className="section-label">{t.reflection}</h3>
+                            <p className="reflection-text">{step.text}</p>
+                        </div>
                     </div>
                 </div>
             );
         }
-
 
 
         // Special rendering for final Hail Mary intros
@@ -218,11 +273,13 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         // Special rendering for Litany of Loreto
         if ((step.type as any) === 'litany_of_loreto' && step.litanyData) {
             const data = step.litanyData;
+            const repeatText = language === 'es' ? '(Repetir respuesta: Ruega por nosotros)' : '(Repeat response: Pray for us)';
+
             return (
                 <div className="prayer-section litany-container">
-                    {/* Initial Petitions */}
+                    {/* Initial Petitions - Stacked */}
                     {data.initial_petitions.map((item: any, i: number) => (
-                        <div key={`init-${i}`} className="litany-row">
+                        <div key={`init-${i}`} className="litany-row litany-row-stacked">
                             <span className="litany-call">{item.call}</span>
                             <span className="litany-response">{item.response}</span>
                         </div>
@@ -230,9 +287,9 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
                     <div className="litany-spacer"></div>
 
-                    {/* Trinity Invocations */}
+                    {/* Trinity Invocations - Stacked */}
                     {data.trinity_invocations.map((item: any, i: number) => (
-                        <div key={`trin-${i}`} className="litany-row">
+                        <div key={`trin-${i}`} className="litany-row litany-row-stacked">
                             <span className="litany-call">{item.call}</span>
                             <span className="litany-response">{item.response}</span>
                         </div>
@@ -240,11 +297,12 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
                     <div className="litany-spacer"></div>
 
-                    {/* Mary Invocations */}
+                    {/* Mary Invocations - First with response, rest call-only */}
+                    <div className="litany-instruction">{repeatText}</div>
                     {data.mary_invocations.map((item: any, i: number) => (
-                        <div key={`mary-${i}`} className="litany-row">
+                        <div key={`mary-${i}`} className={i === 0 ? "litany-row litany-row-stacked" : "litany-row litany-row-call-only"}>
                             <span className="litany-call">{item.call}</span>
-                            <span className="litany-response">{item.response}</span>
+                            {i === 0 && <span className="litany-response">{item.response}</span>}
                         </div>
                     ))}
 
@@ -252,9 +310,9 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
                     {/* Agnus Dei - Stacked Layout */}
                     {data.agnus_dei.map((item: any, i: number) => (
-                        <div key={`agnus-${i}`} className="litany-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}>
-                            <span className="litany-call" style={{ width: '100%' }}>{item.call}</span>
-                            <span className="litany-response" style={{ width: '100%', textAlign: 'left' }}>{item.response}</span>
+                        <div key={`agnus-${i}`} className="litany-row litany-row-stacked">
+                            <span className="litany-call">{item.call}</span>
+                            <span className="litany-response">{item.response}</span>
                         </div>
                     ))}
                 </div>
@@ -291,9 +349,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
     return (
         <div className="mystery-screen-container">
             <div className="mystery-screen-header">
-                <button className="btn-icon" onClick={onBack} aria-label={t.back}>
-                    <Home size={24} />
-                </button>
+                <div className="mystery-header-spacer" />
                 <div className="mystery-progress">
                     {/* First row: mystery set name (large) */}
                     <div className="mystery-set-name">{flowEngine.getMysteryName()}</div>
@@ -312,12 +368,15 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                         const decadeInfo = flowEngine.getCurrentDecadeInfo();
                         if (decadeInfo) {
                             const getSpelledOrdinal = (num: number) => {
-                                const ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth'];
+                                const ordinals = language === 'es'
+                                    ? ['Primer', 'Segundo', 'Tercer', 'Cuarto', 'Quinto']
+                                    : ['First', 'Second', 'Third', 'Fourth', 'Fifth'];
                                 return ordinals[num - 1] || `${num}th`;
                             };
+                            const mysteryWord = language === 'es' ? 'Misterio' : 'Mystery';
                             return (
                                 <div className="mystery-set-name current-decade-info">
-                                    {getSpelledOrdinal(decadeInfo.number)} Mystery: {decadeInfo.title}
+                                    {getSpelledOrdinal(decadeInfo.number)} {mysteryWord}: {decadeInfo.title}
                                 </div>
                             );
                         }
@@ -370,26 +429,44 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
                     {renderStepContent()}
                     {renderBeadCounter()}
+                </div>
+            </div>
 
-                    <div className="navigation-buttons">
+
+            {/* Fixed Bottom Navigation Bar */}
+            <div className="bottom-section">
+                <div className="mystery-bottom-nav">
+                    <button
+                        className="mystery-nav-btn"
+                        onClick={onBack}
+                        aria-label={t.back}
+                        title={t.back}
+                    >
+                        <span className="material-icons">home</span>
+                        <span className="mystery-nav-label">{t.back}</span>
+                    </button>
+
+                    <div className="mystery-nav-center">
                         <button
-                            className="btn-icon audio-btn nav-action-btn"
+                            className="mystery-nav-btn"
                             onClick={handlePrevious}
                             disabled={flowEngine.isFirstStep()}
                             aria-label={t.previous}
                             title={t.previous}
                         >
-                            <ChevronLeft size={28} />
+                            <ChevronLeft size={24} />
+                            <span className="mystery-nav-label">{t.previous}</span>
                         </button>
 
                         <button
-                            className="btn-icon audio-btn nav-action-btn"
+                            className="mystery-nav-btn"
                             onClick={handleNext}
                             disabled={flowEngine.isLastStep()}
                             aria-label={flowEngine.isLastStep() ? t.finish : t.next}
                             title={flowEngine.isLastStep() ? t.finish : t.next}
                         >
-                            <ChevronRight size={28} />
+                            <ChevronRight size={24} />
+                            <span className="mystery-nav-label">{flowEngine.isLastStep() ? t.finish : t.next}</span>
                         </button>
                     </div>
                 </div>

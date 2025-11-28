@@ -33,7 +33,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Humility',
                     es: 'Humildad'
                 },
-                imageUrl: '/images/mysteries/annunciation.jpg'
+                imageUrl: '/images/mysteries/annunciation.png'
             },
             {
                 number: 2,
@@ -59,7 +59,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Love of Neighbor',
                     es: 'Amor al Prójimo'
                 },
-                imageUrl: '/images/mysteries/visitation.jpg'
+                imageUrl: '/images/mysteries/visitation.png'
             },
             {
                 number: 3,
@@ -85,7 +85,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Poverty',
                     es: 'Pobreza'
                 },
-                imageUrl: '/images/mysteries/nativity.jpg'
+                imageUrl: '/images/mysteries/nativity.png'
             },
             {
                 number: 4,
@@ -111,7 +111,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Obedience',
                     es: 'Obediencia'
                 },
-                imageUrl: '/images/mysteries/presentation.jpg'
+                imageUrl: '/images/mysteries/presentation.png'
             },
             {
                 number: 5,
@@ -133,7 +133,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Even as a child, Jesus shows His divine mission and wisdom. Mary and Joseph search for Him with anguish, teaching us to always seek Jesus when we feel lost. May we always put God first in our lives.',
                     es: 'Incluso siendo niño, Jesús muestra su misión divina y sabiduría. María y José lo buscan con angustia, enseñándonos a buscar siempre a Jesús cuando nos sentimos perdidos. Que siempre pongamos a Dios primero en nuestras vidas.'
                 },
-                imageUrl: '/images/mysteries/finding-temple.jpg'
+                imageUrl: '/images/mysteries/finding-temple.png'
             }
         ]
     },
@@ -169,7 +169,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Openness to the Holy Spirit',
                     es: 'Apertura al Espíritu Santo'
                 },
-                imageUrl: '/images/mysteries/baptism-jesus.jpg'
+                imageUrl: '/images/mysteries/baptism.jpg'
             },
             {
                 number: 2,
@@ -195,7 +195,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'To Jesus through Mary',
                     es: 'A Jesús por María'
                 },
-                imageUrl: '/images/mysteries/wedding-cana.jpg'
+                imageUrl: '/images/mysteries/wedding_cana.jpg'
             },
             {
                 number: 3,
@@ -221,7 +221,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Repentance and Trust in God',
                     es: 'Arrepentimiento y confianza en Dios'
                 },
-                imageUrl: '/images/mysteries/proclamation-kingdom.jpg'
+                imageUrl: '/images/mysteries/proclamation.jpg'
             },
             {
                 number: 4,
@@ -309,7 +309,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Sorrow for Sin',
                     es: 'Dolor por los pecados'
                 },
-                imageUrl: '/images/mysteries/agony-garden.jpg'
+                imageUrl: '/images/mysteries/agony_garden.jpg'
             },
             {
                 number: 2,
@@ -361,7 +361,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Moral Courage',
                     es: 'Coraje moral'
                 },
-                imageUrl: '/images/mysteries/crowning-thorns.jpg'
+                imageUrl: '/images/mysteries/crowning_with_thorns.jpg'
             },
             {
                 number: 4,
@@ -387,7 +387,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Patience',
                     es: 'Paciencia'
                 },
-                imageUrl: '/images/mysteries/carrying-cross.jpg'
+                imageUrl: '/images/mysteries/carrying_cross.jpg'
             },
             {
                 number: 5,
