@@ -177,7 +177,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         className="setting-btn"
                                         onClick={() => {
                                             // Reset dismissal flag to show banner again
-                                            localStorage.removeItem(`voice-download-dismissed-${language}`);
+                                            localStorage.removeItem(`voice-download-dismissed-final-${language}`);
                                             // Force reload to trigger banner check
                                             window.location.reload();
                                         }}

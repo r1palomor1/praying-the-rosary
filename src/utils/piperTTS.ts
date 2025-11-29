@@ -14,10 +14,10 @@ let piperSupported = false;
 const VOICE_CONFIG = {
     en: {
         female: 'en_US-lessac-medium', // Natural female voice
-        male: 'en_US-hfc_male-medium'   // Natural male voice
+        male: 'en_US-ryan-medium'      // Natural male voice (better than hfc_male)
     },
     es: {
-        female: 'es_ES-sharvard-medium', // Spanish female
+        female: 'es_MX-aldona-medium', // Spanish female (Mexican, but high quality)
         male: 'es_ES-davefx-medium'      // Spanish male
     }
 };
@@ -35,6 +35,12 @@ export async function initializePiper(): Promise<boolean> {
 
         // Dynamic import
         piperTTS = await import('@mintplex-labs/piper-tts-web');
+
+        // Initialize with default settings
+        // Note: The library handles threading automatically, but if headers are missing
+        // it falls back to single-threaded. The recent error suggests a loading issue
+        // with the threaded worker.
+
         piperSupported = true;
         console.log('Piper TTS initialized successfully');
         return true;
@@ -59,7 +65,9 @@ export async function getDownloadedVoices(): Promise<string[]> {
     if (!isPiperSupported()) return [];
 
     try {
-        return await piperTTS.stored();
+        const stored = await piperTTS.stored();
+        console.log('Piper stored voices:', stored);
+        return stored;
     } catch (error) {
         console.error('Error checking stored voices:', error);
         return [];
@@ -68,13 +76,22 @@ export async function getDownloadedVoices(): Promise<string[]> {
 
 /**
  * Check if required voices are downloaded for a language
+ * Relaxed check: Returns true if ANY voice for the language is present
+ * This prevents constant download prompts if the user has at least one working voice
  */
 export async function hasVoicesForLanguage(language: Language): Promise<boolean> {
     const downloaded = await getDownloadedVoices();
     const config = VOICE_CONFIG[language];
 
-    return downloaded.includes(config.female) && downloaded.includes(config.male);
+    // Check if we have at least one valid voice for this language
+    // This allows the app to function (with fallback) without forcing downloads
+    return downloaded.some(v => v === config.female || v === config.male);
 }
+
+/**
+ * Clean up unused voices to free up storage
+ */
+// ... (removed)
 
 /**
  * Download voice models for a language
@@ -108,7 +125,26 @@ export async function generateSpeech(
         throw new Error('Piper TTS not supported');
     }
 
-    const voiceId = VOICE_CONFIG[language][gender];
+    let voiceId = VOICE_CONFIG[language][gender];
+
+    // Check if the requested voice is actually available
+    const downloaded = await getDownloadedVoices();
+    if (!downloaded.includes(voiceId)) {
+        console.warn(`Requested voice ${voiceId} not found, checking for fallback...`);
+
+        // Try to find ANY available voice for this language
+        const fallbackVoice = downloaded.find(v => v.startsWith(language === 'en' ? 'en_' : 'es_'));
+
+        if (fallbackVoice) {
+            console.log(`Using fallback voice: ${fallbackVoice}`);
+            voiceId = fallbackVoice;
+        } else {
+            console.error(`No voices found for ${language}`);
+            throw new Error(`No voices available for ${language}`);
+        }
+    }
+
+    console.log(`Generating speech for ${language} (${gender}) using voice: ${voiceId}`);
 
     try {
         const wav = await piperTTS.predict({

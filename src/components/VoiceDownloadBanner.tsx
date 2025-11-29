@@ -4,6 +4,12 @@ import * as piperTTS from '../utils/piperTTS';
 import { useApp } from '../context/AppContext';
 import './VoiceDownloadBanner.css';
 
+declare global {
+    interface Window {
+        piperRetryDone?: boolean;
+    }
+}
+
 export function VoiceDownloadBanner() {
     const { language } = useApp();
     const [show, setShow] = useState(false);
@@ -17,7 +23,7 @@ export function VoiceDownloadBanner() {
 
     async function checkVoiceStatus() {
         // Check if user dismissed banner
-        const dismissedKey = `voice-download-dismissed-${language}`;
+        const dismissedKey = `voice-download-dismissed-final-${language}`;
         if (localStorage.getItem(dismissedKey) === 'true') {
             setDismissed(true);
             return;
@@ -26,6 +32,13 @@ export function VoiceDownloadBanner() {
         // Check if voices are already downloaded
         const hasVoices = await piperTTS.hasVoicesForLanguage(language);
         const supported = piperTTS.isPiperSupported();
+
+        // If not supported yet, it might be initializing. Retry once after a delay.
+        if (!supported && !window.piperRetryDone) {
+            window.piperRetryDone = true;
+            setTimeout(() => checkVoiceStatus(), 2000);
+            return;
+        }
 
         // Show banner if Piper is supported but voices not downloaded
         setShow(supported && !hasVoices && !dismissed);
@@ -59,7 +72,7 @@ export function VoiceDownloadBanner() {
     }
 
     function handleDismiss() {
-        const dismissedKey = `voice-download-dismissed-${language}`;
+        const dismissedKey = `voice-download-dismissed-final-${language}`;
         localStorage.setItem(dismissedKey, 'true');
         setShow(false);
         setDismissed(true);
@@ -98,7 +111,7 @@ export function VoiceDownloadBanner() {
                         <div className="progress-bar">
                             <div
                                 className="progress-fill"
-                                data-progress={progress}
+                                style={{ width: `${progress}%`, backgroundColor: 'white', transition: 'width 0.3s ease', borderRadius: '2px', height: '100%' }}
                             />
                         </div>
                     )}

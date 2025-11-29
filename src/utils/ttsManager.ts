@@ -25,6 +25,7 @@ class UnifiedTTSManager {
     private currentSegmentIndex: number = 0;
     private segments: TTSSegment[] = [];
     private onEndCallback?: () => void;
+    private playbackId: number = 0;
 
     constructor() {
         this.synth = window.speechSynthesis;
@@ -111,35 +112,47 @@ class UnifiedTTSManager {
     async speakSegments(segments: TTSSegment[]): Promise<void> {
         this.segments = segments;
         this.currentSegmentIndex = 0;
+
+        // Stop previous playback and increment ID to invalidate any pending async operations
         this.stop();
+        const currentId = this.playbackId;
 
         // Determine which engine to use
         const usePiper = await this.isPiperReady();
 
+        // Check if we were stopped/cancelled during the await
+        if (this.playbackId !== currentId) return;
+
         if (usePiper) {
             console.log('🎵 Using Piper TTS');
-            await this.speakWithPiper();
+            await this.speakWithPiper(currentId);
         } else {
             console.log('🔊 Using Web Speech API');
-            this.speakWithWebSpeech();
+            this.speakWithWebSpeech(currentId);
         }
     }
 
     /**
      * Speak using Piper TTS
      */
-    private async speakWithPiper() {
+    private async speakWithPiper(playbackId: number) {
         this.audioQueue = [];
 
         try {
             // Generate all audio segments
             for (const segment of this.segments) {
+                // Check cancellation before expensive operation
+                if (this.playbackId !== playbackId) return;
+
                 const sanitized = sanitizeTextForSpeech(segment.text);
                 const audioBlob = await piperTTS.generateSpeech(
                     sanitized,
                     this.language,
                     segment.gender
                 );
+
+                // Check cancellation after await
+                if (this.playbackId !== playbackId) return;
 
                 const audio = new Audio();
                 audio.src = URL.createObjectURL(audioBlob);
@@ -153,18 +166,33 @@ class UnifiedTTSManager {
                 this.audioQueue.push(audio);
             }
 
+            // Check cancellation before playing
+            if (this.playbackId !== playbackId) return;
+
             // Play audio queue
-            this.playNextPiperAudio();
+            this.playNextPiperAudio(playbackId);
         } catch (error) {
             console.error('Piper TTS failed, falling back to Web Speech:', error);
-            this.speakWithWebSpeech();
+
+            // Disable Piper for future attempts if it fails critically
+            // This prevents repeated delays and "interrupted" errors
+            this.piperInitialized = false;
+            this.currentEngine = 'webspeech';
+
+            // Only fallback if we haven't been cancelled
+            if (this.playbackId === playbackId) {
+                this.speakWithWebSpeech(playbackId);
+            }
         }
     }
 
     /**
      * Play next audio in Piper queue
      */
-    private playNextPiperAudio() {
+    private playNextPiperAudio(playbackId: number) {
+        // Check cancellation
+        if (this.playbackId !== playbackId) return;
+
         if (this.currentSegmentIndex >= this.audioQueue.length) {
             if (this.onEndCallback) {
                 this.onEndCallback();
@@ -178,30 +206,39 @@ class UnifiedTTSManager {
         const audio = this.audioQueue[this.currentSegmentIndex];
 
         audio.onended = () => {
-            this.currentSegmentIndex++;
-            this.playNextPiperAudio();
+            if (this.playbackId === playbackId) {
+                this.currentSegmentIndex++;
+                this.playNextPiperAudio(playbackId);
+            }
         };
 
         audio.onerror = (error) => {
             console.error('Audio playback error:', error);
-            this.currentSegmentIndex++;
-            this.playNextPiperAudio();
+            if (this.playbackId === playbackId) {
+                this.currentSegmentIndex++;
+                this.playNextPiperAudio(playbackId);
+            }
         };
 
         audio.play().catch(error => {
             console.error('Failed to play audio:', error);
-            this.currentSegmentIndex++;
-            this.playNextPiperAudio();
+            if (this.playbackId === playbackId) {
+                this.currentSegmentIndex++;
+                this.playNextPiperAudio(playbackId);
+            }
         });
     }
 
     /**
      * Speak using Web Speech API (fallback)
      */
-    private speakWithWebSpeech() {
+    private speakWithWebSpeech(playbackId: number) {
         let currentIndex = 0;
 
         const speakNext = () => {
+            // Check cancellation
+            if (this.playbackId !== playbackId) return;
+
             if (currentIndex >= this.segments.length) {
                 if (this.onEndCallback) {
                     this.onEndCallback();
@@ -219,10 +256,9 @@ class UnifiedTTSManager {
             utterance.pitch = 1.0;
 
             // Apply Spanish voice gender correction
-            let requestedGender = segment.gender;
-            if (this.language === 'es') {
-                requestedGender = segment.gender === 'female' ? 'male' : 'female';
-            }
+            // Removed: User reported "all male" issues, likely due to this swap or voice availability.
+            // Trusting the requested gender is safer for fallback.
+            const requestedGender = segment.gender;
 
             const voice = this.getWebSpeechVoice(requestedGender);
             if (voice) {
@@ -230,14 +266,18 @@ class UnifiedTTSManager {
             }
 
             utterance.onend = () => {
-                currentIndex++;
-                speakNext();
+                if (this.playbackId === playbackId) {
+                    currentIndex++;
+                    speakNext();
+                }
             };
 
             utterance.onerror = (error) => {
                 console.error('Speech synthesis error:', error);
-                currentIndex++;
-                speakNext();
+                if (this.playbackId === playbackId) {
+                    currentIndex++;
+                    speakNext();
+                }
             };
 
             this.synth.speak(utterance);
@@ -271,6 +311,9 @@ class UnifiedTTSManager {
      * Stop all audio
      */
     stop() {
+        // Increment playback ID to invalidate any pending operations
+        this.playbackId++;
+
         this.synth.cancel();
 
         // Stop and clean up Piper audio

@@ -57,3 +57,8 @@ const handleComplete = () => {
 ### Efficiency & Optimization
 1.  **Optimize Logic Building:** Prioritize the most efficient path to a solution to conserve tokens and reduce requests.
 2.  **Avoid Verbosity:** Do not display repetitive internal checks (e.g., "I'll check X..."). Only report the final result or confirmation.
+3. **For git commands like add , commit and push, do each individually and not all in one string
+
+### Corruption of files
+1. Plan accordingly to avoid corruption of files and having to redo from scratch.
+2. Execute code after proper planning to avoid corruption of files and having to redo from scratch.
