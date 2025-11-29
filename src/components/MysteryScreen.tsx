@@ -304,6 +304,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
     const handleNext = () => {
         setContinuousMode(false);
+        continuousModeRef.current = false;
         stopAudio();
         const nextStep = flowEngine.getNextStep();
         if (nextStep) {
@@ -323,6 +324,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
     const handlePrevious = () => {
         setContinuousMode(false);
+        continuousModeRef.current = false;
         stopAudio();
         const prevStep = flowEngine.getPreviousStep();
         if (prevStep) {
@@ -334,6 +336,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         if (continuousMode || isPlaying) {
             // Stop continuous mode
             setContinuousMode(false);
+            continuousModeRef.current = false;
             stopAudio();
         } else {
             // Start continuous mode
