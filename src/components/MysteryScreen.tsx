@@ -371,7 +371,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         const decadeInfo = flowEngine.getCurrentDecadeInfo();
         if (decadeInfo && decadeInfo.imageUrl) {
             return (
-                <div className="mystery-intro" style={{ paddingTop: 'var(--spacing-lg)' }}>
+                <div className="mystery-intro" style={{ paddingTop: 'var(--spacing-sm)' }}>
                     <div className="mystery-content-card">
                         <div className="mystery-image-container">
                             <MysteryImage
