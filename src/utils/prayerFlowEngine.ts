@@ -340,20 +340,32 @@ export class PrayerFlowEngine {
     }
 
     // Get current decade info (if in a decade)
-    getCurrentDecadeInfo(): { number: number; title: string; reflection: string; imageUrl?: string } | null {
+    getCurrentDecadeInfo(): {
+        number: number;
+        title: string;
+        reflection: string;
+        imageUrl?: string;
+        fruit?: string;
+        scripture?: { text: string; reference: string };
+    } | null {
         const step = this.getCurrentStep();
         if (step.decadeNumber) {
             const decade = prayerData[this.language].mysteries_data[this.mysteryType].decades[step.decadeNumber - 1];
 
-            // Find image URL
+            // Find mystery details from mysterySets
             const mysterySet = mysterySets.find(s => s.type === this.mysteryType);
             const mystery = mysterySet?.mysteries.find(m => m.number === step.decadeNumber);
+
+            const fruit = mystery?.fruit?.[this.language];
+            const scripture = mystery?.scripture?.[this.language];
 
             return {
                 number: step.decadeNumber,
                 title: decade.title,
                 reflection: decade.reflection,
-                imageUrl: mystery?.imageUrl
+                imageUrl: mystery?.imageUrl,
+                fruit,
+                scripture
             };
         }
         return null;

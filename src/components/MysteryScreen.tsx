@@ -247,6 +247,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
         // Special rendering for decade announcement
         if (step.type === 'decade_announcement') {
+            const decadeInfo = flowEngine.getCurrentDecadeInfo();
             return (
                 <div className="mystery-intro">
                     <div className="mystery-content-card">
@@ -261,6 +262,24 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                         <div className="mystery-card-body">
                             <h3 className="section-label">{t.reflection}</h3>
                             <p className="reflection-text">{step.text}</p>
+
+                            {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
+                                <div className="meditation-footer" style={{ marginTop: 'var(--spacing-md)', paddingTop: 'var(--spacing-md)', borderTop: '1px solid var(--color-border-light)' }}>
+                                    {decadeInfo.fruit && (
+                                        <div className="fruit-container">
+                                            <span className="fruit-label">{language === 'es' ? 'Fruto:' : 'Fruit:'}</span>
+                                            <span className="fruit-text">{decadeInfo.fruit}</span>
+                                        </div>
+                                    )}
+
+                                    {decadeInfo.scripture && (
+                                        <div className="scripture-container">
+                                            <p className="scripture-text">"{decadeInfo.scripture.text}"</p>
+                                            <p className="scripture-ref">{decadeInfo.scripture.reference}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
