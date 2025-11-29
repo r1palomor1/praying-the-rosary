@@ -261,9 +261,12 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
     // Ref to track continuous mode state inside callbacks
     const continuousModeRef = useRef(continuousMode);
 
-    // Keep ref in sync with state
+    // Keep ref in sync with state and handle cleanup
     useEffect(() => {
         continuousModeRef.current = continuousMode;
+        return () => {
+            continuousModeRef.current = false;
+        };
     }, [continuousMode]);
 
     // Recursive function to play audio sequence
