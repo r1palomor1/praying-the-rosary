@@ -79,7 +79,7 @@
 
 .mystery-gradient {
     width: 100%;
-    aspect-ratio: 3 / 1;
+    aspect-ratio: 6 / 1;
     background-image: url('/glorious_gradient_1764033317128.png');
     background-size: cover;
     background-position: center;
@@ -99,7 +99,7 @@
 }
 
 .mystery-days {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xl);
     color: var(--color-text-tertiary);
     margin: 0;
 }
@@ -135,7 +135,7 @@
 }
 
 .devotion-text {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-xl);
     line-height: 1.6;
     color: var(--color-text-secondary);
     margin: 0;

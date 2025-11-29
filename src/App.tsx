@@ -6,7 +6,8 @@ import { MysteriesScreen } from './components/MysteriesScreen';
 import { MysteryScreen } from './components/MysteryScreen';
 import { CompletionScreen } from './components/CompletionScreen';
 import { PrayersScreen } from './components/PrayersScreen';
-import { clearPrayerProgress } from './utils/storage';
+import { loadPrayerProgress, hasValidPrayerProgress } from './utils/storage';
+import { PrayerFlowEngine } from './utils/prayerFlowEngine';
 
 import './styles/index.css';
 
@@ -38,12 +39,29 @@ function AppContent() {
   }, [language, hasSelectedLanguage]);
 
   const handleStartPrayer = () => {
+    // Check if today's rosary is already complete before starting
+    const savedProgress = loadPrayerProgress(currentMysterySet);
+    if (savedProgress && hasValidPrayerProgress(currentMysterySet)) {
+      // Create temporary engine to check progress
+      const engine = new PrayerFlowEngine(currentMysterySet as any, language);
+      engine.jumpToStep(savedProgress.currentStepIndex);
+      const progress = engine.getProgress();
+
+      if (progress >= 99) {
+        // Already complete - go directly to completion screen
+        setCurrentScreen('complete');
+        return;
+      }
+    }
+
+    // Not complete - proceed to prayer screen
     setCurrentScreen('prayer');
   };
 
   const handleCompletePrayer = () => {
     completeSession();
-    clearPrayerProgress(); // Clear the step-by-step progress
+    // Don't clear prayer progress - keep it saved at completion step
+    // so we can detect it's complete when user presses Pray again
     setCurrentScreen('complete');
   };
 

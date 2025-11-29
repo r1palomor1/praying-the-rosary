@@ -169,9 +169,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
         saveSession(session);
         setIsSessionActive(false);
 
-        // Clear old prayer progress when completing today's mystery
-        // This resets any unfinished mysteries from previous days
-        clearPrayerProgress();
+        // Clear old unfinished mysteries from previous days
+        // But DON'T clear the current mystery's progress - keep it at completion step
+        // so we can detect it's complete when user presses Pray again
+        const allMysteryTypes: MysterySetType[] = ['joyful', 'sorrowful', 'glorious', 'luminous'];
+        allMysteryTypes.forEach(mysteryType => {
+            if (mysteryType !== currentMysterySet) {
+                clearPrayerProgress(mysteryType);
+            }
+        });
     };
 
     const clearSession = () => {

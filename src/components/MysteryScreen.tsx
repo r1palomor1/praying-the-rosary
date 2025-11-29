@@ -152,11 +152,22 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                     }, 500); // Small delay between prayers
                 } else {
                     setContinuousMode(false);
+
+                    // Explicitly save progress for completion (100%)
+                    // This ensures resuming works correctly
+                    const progress = {
+                        mysteryType: currentMysterySet,
+                        currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
+                        date: new Date().toISOString().split('T')[0],
+                        language
+                    };
+                    savePrayerProgress(progress);
+
                     onComplete();
                 }
             }
         }
-    }, [isPlaying, continuousMode, flowEngine, playAudio, onComplete]);
+    }, [isPlaying, continuousMode, flowEngine, playAudio, onComplete, currentMysterySet, language]);
 
     const handleNext = () => {
         stopAudio(); // Stop any playing audio
@@ -164,6 +175,15 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         if (nextStep) {
             setCurrentStep(nextStep);
             if (nextStep.type === 'complete') {
+                // Explicitly save progress for completion (100%)
+                const progress = {
+                    mysteryType: currentMysterySet,
+                    currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
+                    date: new Date().toISOString().split('T')[0],
+                    language
+                };
+                savePrayerProgress(progress);
+
                 onComplete();
             }
         }
@@ -344,6 +364,29 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         return null;
     };
 
+    const renderMysteryImageFooter = () => {
+        // Don't show on decade announcement as it already has it
+        if (currentStep.type === 'decade_announcement') return null;
+
+        const decadeInfo = flowEngine.getCurrentDecadeInfo();
+        if (decadeInfo && decadeInfo.imageUrl) {
+            return (
+                <div className="mystery-intro" style={{ paddingTop: 'var(--spacing-lg)' }}>
+                    <div className="mystery-content-card">
+                        <div className="mystery-image-container">
+                            <MysteryImage
+                                src={decadeInfo.imageUrl}
+                                alt={decadeInfo.title}
+                                number={decadeInfo.number}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    };
+
     return (
         <div className="mystery-screen-container">
             <div className="mystery-screen-header">
@@ -417,6 +460,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
                     {renderStepContent()}
                     {renderBeadCounter()}
+                    {renderMysteryImageFooter()}
                 </div>
             </div>
 
@@ -442,7 +486,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                             aria-label={t.previous}
                             title={t.previous}
                         >
-                            <ChevronLeft size={24} />
+                            <ChevronLeft size={24} strokeWidth={5} />
                             <span className="mystery-nav-label">{t.previous}</span>
                         </button>
 
@@ -453,7 +497,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                             aria-label={flowEngine.isLastStep() ? t.finish : t.next}
                             title={flowEngine.isLastStep() ? t.finish : t.next}
                         >
-                            <ChevronRight size={24} />
+                            <ChevronRight size={24} strokeWidth={5} />
                             <span className="mystery-nav-label">{flowEngine.isLastStep() ? t.finish : t.next}</span>
                         </button>
                     </div>

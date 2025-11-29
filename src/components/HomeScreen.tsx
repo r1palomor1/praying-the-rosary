@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
-import { hasActiveSession } from '../utils/storage';
+import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
+import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import { SettingsModal } from './SettingsModal';
 import { BottomNav } from './BottomNav';
 import { getTodaysDevotion } from '../data/devotions';
@@ -64,6 +65,21 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
     const t = translations[language];
 
     const handleStart = () => {
+        // Check if rosary is complete BEFORE session management
+        // startNewSession/resumeSession will reset the state and wipe completion
+        const savedProgress = loadPrayerProgress(currentMysterySet);
+        if (savedProgress && hasValidPrayerProgress(currentMysterySet)) {
+            const engine = new PrayerFlowEngine(currentMysterySet as any, language);
+            engine.jumpToStep(savedProgress.currentStepIndex);
+            const progress = engine.getProgress();
+
+            if (progress >= 99) {
+                // Already complete - skip session management, just navigate
+                onStartPrayer();
+                return;
+            }
+        }
+
         if (hasSession) {
             resumeSession();
         } else {

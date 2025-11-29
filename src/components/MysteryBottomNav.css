@@ -79,7 +79,7 @@
     }
 
     .mystery-nav-center {
-        gap: var(--spacing-md);
+        gap: var(--spacing-xl);
     }
 
     .mystery-nav-label {
