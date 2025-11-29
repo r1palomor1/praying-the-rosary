@@ -1,19 +1,18 @@
-/**
- * Unified TTS Manager
- * Automatically uses Piper TTS when available, falls back to Web Speech API
- */
-
 import type { Language } from '../types';
 import * as piperTTS from './piperTTS';
+import { generateSpeechSherpa } from './sherpaTTS';
 import { sanitizeTextForSpeech } from './textSanitizer';
 
-type TTSEngine = 'piper' | 'webspeech' | 'none';
+type TTSEngine = 'piper' | 'sherpa' | 'webspeech' | 'none';
 
 interface TTSSegment {
     text: string;
     gender: 'female' | 'male';
     rate?: number;
 }
+
+// Simple mobile detection
+const isMobile = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
 class UnifiedTTSManager {
     private currentEngine: TTSEngine = 'none';
@@ -36,7 +35,14 @@ class UnifiedTTSManager {
      * Initialize TTS engines
      */
     private async initializeTTS() {
-        // Try to initialize Piper TTS
+        // Mobile: Default to Sherpa (will init on first use)
+        if (isMobile()) {
+            this.currentEngine = 'sherpa';
+            console.log('📱 Mobile detected: Using Sherpa TTS');
+            return;
+        }
+
+        // Desktop: Try Piper
         const piperAvailable = await piperTTS.initializePiper();
 
         if (piperAvailable) {
@@ -57,6 +63,11 @@ class UnifiedTTSManager {
      */
     async setLanguage(language: Language) {
         this.language = language;
+
+        if (isMobile()) {
+            this.currentEngine = 'sherpa';
+            return;
+        }
 
         // Check if we should switch engines
         if (this.piperInitialized) {
@@ -83,6 +94,7 @@ class UnifiedTTSManager {
      * Check if Piper is available and ready
      */
     async isPiperReady(): Promise<boolean> {
+        if (isMobile()) return false; // Never use Piper on mobile
         if (!this.piperInitialized) return false;
         return await piperTTS.hasVoicesForLanguage(this.language);
     }
@@ -100,7 +112,7 @@ class UnifiedTTSManager {
     isSpeaking(): boolean {
         if (this.currentEngine === 'webspeech') {
             return this.synth.speaking;
-        } else if (this.currentEngine === 'piper') {
+        } else if (this.currentEngine === 'piper' || this.currentEngine === 'sherpa') {
             return this.audioQueue.length > 0 && !this.audioQueue[this.currentSegmentIndex]?.paused;
         }
         return false;
@@ -117,18 +129,60 @@ class UnifiedTTSManager {
         this.stop();
         const currentId = this.playbackId;
 
-        // Determine which engine to use
-        const usePiper = await this.isPiperReady();
-
         // Check if we were stopped/cancelled during the await
         if (this.playbackId !== currentId) return;
 
-        if (usePiper) {
-            console.log('🎵 Using Piper TTS');
-            await this.speakWithPiper(currentId);
+        if (isMobile()) {
+            console.log('📱 Using Sherpa TTS (Mobile)');
+            await this.speakWithSherpa(currentId);
         } else {
-            console.log('🔊 Using Web Speech API');
-            this.speakWithWebSpeech(currentId);
+            const usePiper = await this.isPiperReady();
+            if (usePiper) {
+                console.log('🎵 Using Piper TTS');
+                await this.speakWithPiper(currentId);
+            } else {
+                console.log('🔊 Using Web Speech API');
+                this.speakWithWebSpeech(currentId);
+            }
+        }
+    }
+
+    /**
+     * Speak using Sherpa TTS (Mobile)
+     */
+    private async speakWithSherpa(playbackId: number) {
+        this.audioQueue = [];
+
+        try {
+            // Generate all audio segments
+            for (const segment of this.segments) {
+                if (this.playbackId !== playbackId) return;
+
+                const sanitized = sanitizeTextForSpeech(segment.text);
+                const audioBlob = await generateSpeechSherpa(sanitized, this.language);
+
+                if (this.playbackId !== playbackId) return;
+
+                if (!audioBlob) {
+                    throw new Error('Sherpa generation returned null');
+                }
+
+                const audio = new Audio();
+                audio.src = URL.createObjectURL(audioBlob);
+                audio.volume = this.volume;
+                if (segment.rate) audio.playbackRate = segment.rate;
+
+                this.audioQueue.push(audio);
+            }
+
+            if (this.playbackId !== playbackId) return;
+            this.playNextAudio(playbackId);
+
+        } catch (error) {
+            console.error('Sherpa TTS failed, falling back to Web Speech:', error);
+            if (this.playbackId === playbackId) {
+                this.speakWithWebSpeech(playbackId);
+            }
         }
     }
 
@@ -170,7 +224,7 @@ class UnifiedTTSManager {
             if (this.playbackId !== playbackId) return;
 
             // Play audio queue
-            this.playNextPiperAudio(playbackId);
+            this.playNextAudio(playbackId);
         } catch (error) {
             console.error('Piper TTS failed, falling back to Web Speech:', error);
 
@@ -187,9 +241,9 @@ class UnifiedTTSManager {
     }
 
     /**
-     * Play next audio in Piper queue
+     * Play next audio in queue (Shared for Piper and Sherpa)
      */
-    private playNextPiperAudio(playbackId: number) {
+    private playNextAudio(playbackId: number) {
         // Check cancellation
         if (this.playbackId !== playbackId) return;
 
@@ -208,7 +262,7 @@ class UnifiedTTSManager {
         audio.onended = () => {
             if (this.playbackId === playbackId) {
                 this.currentSegmentIndex++;
-                this.playNextPiperAudio(playbackId);
+                this.playNextAudio(playbackId);
             }
         };
 
@@ -216,7 +270,7 @@ class UnifiedTTSManager {
             console.error('Audio playback error:', error);
             if (this.playbackId === playbackId) {
                 this.currentSegmentIndex++;
-                this.playNextPiperAudio(playbackId);
+                this.playNextAudio(playbackId);
             }
         };
 
@@ -224,7 +278,7 @@ class UnifiedTTSManager {
             console.error('Failed to play audio:', error);
             if (this.playbackId === playbackId) {
                 this.currentSegmentIndex++;
-                this.playNextPiperAudio(playbackId);
+                this.playNextAudio(playbackId);
             }
         });
     }
@@ -316,7 +370,7 @@ class UnifiedTTSManager {
 
         this.synth.cancel();
 
-        // Stop and clean up Piper audio
+        // Stop and clean up Piper/Sherpa audio
         this.audioQueue.forEach(audio => {
             audio.pause();
             audio.currentTime = 0;
@@ -332,7 +386,7 @@ class UnifiedTTSManager {
     pause() {
         if (this.currentEngine === 'webspeech' && this.synth.speaking) {
             this.synth.pause();
-        } else if (this.currentEngine === 'piper' && this.audioQueue.length > 0) {
+        } else if ((this.currentEngine === 'piper' || this.currentEngine === 'sherpa') && this.audioQueue.length > 0) {
             const current = this.audioQueue[this.currentSegmentIndex];
             if (current) {
                 current.pause();
@@ -346,7 +400,7 @@ class UnifiedTTSManager {
     resume() {
         if (this.currentEngine === 'webspeech' && this.synth.paused) {
             this.synth.resume();
-        } else if (this.currentEngine === 'piper' && this.audioQueue.length > 0) {
+        } else if ((this.currentEngine === 'piper' || this.currentEngine === 'sherpa') && this.audioQueue.length > 0) {
             const current = this.audioQueue[this.currentSegmentIndex];
             if (current) {
                 current.play();

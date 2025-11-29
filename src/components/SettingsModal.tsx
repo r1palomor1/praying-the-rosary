@@ -167,25 +167,28 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 </div>
                             </div>
 
-                            <div className="setting-item">
-                                <div className="setting-label">
-                                    <Download size={20} />
-                                    <span>{language === 'es' ? 'Voces Mejoradas' : 'Better Voices'}</span>
+                            {/* Voice Download - Desktop Only (Piper) */}
+                            {!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) && (
+                                <div className="setting-item">
+                                    <div className="setting-label">
+                                        <Download size={20} />
+                                        <span>{language === 'es' ? 'Voces Mejoradas' : 'Better Voices'}</span>
+                                    </div>
+                                    <div className="setting-control">
+                                        <button
+                                            className="setting-btn"
+                                            onClick={() => {
+                                                // Reset dismissal flag to show banner again
+                                                localStorage.removeItem(`voice-download-dismissed-final-${language}`);
+                                                // Force reload to trigger banner check
+                                                window.location.reload();
+                                            }}
+                                        >
+                                            {language === 'es' ? 'Descargar' : 'Download'}
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="setting-control">
-                                    <button
-                                        className="setting-btn"
-                                        onClick={() => {
-                                            // Reset dismissal flag to show banner again
-                                            localStorage.removeItem(`voice-download-dismissed-final-${language}`);
-                                            // Force reload to trigger banner check
-                                            window.location.reload();
-                                        }}
-                                    >
-                                        {language === 'es' ? 'Descargar' : 'Download'}
-                                    </button>
-                                </div>
-                            </div>
+                            )}
                         </>
                     )}
 

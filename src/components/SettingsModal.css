@@ -109,12 +109,9 @@
 }
 
 .setting-btn.active {
-    width: 100%;
-    height: 6px;
-    background: var(--color-bg-tertiary);
-    border-radius: var(--radius-full);
-    outline: none;
-    margin: var(--spacing-md) 0;
+    background: var(--color-primary);
+    color: white;
+    box-shadow: var(--shadow-sm);
 }
 
 input[type="range"]::-webkit-slider-thumb {

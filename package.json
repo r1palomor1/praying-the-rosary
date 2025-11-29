@@ -12,8 +12,10 @@
   "dependencies": {
     "@mintplex-labs/piper-tts-web": "^1.0.4",
     "lucide-react": "^0.554.0",
+    "onnxruntime-web": "^1.23.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "sherpa-onnx": "^1.12.18",
     "vite-plugin-pwa": "^1.1.0",
     "workbox-window": "^7.4.0"
   },
