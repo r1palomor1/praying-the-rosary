@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, Pause } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, Square } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
@@ -88,6 +88,15 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
     const audioEndedRef = useRef(false);
     const contentRef = useRef<HTMLDivElement>(null);
 
+    // Sync continuous mode with playing state on mount
+    // This handles the case where user navigates away and back while audio is playing
+    useEffect(() => {
+        if (isPlaying && !continuousMode) {
+            setContinuousMode(true);
+            audioEndedRef.current = true;
+        }
+    }, []);
+
     // Update language when it changes
     useEffect(() => {
         flowEngine.setLanguage(language);
@@ -127,7 +136,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         stopAudio: 'Detener audio',
         playAudio: 'Reproducir audio',
         continuousMode: 'Modo Continuo',
-        stopContinuous: 'Detener Continuo',
+        stopContinuous: 'Detener',
         reflection: 'Reflexión',
         mystery: 'Misterio',
         mysteryOrdinal: 'º'
@@ -142,7 +151,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         stopAudio: 'Stop audio',
         playAudio: 'Play audio',
         continuousMode: 'Continuous Mode',
-        stopContinuous: 'Stop Continuous',
+        stopContinuous: 'Stop',
         reflection: 'Reflection',
         mystery: 'Mystery',
         mysteryOrdinal: ''
@@ -310,7 +319,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
     };
 
     const handleToggleContinuous = () => {
-        if (continuousMode) {
+        if (continuousMode || isPlaying) {
             // Stop continuous mode
             setContinuousMode(false);
             stopAudio();
@@ -546,12 +555,12 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                         <div className="audio-controls">
                             {audioEnabled && (
                                 <button
-                                    className={`btn-icon continuous-btn ${continuousMode ? 'active' : ''}`}
+                                    className={`btn-icon continuous-btn ${(continuousMode || isPlaying) ? 'active' : ''}`}
                                     onClick={handleToggleContinuous}
-                                    aria-label={continuousMode ? t.stopContinuous : t.continuousMode}
-                                    title={continuousMode ? t.stopContinuous : t.continuousMode}
+                                    aria-label={(continuousMode || isPlaying) ? t.stopContinuous : t.continuousMode}
+                                    title={(continuousMode || isPlaying) ? t.stopContinuous : t.continuousMode}
                                 >
-                                    {continuousMode ? <Pause size={24} /> : <Volume2 size={24} />}
+                                    {(continuousMode || isPlaying) ? <Square size={28} /> : <Volume2 size={28} />}
                                 </button>
                             )}
                         </div>

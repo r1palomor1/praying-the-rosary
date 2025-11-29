@@ -200,8 +200,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
 
     const pauseAudio = () => {
-        audioPlayer.pause();
-        setIsPlaying(false);
+        // Check if currently paused - if so, resume
+        if (audioPlayer.isPaused()) {
+            audioPlayer.resume();
+            setIsPlaying(true);
+        } else {
+            // Otherwise, pause
+            audioPlayer.pause();
+            setIsPlaying(false);
+        }
     };
 
     const stopAudio = () => {
