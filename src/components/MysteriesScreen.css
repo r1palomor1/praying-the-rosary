@@ -28,6 +28,56 @@
     letter-spacing: var(--letter-spacing-tight);
 }
 
+/* Main Content */
+.mysteries-main {
+    flex: 1;
+    padding: 0 var(--spacing-lg) var(--spacing-md);
+}
+
+.mysteries-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+    /* Increased spacing */
+}
+
+/* Mystery Cards */
+.mystery-card-btn {
+    position: relative;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    background: var(--color-bg-elevated);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-align: left;
+    padding: 0;
+    width: 100%;
+}
+
+.mystery-card-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.mystery-card-btn:active {
+    transform: translateY(-2px);
+}
+
+.mystery-card-gradient {
+    position: relative;
+    width: 100%;
+    height: 100px;
+    /* Flatter height */
+    background-size: cover;
+    background-position: center;
+}
+
+.mystery-card-gradient.mystery-joyful {
+    background-image: url('/joyful_gradient_1764034316288.png');
+}
+
 .mystery-card-gradient.mystery-sorrowful {
     background-image: url('/sorrowful_gradient_1764034329652.png');
 }
