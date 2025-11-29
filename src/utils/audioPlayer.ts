@@ -1,4 +1,5 @@
 import type { Language } from '../types';
+import { sanitizeTextForSpeech } from './textSanitizer';
 
 interface AudioPlayerOptions {
     language: Language;
@@ -53,7 +54,9 @@ class AudioPlayer {
             }
 
             const segment = segments[currentIndex];
-            this.utterance = new SpeechSynthesisUtterance(segment.text);
+            // Sanitize text to remove inverted punctuation marks that TTS might mispronounce
+            const sanitizedText = sanitizeTextForSpeech(segment.text);
+            this.utterance = new SpeechSynthesisUtterance(sanitizedText);
             this.utterance.lang = this.language === 'en' ? 'en-US' : 'es-ES';
             this.utterance.volume = this.volume;
             this.utterance.rate = segment.rate || 0.85;
@@ -88,41 +91,60 @@ class AudioPlayer {
 
         if (languageVoices.length === 0) return null;
 
-        // Try to find voice matching gender
-        // Note: Voice names often contain "Female" or "Male", or specific names
-        // This is a heuristic and depends on the OS/Browser
-        const genderKeywords = gender === 'female'
-            ? ['female', 'woman', 'girl', 'samantha', 'victoria', 'zira', 'google us english', 'google español']
-            : ['male', 'man', 'boy', 'david', 'mark', 'google uk english male'];
+        // Comprehensive gender keywords for both English and Spanish voices
+        // Includes common voice names across Windows, macOS, iOS, Android, and Chrome
+        const femaleKeywords = [
+            'female', 'woman', 'girl', 'femenino', 'mujer',
+            // English female names
+            'samantha', 'victoria', 'zira', 'susan', 'karen', 'moira', 'tessa', 'fiona',
+            // Spanish female names
+            'monica', 'paulina', 'sabina', 'carmen', 'lucia', 'isabel', 'elena',
+            // Google voices
+            'google us english', 'google español', 'google español de estados unidos'
+        ];
 
+        const maleKeywords = [
+            'male', 'man', 'boy', 'masculino', 'hombre',
+            // English male names
+            'david', 'mark', 'daniel', 'alex', 'tom', 'james', 'george',
+            // Spanish male names
+            'diego', 'jorge', 'juan', 'carlos', 'miguel', 'andres', 'emilio',
+            // Google voices
+            'google uk english male'
+        ];
+
+        const keywords = gender === 'female' ? femaleKeywords : maleKeywords;
+        const oppositeKeywords = gender === 'female' ? maleKeywords : femaleKeywords;
+
+        // First try: Find exact gender match
         const genderVoice = languageVoices.find(v =>
-            genderKeywords.some(keyword => v.name.toLowerCase().includes(keyword))
+            keywords.some(keyword => v.name.toLowerCase().includes(keyword))
         );
 
-        if (genderVoice) return genderVoice;
-
-        // Fallback strategies if specific gender not found
-
-        // If we want female but didn't find one, try to avoid known male names
-        if (gender === 'female') {
-            const notMale = languageVoices.find(v =>
-                !['male', 'man', 'david', 'mark'].some(k => v.name.toLowerCase().includes(k))
-            );
-            if (notMale) return notMale;
+        if (genderVoice) {
+            console.log(`Found ${gender} voice: ${genderVoice.name}`);
+            return genderVoice;
         }
 
-        // If we want male, try to find one explicitly, otherwise fallback to any
-        if (gender === 'male') {
-            // If we couldn't find a "male" keyword, just pick a different voice than the default if possible?
-            // Or just return the first available one that might be male-sounding?
-            // For now, return the first one that isn't explicitly female if possible
-            const notFemale = languageVoices.find(v =>
-                !['female', 'woman', 'samantha', 'victoria'].some(k => v.name.toLowerCase().includes(k))
-            );
-            if (notFemale) return notFemale;
+        // Second try: Find voice that doesn't match opposite gender
+        const notOppositeGender = languageVoices.find(v =>
+            !oppositeKeywords.some(k => v.name.toLowerCase().includes(k))
+        );
+
+        if (notOppositeGender) {
+            console.log(`Using neutral voice for ${gender}: ${notOppositeGender.name}`);
+            return notOppositeGender;
         }
 
-        // Ultimate fallback
+        // Third try: If we have multiple voices, alternate between them
+        if (languageVoices.length > 1) {
+            const voiceIndex = gender === 'female' ? 0 : 1;
+            console.log(`Using alternating voice for ${gender}: ${languageVoices[voiceIndex].name}`);
+            return languageVoices[voiceIndex];
+        }
+
+        // Ultimate fallback: return first available voice
+        console.log(`Using fallback voice for ${gender}: ${languageVoices[0].name}`);
         return languageVoices[0];
     }
 
