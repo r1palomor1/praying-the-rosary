@@ -15,6 +15,8 @@ interface AppContextType {
     setAudioEnabled: (enabled: boolean) => void;
     volume: number;
     setVolume: (volume: number) => void;
+    speechRate: number;
+    setSpeechRate: (rate: number) => void;
 
     // Session
     currentMysterySet: MysterySetType;
@@ -31,7 +33,10 @@ interface AppContextType {
 
     // Audio
     isPlaying: boolean;
-    playAudio: (textOrSegments: string | { text: string; gender: 'female' | 'male'; rate?: number }[]) => void;
+    playAudio: (
+        textOrSegments: string | { text: string; gender: 'female' | 'male'; rate?: number }[],
+        onEnd?: () => void
+    ) => void;
     pauseAudio: () => void;
     stopAudio: () => void;
 }
@@ -44,6 +49,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const [theme, setTheme] = useState<'light' | 'dark'>('dark');
     const [audioEnabled, setAudioEnabled] = useState(true);
     const [volume, setVolumeState] = useState(0.8);
+    const [speechRate, setSpeechRateState] = useState(0.85);
 
     // Session state
     const [currentMysterySet, setCurrentMysterySet] = useState<MysterySetType>(getTodaysMystery());
@@ -61,6 +67,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setTheme(settings.theme);
         setAudioEnabled(settings.audioEnabled);
         setVolumeState(settings.volume);
+        if (settings.speechRate) setSpeechRateState(settings.speechRate);
 
         // Apply theme to document
         document.documentElement.setAttribute('data-theme', settings.theme);
@@ -92,7 +99,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             language,
             theme,
             audioEnabled,
-            volume
+            volume,
+            speechRate
         };
         saveSettings(settings);
 
@@ -102,7 +110,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             volume,
             onEnd: () => setIsPlaying(false)
         });
-    }, [language, theme, audioEnabled, volume]);
+    }, [language, theme, audioEnabled, volume, speechRate]);
 
     // Save session whenever it changes
     useEffect(() => {
@@ -136,6 +144,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const clampedVolume = Math.max(0, Math.min(1, vol));
         setVolumeState(clampedVolume);
         audioPlayer.setVolume(clampedVolume);
+    };
+
+    // Speech rate setter
+    const setSpeechRate = (rate: number) => {
+        const clampedRate = Math.max(0.5, Math.min(2.0, rate));
+        setSpeechRateState(clampedRate);
     };
 
     // Session management
@@ -188,12 +202,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
 
     // Audio controls
-    const playAudio = (textOrSegments: string | { text: string; gender: 'female' | 'male'; rate?: number }[]) => {
+    const playAudio = (
+        textOrSegments: string | { text: string; gender: 'female' | 'male'; rate?: number }[],
+        onEnd?: () => void
+    ) => {
         if (audioEnabled) {
+            // Configure with specific onEnd if provided, otherwise default
+            audioPlayer.configure({
+                language,
+                volume,
+                onEnd: () => {
+                    setIsPlaying(false);
+                    if (onEnd) onEnd();
+                }
+            });
+
             if (typeof textOrSegments === 'string') {
-                audioPlayer.speak(textOrSegments);
+                // For simple string, use default rate
+                audioPlayer.speakSegments([{ text: textOrSegments, gender: 'female', rate: speechRate }]);
             } else {
-                audioPlayer.speakSegments(textOrSegments);
+                // For segments, inject default rate if missing
+                const segmentsWithRate = textOrSegments.map(s => ({
+                    ...s,
+                    rate: s.rate || speechRate
+                }));
+                audioPlayer.speakSegments(segmentsWithRate);
             }
             setIsPlaying(true);
         }
@@ -225,6 +258,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAudioEnabled,
         volume,
         setVolume,
+        speechRate,
+        setSpeechRate,
         currentMysterySet,
         setCurrentMysterySet,
         currentMysteryNumber,

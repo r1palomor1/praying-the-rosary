@@ -1,5 +1,5 @@
 
-import { Moon, Sun, Volume2, VolumeX, Languages, Trash2 } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge, Download } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress } from '../utils/storage';
 import './SettingsModal.css';
@@ -10,7 +10,7 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume } = useApp();
+    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate } = useApp();
 
     if (!isOpen) return null;
 
@@ -127,24 +127,66 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     </div>
 
                     {audioEnabled && (
-                        <div className="setting-item">
-                            <div className="setting-label">
-                                <Volume2 size={20} />
-                                <span>{t.volume}</span>
+                        <>
+                            <div className="setting-item">
+                                <div className="setting-label">
+                                    <Volume2 size={20} />
+                                    <span>{t.volume}</span>
+                                </div>
+                                <div className="setting-control">
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={volume * 100}
+                                        onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
+                                        aria-label={t.volume}
+                                        className="volume-slider"
+                                    />
+                                    <span className="volume-value">{Math.round(volume * 100)}%</span>
+                                </div>
                             </div>
-                            <div className="setting-control">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    value={volume * 100}
-                                    onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
-                                    aria-label={t.volume}
-                                    className="volume-slider"
-                                />
-                                <span className="volume-value">{Math.round(volume * 100)}%</span>
+
+                            <div className="setting-item">
+                                <div className="setting-label">
+                                    <Gauge size={20} />
+                                    <span>{language === 'es' ? 'Velocidad' : 'Speed'}</span>
+                                </div>
+                                <div className="setting-control">
+                                    <input
+                                        type="range"
+                                        min="50"
+                                        max="150"
+                                        step="5"
+                                        value={speechRate * 100}
+                                        onChange={(e) => setSpeechRate(parseInt(e.target.value) / 100)}
+                                        aria-label={language === 'es' ? 'Velocidad' : 'Speed'}
+                                        className="volume-slider"
+                                    />
+                                    <span className="volume-value">{Math.round(speechRate * 100)}%</span>
+                                </div>
                             </div>
-                        </div>
+
+                            <div className="setting-item">
+                                <div className="setting-label">
+                                    <Download size={20} />
+                                    <span>{language === 'es' ? 'Voces Mejoradas' : 'Better Voices'}</span>
+                                </div>
+                                <div className="setting-control">
+                                    <button
+                                        className="setting-btn"
+                                        onClick={() => {
+                                            // Reset dismissal flag to show banner again
+                                            localStorage.removeItem(`voice-download-dismissed-${language}`);
+                                            // Force reload to trigger banner check
+                                            window.location.reload();
+                                        }}
+                                    >
+                                        {language === 'es' ? 'Descargar' : 'Download'}
+                                    </button>
+                                </div>
+                            </div>
+                        </>
                     )}
 
                     <div className="setting-item">

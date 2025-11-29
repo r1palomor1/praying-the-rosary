@@ -258,45 +258,57 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         return [{ text: step.text, gender: 'female' }];
     };
 
-    // Handle continuous audio mode
+    // Ref to track continuous mode state inside callbacks
+    const continuousModeRef = useRef(continuousMode);
+
+    // Keep ref in sync with state
     useEffect(() => {
-        if (continuousMode && !isPlaying && audioEndedRef.current) {
-            audioEndedRef.current = false;
-            // Auto-advance to next step
-            const nextStep = flowEngine.getNextStep();
-            if (nextStep) {
-                setCurrentStep(nextStep);
-                if (nextStep.type !== 'complete') {
-                    setTimeout(() => {
-                        playAudio(getAudioSegments(nextStep));
-                        audioEndedRef.current = true;
-                    }, 500); // Small delay between prayers
+        continuousModeRef.current = continuousMode;
+    }, [continuousMode]);
+
+    // Recursive function to play audio sequence
+    const playSequence = (step: any) => {
+        if (!continuousModeRef.current) return;
+
+        playAudio(getAudioSegments(step), () => {
+            // Audio finished
+            if (continuousModeRef.current) {
+                const nextStep = flowEngine.getNextStep();
+                if (nextStep) {
+                    setCurrentStep(nextStep);
+
+                    if (nextStep.type === 'complete') {
+                        setContinuousMode(false);
+
+                        // Save completion
+                        const progress = {
+                            mysteryType: currentMysterySet,
+                            currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
+                            date: new Date().toISOString().split('T')[0],
+                            language
+                        };
+                        savePrayerProgress(progress);
+                        onComplete();
+                    } else {
+                        // Continue to next step after delay
+                        setTimeout(() => {
+                            playSequence(nextStep);
+                        }, 500);
+                    }
                 } else {
                     setContinuousMode(false);
-
-                    // Explicitly save progress for completion (100%)
-                    // This ensures resuming works correctly
-                    const progress = {
-                        mysteryType: currentMysterySet,
-                        currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
-                        date: new Date().toISOString().split('T')[0],
-                        language
-                    };
-                    savePrayerProgress(progress);
-
-                    onComplete();
                 }
             }
-        }
-    }, [isPlaying, continuousMode, flowEngine, playAudio, onComplete, currentMysterySet, language]);
+        });
+    };
 
     const handleNext = () => {
-        stopAudio(); // Stop any playing audio
+        setContinuousMode(false);
+        stopAudio();
         const nextStep = flowEngine.getNextStep();
         if (nextStep) {
             setCurrentStep(nextStep);
             if (nextStep.type === 'complete') {
-                // Explicitly save progress for completion (100%)
                 const progress = {
                     mysteryType: currentMysterySet,
                     currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
@@ -304,14 +316,14 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                     language
                 };
                 savePrayerProgress(progress);
-
                 onComplete();
             }
         }
     };
 
     const handlePrevious = () => {
-        stopAudio(); // Stop any playing audio
+        setContinuousMode(false);
+        stopAudio();
         const prevStep = flowEngine.getPreviousStep();
         if (prevStep) {
             setCurrentStep(prevStep);
@@ -326,8 +338,9 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         } else {
             // Start continuous mode
             setContinuousMode(true);
-            audioEndedRef.current = true;
-            playAudio(getAudioSegments(currentStep));
+            // We need to set the ref immediately for the first call
+            continuousModeRef.current = true;
+            playSequence(currentStep);
         }
     };
 
