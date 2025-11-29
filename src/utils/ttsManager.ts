@@ -159,6 +159,7 @@ class UnifiedTTSManager {
                 if (this.playbackId !== playbackId) return;
 
                 const sanitized = sanitizeTextForSpeech(segment.text);
+                console.log(`[TTS Manager] Generating Sherpa audio for: "${segment.text.substring(0, 20)}..." | Gender: ${segment.gender}`);
                 const audioBlob = await generateSpeechSherpa(sanitized, this.language, segment.gender);
 
                 if (this.playbackId !== playbackId) return;

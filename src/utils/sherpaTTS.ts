@@ -105,9 +105,14 @@ export async function initSherpa(language: Language, gender: 'female' | 'male' =
         // We need to fetch the files and pass them to the WASM filesystem
         // Emscripten FS handling
         const fetchAndWrite = async (url: string, filename: string) => {
+            console.log(`[Sherpa] Fetching ${url}...`);
             const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+            }
             const buffer = await response.arrayBuffer();
             sherpaModule.FS.writeFile(filename, new Uint8Array(buffer));
+            console.log(`[Sherpa] Wrote ${filename} to WASM FS`);
             return filename;
         };
 
@@ -156,7 +161,10 @@ export async function initSherpa(language: Language, gender: 'female' | 'male' =
 
 export async function generateSpeechSherpa(text: string, language: Language, gender: 'female' | 'male' = 'female'): Promise<Blob | null> {
     try {
+        console.log(`[Sherpa] Request: ${language} (${gender}) | Current: ${currentLanguage} (${currentGender})`);
+
         if (!ttsEngine || currentLanguage !== language || currentGender !== gender) {
+            console.log('[Sherpa] Switching engine...');
             const success = await initSherpa(language, gender);
             if (!success) throw new Error('Could not init Sherpa');
         }
