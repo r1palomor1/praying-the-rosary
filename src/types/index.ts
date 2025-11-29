@@ -91,6 +91,9 @@ export interface AppSettings {
     theme: 'light' | 'dark';
     audioEnabled: boolean;
     volume: number; // 0-1
+    speechRate?: number; // 0.5-2.0, default 0.85
+    femaleVoiceName?: string; // Name of preferred female voice
+    maleVoiceName?: string; // Name of preferred male voice
 }
 
 // Prayer stage (what prayer is currently being displayed)

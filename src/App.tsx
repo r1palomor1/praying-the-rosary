@@ -6,6 +6,7 @@ import { MysteriesScreen } from './components/MysteriesScreen';
 import { MysteryScreen } from './components/MysteryScreen';
 import { CompletionScreen } from './components/CompletionScreen';
 import { PrayersScreen } from './components/PrayersScreen';
+import { VoiceDownloadBanner } from './components/VoiceDownloadBanner';
 import { loadPrayerProgress, hasValidPrayerProgress } from './utils/storage';
 import { PrayerFlowEngine } from './utils/prayerFlowEngine';
 
@@ -115,6 +116,9 @@ function AppContent() {
       {currentScreen === 'complete' && (
         <CompletionScreen onHome={handleBackToHome} onRestart={handleRestart} mysteryType={currentMysterySet} />
       )}
+
+      {/* Voice download banner - shows when better voices available */}
+      <VoiceDownloadBanner />
     </div>
   );
 }
