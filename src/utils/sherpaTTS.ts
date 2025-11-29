@@ -9,22 +9,35 @@ import type { Language } from '../types';
 // Configuration for models located in public/sherpa/
 const CONFIG = {
     en: {
-        model: '/sherpa/en_US-amy-low.onnx',
-        config: '/sherpa/en_US-amy-low.onnx.json',
-        tokens: '/sherpa/tokens.txt',
-        dataDir: '/sherpa/'
+        female: {
+            model: '/sherpa/en_US-amy-low.onnx',
+            config: '/sherpa/en_US-amy-low.onnx.json',
+            tokens: '/sherpa/tokens.txt',
+        },
+        male: {
+            model: '/sherpa/en_US-ryan-medium.onnx',
+            config: '/sherpa/en_US-ryan-medium.onnx.json',
+            tokens: '/sherpa/tokens_male_en.txt',
+        }
     },
     es: {
-        model: '/sherpa/es_ES-sharvard-medium.onnx',
-        config: '/sherpa/es_ES-sharvard-medium.onnx.json',
-        tokens: '/sherpa/es_tokens.txt',
-        dataDir: '/sherpa/'
+        female: {
+            model: '/sherpa/es_ES-sharvard-medium.onnx',
+            config: '/sherpa/es_ES-sharvard-medium.onnx.json',
+            tokens: '/sherpa/es_tokens.txt',
+        },
+        male: {
+            model: '/sherpa/es_ES-davefx-medium.onnx',
+            config: '/sherpa/es_ES-davefx-medium.onnx.json',
+            tokens: '/sherpa/tokens_male_es.txt',
+        }
     }
 };
 
 let sherpaModule: any = null;
 let ttsEngine: any = null;
 let currentLanguage: Language | null = null;
+let currentGender: 'female' | 'male' | null = null;
 let isInitializing = false;
 
 // Helper to load external script
@@ -42,12 +55,12 @@ function loadScript(src: string): Promise<void> {
     });
 }
 
-export async function initSherpa(language: Language): Promise<boolean> {
-    if (ttsEngine && currentLanguage === language) return true;
+export async function initSherpa(language: Language, gender: 'female' | 'male' = 'female'): Promise<boolean> {
+    if (ttsEngine && currentLanguage === language && currentGender === gender) return true;
     if (isInitializing) return false; // Prevent race conditions
 
     isInitializing = true;
-    console.log(`Initializing Sherpa TTS for ${language}...`);
+    console.log(`Initializing Sherpa TTS for ${language} (${gender})...`);
 
     try {
         // 1. Load the WASM loader script
@@ -87,7 +100,7 @@ export async function initSherpa(language: Language): Promise<boolean> {
         }
 
         // 5. Initialize TTS Engine with Model
-        const config = CONFIG[language];
+        const config = CONFIG[language][gender];
 
         // We need to fetch the files and pass them to the WASM filesystem
         // Emscripten FS handling
@@ -107,8 +120,6 @@ export async function initSherpa(language: Language): Promise<boolean> {
 
         console.log('Creating OfflineTts...');
         // Create the engine instance
-        // Note: The exact constructor signature depends on the WASM binding
-        // Based on k2-fsa examples:
         const offlineTtsConfig = {
             model: {
                 vits: {
@@ -131,6 +142,7 @@ export async function initSherpa(language: Language): Promise<boolean> {
         ttsEngine = new sherpaModule.OfflineTts(offlineTtsConfig);
 
         currentLanguage = language;
+        currentGender = gender;
         isInitializing = false;
         console.log('Sherpa TTS Initialized!');
         return true;
@@ -142,10 +154,10 @@ export async function initSherpa(language: Language): Promise<boolean> {
     }
 }
 
-export async function generateSpeechSherpa(text: string, language: Language): Promise<Blob | null> {
+export async function generateSpeechSherpa(text: string, language: Language, gender: 'female' | 'male' = 'female'): Promise<Blob | null> {
     try {
-        if (!ttsEngine || currentLanguage !== language) {
-            const success = await initSherpa(language);
+        if (!ttsEngine || currentLanguage !== language || currentGender !== gender) {
+            const success = await initSherpa(language, gender);
             if (!success) throw new Error('Could not init Sherpa');
         }
 

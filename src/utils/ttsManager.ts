@@ -159,7 +159,7 @@ class UnifiedTTSManager {
                 if (this.playbackId !== playbackId) return;
 
                 const sanitized = sanitizeTextForSpeech(segment.text);
-                const audioBlob = await generateSpeechSherpa(sanitized, this.language);
+                const audioBlob = await generateSpeechSherpa(sanitized, this.language, segment.gender);
 
                 if (this.playbackId !== playbackId) return;
 
