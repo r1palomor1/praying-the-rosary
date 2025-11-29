@@ -133,6 +133,10 @@ export const mysterySets: MysterySet[] = [
                     en: 'Even as a child, Jesus shows His divine mission and wisdom. Mary and Joseph search for Him with anguish, teaching us to always seek Jesus when we feel lost. May we always put God first in our lives.',
                     es: 'Incluso siendo niño, Jesús muestra su misión divina y sabiduría. María y José lo buscan con angustia, enseñándonos a buscar siempre a Jesús cuando nos sentimos perdidos. Que siempre pongamos a Dios primero en nuestras vidas.'
                 },
+                fruit: {
+                    en: 'Piety',
+                    es: 'Piedad'
+                },
                 imageUrl: '/images/mysteries/finding-temple.png'
             }
         ]
