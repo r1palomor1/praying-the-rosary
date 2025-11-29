@@ -2,6 +2,7 @@
 import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge, Download } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress } from '../utils/storage';
+import { getSherpaError } from '../utils/sherpaTTS';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
@@ -207,7 +208,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </div>
                     </div>
                 </div>
+
+                {/* Debug: Sherpa Error Display */}
+                {getSherpaError() && (
+                    <div className="setting-item" style={{ marginTop: '1rem', padding: '0.5rem', background: '#fee2e2', borderRadius: '8px', border: '1px solid #ef4444' }}>
+                        <div className="setting-label" style={{ color: '#b91c1c', fontSize: '0.8rem', flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}>
+                            <span style={{ fontWeight: 'bold' }}>TTS Error:</span>
+                            <span style={{ fontFamily: 'monospace' }}>{getSherpaError()}</span>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
+
     );
 }

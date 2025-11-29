@@ -432,30 +432,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    color: white;
-    border: none;
-}
-
-/* Secondary action (Prev) gets subtle style */
-.navigation-buttons .btn-outline {
-    background: var(--color-bg-elevated);
-    border-radius: 50%;
-    background: var(--color-bg-tertiary);
-    border: 2px solid var(--color-border-light);
-    transition: all var(--transition-base);
-}
-
-.bead-active {
-    background: var(--color-primary);
-    border-color: var(--color-secondary-light);
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
-    transform: scale(1.1);
-}
-
-.navigation-buttons {
-    display: flex;
-    gap: var(--spacing-md);
     margin-top: var(--spacing-2xl);
 }
 

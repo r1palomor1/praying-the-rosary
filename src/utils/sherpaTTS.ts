@@ -39,6 +39,11 @@ let ttsEngine: any = null;
 let currentLanguage: Language | null = null;
 let currentGender: 'female' | 'male' | null = null;
 let isInitializing = false;
+let lastError: string | null = null;
+
+export function getSherpaError(): string | null {
+    return lastError;
+}
 
 // Helper to load external script
 function loadScript(src: string): Promise<void> {
@@ -60,6 +65,7 @@ export async function initSherpa(language: Language, gender: 'female' | 'male' =
     if (isInitializing) return false; // Prevent race conditions
 
     isInitializing = true;
+    lastError = null;
     console.log(`Initializing Sherpa TTS for ${language} (${gender})...`);
 
     try {
@@ -152,8 +158,9 @@ export async function initSherpa(language: Language, gender: 'female' | 'male' =
         console.log('Sherpa TTS Initialized!');
         return true;
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Sherpa TTS Initialization failed:', error);
+        lastError = error.message || String(error);
         isInitializing = false;
         return false;
     }
