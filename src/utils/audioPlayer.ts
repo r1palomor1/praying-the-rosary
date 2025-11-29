@@ -85,7 +85,7 @@ class AudioPlayer {
      * Check if paused (for Web Speech API compatibility)
      */
     isPaused(): boolean {
-        return !ttsManager['isPlaying'];
+        return !ttsManager.isSpeaking();
     }
 }
 

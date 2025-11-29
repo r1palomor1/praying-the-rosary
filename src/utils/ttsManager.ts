@@ -22,7 +22,6 @@ class UnifiedTTSManager {
     private synth: SpeechSynthesis;
     private piperInitialized: boolean = false;
     private audioQueue: HTMLAudioElement[] = [];
-    private isPlaying: boolean = false;
     private currentSegmentIndex: number = 0;
     private segments: TTSSegment[] = [];
     private onEndCallback?: () => void;
@@ -95,6 +94,18 @@ class UnifiedTTSManager {
     }
 
     /**
+     * Check if currently speaking
+     */
+    isSpeaking(): boolean {
+        if (this.currentEngine === 'webspeech') {
+            return this.synth.speaking;
+        } else if (this.currentEngine === 'piper') {
+            return this.audioQueue.length > 0 && !this.audioQueue[this.currentSegmentIndex]?.paused;
+        }
+        return false;
+    }
+
+    /**
      * Speak segments with automatic engine selection
      */
     async speakSegments(segments: TTSSegment[]): Promise<void> {
@@ -118,7 +129,6 @@ class UnifiedTTSManager {
      * Speak using Piper TTS
      */
     private async speakWithPiper() {
-        this.isPlaying = true;
         this.audioQueue = [];
 
         try {
@@ -156,7 +166,6 @@ class UnifiedTTSManager {
      */
     private playNextPiperAudio() {
         if (this.currentSegmentIndex >= this.audioQueue.length) {
-            this.isPlaying = false;
             if (this.onEndCallback) {
                 this.onEndCallback();
             }
@@ -190,12 +199,10 @@ class UnifiedTTSManager {
      * Speak using Web Speech API (fallback)
      */
     private speakWithWebSpeech() {
-        this.isPlaying = true;
         let currentIndex = 0;
 
         const speakNext = () => {
             if (currentIndex >= this.segments.length) {
-                this.isPlaying = false;
                 if (this.onEndCallback) {
                     this.onEndCallback();
                 }
@@ -264,7 +271,6 @@ class UnifiedTTSManager {
      * Stop all audio
      */
     stop() {
-        this.isPlaying = false;
         this.synth.cancel();
 
         // Stop and clean up Piper audio
@@ -289,7 +295,6 @@ class UnifiedTTSManager {
                 current.pause();
             }
         }
-        this.isPlaying = false;
     }
 
     /**
@@ -304,7 +309,6 @@ class UnifiedTTSManager {
                 current.play();
             }
         }
-        this.isPlaying = true;
     }
 }
 
