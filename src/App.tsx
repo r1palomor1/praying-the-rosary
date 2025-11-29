@@ -1,3 +1,6 @@
+/**
+ * Checkpoint: Stable Hybrid V2 (Piper Desktop / System Mobile) - 112925 4pm
+ */
 import { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { LanguageSelector } from './components/LanguageSelector';
