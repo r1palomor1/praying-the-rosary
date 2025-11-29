@@ -31,59 +31,99 @@ class AudioPlayer {
     /**
      * Speak text using Web Speech API
      */
-    speak(text: string): void {
+    speak(text: string, gender: 'female' | 'male' = 'female'): void {
+        this.speakSegments([{ text, gender }]);
+    }
+
+    /**
+     * Speak a sequence of segments with different voices
+     */
+    speakSegments(segments: { text: string; gender: 'female' | 'male'; rate?: number }[]): void {
         // Cancel any ongoing speech
         this.stop();
 
-        this.utterance = new SpeechSynthesisUtterance(text);
-        this.utterance.lang = this.language === 'en' ? 'en-US' : 'es-ES';
-        this.utterance.volume = this.volume;
-        this.utterance.rate = 0.85; // Slower for prayer (was 0.9)
-        this.utterance.pitch = 1.0;
+        let currentIndex = 0;
 
-        // Select the best available voice
+        const speakNext = () => {
+            if (currentIndex >= segments.length) {
+                if (this.onEndCallback) {
+                    this.onEndCallback();
+                }
+                return;
+            }
+
+            const segment = segments[currentIndex];
+            this.utterance = new SpeechSynthesisUtterance(segment.text);
+            this.utterance.lang = this.language === 'en' ? 'en-US' : 'es-ES';
+            this.utterance.volume = this.volume;
+            this.utterance.rate = segment.rate || 0.85;
+            this.utterance.pitch = 1.0;
+
+            // Select voice based on gender
+            const voice = this.getVoice(segment.gender);
+            if (voice) {
+                this.utterance.voice = voice;
+                console.log(`Using voice for ${segment.gender}: ${voice.name}`);
+            }
+
+            this.utterance.onend = () => {
+                currentIndex++;
+                speakNext();
+            };
+
+            this.synth.speak(this.utterance);
+        };
+
+        speakNext();
+    }
+
+    private getVoice(gender: 'female' | 'male'): SpeechSynthesisVoice | null {
         const voices = this.synth.getVoices();
         const targetLang = this.language === 'en' ? 'en' : 'es';
 
-        // Filter voices by language
+        // Filter by language
         const languageVoices = voices.filter(voice =>
             voice.lang.startsWith(targetLang)
         );
 
-        if (languageVoices.length > 0) {
-            // Prioritize high-quality voices (in order of preference)
-            const preferredVoice =
-                // 1. Try Google voices (usually highest quality)
-                languageVoices.find(v => v.name.toLowerCase().includes('google')) ||
-                // 2. Try Premium/Enhanced voices
-                languageVoices.find(v =>
-                    v.name.toLowerCase().includes('premium') ||
-                    v.name.toLowerCase().includes('enhanced')
-                ) ||
-                // 3. Try Neural voices
-                languageVoices.find(v => v.name.toLowerCase().includes('neural')) ||
-                // 4. Try natural-sounding voices
-                languageVoices.find(v => v.name.toLowerCase().includes('natural')) ||
-                // 5. For Spanish, prefer specific locales (Mexico, Spain)
-                (targetLang === 'es' ? (
-                    languageVoices.find(v => v.lang === 'es-MX') ||
-                    languageVoices.find(v => v.lang === 'es-ES')
-                ) : null) ||
-                // 6. Fall back to first available voice for the language
-                languageVoices[0];
+        if (languageVoices.length === 0) return null;
 
-            if (preferredVoice) {
-                this.utterance.voice = preferredVoice;
-                console.log(`Using voice: ${preferredVoice.name} (${preferredVoice.lang})`);
-            }
+        // Try to find voice matching gender
+        // Note: Voice names often contain "Female" or "Male", or specific names
+        // This is a heuristic and depends on the OS/Browser
+        const genderKeywords = gender === 'female'
+            ? ['female', 'woman', 'girl', 'samantha', 'victoria', 'zira', 'google us english', 'google español']
+            : ['male', 'man', 'boy', 'david', 'mark', 'google uk english male'];
+
+        const genderVoice = languageVoices.find(v =>
+            genderKeywords.some(keyword => v.name.toLowerCase().includes(keyword))
+        );
+
+        if (genderVoice) return genderVoice;
+
+        // Fallback strategies if specific gender not found
+
+        // If we want female but didn't find one, try to avoid known male names
+        if (gender === 'female') {
+            const notMale = languageVoices.find(v =>
+                !['male', 'man', 'david', 'mark'].some(k => v.name.toLowerCase().includes(k))
+            );
+            if (notMale) return notMale;
         }
 
-        // Handle end event
-        if (this.onEndCallback) {
-            this.utterance.onend = this.onEndCallback;
+        // If we want male, try to find one explicitly, otherwise fallback to any
+        if (gender === 'male') {
+            // If we couldn't find a "male" keyword, just pick a different voice than the default if possible?
+            // Or just return the first available one that might be male-sounding?
+            // For now, return the first one that isn't explicitly female if possible
+            const notFemale = languageVoices.find(v =>
+                !['female', 'woman', 'samantha', 'victoria'].some(k => v.name.toLowerCase().includes(k))
+            );
+            if (notFemale) return notFemale;
         }
 
-        this.synth.speak(this.utterance);
+        // Ultimate fallback
+        return languageVoices[0];
     }
 
     /**
@@ -109,6 +149,8 @@ class AudioPlayer {
      */
     stop(): void {
         this.synth.cancel();
+        // Clear utterance to prevent zombie events
+        this.utterance = null;
     }
 
     /**

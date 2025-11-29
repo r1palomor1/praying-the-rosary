@@ -31,7 +31,7 @@ interface AppContextType {
 
     // Audio
     isPlaying: boolean;
-    playAudio: (text: string) => void;
+    playAudio: (textOrSegments: string | { text: string; gender: 'female' | 'male'; rate?: number }[]) => void;
     pauseAudio: () => void;
     stopAudio: () => void;
 }
@@ -188,9 +188,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
 
     // Audio controls
-    const playAudio = (text: string) => {
+    const playAudio = (textOrSegments: string | { text: string; gender: 'female' | 'male'; rate?: number }[]) => {
         if (audioEnabled) {
-            audioPlayer.speak(text);
+            if (typeof textOrSegments === 'string') {
+                audioPlayer.speak(textOrSegments);
+            } else {
+                audioPlayer.speakSegments(textOrSegments);
+            }
             setIsPlaying(true);
         }
     };

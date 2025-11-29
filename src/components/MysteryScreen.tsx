@@ -116,25 +116,137 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         savePrayerProgress(progress);
     }, [currentStep, currentMysterySet, language, flowEngine]);
 
-    const getAudioText = (step: any) => {
+    const t = language === 'es' ? {
+        back: 'Inicio',
+        step: 'Paso',
+        of: 'de',
+        complete: 'completo',
+        previous: 'Anterior',
+        next: 'Siguiente',
+        finish: 'Finalizar',
+        stopAudio: 'Detener audio',
+        playAudio: 'Reproducir audio',
+        continuousMode: 'Modo Continuo',
+        stopContinuous: 'Detener Continuo',
+        reflection: 'Reflexión',
+        mystery: 'Misterio',
+        mysteryOrdinal: 'º'
+    } : {
+        back: 'Home',
+        step: 'Step',
+        of: 'of',
+        complete: 'complete',
+        previous: 'Previous',
+        next: 'Next',
+        finish: 'Finish',
+        stopAudio: 'Stop audio',
+        playAudio: 'Play audio',
+        continuousMode: 'Continuous Mode',
+        stopContinuous: 'Stop Continuous',
+        reflection: 'Reflection',
+        mystery: 'Mystery',
+        mysteryOrdinal: ''
+    };
+
+    const getAudioSegments = (step: any): { text: string; gender: 'female' | 'male' }[] => {
+        // Helper to create segments
+        const createSegments = (call: string, response: string) => [
+            { text: call, gender: 'female' as const },
+            { text: response, gender: 'male' as const }
+        ];
+
         if (step.type === 'decade_announcement') {
-            return `${step.title}. ${step.text}`;
+            const decadeInfo = flowEngine.getCurrentDecadeInfo();
+            let text = `${step.title}. ${step.text}`;
+
+            if (decadeInfo) {
+                if (decadeInfo.fruit) {
+                    const fruitLabel = language === 'es' ? 'Fruto del misterio: ' : 'Fruit of the mystery: ';
+                    text += `. ${fruitLabel}${decadeInfo.fruit}`;
+                }
+                if (decadeInfo.scripture) {
+                    const scriptureLabel = language === 'es' ? 'Lectura: ' : 'Scripture: ';
+                    text += `. ${scriptureLabel}${decadeInfo.scripture.text}`;
+                }
+            }
+            // Announcement is all female (Call)
+            return [{ text, gender: 'female' }];
         }
 
-        // Build audio text for litany from structured data
+        // Litany of Loreto
         if (step.type === 'litany_of_loreto' && step.litanyData) {
             const data = step.litanyData;
-            const parts: string[] = [];
+            const segments: { text: string; gender: 'female' | 'male'; rate?: number }[] = [];
 
             // Add all sections with call and response
-            [...data.initial_petitions, ...data.trinity_invocations, ...data.mary_invocations, ...data.agnus_dei].forEach(item => {
-                parts.push(`${item.call} ${item.response}`);
+            [...data.initial_petitions, ...data.trinity_invocations, ...data.mary_invocations, ...data.agnus_dei].forEach((item: any) => {
+                segments.push({ text: item.call, gender: 'female', rate: 1.0 });
+                segments.push({ text: item.response, gender: 'male', rate: 1.0 });
             });
 
-            return parts.join('. ');
+            return segments;
         }
 
-        return step.text;
+        // Final Hail Marys (Intro + Prayer)
+        if (step.type === 'final_hail_mary_intro') {
+            const parts = step.text.split('\n\n');
+            if (parts.length > 1) {
+                return createSegments(parts[0], parts[1]);
+            }
+            // If only one part (e.g. the 4th one), it's all female
+            return [{ text: step.text, gender: 'female' }];
+        }
+
+        // Standard Prayers - Split logic
+        const text = step.text;
+
+        // Our Father
+        if (step.title.includes('Our Father') || step.title.includes('Padre Nuestro')) {
+            const splitPhrase = language === 'es' ? 'Danos hoy' : 'Give us this day';
+            const parts = text.split(splitPhrase);
+            if (parts.length > 1) {
+                return createSegments(parts[0], splitPhrase + parts.slice(1).join(splitPhrase));
+            }
+        }
+
+        // Hail Mary
+        if (step.title.includes('Hail Mary') || step.title.includes('Ave María')) {
+            const splitPhrase = language === 'es' ? 'Santa María' : 'Holy Mary';
+            const parts = text.split(splitPhrase);
+            if (parts.length > 1) {
+                return createSegments(parts[0], splitPhrase + parts.slice(1).join(splitPhrase));
+            }
+        }
+
+        // Glory Be
+        if (step.title.includes('Glory Be') || step.title.includes('Gloria')) {
+            const splitPhrase = language === 'es' ? 'Como era' : 'As it was';
+            const parts = text.split(splitPhrase);
+            if (parts.length > 1) {
+                return createSegments(parts[0], splitPhrase + parts.slice(1).join(splitPhrase));
+            }
+        }
+
+        // O My Jesus
+        if (step.title.includes('O My Jesus') || step.title.includes('Oh Jesús Mío')) {
+            const splitPhrase = language === 'es' ? 'lleva al cielo' : 'and lead all souls';
+            const parts = text.split(splitPhrase);
+            if (parts.length > 1) {
+                return createSegments(parts[0], splitPhrase + parts.slice(1).join(splitPhrase));
+            }
+        }
+
+        // Hail Holy Queen
+        if (step.title.includes('Hail Holy Queen') || step.title.includes('La Salve')) {
+            const splitPhrase = language === 'es' ? 'Ea, pues' : 'Turn then';
+            const parts = text.split(splitPhrase);
+            if (parts.length > 1) {
+                return createSegments(parts[0], splitPhrase + parts.slice(1).join(splitPhrase));
+            }
+        }
+
+        // Default: All Female
+        return [{ text: step.text, gender: 'female' }];
     };
 
     // Handle continuous audio mode
@@ -147,7 +259,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                 setCurrentStep(nextStep);
                 if (nextStep.type !== 'complete') {
                     setTimeout(() => {
-                        playAudio(getAudioText(nextStep));
+                        playAudio(getAudioSegments(nextStep));
                         audioEndedRef.current = true;
                     }, 500); // Small delay between prayers
                 } else {
@@ -206,40 +318,8 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             // Start continuous mode
             setContinuousMode(true);
             audioEndedRef.current = true;
-            playAudio(getAudioText(currentStep));
+            playAudio(getAudioSegments(currentStep));
         }
-    };
-
-    const t = language === 'es' ? {
-        back: 'Inicio',
-        step: 'Paso',
-        of: 'de',
-        complete: 'completo',
-        previous: 'Anterior',
-        next: 'Siguiente',
-        finish: 'Finalizar',
-        stopAudio: 'Detener audio',
-        playAudio: 'Reproducir audio',
-        continuousMode: 'Modo Continuo',
-        stopContinuous: 'Detener Continuo',
-        reflection: 'Reflexión',
-        mystery: 'Misterio',
-        mysteryOrdinal: 'º'
-    } : {
-        back: 'Home',
-        step: 'Step',
-        of: 'of',
-        complete: 'complete',
-        previous: 'Previous',
-        next: 'Next',
-        finish: 'Finish',
-        stopAudio: 'Stop audio',
-        playAudio: 'Play audio',
-        continuousMode: 'Continuous Mode',
-        stopContinuous: 'Stop Continuous',
-        reflection: 'Reflection',
-        mystery: 'Mystery',
-        mysteryOrdinal: ''
     };
 
     const renderStepContent = () => {
