@@ -105,6 +105,22 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         };
     }, []);
 
+    // LAYER 4: Stop continuous mode when page becomes hidden (screen off, background)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden && continuousMode) {
+                console.log('[Continuous Mode] Page hidden - stopping to prevent callback issues');
+                setContinuousMode(false);
+                continuousModeRef.current = false;
+                playbackIdRef.current++; // Invalidate pending callbacks
+                stopAudio();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [continuousMode, stopAudio]);
+
     // Update language when it changes
     useEffect(() => {
         flowEngine.setLanguage(language);
@@ -277,38 +293,54 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         };
     }, [continuousMode]);
 
+    // Track playback session to invalidate stale callbacks
+    const playbackIdRef = useRef(0);
+
     // Recursive function to play audio sequence
     const playSequence = (step: any) => {
         if (!continuousModeRef.current) return;
 
+        // Capture current playback session ID
+        const currentPlaybackId = playbackIdRef.current;
+
         playAudio(getAudioSegments(step), () => {
-            // Audio finished
-            if (continuousModeRef.current) {
-                const nextStep = flowEngine.getNextStep();
-                if (nextStep) {
-                    setCurrentStep(nextStep);
+            // LAYER 2: Validate this callback is not stale
+            if (playbackIdRef.current !== currentPlaybackId) {
+                console.log('[Continuous Mode] Stale callback detected (playback session changed) - ignoring');
+                return; // Don't advance - this callback is from an old session
+            }
 
-                    if (nextStep.type === 'complete') {
-                        setContinuousMode(false);
+            // LAYER 3: Check if continuous mode is still active
+            if (!continuousModeRef.current) {
+                console.log('[Continuous Mode] Stopped during playback - staying on current prayer:', currentStep.title);
+                return; // Don't advance - user will resume from current prayer
+            }
 
-                        // Save completion
-                        const progress = {
-                            mysteryType: currentMysterySet,
-                            currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
-                            date: new Date().toISOString().split('T')[0],
-                            language
-                        };
-                        savePrayerProgress(progress);
-                        onComplete();
-                    } else {
-                        // Continue to next step after delay
-                        setTimeout(() => {
-                            playSequence(nextStep);
-                        }, 500);
-                    }
-                } else {
+            // All validations passed - safe to advance
+            const nextStep = flowEngine.getNextStep();
+            if (nextStep) {
+                setCurrentStep(nextStep);
+
+                if (nextStep.type === 'complete') {
                     setContinuousMode(false);
+
+                    // Save completion
+                    const progress = {
+                        mysteryType: currentMysterySet,
+                        currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
+                        date: new Date().toISOString().split('T')[0],
+                        language
+                    };
+                    savePrayerProgress(progress);
+                    onComplete();
+                } else {
+                    // Continue to next step after delay
+                    setTimeout(() => {
+                        playSequence(nextStep);
+                    }, 500);
                 }
+            } else {
+                setContinuousMode(false);
             }
         });
     };
@@ -348,9 +380,14 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             // Stop continuous mode
             setContinuousMode(false);
             continuousModeRef.current = false;
+
+            // LAYER 2: Invalidate all pending callbacks
+            playbackIdRef.current++;
+            console.log('[Continuous Mode] Stopped - invalidating callbacks (session:', playbackIdRef.current, ')');
+
             stopAudio();
 
-            // Release wake lock to allow screen to turn off
+            // LAYER 1: Release wake lock to allow screen to turn off
             await wakeLockManager.release();
         } else {
             // Start continuous mode
@@ -358,7 +395,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             // We need to set the ref immediately for the first call
             continuousModeRef.current = true;
 
-            // Request wake lock to keep screen on
+            // LAYER 1: Request wake lock to keep screen on
             const wakeLockAcquired = await wakeLockManager.request();
             if (wakeLockAcquired) {
                 console.log('🔒 Screen will stay on during continuous mode');
