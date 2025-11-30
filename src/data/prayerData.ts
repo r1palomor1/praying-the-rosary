@@ -68,7 +68,7 @@ export type Language = 'en' | 'es';
 export const prayerData: Record<Language, PrayerDataStructure> = {
     en: {
         fixed_prayers: {
-            sign_of_cross_start: "In the name of the Father, and of the Son, and of the Holy Spirit. Amen. By the sign of the Holy Cross, from our enemies, deliver us, O Lord, our God.",
+            sign_of_cross_start: "By the sign of the Holy Cross, from our enemies, deliver us, O Lord, our God. In the name of the Father, and of the Son, and of the Holy Spirit. Amen.",
             opening_invocation: "O Lord, open my lips, and my mouth shall proclaim your praise.",
             act_of_contrition: "O my God, I am heartily sorry for having offended Thee, and I detest all my sins because of Thy just punishments, but most of all because they offend Thee, my God, Who art all good and deserving of all my love. I firmly resolve with the help of Thy grace, to confess my sins, to do penance, and to amend my life. Amen.",
             apostles_creed: "I believe in God, the Father Almighty, Creator of heaven and earth; and in Jesus Christ, His only Son, our Lord; Who was conceived by the Holy Spirit, born of the Virgin Mary, suffered under Pontius Pilate, was crucified, died, and was buried. He descended into hell; the third day He arose again from the dead; He ascended into heaven, sits at the right hand of God, the Father Almighty; from thence He shall come to judge the living and the dead. I believe in the Holy Spirit, the Holy Catholic Church, the communion of Saints, the forgiveness of sins, the resurrection of the body, and life everlasting. Amen.",
