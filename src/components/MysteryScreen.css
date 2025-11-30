@@ -10,7 +10,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
+    /* Reduced from lg */
     padding: var(--spacing-sm);
 }
 
@@ -31,7 +32,8 @@
 .progress-bar-container {
     height: 4px;
     align-items: center;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+    /* Reduced from xl */
     padding-bottom: var(--spacing-md);
     border-bottom: 1px solid var(--color-border-light);
 }
@@ -115,9 +117,10 @@
 }
 
 .navigation-buttons .btn {
-    position: relative;
-    background-color: var(--color-bg-tertiary);
-    /* Fallback */
+    flex: 1;
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: var(--letter-spacing-wide);
 }
 
 /* Mystery Card Layout */
@@ -126,7 +129,8 @@
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-md);
     overflow: hidden;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+    /* Reduced from xl */
     border: 1px solid var(--color-border-light);
     width: 100%;
 }
@@ -395,114 +399,6 @@
         line-height: 1.5;
         text-align: justify;
         margin-bottom: var(--spacing-sm);
-    }
-
-    .litany-call,
-    .litany-response {
-        font-size: 0.9375rem;
-    }
-
-    .section-label {
-        font-size: 0.75rem;
-        letter-spacing: 0.1em;
-    }
-
-    /* --- Layout & Spacing Compactness --- */
-    .mystery-screen-container {
-        padding: var(--spacing-xs);
-    }
-
-    .mystery-screen-header {
-        margin-bottom: var(--spacing-xs);
-        padding: 0;
-    }
-
-    .progress-bar-container {
-        margin-bottom: var(--spacing-sm);
-    }
-
-}
-
-.prayer-section {
-    padding: var(--spacing-md);
-    margin-bottom: var(--spacing-sm);
-    border-radius: var(--radius-lg);
-}
-
-/* --- Header Layout --- */
-.prayer-header {
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    text-align: center;
-    border-bottom: none;
-    padding-bottom: 0;
-    margin-bottom: var(--spacing-sm);
-}
-
-/* --- Button Resizing (15% Smaller -> ~40px) --- */
-
-/* Home Button (in header) */
-.mystery-screen-header .btn-icon {
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Audio Buttons */
-.btn-icon,
-.audio-btn,
-.continuous-btn {
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: var(--spacing-2xl);
-}
-
-.navigation-buttons .btn {
-    flex: 1;
-    padding: var(--spacing-lg) var(--spacing-xl);
-    font-size: var(--font-size-base);
-    letter-spacing: var(--letter-spacing-normal);
-    min-width: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-}
-
-.navigation-buttons .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-/* Mobile optimizations & Design Polish */
-@media (max-width: 768px) {
-
-    /* --- Typography Scale --- */
-    .mystery-title {
-        font-size: 1.25rem;
-        line-height: 1.2;
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .prayer-name {
-        font-size: 1.125rem;
-        font-weight: 700;
-    }
-
-    .prayer-text-main {
-        font-size: var(--font-size-xl);
-        line-height: 1.5;
-        text-align: justify;
-        margin-bottom: var(--spacing-xs);
     }
 
     .litany-call,
