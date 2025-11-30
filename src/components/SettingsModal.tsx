@@ -1,8 +1,8 @@
-
+import { useState, useEffect } from 'react';
 import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge, Download } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress } from '../utils/storage';
-import { getSherpaError } from '../utils/sherpaTTS';
+import { getSherpaError, getSherpaState } from '../utils/sherpaTTS';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
@@ -12,6 +12,17 @@ interface SettingsModalProps {
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate } = useApp();
+    const [sherpaState, setSherpaState] = useState(getSherpaState());
+
+    useEffect(() => {
+        if (isOpen) {
+            setSherpaState(getSherpaState());
+            const interval = setInterval(() => {
+                setSherpaState(getSherpaState());
+            }, 1000);
+            return () => clearInterval(interval);
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -218,8 +229,15 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </div>
                     </div>
                 )}
+
+                {/* Debug: Sherpa State Display */}
+                <div className="setting-item" style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#f3f4f6', borderRadius: '8px', border: '1px solid #d1d5db' }}>
+                    <div className="setting-label" style={{ color: '#374151', fontSize: '0.8rem', flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}>
+                        <span style={{ fontWeight: 'bold' }}>TTS Status:</span>
+                        <span style={{ fontFamily: 'monospace' }}>{sherpaState}</span>
+                    </div>
+                </div>
             </div>
         </div>
-
     );
 }

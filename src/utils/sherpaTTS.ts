@@ -45,6 +45,11 @@ export function getSherpaError(): string | null {
     return lastError;
 }
 
+export function getSherpaState(): string {
+    if (!ttsEngine) return 'Not Initialized';
+    return `Loaded: ${currentLanguage} (${currentGender})`;
+}
+
 // Helper to load external script
 function loadScript(src: string): Promise<void> {
     return new Promise((resolve, reject) => {
