@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
+import { wakeLockManager } from '../utils/wakeLock';
 
 import './MysteryScreen.css';
 import './MysteryBottomNav.css';
@@ -95,6 +96,13 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             setContinuousMode(true);
             audioEndedRef.current = true;
         }
+    }, []);
+
+    // Cleanup: Release wake lock when component unmounts
+    useEffect(() => {
+        return () => {
+            wakeLockManager.release();
+        };
     }, []);
 
     // Update language when it changes
@@ -335,17 +343,29 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         }
     };
 
-    const handleToggleContinuous = () => {
+    const handleToggleContinuous = async () => {
         if (continuousMode || isPlaying) {
             // Stop continuous mode
             setContinuousMode(false);
             continuousModeRef.current = false;
             stopAudio();
+
+            // Release wake lock to allow screen to turn off
+            await wakeLockManager.release();
         } else {
             // Start continuous mode
             setContinuousMode(true);
             // We need to set the ref immediately for the first call
             continuousModeRef.current = true;
+
+            // Request wake lock to keep screen on
+            const wakeLockAcquired = await wakeLockManager.request();
+            if (wakeLockAcquired) {
+                console.log('🔒 Screen will stay on during continuous mode');
+            } else {
+                console.log('⚠️ Wake Lock not available - screen may turn off');
+            }
+
             playSequence(currentStep);
         }
     };
