@@ -23,6 +23,7 @@ class UnifiedTTSManager {
     private segments: TTSSegment[] = [];
     private onEndCallback?: () => void;
     private playbackId: number = 0;
+    private audioContextUnlocked: boolean = false; // Track if audio context is unlocked on mobile
 
     constructor() {
         this.synth = window.speechSynthesis;
@@ -113,6 +114,20 @@ class UnifiedTTSManager {
      */
     private async speakWithSherpa(playbackId: number) {
         this.audioQueue = [];
+
+        // Unlock audio context on mobile (first interaction only)
+        if (!this.audioContextUnlocked) {
+            try {
+                const silentAudio = new Audio();
+                silentAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+                await silentAudio.play();
+                silentAudio.pause();
+                this.audioContextUnlocked = true;
+                console.log('✅ Mobile audio context unlocked');
+            } catch (error) {
+                console.warn('Failed to unlock audio context:', error);
+            }
+        }
 
         try {
             // Generate all audio segments
