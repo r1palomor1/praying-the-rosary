@@ -39,6 +39,7 @@ interface AppContextType {
     ) => void;
     pauseAudio: () => void;
     stopAudio: () => void;
+    currentEngine: string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -274,7 +275,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isPlaying,
         playAudio,
         pauseAudio,
-        stopAudio
+        stopAudio,
+        currentEngine: audioPlayer.getCurrentEngine()
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

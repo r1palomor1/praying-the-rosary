@@ -11,7 +11,7 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate } = useApp();
+    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, currentEngine } = useApp();
     const [sherpaState, setSherpaState] = useState(getSherpaState());
 
     useEffect(() => {
@@ -233,7 +233,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {/* Debug: Sherpa State Display */}
                 <div className="setting-item" style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#f3f4f6', borderRadius: '8px', border: '1px solid #d1d5db' }}>
                     <div className="setting-label" style={{ color: '#374151', fontSize: '0.8rem', flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}>
-                        <span style={{ fontWeight: 'bold' }}>TTS Status:</span>
+                        <span style={{ fontWeight: 'bold' }}>Active Engine:</span>
+                        <span style={{ fontFamily: 'monospace', marginBottom: '0.5rem' }}>{currentEngine}</span>
+                        <span style={{ fontWeight: 'bold' }}>Sherpa Status:</span>
                         <span style={{ fontFamily: 'monospace' }}>{sherpaState}</span>
                     </div>
                 </div>
