@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge, Download } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress } from '../utils/storage';
 import { getSherpaError, getSherpaState } from '../utils/sherpaTTS';
@@ -13,6 +13,7 @@ interface SettingsModalProps {
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, currentEngine } = useApp();
     const [sherpaState, setSherpaState] = useState(getSherpaState());
+    const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -20,6 +21,15 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             const interval = setInterval(() => {
                 setSherpaState(getSherpaState());
             }, 1000);
+
+            // Get browser voices
+            const updateVoices = () => {
+                const voices = window.speechSynthesis.getVoices();
+                setBrowserVoices(voices);
+            };
+            updateVoices();
+            window.speechSynthesis.onvoiceschanged = updateVoices;
+
             return () => clearInterval(interval);
         }
     }, [isOpen]);
@@ -178,29 +188,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     <span className="volume-value">{Math.round(speechRate * 100)}%</span>
                                 </div>
                             </div>
-
-                            {/* Voice Download - Desktop Only (Piper) */}
-                            {!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) && (
-                                <div className="setting-item">
-                                    <div className="setting-label">
-                                        <Download size={20} />
-                                        <span>{language === 'es' ? 'Voces Mejoradas' : 'Better Voices'}</span>
-                                    </div>
-                                    <div className="setting-control">
-                                        <button
-                                            className="setting-btn"
-                                            onClick={() => {
-                                                // Reset dismissal flag to show banner again
-                                                localStorage.removeItem(`voice-download-dismissed-final-${language}`);
-                                                // Force reload to trigger banner check
-                                                window.location.reload();
-                                            }}
-                                        >
-                                            {language === 'es' ? 'Descargar' : 'Download'}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
                         </>
                     )}
 
@@ -233,10 +220,36 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {/* Debug: Sherpa State Display */}
                 <div className="setting-item" style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#f3f4f6', borderRadius: '8px', border: '1px solid #d1d5db' }}>
                     <div className="setting-label" style={{ color: '#374151', fontSize: '0.8rem', flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}>
-                        <span style={{ fontWeight: 'bold' }}>Active Engine:</span>
-                        <span style={{ fontFamily: 'monospace', marginBottom: '0.5rem' }}>{currentEngine}</span>
-                        <span style={{ fontWeight: 'bold' }}>Sherpa Status:</span>
-                        <span style={{ fontFamily: 'monospace' }}>{sherpaState}</span>
+                        <span style={{ fontWeight: 'bold' }}>TTS Engine Status:</span>
+                        <span style={{ fontFamily: 'monospace', marginBottom: '0.5rem' }}>Engine: {currentEngine}</span>
+                        {currentEngine === 'sherpa' && (
+                            <>
+                                <span style={{ fontWeight: 'bold' }}>Voice Model:</span>
+                                <span style={{ fontFamily: 'monospace' }}>{sherpaState}</span>
+                            </>
+                        )}
+                        {currentEngine === 'webspeech' && (
+                            <>
+                                <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#6b7280' }}>
+                                    Using browser's built-in voices
+                                </span>
+                                {browserVoices.length > 0 && (
+                                    <>
+                                        <span style={{ fontWeight: 'bold', marginTop: '0.5rem' }}>Active Voices:</span>
+                                        <div style={{ fontSize: '0.7rem', color: '#6b7280', maxHeight: '100px', overflowY: 'auto' }}>
+                                            {browserVoices
+                                                .filter(v => v.lang.startsWith(language === 'en' ? 'en' : 'es'))
+                                                .slice(0, 3)
+                                                .map((v, i) => (
+                                                    <div key={i} style={{ marginBottom: '0.25rem' }}>
+                                                        • {v.name} ({v.lang})
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

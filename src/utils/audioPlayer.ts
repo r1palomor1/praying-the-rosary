@@ -60,12 +60,6 @@ class AudioPlayer {
         ttsManager.resume();
     }
 
-    /**
-     * Check if Piper TTS is ready
-     */
-    async isPiperReady(): Promise<boolean> {
-        return await ttsManager.isPiperReady();
-    }
 
     /**
      * Get current TTS engine

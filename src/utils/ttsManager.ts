@@ -1,9 +1,8 @@
 import type { Language } from '../types';
-import * as piperTTS from './piperTTS';
 import { generateSpeechSherpa } from './sherpaTTS';
 import { sanitizeTextForSpeech } from './textSanitizer';
 
-type TTSEngine = 'piper' | 'sherpa' | 'webspeech' | 'none';
+type TTSEngine = 'sherpa' | 'webspeech' | 'none';
 
 interface TTSSegment {
     text: string;
@@ -19,7 +18,6 @@ class UnifiedTTSManager {
     private language: Language = 'en';
     private volume: number = 0.8;
     private synth: SpeechSynthesis;
-    private piperInitialized: boolean = false;
     private audioQueue: HTMLAudioElement[] = [];
     private currentSegmentIndex: number = 0;
     private segments: TTSSegment[] = [];
@@ -35,26 +33,14 @@ class UnifiedTTSManager {
      * Initialize TTS engines
      */
     private async initializeTTS() {
-        // Mobile: Default to Sherpa (will init on first use)
+        // Mobile: Use Sherpa
         if (isMobile()) {
             this.currentEngine = 'sherpa';
             console.log('📱 Mobile detected: Using Sherpa TTS');
-            return;
-        }
-
-        // Desktop: Try Piper
-        const piperAvailable = await piperTTS.initializePiper();
-
-        if (piperAvailable) {
-            this.piperInitialized = true;
-            console.log('✓ Piper TTS available');
-
-            // Check if voices are downloaded for current language
-            const hasVoices = await piperTTS.hasVoicesForLanguage(this.language);
-            this.currentEngine = hasVoices ? 'piper' : 'webspeech';
         } else {
+            // Desktop: Use Web Speech API
             this.currentEngine = 'webspeech';
-            console.log('→ Using Web Speech API');
+            console.log('🖥️ Desktop detected: Using Web Speech API');
         }
     }
 
@@ -63,17 +49,7 @@ class UnifiedTTSManager {
      */
     async setLanguage(language: Language) {
         this.language = language;
-
-        if (isMobile()) {
-            this.currentEngine = 'sherpa';
-            return;
-        }
-
-        // Check if we should switch engines
-        if (this.piperInitialized) {
-            const hasVoices = await piperTTS.hasVoicesForLanguage(language);
-            this.currentEngine = hasVoices ? 'piper' : 'webspeech';
-        }
+        // Engine selection is based on device type, not language
     }
 
     /**
@@ -91,15 +67,6 @@ class UnifiedTTSManager {
     }
 
     /**
-     * Check if Piper is available and ready
-     */
-    async isPiperReady(): Promise<boolean> {
-        if (isMobile()) return false; // Never use Piper on mobile
-        if (!this.piperInitialized) return false;
-        return await piperTTS.hasVoicesForLanguage(this.language);
-    }
-
-    /**
      * Get current engine
      */
     getCurrentEngine(): TTSEngine {
@@ -112,7 +79,7 @@ class UnifiedTTSManager {
     isSpeaking(): boolean {
         if (this.currentEngine === 'webspeech') {
             return this.synth.speaking;
-        } else if (this.currentEngine === 'piper' || this.currentEngine === 'sherpa') {
+        } else if (this.currentEngine === 'sherpa') {
             return this.audioQueue.length > 0 && !this.audioQueue[this.currentSegmentIndex]?.paused;
         }
         return false;
@@ -136,14 +103,8 @@ class UnifiedTTSManager {
             console.log('📱 Using Sherpa TTS (Mobile)');
             await this.speakWithSherpa(currentId);
         } else {
-            const usePiper = await this.isPiperReady();
-            if (usePiper) {
-                console.log('🎵 Using Piper TTS');
-                await this.speakWithPiper(currentId);
-            } else {
-                console.log('🔊 Using Web Speech API');
-                this.speakWithWebSpeech(currentId);
-            }
+            console.log('🔊 Using Web Speech API');
+            this.speakWithWebSpeech(currentId);
         }
     }
 
@@ -187,62 +148,9 @@ class UnifiedTTSManager {
         }
     }
 
-    /**
-     * Speak using Piper TTS
-     */
-    private async speakWithPiper(playbackId: number) {
-        this.audioQueue = [];
-
-        try {
-            // Generate all audio segments
-            for (const segment of this.segments) {
-                // Check cancellation before expensive operation
-                if (this.playbackId !== playbackId) return;
-
-                const sanitized = sanitizeTextForSpeech(segment.text);
-                const audioBlob = await piperTTS.generateSpeech(
-                    sanitized,
-                    this.language,
-                    segment.gender
-                );
-
-                // Check cancellation after await
-                if (this.playbackId !== playbackId) return;
-
-                const audio = new Audio();
-                audio.src = URL.createObjectURL(audioBlob);
-                audio.volume = this.volume;
-
-                // Adjust playback rate if specified
-                if (segment.rate) {
-                    audio.playbackRate = segment.rate;
-                }
-
-                this.audioQueue.push(audio);
-            }
-
-            // Check cancellation before playing
-            if (this.playbackId !== playbackId) return;
-
-            // Play audio queue
-            this.playNextAudio(playbackId);
-        } catch (error) {
-            console.error('Piper TTS failed, falling back to Web Speech:', error);
-
-            // Disable Piper for future attempts if it fails critically
-            // This prevents repeated delays and "interrupted" errors
-            this.piperInitialized = false;
-            this.currentEngine = 'webspeech';
-
-            // Only fallback if we haven't been cancelled
-            if (this.playbackId === playbackId) {
-                this.speakWithWebSpeech(playbackId);
-            }
-        }
-    }
 
     /**
-     * Play next audio in queue (Shared for Piper and Sherpa)
+     * Play next audio in queue (Shared for Sherpa)
      */
     private playNextAudio(playbackId: number) {
         // Check cancellation
@@ -387,7 +295,7 @@ class UnifiedTTSManager {
     pause() {
         if (this.currentEngine === 'webspeech' && this.synth.speaking) {
             this.synth.pause();
-        } else if ((this.currentEngine === 'piper' || this.currentEngine === 'sherpa') && this.audioQueue.length > 0) {
+        } else if (this.currentEngine === 'sherpa' && this.audioQueue.length > 0) {
             const current = this.audioQueue[this.currentSegmentIndex];
             if (current) {
                 current.pause();
@@ -401,7 +309,7 @@ class UnifiedTTSManager {
     resume() {
         if (this.currentEngine === 'webspeech' && this.synth.paused) {
             this.synth.resume();
-        } else if ((this.currentEngine === 'piper' || this.currentEngine === 'sherpa') && this.audioQueue.length > 0) {
+        } else if (this.currentEngine === 'sherpa' && this.audioQueue.length > 0) {
             const current = this.audioQueue[this.currentSegmentIndex];
             if (current) {
                 current.play();

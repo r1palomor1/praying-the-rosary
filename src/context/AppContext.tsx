@@ -60,6 +60,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     // Audio state
     const [isPlaying, setIsPlaying] = useState(false);
+    const [currentEngine, setCurrentEngine] = useState('initializing');
 
     // Initialize settings from localStorage
     useEffect(() => {
@@ -112,6 +113,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
             onEnd: () => setIsPlaying(false)
         });
     }, [language, theme, audioEnabled, volume, speechRate]);
+
+    // Poll current engine status
+    useEffect(() => {
+        const updateEngine = () => {
+            setCurrentEngine(audioPlayer.getCurrentEngine());
+        };
+
+        // Update immediately
+        updateEngine();
+
+        // Then poll every second
+        const interval = setInterval(updateEngine, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     // Save session whenever it changes
     useEffect(() => {
@@ -276,7 +291,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         playAudio,
         pauseAudio,
         stopAudio,
-        currentEngine: audioPlayer.getCurrentEngine()
+        currentEngine
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
