@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, Square, Type } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, Square } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
@@ -60,9 +60,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         isPlaying,
         playAudio,
         stopAudio,
-        audioEnabled,
-        fontSize,
-        setFontSize
+        audioEnabled
     } = useApp();
 
     const [flowEngine] = useState(() => {
@@ -689,24 +687,6 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                             <span className="mystery-nav-label">{flowEngine.isLastStep() ? t.finish : t.next}</span>
                         </button>
                     </div>
-
-                    <button
-                        className="mystery-nav-btn"
-                        onClick={(e) => {
-                            const nextSize = fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xl' : 'normal';
-                            setFontSize(nextSize);
-                            // Remove focus to prevent button staying purple on mobile
-                            (e.currentTarget as HTMLButtonElement).blur();
-                        }}
-                        aria-label={t.textSize}
-                        title={t.textSize}
-                        style={{ marginLeft: 'auto' }}
-                    >
-                        <Type size={24} />
-                        <span className="mystery-nav-label" style={{ fontSize: '0.7rem' }}>
-                            {fontSize === 'normal' ? 'Norm' : fontSize === 'large' ? 'Large' : 'XL'}
-                        </span>
-                    </button>
                 </div>
             </div>
         </div>

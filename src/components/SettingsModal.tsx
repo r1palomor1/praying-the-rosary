@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge, Type } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress } from '../utils/storage';
 import { getSherpaError, getSherpaState } from '../utils/sherpaTTS';
@@ -12,7 +12,7 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate } = useApp();
+    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
     const [sherpaState, setSherpaState] = useState(getSherpaState());
     const [currentEngine, setCurrentEngine] = useState(ttsManager.getCurrentEngine());
     const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
@@ -64,7 +64,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             enabled: 'Enabled',
             disabled: 'Disabled',
             clearProgress: 'Clear Prayer Progress',
-            close: 'Close'
+            close: 'Close',
+            textSize: 'Text Size',
+            normal: 'Normal',
+            large: 'Large',
+            extraLarge: 'Extra Large'
         },
         es: {
             title: 'Configuración',
@@ -77,7 +81,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             enabled: 'Activado',
             disabled: 'Desactivado',
             clearProgress: 'Borrar Progreso de Oración',
-            close: 'Cerrar'
+            close: 'Cerrar',
+            textSize: 'Tamaño de Texto',
+            normal: 'Normal',
+            large: 'Grande',
+            extraLarge: 'Extra Grande'
         }
     };
 
@@ -195,6 +203,33 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             </div>
                         </>
                     )}
+
+                    <div className="setting-item">
+                        <div className="setting-label">
+                            <Type size={20} />
+                            <span>{t.textSize}</span>
+                        </div>
+                        <div className="setting-control">
+                            <button
+                                className={`setting-btn ${fontSize === 'normal' ? 'active' : ''}`}
+                                onClick={() => setFontSize('normal')}
+                            >
+                                {t.normal}
+                            </button>
+                            <button
+                                className={`setting-btn ${fontSize === 'large' ? 'active' : ''}`}
+                                onClick={() => setFontSize('large')}
+                            >
+                                {t.large}
+                            </button>
+                            <button
+                                className={`setting-btn ${fontSize === 'xl' ? 'active' : ''}`}
+                                onClick={() => setFontSize('xl')}
+                            >
+                                {t.extraLarge}
+                            </button>
+                        </div>
+                    </div>
 
                     <div className="setting-item">
                         <div className="setting-label">
