@@ -702,7 +702,7 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                     >
                         <Type size={24} />
                         <span className="mystery-nav-label" style={{ fontSize: '0.7rem' }}>
-                            {fontSize === 'normal' ? '1x' : fontSize === 'large' ? '1.2x' : '1.4x'}
+                            {fontSize === 'normal' ? 'Norm' : fontSize === 'large' ? 'Large' : 'XL'}
                         </span>
                     </button>
                 </div>
