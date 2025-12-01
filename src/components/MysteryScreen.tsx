@@ -165,7 +165,6 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         stopContinuous: 'Detener',
         reflection: 'Reflexión',
         mystery: 'Misterio',
-        mystery: 'Misterio',
         mysteryOrdinal: 'º',
         textSize: 'Tamaño de texto'
     } : {
@@ -181,7 +180,6 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         continuousMode: 'Continuous Mode',
         stopContinuous: 'Stop',
         reflection: 'Reflection',
-        mystery: 'Mystery',
         mystery: 'Mystery',
         mysteryOrdinal: '',
         textSize: 'Text Size'
