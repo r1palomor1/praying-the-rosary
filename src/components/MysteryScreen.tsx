@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, Square } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, Square, Type } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
@@ -60,7 +60,9 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         isPlaying,
         playAudio,
         stopAudio,
-        audioEnabled
+        audioEnabled,
+        fontSize,
+        setFontSize
     } = useApp();
 
     const [flowEngine] = useState(() => {
@@ -163,7 +165,9 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         stopContinuous: 'Detener',
         reflection: 'Reflexión',
         mystery: 'Misterio',
-        mysteryOrdinal: 'º'
+        mystery: 'Misterio',
+        mysteryOrdinal: 'º',
+        textSize: 'Tamaño de texto'
     } : {
         back: 'Home',
         step: 'Step',
@@ -178,7 +182,9 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
         stopContinuous: 'Stop',
         reflection: 'Reflection',
         mystery: 'Mystery',
-        mysteryOrdinal: ''
+        mystery: 'Mystery',
+        mysteryOrdinal: '',
+        textSize: 'Text Size'
     };
 
     const getAudioSegments = (step: any): { text: string; gender: 'female' | 'male' }[] => {
@@ -685,6 +691,22 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
                             <span className="mystery-nav-label">{flowEngine.isLastStep() ? t.finish : t.next}</span>
                         </button>
                     </div>
+
+                    <button
+                        className="mystery-nav-btn"
+                        onClick={() => {
+                            const nextSize = fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xl' : 'normal';
+                            setFontSize(nextSize);
+                        }}
+                        aria-label={t.textSize}
+                        title={t.textSize}
+                        style={{ marginLeft: 'auto' }}
+                    >
+                        <Type size={24} />
+                        <span className="mystery-nav-label" style={{ fontSize: '0.7rem' }}>
+                            {fontSize === 'normal' ? '1x' : fontSize === 'large' ? '1.2x' : '1.4x'}
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>

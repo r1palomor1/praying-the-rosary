@@ -92,7 +92,8 @@ export function getDefaultSettings(): AppSettings {
         language: 'en',
         theme: 'dark',
         audioEnabled: true,
-        volume: 0.8
+        volume: 0.8,
+        fontSize: 'normal'
     };
 }
 

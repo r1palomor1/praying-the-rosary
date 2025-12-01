@@ -157,6 +157,7 @@ class UnifiedTTSManager {
 
         } catch (error) {
             console.error('Sherpa TTS failed, falling back to Web Speech:', error);
+            this.currentEngine = 'webspeech'; // Update state to reflect fallback
             if (this.playbackId === playbackId) {
                 this.speakWithWebSpeech(playbackId);
             }

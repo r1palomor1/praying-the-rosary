@@ -3,6 +3,7 @@ import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge } from 'lucide-re
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress } from '../utils/storage';
 import { getSherpaError, getSherpaState } from '../utils/sherpaTTS';
+import { ttsManager } from '../utils/ttsManager';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
@@ -11,15 +12,19 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, currentEngine } = useApp();
+    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate } = useApp();
     const [sherpaState, setSherpaState] = useState(getSherpaState());
+    const [currentEngine, setCurrentEngine] = useState(ttsManager.getCurrentEngine());
     const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
 
     useEffect(() => {
         if (isOpen) {
             setSherpaState(getSherpaState());
+            setCurrentEngine(ttsManager.getCurrentEngine());
+
             const interval = setInterval(() => {
                 setSherpaState(getSherpaState());
+                setCurrentEngine(ttsManager.getCurrentEngine());
             }, 1000);
 
             // Get browser voices

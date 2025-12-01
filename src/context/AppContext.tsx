@@ -17,6 +17,8 @@ interface AppContextType {
     setVolume: (volume: number) => void;
     speechRate: number;
     setSpeechRate: (rate: number) => void;
+    fontSize: 'normal' | 'large' | 'xl';
+    setFontSize: (size: 'normal' | 'large' | 'xl') => void;
 
     // Session
     currentMysterySet: MysterySetType;
@@ -51,6 +53,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const [audioEnabled, setAudioEnabled] = useState(true);
     const [volume, setVolumeState] = useState(0.8);
     const [speechRate, setSpeechRateState] = useState(0.85);
+    const [fontSize, setFontSizeState] = useState<'normal' | 'large' | 'xl'>('normal');
 
     // Session state
     const [currentMysterySet, setCurrentMysterySet] = useState<MysterySetType>(getTodaysMystery());
@@ -70,9 +73,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAudioEnabled(settings.audioEnabled);
         setVolumeState(settings.volume);
         if (settings.speechRate) setSpeechRateState(settings.speechRate);
+        if (settings.fontSize) setFontSizeState(settings.fontSize);
 
         // Apply theme to document
+        // Apply theme and font size to document
         document.documentElement.setAttribute('data-theme', settings.theme);
+        document.documentElement.setAttribute('data-font-size', settings.fontSize || 'normal');
 
         // Always set today's mystery first
         const todaysMystery = getTodaysMystery();
@@ -102,7 +108,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             theme,
             audioEnabled,
             volume,
-            speechRate
+            speechRate,
+            fontSize
         };
         saveSettings(settings);
 
@@ -112,7 +119,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
             volume,
             onEnd: () => setIsPlaying(false)
         });
-    }, [language, theme, audioEnabled, volume, speechRate]);
+    }, [language, theme, audioEnabled, volume, speechRate, fontSize]);
+
+    // Apply font size to document whenever it changes
+    useEffect(() => {
+        document.documentElement.setAttribute('data-font-size', fontSize);
+    }, [fontSize]);
 
     // Poll current engine status
     useEffect(() => {
@@ -276,6 +288,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setVolume,
         speechRate,
         setSpeechRate,
+        fontSize,
+        setFontSize: setFontSizeState,
         currentMysterySet,
         setCurrentMysterySet,
         currentMysteryNumber,
