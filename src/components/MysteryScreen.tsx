@@ -692,9 +692,11 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
                     <button
                         className="mystery-nav-btn"
-                        onClick={() => {
+                        onClick={(e) => {
                             const nextSize = fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xl' : 'normal';
                             setFontSize(nextSize);
+                            // Remove focus to prevent button staying purple on mobile
+                            (e.currentTarget as HTMLButtonElement).blur();
                         }}
                         aria-label={t.textSize}
                         title={t.textSize}
