@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, Square } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
@@ -11,13 +11,15 @@ import './HomeScreen.css';
 
 interface HomeScreenProps {
     onStartPrayer: () => void;
+    onStartPrayerWithContinuous: () => void;
     onNavigateToMysteries: () => void;
     onNavigateToPrayers: () => void;
 }
 
-export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToPrayers }: HomeScreenProps) {
-    const { language, currentMysterySet, startNewSession, resumeSession } = useApp();
+export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavigateToMysteries, onNavigateToPrayers }: HomeScreenProps) {
+    const { language, currentMysterySet, startNewSession, resumeSession, playAudio, audioEnabled, stopAudio } = useApp();
     const [showSettings, setShowSettings] = useState(false);
+    const [isPlayingHomeAudio, setIsPlayingHomeAudio] = useState(false);
 
     const hasSession = hasActiveSession();
     const mysterySet = mysterySets.find(m => m.type === currentMysterySet);
@@ -32,6 +34,9 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
             readMore: 'Read More',
             readLess: 'Read Less',
             settings: 'Settings',
+            continuousAudio: 'Continuous Audio',
+            stopAudio: 'Stop Audio',
+            dailyDevotionAudio: 'Daily Devotion',
             days: {
                 monday: 'Monday',
                 tuesday: 'Tuesday',
@@ -50,6 +55,9 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
             readMore: 'Leer Más',
             readLess: 'Leer Menos',
             settings: 'Configuración',
+            continuousAudio: 'Audio Continuo',
+            stopAudio: 'Detener Audio',
+            dailyDevotionAudio: 'Devoción Diaria',
             days: {
                 monday: 'Lunes',
                 tuesday: 'Martes',
@@ -88,6 +96,81 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
         onStartPrayer();
     };
 
+    const handleContinuousStart = () => {
+        // Check if there's saved progress
+        const savedProgress = loadPrayerProgress(currentMysterySet);
+        const hasProgress = savedProgress && hasValidPrayerProgress(currentMysterySet);
+
+        console.log('[Continuous Audio] savedProgress:', savedProgress);
+        console.log('[Continuous Audio] hasProgress:', hasProgress);
+        console.log('[Continuous Audio] audioEnabled:', audioEnabled);
+        console.log('[Continuous Audio] mysterySet:', mysterySet);
+        console.log('[Continuous Audio] devotion:', devotion);
+
+        if (hasProgress) {
+            console.log('[Continuous Audio] Has progress - navigating to mystery screen');
+            // Has progress - navigate directly to mystery screen
+            const engine = new PrayerFlowEngine(currentMysterySet as any, language);
+            engine.jumpToStep(savedProgress.currentStepIndex);
+            const progress = engine.getProgress();
+
+            if (progress >= 99) {
+                // Already complete - go to completion screen
+                onStartPrayer();
+                return;
+            }
+
+            // Resume with continuous mode
+            if (hasSession) {
+                resumeSession();
+            } else {
+                startNewSession(currentMysterySet);
+            }
+            onStartPrayerWithContinuous();
+        } else {
+            console.log('[Continuous Audio] No progress - playing home audio first');
+            // No progress - play home page audio first
+            if (audioEnabled && mysterySet && devotion) {
+                console.log('[Continuous Audio] Playing home audio...');
+
+                // Get the daily devotion label for audio
+                const dailyDevotionLabel = t.dailyDevotionAudio;
+
+                // Build audio segments for mystery name, daily devotion heading, title, and text
+                const audioSegments = [
+                    {
+                        text: `${mysterySet.name[language]}. ${dailyDevotionLabel}. ${devotion.title[language]}. ${devotion.fullText[language]}`,
+                        gender: 'female' as const
+                    }
+                ];
+
+                // Set playing state
+                setIsPlayingHomeAudio(true);
+
+                // Play audio, then navigate to mystery screen
+                playAudio(audioSegments, () => {
+                    console.log('[Continuous Audio] Home audio complete - navigating to mystery screen');
+                    setIsPlayingHomeAudio(false);
+                    // Start new session
+                    startNewSession(currentMysterySet);
+                    // Navigate to mystery screen with continuous mode
+                    onStartPrayerWithContinuous();
+                });
+            } else {
+                console.log('[Continuous Audio] Audio disabled or missing data - navigating directly');
+                // Audio disabled - just navigate
+                startNewSession(currentMysterySet);
+                onStartPrayerWithContinuous();
+            }
+        }
+    };
+
+    const handleStopHomeAudio = () => {
+        console.log('[Home Audio] Stopping audio');
+        setIsPlayingHomeAudio(false);
+        stopAudio();
+    };
+
     const getDaysText = () => {
         if (!mysterySet) return '';
         return mysterySet.days.map(day => t.days[day]).join(' & ');
@@ -97,7 +180,18 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
         <div className="home-container">
             {/* Header */}
             <header className="home-header">
-                <div className="header-spacer"></div>
+                <button
+                    className="continuous-audio-btn-header"
+                    onClick={isPlayingHomeAudio ? handleStopHomeAudio : handleContinuousStart}
+                    aria-label={isPlayingHomeAudio ? t.stopAudio : t.continuousAudio}
+                    title={isPlayingHomeAudio ? t.stopAudio : t.continuousAudio}
+                >
+                    {isPlayingHomeAudio ? (
+                        <Square size={20} />
+                    ) : (
+                        <Volume2 size={20} />
+                    )}
+                </button>
                 <h1 className="home-title">{t.title}</h1>
                 <button
                     className="settings-btn-header"
@@ -149,7 +243,11 @@ export function HomeScreen({ onStartPrayer, onNavigateToMysteries, onNavigateToP
                 />
             </div>
 
-            <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+            <SettingsModal
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                currentMysterySet={currentMysterySet}
+            />
         </div>
     );
 }

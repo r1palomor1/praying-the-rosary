@@ -9,9 +9,10 @@ import './SettingsModal.css';
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
+    currentMysterySet?: string;
 }
 
-export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, currentMysterySet }: SettingsModalProps) {
     const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
     const [sherpaState, setSherpaState] = useState(getSherpaState());
     const [currentEngine, setCurrentEngine] = useState(ttsManager.getCurrentEngine());
@@ -42,13 +43,22 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     if (!isOpen) return null;
 
     const handleClearProgress = () => {
-        if (confirm(language === 'es'
-            ? '¿Estás seguro de que quieres borrar tu progreso de oración?'
-            : 'Are you sure you want to clear your prayer progress?')) {
+        console.log('[Clear Progress] Button clicked');
+        const confirmed = window.confirm(language === 'es'
+            ? '¿Estás seguro de que quieres borrar tu progreso de oración? La página se recargará.'
+            : 'Are you sure you want to clear your prayer progress? The page will reload.');
+
+        console.log('[Clear Progress] User confirmed:', confirmed);
+
+        if (confirmed) {
+            console.log('[Clear Progress] Clearing all prayer progress...');
+            // Clear all prayer progress
             clearPrayerProgress();
-            alert(language === 'es'
-                ? 'Progreso borrado exitosamente'
-                : 'Progress cleared successfully');
+            console.log('[Clear Progress] Progress cleared, reloading page...');
+            // Reload the page to reset all state
+            window.location.reload();
+        } else {
+            console.log('[Clear Progress] User cancelled');
         }
     };
 

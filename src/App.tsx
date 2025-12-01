@@ -20,6 +20,7 @@ function AppContent() {
   const { language, clearSession, completeSession, currentMysterySet } = useApp();
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
   const [hasSelectedLanguage, setHasSelectedLanguage] = useState(false);
+  const [startWithContinuous, setStartWithContinuous] = useState(false);
 
   // Check if language has been selected before
   useEffect(() => {
@@ -58,6 +59,14 @@ function AppContent() {
     }
 
     // Not complete - proceed to prayer screen
+    setStartWithContinuous(false);
+    setCurrentScreen('prayer');
+  };
+
+  const handleStartPrayerWithContinuous = () => {
+    // HomeScreen handles all the logic (progress check, home audio, session management)
+    // This just navigates to MysteryScreen with continuous mode enabled
+    setStartWithContinuous(true);
     setCurrentScreen('prayer');
   };
 
@@ -96,6 +105,7 @@ function AppContent() {
       {currentScreen === 'home' && (
         <HomeScreen
           onStartPrayer={handleStartPrayer}
+          onStartPrayerWithContinuous={handleStartPrayerWithContinuous}
           onNavigateToMysteries={handleNavigateToMysteries}
           onNavigateToPrayers={handleNavigateToPrayers}
         />
@@ -113,7 +123,11 @@ function AppContent() {
         />
       )}
       {currentScreen === 'prayer' && (
-        <MysteryScreen onComplete={handleCompletePrayer} onBack={handleBackToHome} />
+        <MysteryScreen
+          onComplete={handleCompletePrayer}
+          onBack={handleBackToHome}
+          startWithContinuous={startWithContinuous}
+        />
       )}
       {currentScreen === 'complete' && (
         <CompletionScreen onHome={handleBackToHome} onRestart={handleRestart} mysteryType={currentMysterySet} />

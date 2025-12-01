@@ -12,6 +12,7 @@ import './MysteryBottomNav.css';
 interface MysteryScreenProps {
     onComplete: () => void;
     onBack: () => void;
+    startWithContinuous?: boolean;
 }
 
 interface MysteryImageProps {
@@ -53,7 +54,7 @@ const MysteryImage = ({ src, alt, number }: MysteryImageProps) => {
     );
 };
 
-export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
+export function MysteryScreen({ onComplete, onBack, startWithContinuous = false }: MysteryScreenProps) {
     const {
         language,
         currentMysterySet,
@@ -192,7 +193,8 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
 
         if (step.type === 'decade_announcement') {
             const decadeInfo = flowEngine.getCurrentDecadeInfo();
-            let text = `${step.title}. ${step.text}`;
+            const reflectionLabel = language === 'es' ? 'Reflexión' : 'Reflection';
+            let text = `${step.title}. ${reflectionLabel}. ${step.text}`;
 
             if (decadeInfo) {
                 if (decadeInfo.fruit) {
@@ -408,6 +410,17 @@ export function MysteryScreen({ onComplete, onBack }: MysteryScreenProps) {
             playSequence(currentStep);
         }
     };
+
+    // Auto-start continuous mode if requested from home screen
+    useEffect(() => {
+        if (startWithContinuous && !continuousMode && !isPlaying) {
+            // Small delay to ensure component is fully mounted
+            const timer = setTimeout(() => {
+                handleToggleContinuous();
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [startWithContinuous]);
 
     const renderStepContent = () => {
         const step = currentStep;

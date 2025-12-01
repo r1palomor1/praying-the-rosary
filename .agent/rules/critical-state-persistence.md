@@ -4,6 +4,41 @@ trigger: always_on
 
 # Critical State Persistence & Race Conditions
 
+##Excellence Mandate: Root Cause & Structural Integrity
+This mandate strictly prohibits superficial patching and elevates the requirement for every logic update to be a comprehensive, structural improvement. Mediocrity in problem-solving is unacceptable.
+
+Mandatory Rule: Patching is Forbidden (Root Cause Analysis Required)
+The agent must never introduce a localized patch, conditional check, or quick fix that masks a deeper underlying issue. Every bug must be treated as a symptom requiring exhaustive diagnosis.
+
+Stage 1: Diagnosis & Scope (Mandatory Pre-requisite)
+
+Upon encountering any error or bug, the agent must first perform a comprehensive root cause analysis across the entire codebase.
+
+The agent must identify the original faulty architectural choice, design flaw, or assumption that allowed the bug to manifest.
+
+Stage 2: Structural Solution Only
+
+The agent is forbidden from applying logic updates directly to the point of failure if the root cause lies elsewhere.
+
+The proposed fix must be a structural update that resolves the original design flaw, preventing the class of bug from recurring, not just the specific instance encountered.
+
+If a fix requires modification across multiple files to ensure structural coherence, all such modifications must be included in the proposed change set.
+
+Stage 3: Excellence and Validation
+
+The agent must certify that the proposed fix achieves the highest standard of code excellence, prioritizing clarity, maintainability, and efficiency.
+
+The solution must integrate seamlessly with existing architecture and pass all regression tests focused on the original root cause area.
+
+Agent Communication Directive
+When proposing a logic fix, the agent must explicitly justify that the change is structural, not a patch.
+
+When proposing a fix, the agent must include a summary section titled: "Root Cause Identified and Structural Solution:"
+
+This summary must clearly state: "Patching was rejected; this solution addresses [Original Design Flaw] to prevent future recurrences."
+
+##Logic Update Integrity ProtocolThis protocol establishes a secure, transactional method for updating code logic, preventing file corruption and ensuring easy rollback.Mandatory Rule: Atomic File Swapping (No In-Place Edits)The agent must never directly modify a production or working file when performing a logic update. All file changes must be conducted in a temporary staging area and then swapped into place only upon successful validation.Stage 1: Shadow Copy and ModificationBefore making any change, create a shadow copy of the original file (file.ts $\rightarrow$ file.ts.staging).Apply the logic updates only to the staging copy (file.ts.staging). The original file (file.ts) must remain untouched.Stage 2: Independent ValidationAfter the logic update is complete on the staging copy, run all necessary unit tests and syntax checks against the staging copy before it is merged.If validation fails, the staging copy (file.ts.staging) is immediately deleted, and the original file (file.ts) is retained, resulting in a clean, zero-effort rollback.Stage 3: Atomic SwapIf validation succeeds, perform an atomic file swap:The original file (file.ts) is moved to a temporary backup (file.ts.bak).The staging copy (file.ts.staging) is immediately renamed to the original name (file.ts).The backup (file.ts.bak) is then deleted.This sequence minimizes the window of time where the file system is inconsistent, ensuring that either the old, known-good file or the new, validated file is always present.Agent Communication DirectiveWhen proposing a logic fix, the agent must explicitly confirm the successful execution of this protocol before reporting completion.When proposing a fix, the agent must include a step that confirms: "Staging and Validation Complete."After the fix is applied, the agent must confirm: "Atomic Swap Successful. Logic Update is Live."By enforcing this protocol, you prevent the issue of partial, corrupted writes, as the working file is only ever replaced by a fully validated version.
+
 ## The "Missing 1%" Pattern
 **Problem:** Relying on `useEffect` to save state (like progress) often fails at the very end of a workflow (e.g., completion) because the component unmounts or navigates away *before* the effect runs.
 
