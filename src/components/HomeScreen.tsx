@@ -246,7 +246,6 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             <SettingsModal
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
-                currentMysterySet={currentMysterySet}
             />
         </div>
     );

@@ -9,10 +9,9 @@ import './SettingsModal.css';
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
-    currentMysterySet?: string;
 }
 
-export function SettingsModal({ isOpen, onClose, currentMysterySet }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
     const [sherpaState, setSherpaState] = useState(getSherpaState());
     const [currentEngine, setCurrentEngine] = useState(ttsManager.getCurrentEngine());
