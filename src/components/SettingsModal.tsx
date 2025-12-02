@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge, Type } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress } from '../utils/storage';
-import { getSherpaError, getSherpaState } from '../utils/sherpaTTS';
-import { ttsManager } from '../utils/ttsManager';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
@@ -13,20 +11,10 @@ interface SettingsModalProps {
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
-    const [sherpaState, setSherpaState] = useState(getSherpaState());
-    const [currentEngine, setCurrentEngine] = useState(ttsManager.getCurrentEngine());
     const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
 
     useEffect(() => {
         if (isOpen) {
-            setSherpaState(getSherpaState());
-            setCurrentEngine(ttsManager.getCurrentEngine());
-
-            const interval = setInterval(() => {
-                setSherpaState(getSherpaState());
-                setCurrentEngine(ttsManager.getCurrentEngine());
-            }, 1000);
-
             // Get browser voices
             const updateVoices = () => {
                 const voices = window.speechSynthesis.getVoices();
@@ -34,8 +22,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             };
             updateVoices();
             window.speechSynthesis.onvoiceschanged = updateVoices;
-
-            return () => clearInterval(interval);
         }
     }, [isOpen]);
 
@@ -103,12 +89,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', width: '100%' }}>
-                    <button className="btn btn-primary" onClick={onClose} style={{ minWidth: '120px' }}>
+                <div className="close-button-container">
+                    <button className="btn btn-primary" onClick={onClose}>
                         {t.close}
                     </button>
                 </div>
-                <div className="modal-header" style={{ justifyContent: 'center' }}>
+                <div className="modal-header modal-header-centered">
                     <h2>{t.title}</h2>
                 </div>
 
@@ -256,47 +242,27 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     </div>
                 </div>
 
-                {/* Debug: Sherpa Error Display */}
-                {getSherpaError() && (
-                    <div className="setting-item" style={{ marginTop: '1rem', padding: '0.5rem', background: '#fee2e2', borderRadius: '8px', border: '1px solid #ef4444' }}>
-                        <div className="setting-label" style={{ color: '#b91c1c', fontSize: '0.8rem', flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}>
-                            <span style={{ fontWeight: 'bold' }}>TTS Error:</span>
-                            <span style={{ fontFamily: 'monospace' }}>{getSherpaError()}</span>
-                        </div>
-                    </div>
-                )}
-
-                {/* Debug: Sherpa State Display */}
-                <div className="setting-item" style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#f3f4f6', borderRadius: '8px', border: '1px solid #d1d5db' }}>
-                    <div className="setting-label" style={{ color: '#374151', fontSize: '0.8rem', flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}>
-                        <span style={{ fontWeight: 'bold' }}>TTS Engine Status:</span>
-                        <span style={{ fontFamily: 'monospace', marginBottom: '0.5rem' }}>Engine: {currentEngine}</span>
-                        {currentEngine === 'sherpa' && (
+                {/* TTS Engine Status */}
+                <div className="setting-item tts-status-container">
+                    <div className="setting-label tts-status-label">
+                        <span className="tts-engine-title">TTS Engine:</span>
+                        <span className="tts-engine-name">Web Speech API</span>
+                        <span className="tts-engine-description">
+                            Using browser's built-in voices
+                        </span>
+                        {browserVoices.length > 0 && (
                             <>
-                                <span style={{ fontWeight: 'bold' }}>Voice Model:</span>
-                                <span style={{ fontFamily: 'monospace' }}>{sherpaState}</span>
-                            </>
-                        )}
-                        {currentEngine === 'webspeech' && (
-                            <>
-                                <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#6b7280' }}>
-                                    Using browser's built-in voices
-                                </span>
-                                {browserVoices.length > 0 && (
-                                    <>
-                                        <span style={{ fontWeight: 'bold', marginTop: '0.5rem' }}>Active Voices:</span>
-                                        <div style={{ fontSize: '0.7rem', color: '#6b7280', maxHeight: '100px', overflowY: 'auto' }}>
-                                            {browserVoices
-                                                .filter(v => v.lang.startsWith(language === 'en' ? 'en' : 'es'))
-                                                .slice(0, 3)
-                                                .map((v, i) => (
-                                                    <div key={i} style={{ marginBottom: '0.25rem' }}>
-                                                        • {v.name} ({v.lang})
-                                                    </div>
-                                                ))}
-                                        </div>
-                                    </>
-                                )}
+                                <span className="tts-voices-title">Active Voices:</span>
+                                <div className="tts-voices-list">
+                                    {browserVoices
+                                        .filter((v: SpeechSynthesisVoice) => v.lang.startsWith(language === 'en' ? 'en' : 'es'))
+                                        .slice(0, 3)
+                                        .map((v: SpeechSynthesisVoice, i: number) => (
+                                            <div key={i} className="tts-voice-item">
+                                                • {v.name} ({v.lang})
+                                            </div>
+                                        ))}
+                                </div>
                             </>
                         )}
                     </div>

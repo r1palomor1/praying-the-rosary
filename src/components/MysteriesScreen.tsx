@@ -157,9 +157,11 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
                                             <div className="mystery-progress-percentage">
                                                 {progress.percentage}% {t.completed}
                                             </div>
-                                            <div className="mystery-progress-step">
-                                                {progress.lastStep}
-                                            </div>
+                                            {progress.percentage < 100 && (
+                                                <div className="mystery-progress-step">
+                                                    {progress.lastStep}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

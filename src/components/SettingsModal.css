@@ -148,6 +148,71 @@ input[type="range"]::-moz-range-thumb {
     background-color: #dc2626;
 }
 
+/* Close button container */
+.close-button-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.close-button-container .btn {
+    min-width: 120px;
+}
+
+/* Centered modal header */
+.modal-header-centered {
+    justify-content: center;
+}
+
+/* TTS Engine Status Section */
+.tts-status-container {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #f3f4f6;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+}
+
+.tts-status-label {
+    color: #374151;
+    font-size: 0.8rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.tts-engine-title {
+    font-weight: bold;
+}
+
+.tts-engine-name {
+    font-family: monospace;
+    margin-bottom: 0.5rem;
+}
+
+.tts-engine-description {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.tts-voices-title {
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
+.tts-voices-list {
+    font-size: 0.7rem;
+    color: #6b7280;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.tts-voice-item {
+    margin-bottom: 0.25rem;
+}
+
 @media (max-width: 480px) {
     .modal-content {
         padding: var(--spacing-xl);

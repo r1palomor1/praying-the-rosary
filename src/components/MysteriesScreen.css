@@ -37,7 +37,7 @@
 .mysteries-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--spacing-xl);
+    gap: 35px;
 }
 
 /* Mystery Cards */
@@ -200,7 +200,7 @@
     }
 
     .mysteries-grid {
-        gap: var(--spacing-lg);
+        gap: 26px;
     }
 
     .mystery-card-gradient {
@@ -244,7 +244,7 @@
     }
 
     .mysteries-grid {
-        gap: var(--spacing-md);
+        gap: 18px;
     }
 
     .mystery-card-gradient {
@@ -283,6 +283,6 @@
     }
 
     .mysteries-grid {
-        gap: var(--spacing-2xl);
+        gap: 53px;
     }
 }
