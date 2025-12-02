@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, Volume2, Square } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, StopCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
@@ -195,7 +195,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                     title={isPlayingHomeAudio ? t.stopAudio : t.continuousAudio}
                 >
                     {isPlayingHomeAudio ? (
-                        <Square size={20} />
+                        <StopCircle size={20} />
                     ) : (
                         <Volume2 size={20} />
                     )}

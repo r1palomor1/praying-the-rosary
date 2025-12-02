@@ -55,6 +55,13 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+.completion-subtitle {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-2xl);
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+}
+
 .completion-message {
     font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-2xl);
@@ -112,8 +119,59 @@
     40% {
         transform: translateY(-20px);
     }
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .completion-container {
+        padding: var(--spacing-md);
+    }
 
     .completion-content {
         padding: var(--spacing-xl);
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .completion-icon {
+        font-size: 3.5rem;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .completion-title {
+        font-size: var(--font-size-2xl);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+    }
+
+    .completion-subtitle {
+        font-size: var(--font-size-base);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .completion-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        width: 100%;
+    }
+
+    .completion-container .btn {
+        width: 100%;
+        justify-content: center;
+        font-size: var(--font-size-base);
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+}
+
+/* Tablet Responsive Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .completion-content {
+        padding: var(--spacing-2xl);
+    }
+
+    .completion-title {
+        font-size: var(--font-size-3xl);
     }
 }

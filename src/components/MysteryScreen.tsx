@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, Square, Settings as SettingsIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
@@ -602,7 +602,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     aria-label={(continuousMode || isPlaying) ? t.stopContinuous : t.continuousMode}
                 >
                     {(continuousMode || isPlaying) ? (
-                        <Square size={20} fill="currentColor" />
+                        <StopCircle size={20} />
                     ) : (
                         <Volume2 size={20} />
                     )}

@@ -7,6 +7,7 @@ import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysterySetType } from '../types';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { useNavigationHandler } from '../hooks/useNavigationHandler';
+import { sortMysteriesWithPriority, getTodaysMystery, hasInProgressMystery } from '../utils/mysterySorting';
 import './MysteriesScreen.css';
 
 interface MysteriesScreenProps {
@@ -35,6 +36,8 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         en: {
             title: 'Mysteries',
             completed: 'completed',
+            badgeContinue: 'Continue',
+            badgeToday: 'Today',
             days: {
                 monday: 'Monday',
                 tuesday: 'Tuesday',
@@ -48,6 +51,8 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         es: {
             title: 'Misterios',
             completed: 'completado',
+            badgeContinue: 'Continuar',
+            badgeToday: 'Hoy',
             days: {
                 monday: 'Lunes',
                 tuesday: 'Martes',
@@ -98,6 +103,14 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         return data;
     }, [language]);
 
+    // Smart sorting: In-progress first, then today's mystery, then traditional order
+    const sortedMysteries = useMemo(() => {
+        return sortMysteriesWithPriority(orderedMysteries, progressData);
+    }, [progressData]);
+
+    // Determine today's mystery for badge display
+    const todaysMysteryType = getTodaysMystery();
+
     const handleTabChange = useNavigationHandler({
         onNavigateHome,
         onNavigateToPrayers
@@ -111,8 +124,10 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
 
             <main className="mysteries-main">
                 <div className="mysteries-grid">
-                    {orderedMysteries.map((mysterySet) => {
+                    {sortedMysteries.map((mysterySet) => {
                         const progress = progressData[mysterySet.type];
+                        const isInProgress = hasInProgressMystery(mysterySet.type, progress?.percentage ?? null);
+                        const isToday = mysterySet.type === todaysMysteryType;
 
                         return (
                             <button
@@ -120,6 +135,22 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
                                 className="mystery-card-btn"
                                 onClick={() => handleMysterySelect(mysterySet.type)}
                             >
+                                {/* Priority Badges */}
+                                {isInProgress && (
+                                    <div className="mystery-badge mystery-badge-continue">
+                                        {t.badgeContinue}
+                                    </div>
+                                )}
+                                {!isInProgress && isToday && (
+                                    <div className="mystery-badge mystery-badge-today">
+                                        {t.badgeToday}
+                                    </div>
+                                )}
+
+                                <div className="mystery-card-content">
+                                    <h2 className="mystery-card-title">{mysterySet.name[language]}</h2>
+                                    <p className="mystery-card-days">{getDaysText(mysterySet.days)}</p>
+                                </div>
                                 <div className={`mystery-card-gradient mystery-${mysterySet.type}`}>
                                     {progress && (
                                         <div className="mystery-progress-overlay">
@@ -131,10 +162,6 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
                                             </div>
                                         </div>
                                     )}
-                                </div>
-                                <div className="mystery-card-content">
-                                    <h2 className="mystery-card-title">{mysterySet.name[language]}</h2>
-                                    <p className="mystery-card-days">{getDaysText(mysterySet.days)}</p>
                                 </div>
                             </button>
                         );

@@ -65,10 +65,9 @@
     color: var(--color-text-secondary);
     margin: 0;
     white-space: pre-wrap;
-    /* Preserve line breaks if any */
 }
 
-/* Section Headers (Optional, if we want to group them) */
+/* Section Headers */
 .prayers-section-title {
     font-size: var(--font-size-sm);
     font-weight: 600;
@@ -76,4 +75,82 @@
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-widest);
     margin: var(--spacing-md) 0 var(--spacing-xs) 0;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .prayers-container {
+        padding-bottom: 120px;
+    }
+
+    .prayers-header {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    .prayers-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .prayers-main {
+        padding: 0 var(--spacing-md) var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+
+    .prayer-card {
+        padding: var(--spacing-md);
+    }
+
+    .prayer-name {
+        font-size: var(--font-size-lg);
+    }
+
+    .prayer-text {
+        font-size: var(--font-size-sm);
+    }
+}
+
+/* Small Mobile Responsive Styles */
+@media (max-width: 480px) {
+    .prayers-header {
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    .prayers-title {
+        font-size: var(--font-size-lg);
+    }
+
+    .prayers-main {
+        padding: 0 var(--spacing-sm) var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+
+    .prayer-card {
+        padding: var(--spacing-sm);
+    }
+
+    .prayer-name {
+        font-size: var(--font-size-base);
+    }
+}
+
+/* Tablet Responsive Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .prayers-container {
+        max-width: 700px;
+    }
+
+    .prayer-card {
+        padding: var(--spacing-xl);
+    }
+}
+
+/* Desktop Responsive Styles */
+@media (min-width: 1025px) {
+    .prayers-container {
+        max-width: 800px;
+    }
+
+    .prayers-main {
+        gap: var(--spacing-xl);
+    }
 }
