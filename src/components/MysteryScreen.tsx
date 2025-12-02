@@ -61,8 +61,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         currentMysterySet,
         isPlaying,
         playAudio,
-        stopAudio,
-        audioEnabled
+        stopAudio
     } = useApp();
     const [showSettings, setShowSettings] = useState(false);
 
