@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, Square } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, Square, Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { SettingsModal } from './SettingsModal';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
@@ -63,11 +64,11 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         stopAudio,
         audioEnabled
     } = useApp();
+    const [showSettings, setShowSettings] = useState(false);
 
     const [flowEngine] = useState(() => {
         const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
 
-        // Load saved progress for this specific mystery type
         const savedProgress = loadPrayerProgress(currentMysterySet);
         if (savedProgress && hasValidPrayerProgress(currentMysterySet) && savedProgress.mysteryType === currentMysterySet) {
             // Check if the saved progress is at the complete step (last step)
@@ -165,7 +166,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         reflection: 'Reflexión',
         mystery: 'Misterio',
         mysteryOrdinal: 'º',
-        textSize: 'Tamaño de texto'
+        textSize: 'Tamaño de texto',
+        settings: 'Configuración'
     } : {
         back: 'Home',
         step: 'Step',
@@ -181,7 +183,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         reflection: 'Reflection',
         mystery: 'Mystery',
         mysteryOrdinal: '',
-        textSize: 'Text Size'
+        textSize: 'Text Size',
+        settings: 'Settings'
     };
 
     const getAudioSegments = (step: any): { text: string; gender: 'female' | 'male' }[] => {
@@ -379,7 +382,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
     };
 
-    const handleToggleContinuous = async () => {
+    const handleToggleContinuous = () => {
         if (continuousMode || isPlaying) {
             // Stop continuous mode
             setContinuousMode(false);
@@ -391,21 +394,22 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
             stopAudio();
 
-            // LAYER 1: Release wake lock to allow screen to turn off
-            await wakeLockManager.release();
+            // LAYER 1: Release wake lock
+            wakeLockManager.release();
         } else {
             // Start continuous mode
             setContinuousMode(true);
             // We need to set the ref immediately for the first call
             continuousModeRef.current = true;
 
-            // LAYER 1: Request wake lock to keep screen on
-            const wakeLockAcquired = await wakeLockManager.request();
-            if (wakeLockAcquired) {
-                console.log('🔒 Screen will stay on during continuous mode');
-            } else {
-                console.log('⚠️ Wake Lock not available - screen may turn off');
-            }
+            // LAYER 1: Request wake lock to keep screen on (non-blocking)
+            wakeLockManager.request().then(wakeLockAcquired => {
+                if (wakeLockAcquired) {
+                    console.log('🔒 Screen will stay on during continuous mode');
+                } else {
+                    console.log('⚠️ Wake Lock not available - screen may turn off');
+                }
+            });
 
             playSequence(currentStep);
         }
@@ -414,11 +418,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     // Auto-start continuous mode if requested from home screen
     useEffect(() => {
         if (startWithContinuous && !continuousMode && !isPlaying) {
-            // Small delay to ensure component is fully mounted
-            const timer = setTimeout(() => {
-                handleToggleContinuous();
-            }, 300);
-            return () => clearTimeout(timer);
+            console.log('[MysteryScreen] Auto-starting continuous mode');
+            handleToggleContinuous();
         }
     }, [startWithContinuous]);
 
@@ -494,6 +495,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
             return (
                 <div className="prayer-section litany-container">
+                    <div className="litany-spacer"></div>
                     {/* Initial Petitions - Stacked */}
                     {data.initial_petitions.map((item: any, i: number) => (
                         <div key={`init-${i}`} className="litany-row litany-row-stacked">
@@ -572,6 +574,12 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             return (
                 <div className="mystery-intro" style={{ paddingTop: 'var(--spacing-sm)' }}>
                     <div className="mystery-content-card">
+                        {decadeInfo.fruit && (
+                            <div className="fruit-container" style={{ marginBottom: 'var(--spacing-sm)', textAlign: 'center', padding: '0 var(--spacing-md)' }}>
+                                <span className="fruit-label">{language === 'es' ? 'Fruto:' : 'Fruit:'}</span>
+                                <span className="fruit-text">{decadeInfo.fruit}</span>
+                            </div>
+                        )}
                         <div className="mystery-image-container">
                             <MysteryImage
                                 src={decadeInfo.imageUrl}
@@ -589,7 +597,18 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     return (
         <div className="mystery-screen-container">
             <div className="mystery-screen-header">
-                <div className="mystery-header-spacer" />
+                <button
+                    className="continuous-audio-btn-header"
+                    onClick={handleToggleContinuous}
+                    aria-label={(continuousMode || isPlaying) ? t.stopContinuous : t.continuousMode}
+                >
+                    {(continuousMode || isPlaying) ? (
+                        <Square size={20} fill="currentColor" />
+                    ) : (
+                        <Volume2 size={20} />
+                    )}
+                </button>
+
                 <div className="mystery-progress">
                     {/* First row: mystery set name (large) */}
                     <div className="mystery-set-name">{flowEngine.getMysteryName()}</div>
@@ -627,7 +646,14 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         {Math.round(flowEngine.getProgress())}% {t.complete}
                     </div>
                 </div>
-                <div className="mystery-header-spacer" />
+
+                <button
+                    className="settings-btn-header"
+                    onClick={() => setShowSettings(true)}
+                    aria-label={t.settings}
+                >
+                    <SettingsIcon size={20} />
+                </button>
             </div>
 
             <div className="progress-bar-container">
@@ -644,16 +670,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                             <h3 className="prayer-name">{currentStep.title}</h3>
                         )}
                         <div className="audio-controls">
-                            {audioEnabled && (
-                                <button
-                                    className={`btn-icon continuous-btn ${(continuousMode || isPlaying) ? 'active' : ''}`}
-                                    onClick={handleToggleContinuous}
-                                    aria-label={(continuousMode || isPlaying) ? t.stopContinuous : t.continuousMode}
-                                    title={(continuousMode || isPlaying) ? t.stopContinuous : t.continuousMode}
-                                >
-                                    {(continuousMode || isPlaying) ? <Square size={28} /> : <Volume2 size={28} />}
-                                </button>
-                            )}
+                            {/* Duplicate audio button removed */}
                         </div>
                     </div>
 
@@ -662,7 +679,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     {renderMysteryImageFooter()}
                 </div>
             </div>
-
 
             {/* Fixed Bottom Navigation Bar */}
             <div className="bottom-section">
@@ -702,6 +718,12 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     </div>
                 </div>
             </div>
-        </div>
+
+            {/* Settings Modal */}
+            <SettingsModal
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+            />
+        </div >
     );
 }

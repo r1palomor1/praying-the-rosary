@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import type { Language, MysterySetType, AppSettings, UserSession } from '../types';
 import { getTodaysMystery, getISODate } from '../utils/mysterySelector';
 import { loadSettings, saveSettings, getDefaultSettings, loadSession, saveSession, clearSession as clearStoredSession, clearPrayerProgress } from '../utils/storage';
-import { audioPlayer } from '../utils/audioPlayer';
+import { ttsManager } from '../utils/ttsManager';
 
 interface AppContextType {
     // Settings
@@ -114,11 +114,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         saveSettings(settings);
 
         // Configure audio player
-        audioPlayer.configure({
-            language,
-            volume,
-            onEnd: () => setIsPlaying(false)
-        });
+        ttsManager.setLanguage(language);
+        ttsManager.setVolume(volume);
+        ttsManager.setOnEnd(() => setIsPlaying(false));
     }, [language, theme, audioEnabled, volume, speechRate, fontSize]);
 
     // Apply font size to document whenever it changes
@@ -129,7 +127,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // Poll current engine status
     useEffect(() => {
         const updateEngine = () => {
-            setCurrentEngine(audioPlayer.getCurrentEngine());
+            setCurrentEngine(ttsManager.getCurrentEngine());
         };
 
         // Update immediately
@@ -171,7 +169,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const setVolume = (vol: number) => {
         const clampedVolume = Math.max(0, Math.min(1, vol));
         setVolumeState(clampedVolume);
-        audioPlayer.setVolume(clampedVolume);
+        ttsManager.setVolume(clampedVolume);
     };
 
     // Speech rate setter
@@ -236,25 +234,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ) => {
         if (audioEnabled) {
             // Configure with specific onEnd if provided, otherwise default
-            audioPlayer.configure({
-                language,
-                volume,
-                onEnd: () => {
-                    setIsPlaying(false);
-                    if (onEnd) onEnd();
-                }
+            ttsManager.setLanguage(language);
+            ttsManager.setVolume(volume);
+            ttsManager.setOnEnd(() => {
+                setIsPlaying(false);
+                if (onEnd) onEnd();
             });
 
             if (typeof textOrSegments === 'string') {
                 // For simple string, use default rate
-                audioPlayer.speakSegments([{ text: textOrSegments, gender: 'female', rate: speechRate }]);
+                ttsManager.speakSegments([{ text: textOrSegments, gender: 'female', rate: speechRate }]);
             } else {
                 // For segments, inject default rate if missing
                 const segmentsWithRate = textOrSegments.map(s => ({
                     ...s,
                     rate: s.rate || speechRate
                 }));
-                audioPlayer.speakSegments(segmentsWithRate);
+                ttsManager.speakSegments(segmentsWithRate);
             }
             setIsPlaying(true);
         }
@@ -262,18 +258,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const pauseAudio = () => {
         // Check if currently paused - if so, resume
-        if (audioPlayer.isPaused()) {
-            audioPlayer.resume();
+        if (!ttsManager.isSpeaking()) {
+            ttsManager.resume();
             setIsPlaying(true);
         } else {
             // Otherwise, pause
-            audioPlayer.pause();
+            ttsManager.pause();
             setIsPlaying(false);
         }
     };
 
     const stopAudio = () => {
-        audioPlayer.stop();
+        ttsManager.stop();
         setIsPlaying(false);
     };
 

@@ -1,6 +1,7 @@
 import { useApp } from '../context/AppContext';
 import { prayers } from '../data/prayers';
 import { BottomNav } from './BottomNav';
+import { useNavigationHandler } from '../hooks/useNavigationHandler';
 import './PrayersScreen.css';
 
 interface PrayersScreenProps {
@@ -44,6 +45,11 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries }: Prayers
         </div>
     );
 
+    const handleTabChange = useNavigationHandler({
+        onNavigateHome,
+        onNavigateToMysteries
+    });
+
     return (
         <div className="prayers-container">
             <header className="prayers-header">
@@ -58,10 +64,7 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries }: Prayers
 
             <BottomNav
                 activeTab="prayers"
-                onTabChange={(tab) => {
-                    if (tab === 'home') onNavigateHome();
-                    if (tab === 'mysteries') onNavigateToMysteries();
-                }}
+                onTabChange={handleTabChange}
             />
         </div>
     );

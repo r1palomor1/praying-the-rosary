@@ -3,10 +3,11 @@ import { Settings as SettingsIcon, Volume2, Square } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
-import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
+import { PrayerFlowEngine, type MysteryType } from '../utils/prayerFlowEngine';
 import { SettingsModal } from './SettingsModal';
 import { BottomNav } from './BottomNav';
 import { getTodaysDevotion } from '../data/devotions';
+import { useNavigationHandler } from '../hooks/useNavigationHandler';
 import './HomeScreen.css';
 
 interface HomeScreenProps {
@@ -77,7 +78,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
         // startNewSession/resumeSession will reset the state and wipe completion
         const savedProgress = loadPrayerProgress(currentMysterySet);
         if (savedProgress && hasValidPrayerProgress(currentMysterySet)) {
-            const engine = new PrayerFlowEngine(currentMysterySet as any, language);
+            const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
             engine.jumpToStep(savedProgress.currentStepIndex);
             const progress = engine.getProgress();
 
@@ -110,7 +111,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
         if (hasProgress) {
             console.log('[Continuous Audio] Has progress - navigating to mystery screen');
             // Has progress - navigate directly to mystery screen
-            const engine = new PrayerFlowEngine(currentMysterySet as any, language);
+            const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
             engine.jumpToStep(savedProgress.currentStepIndex);
             const progress = engine.getProgress();
 
@@ -176,6 +177,13 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
         return mysterySet.days.map(day => t.days[day]).join(' & ');
     };
 
+
+
+    const handleTabChange = useNavigationHandler({
+        onNavigateToMysteries,
+        onNavigateToPrayers
+    });
+
     return (
         <div className="home-container">
             {/* Header */}
@@ -232,13 +240,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             <div className="bottom-section">
                 <BottomNav
                     activeTab="home"
-                    onTabChange={(tab) => {
-                        if (tab === 'mysteries') {
-                            onNavigateToMysteries();
-                        } else if (tab === 'prayers') {
-                            onNavigateToPrayers();
-                        }
-                    }}
+                    onTabChange={handleTabChange}
                     onStartPrayer={handleStart}
                 />
             </div>

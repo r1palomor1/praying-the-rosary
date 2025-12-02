@@ -82,7 +82,8 @@
 .litany-item .litany-response {
     font-style: italic;
     color: var(--color-text-secondary);
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
 }
 
 /* Bead counter */
@@ -689,7 +690,7 @@
 }
 
 .current-decade-info {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-lg);
     color: var(--color-secondary-lighter);
     margin-top: var(--spacing-xs);
     font-weight: 500;
@@ -940,7 +941,7 @@
 }
 
 .litany-instruction {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-lg);
     font-style: italic;
     font-weight: 600;
     color: var(--color-text-secondary);
@@ -969,13 +970,13 @@
 .fruit-label {
     font-weight: 700;
     margin-right: var(--spacing-xs);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .fruit-text {
-    font-weight: 500;
+    font-weight: 700;
     font-size: var(--font-size-base);
 }
 
@@ -1012,4 +1013,25 @@
     .scripture-text {
         font-size: 0.9375rem;
     }
+}
+
+/* Header Buttons */
+.continuous-audio-btn-header,
+.settings-btn-header {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+}
+
+.continuous-audio-btn-header:hover,
+.settings-btn-header:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-primary);
 }

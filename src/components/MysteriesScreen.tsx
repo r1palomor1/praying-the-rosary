@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { BottomNav } from './BottomNav';
@@ -5,6 +6,7 @@ import { loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysterySetType } from '../types';
 import type { MysteryType } from '../utils/prayerFlowEngine';
+import { useNavigationHandler } from '../hooks/useNavigationHandler';
 import './MysteriesScreen.css';
 
 interface MysteriesScreenProps {
@@ -16,6 +18,15 @@ interface MysteryProgress {
     percentage: number;
     lastStep: string;
 }
+
+// Order mysteries to follow weekly schedule: Joyful, Sorrowful, Glorious, Luminous
+// Defined outside component to avoid recreation on every render
+const orderedMysteries = [
+    mysterySets.find(m => m.type === 'joyful'),
+    mysterySets.find(m => m.type === 'sorrowful'),
+    mysterySets.find(m => m.type === 'glorious'),
+    mysterySets.find(m => m.type === 'luminous'),
+].filter((m): m is NonNullable<typeof m> => Boolean(m));
 
 export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: MysteriesScreenProps) {
     const { language, setCurrentMysterySet } = useApp();
@@ -60,34 +71,37 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         return days.map((day) => t.days[day as keyof typeof t.days]).join(' & ');
     };
 
-    // Get progress for a specific mystery type
-    const getMysteryProgress = (mysteryType: MysterySetType): MysteryProgress | null => {
-        const progress = loadPrayerProgress(mysteryType);
-        if (!progress || !hasValidPrayerProgress(mysteryType)) {
-            return null;
-        }
+    // Memoize progress calculation to avoid instantiating PrayerFlowEngine on every render
+    const progressData = useMemo(() => {
+        const data: Record<string, MysteryProgress | null> = {};
 
-        // Create a temporary engine to get progress info
-        const engine = new PrayerFlowEngine(mysteryType as MysteryType, language);
-        engine.jumpToStep(progress.currentStepIndex);
+        orderedMysteries.forEach(mysterySet => {
+            const type = mysterySet.type;
+            const progress = loadPrayerProgress(type);
 
-        const percentage = Math.round(engine.getProgress());
-        const currentStep = engine.getCurrentStep();
-        const lastStep = currentStep.title || '';
+            if (!progress || !hasValidPrayerProgress(type)) {
+                data[type] = null;
+                return;
+            }
 
-        return {
-            percentage,
-            lastStep
-        };
-    };
+            // Create engine only when needed and inside useMemo
+            // This is the expensive operation we want to minimize
+            const engine = new PrayerFlowEngine(type as MysteryType, language);
+            engine.jumpToStep(progress.currentStepIndex);
 
-    // Order mysteries to follow weekly schedule: Joyful, Sorrowful, Glorious, Luminous
-    const orderedMysteries = [
-        mysterySets.find(m => m.type === 'joyful'),
-        mysterySets.find(m => m.type === 'sorrowful'),
-        mysterySets.find(m => m.type === 'glorious'),
-        mysterySets.find(m => m.type === 'luminous'),
-    ].filter(Boolean);
+            data[type] = {
+                percentage: Math.round(engine.getProgress()),
+                lastStep: engine.getCurrentStep().title || ''
+            };
+        });
+
+        return data;
+    }, [language]);
+
+    const handleTabChange = useNavigationHandler({
+        onNavigateHome,
+        onNavigateToPrayers
+    });
 
     return (
         <div className="mysteries-container">
@@ -98,15 +112,15 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
             <main className="mysteries-main">
                 <div className="mysteries-grid">
                     {orderedMysteries.map((mysterySet) => {
-                        const progress = getMysteryProgress(mysterySet!.type);
+                        const progress = progressData[mysterySet.type];
 
                         return (
                             <button
-                                key={mysterySet!.type}
+                                key={mysterySet.type}
                                 className="mystery-card-btn"
-                                onClick={() => handleMysterySelect(mysterySet!.type)}
+                                onClick={() => handleMysterySelect(mysterySet.type)}
                             >
-                                <div className={`mystery-card-gradient mystery-${mysterySet!.type}`}>
+                                <div className={`mystery-card-gradient mystery-${mysterySet.type}`}>
                                     {progress && (
                                         <div className="mystery-progress-overlay">
                                             <div className="mystery-progress-percentage">
@@ -119,8 +133,8 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
                                     )}
                                 </div>
                                 <div className="mystery-card-content">
-                                    <h2 className="mystery-card-title">{mysterySet!.name[language]}</h2>
-                                    <p className="mystery-card-days">{getDaysText(mysterySet!.days)}</p>
+                                    <h2 className="mystery-card-title">{mysterySet.name[language]}</h2>
+                                    <p className="mystery-card-days">{getDaysText(mysterySet.days)}</p>
                                 </div>
                             </button>
                         );
@@ -131,13 +145,7 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
             <div className="bottom-section">
                 <BottomNav
                     activeTab="mysteries"
-                    onTabChange={(tab) => {
-                        if (tab === 'home') {
-                            onNavigateHome();
-                        } else if (tab === 'prayers') {
-                            onNavigateToPrayers();
-                        }
-                    }}
+                    onTabChange={handleTabChange}
                 />
             </div>
         </div>
