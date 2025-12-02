@@ -402,10 +402,7 @@
         margin-bottom: var(--spacing-sm);
     }
 
-    .litany-call,
-    .litany-response {
-        font-size: 0.9375rem;
-    }
+    /* Litany font size override removed to respect user settings */
 
     .section-label {
         font-size: 0.75rem;
@@ -550,10 +547,7 @@
     font-size: var(--font-size-xl);
 }
 
-.final-hail-mary-prayer .litany-call,
-.final-hail-mary-prayer .litany-response {
-    font-size: 0.9375rem;
-}
+    /* Final Hail Mary litany font size override removed */
 
 .final-hail-mary-prayer .section-label {
     font-size: 0.75rem;
@@ -917,6 +911,7 @@
 .litany-row-stacked .litany-call,
 .litany-row-stacked .litany-response {
     width: 100%;
+    max-width: 100%;
     text-align: left;
 }
 
@@ -1010,9 +1005,7 @@
         margin-bottom: var(--spacing-sm);
     }
 
-    .scripture-text {
-        font-size: 0.9375rem;
-    }
+    /* Scripture text font size override removed to respect user settings */
 }
 
 /* Header Buttons */

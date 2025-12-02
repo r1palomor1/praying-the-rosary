@@ -104,7 +104,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', width: '100%' }}>
-                    <button className="btn btn-outline" onClick={onClose} style={{ minWidth: '120px' }}>
+                    <button className="btn btn-primary" onClick={onClose} style={{ minWidth: '120px' }}>
                         {t.close}
                     </button>
                 </div>
