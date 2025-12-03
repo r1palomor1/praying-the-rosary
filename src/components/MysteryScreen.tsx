@@ -329,17 +329,20 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 setCurrentStep(nextStep);
 
                 if (nextStep.type === 'complete') {
-                    setContinuousMode(false);
+                    // Play completion audio before finishing
+                    playAudio(getAudioSegments(nextStep), () => {
+                        setContinuousMode(false);
 
-                    // Save completion
-                    const progress = {
-                        mysteryType: currentMysterySet,
-                        currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
-                        date: new Date().toISOString().split('T')[0],
-                        language
-                    };
-                    savePrayerProgress(progress);
-                    onComplete();
+                        // Save completion
+                        const progress = {
+                            mysteryType: currentMysterySet,
+                            currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
+                            date: new Date().toISOString().split('T')[0],
+                            language
+                        };
+                        savePrayerProgress(progress);
+                        onComplete();
+                    });
                 } else {
                     // Continue to next step after delay
                     setTimeout(() => {
