@@ -92,6 +92,7 @@
     /* bg-card-light */
     padding: 1.25rem;
     /* p-5 */
+    border: 1.5px solid rgba(0, 0, 0, 0.2);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     /* shadow-lg */
 }
