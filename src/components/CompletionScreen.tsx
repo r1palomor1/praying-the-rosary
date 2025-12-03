@@ -1,4 +1,5 @@
 
+import { useEffect, useRef } from 'react';
 import { CheckCircle, Home } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { prayerData } from '../data/prayerData';
@@ -12,10 +13,11 @@ interface CompletionScreenProps {
 }
 
 export function CompletionScreen({ onHome, mysteryType }: CompletionScreenProps) {
-    const { language } = useApp();
+    const { language, playAudio } = useApp();
 
-    // Get the mystery name
-    const mysteryName = prayerData[language].mysteries_data[mysteryType].name;
+    // Get the mystery name safely
+    const mysteryData = prayerData[language]?.mysteries_data?.[mysteryType];
+    const mysteryName = mysteryData ? mysteryData.name : '';
 
     const translations = {
         en: {
@@ -31,6 +33,19 @@ export function CompletionScreen({ onHome, mysteryType }: CompletionScreenProps)
     };
 
     const t = translations[language];
+
+    const hasPlayedRef = useRef(false);
+
+    // Play completion audio on mount
+    useEffect(() => {
+        if (!hasPlayedRef.current) {
+            const text = mysteryName
+                ? `${t.title}. ${mysteryName}. ${t.subtitle}`
+                : `${t.title}. ${t.subtitle}`;
+            playAudio([{ text, gender: 'female' }]);
+            hasPlayedRef.current = true;
+        }
+    }, [language, playAudio, t.title, t.subtitle, mysteryName]);
 
     return (
         <div className="completion-container">
