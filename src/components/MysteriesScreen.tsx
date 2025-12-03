@@ -7,7 +7,8 @@ import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysterySetType } from '../types';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { useNavigationHandler } from '../hooks/useNavigationHandler';
-import { sortMysteriesWithPriority, getTodaysMystery, hasInProgressMystery } from '../utils/mysterySorting';
+import { sortMysteriesWithPriority, hasInProgressMystery } from '../utils/mysterySorting';
+import { CheckCircle, Timer } from 'lucide-react';
 import './MysteriesScreen.css';
 
 interface MysteriesScreenProps {
@@ -35,9 +36,7 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
     const translations = {
         en: {
             title: 'Mysteries',
-            completed: 'completed',
-            badgeContinue: 'Continue',
-            badgeToday: 'Today',
+            completed: 'Done',
             days: {
                 monday: 'Monday',
                 tuesday: 'Tuesday',
@@ -50,9 +49,7 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         },
         es: {
             title: 'Misterios',
-            completed: 'completado',
-            badgeContinue: 'Continuar',
-            badgeToday: 'Hoy',
+            completed: 'Completado',
             days: {
                 monday: 'Lunes',
                 tuesday: 'Martes',
@@ -108,9 +105,6 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         return sortMysteriesWithPriority(orderedMysteries, progressData);
     }, [progressData]);
 
-    // Determine today's mystery for badge display
-    const todaysMysteryType = getTodaysMystery();
-
     const handleTabChange = useNavigationHandler({
         onNavigateHome,
         onNavigateToPrayers
@@ -127,7 +121,7 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
                     {sortedMysteries.map((mysterySet) => {
                         const progress = progressData[mysterySet.type];
                         const isInProgress = hasInProgressMystery(mysterySet.type, progress?.percentage ?? null);
-                        const isToday = mysterySet.type === todaysMysteryType;
+                        const isComplete = progress?.percentage === 100;
 
                         return (
                             <button
@@ -135,36 +129,23 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
                                 className="mystery-card-btn"
                                 onClick={() => handleMysterySelect(mysterySet.type)}
                             >
-                                {/* Priority Badges */}
-                                {isInProgress && (
-                                    <div className="mystery-badge mystery-badge-continue">
-                                        {t.badgeContinue}
-                                    </div>
-                                )}
-                                {!isInProgress && isToday && (
-                                    <div className="mystery-badge mystery-badge-today">
-                                        {t.badgeToday}
-                                    </div>
-                                )}
-
                                 <div className="mystery-card-content">
                                     <h2 className="mystery-card-title">{mysterySet.name[language]}</h2>
                                     <p className="mystery-card-days">{getDaysText(mysterySet.days)}</p>
                                 </div>
-                                <div className={`mystery-card-gradient mystery-${mysterySet.type}`}>
-                                    {progress && (
-                                        <div className="mystery-progress-overlay">
-                                            <div className="mystery-progress-percentage">
-                                                {progress.percentage}% {t.completed}
-                                            </div>
-                                            {progress.percentage < 100 && (
-                                                <div className="mystery-progress-step">
-                                                    {progress.lastStep}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+
+                                {/* Status Badges */}
+                                {isComplete ? (
+                                    <div className="mystery-badge mystery-badge-done">
+                                        <CheckCircle />
+                                        <span>{t.completed}</span>
+                                    </div>
+                                ) : isInProgress ? (
+                                    <div className="mystery-badge mystery-badge-progress">
+                                        <Timer />
+                                        <span>{progress?.percentage}%</span>
+                                    </div>
+                                ) : null}
                             </button>
                         );
                     })}

@@ -19,6 +19,8 @@ interface AppContextType {
     setSpeechRate: (rate: number) => void;
     fontSize: 'normal' | 'large' | 'xl';
     setFontSize: (size: 'normal' | 'large' | 'xl') => void;
+    mysteryLayout: 'classic' | 'cinematic';
+    setMysteryLayout: (layout: 'classic' | 'cinematic') => void;
 
     // Session
     currentMysterySet: MysterySetType;
@@ -54,6 +56,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const [volume, setVolumeState] = useState(0.8);
     const [speechRate, setSpeechRateState] = useState(0.85);
     const [fontSize, setFontSizeState] = useState<'normal' | 'large' | 'xl'>('normal');
+    const [mysteryLayout, setMysteryLayout] = useState<'classic' | 'cinematic'>('cinematic');
 
     // Session state
     const [currentMysterySet, setCurrentMysterySet] = useState<MysterySetType>(getTodaysMystery());
@@ -74,6 +77,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setVolumeState(settings.volume);
         if (settings.speechRate) setSpeechRateState(settings.speechRate);
         if (settings.fontSize) setFontSizeState(settings.fontSize);
+        if (settings.mysteryLayout) setMysteryLayout(settings.mysteryLayout);
 
         // Apply theme to document
         // Apply theme and font size to document
@@ -109,7 +113,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             audioEnabled,
             volume,
             speechRate,
-            fontSize
+            fontSize,
+            mysteryLayout
         };
         saveSettings(settings);
 
@@ -117,7 +122,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ttsManager.setLanguage(language);
         ttsManager.setVolume(volume);
         ttsManager.setOnEnd(() => setIsPlaying(false));
-    }, [language, theme, audioEnabled, volume, speechRate, fontSize]);
+    }, [language, theme, audioEnabled, volume, speechRate, fontSize, mysteryLayout]);
 
     // Apply font size to document whenever it changes
     useEffect(() => {
@@ -286,6 +291,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setSpeechRate,
         fontSize,
         setFontSize: setFontSizeState,
+        mysteryLayout,
+        setMysteryLayout,
         currentMysterySet,
         setCurrentMysterySet,
         currentMysteryNumber,

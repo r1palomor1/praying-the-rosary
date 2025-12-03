@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge, Type } from 'lucide-react';
+import { Moon, Sun, Volume2, VolumeX, Languages, Trash2, Gauge, Type, Layout } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress } from '../utils/storage';
 import './SettingsModal.css';
@@ -10,7 +10,7 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
+    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, fontSize, setFontSize, mysteryLayout, setMysteryLayout } = useApp();
     const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
 
     useEffect(() => {
@@ -63,7 +63,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             textSize: 'Text Size',
             normal: 'Normal',
             large: 'Large',
-            extraLarge: 'Extra Large'
+            extraLarge: 'Extra Large',
+            mysteryLayout: 'Mystery Layout',
+            classic: 'Classic',
+            cinematic: 'Cinematic'
         },
         es: {
             title: 'Configuración',
@@ -80,7 +83,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             textSize: 'Tamaño de Texto',
             normal: 'Normal',
             large: 'Grande',
-            extraLarge: 'Extra Grande'
+            extraLarge: 'Extra Grande',
+            mysteryLayout: 'Diseño de Misterios',
+            classic: 'Clásico',
+            cinematic: 'Cinematográfico'
         }
     };
 
@@ -143,61 +149,24 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
                     <div className="setting-item">
                         <div className="setting-label">
-                            {audioEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-                            <span>{t.audio}</span>
+                            <Layout size={20} />
+                            <span>{t.mysteryLayout}</span>
                         </div>
                         <div className="setting-control">
                             <button
-                                className={`setting-btn ${audioEnabled ? 'active' : ''}`}
-                                onClick={() => setAudioEnabled(!audioEnabled)}
+                                className={`setting-btn ${mysteryLayout === 'classic' ? 'active' : ''}`}
+                                onClick={() => setMysteryLayout('classic')}
                             >
-                                {audioEnabled ? t.enabled : t.disabled}
+                                {t.classic}
+                            </button>
+                            <button
+                                className={`setting-btn ${mysteryLayout === 'cinematic' ? 'active' : ''}`}
+                                onClick={() => setMysteryLayout('cinematic')}
+                            >
+                                {t.cinematic}
                             </button>
                         </div>
                     </div>
-
-                    {audioEnabled && (
-                        <>
-                            <div className="setting-item">
-                                <div className="setting-label">
-                                    <Volume2 size={20} />
-                                    <span>{t.volume}</span>
-                                </div>
-                                <div className="setting-control">
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="100"
-                                        value={volume * 100}
-                                        onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
-                                        aria-label={t.volume}
-                                        className="volume-slider"
-                                    />
-                                    <span className="volume-value">{Math.round(volume * 100)}%</span>
-                                </div>
-                            </div>
-
-                            <div className="setting-item">
-                                <div className="setting-label">
-                                    <Gauge size={20} />
-                                    <span>{language === 'es' ? 'Velocidad' : 'Speed'}</span>
-                                </div>
-                                <div className="setting-control">
-                                    <input
-                                        type="range"
-                                        min="50"
-                                        max="150"
-                                        step="5"
-                                        value={speechRate * 100}
-                                        onChange={(e) => setSpeechRate(parseInt(e.target.value) / 100)}
-                                        aria-label={language === 'es' ? 'Velocidad' : 'Speed'}
-                                        className="volume-slider"
-                                    />
-                                    <span className="volume-value">{Math.round(speechRate * 100)}%</span>
-                                </div>
-                            </div>
-                        </>
-                    )}
 
                     <div className="setting-item">
                         <div className="setting-label">
@@ -237,6 +206,64 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 onClick={handleClearProgress}
                             >
                                 {t.clearProgress}
+                            </button>
+                        </div>
+                    </div>
+
+                    {audioEnabled && (
+                        <>
+                            <div className="setting-item">
+                                <div className="setting-label">
+                                    <Gauge size={20} />
+                                    <span>{language === 'es' ? 'Velocidad' : 'Speed'}</span>
+                                </div>
+                                <div className="setting-control">
+                                    <input
+                                        type="range"
+                                        min="50"
+                                        max="150"
+                                        step="5"
+                                        value={speechRate * 100}
+                                        onChange={(e) => setSpeechRate(parseInt(e.target.value) / 100)}
+                                        aria-label={language === 'es' ? 'Velocidad' : 'Speed'}
+                                        className="volume-slider"
+                                    />
+                                    <span className="volume-value">{Math.round(speechRate * 100)}%</span>
+                                </div>
+                            </div>
+
+                            <div className="setting-item">
+                                <div className="setting-label">
+                                    <Volume2 size={20} />
+                                    <span>{t.volume}</span>
+                                </div>
+                                <div className="setting-control">
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={volume * 100}
+                                        onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
+                                        aria-label={t.volume}
+                                        className="volume-slider"
+                                    />
+                                    <span className="volume-value">{Math.round(volume * 100)}%</span>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    <div className="setting-item">
+                        <div className="setting-label">
+                            {audioEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+                            <span>{t.audio}</span>
+                        </div>
+                        <div className="setting-control">
+                            <button
+                                className={`setting-btn ${audioEnabled ? 'active' : ''}`}
+                                onClick={() => setAudioEnabled(!audioEnabled)}
+                            >
+                                {audioEnabled ? t.enabled : t.disabled}
                             </button>
                         </div>
                     </div>

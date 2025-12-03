@@ -95,6 +95,7 @@ export interface AppSettings {
     fontSize?: 'normal' | 'large' | 'xl';
     femaleVoiceName?: string; // Name of preferred female voice
     maleVoiceName?: string; // Name of preferred male voice
+    mysteryLayout?: 'classic' | 'cinematic'; // Visual style for mystery pages
 }
 
 // Prayer stage (what prayer is currently being displayed)

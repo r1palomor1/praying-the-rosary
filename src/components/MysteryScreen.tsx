@@ -61,7 +61,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         currentMysterySet,
         isPlaying,
         playAudio,
-        stopAudio
+        stopAudio,
+        mysteryLayout
     } = useApp();
     const [showSettings, setShowSettings] = useState(false);
 
@@ -422,12 +423,86 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
     }, [startWithContinuous]);
 
+    // Check for Intro Prayers
+    const introPrayers = [
+        'Sign of the Cross', 'Señal de la Cruz',
+        'Opening Invocation', 'Invocación Inicial',
+        'Act of Contrition', 'Acto de Contrición',
+        'Apostles\' Creed', 'Credo de los Apóstoles',
+        'Invocation to the Holy Spirit', 'Invocación al Espíritu Santo',
+        'Moments of Intentions', 'Momentos de Intenciones',
+        'Moment of Intentions', 'Momento de Intenciones'
+    ];
+
+    const stepTitle = currentStep?.title;
+    const isIntroPrayer = stepTitle ? introPrayers.some(t => stepTitle.includes(t)) : false;
+
     const renderStepContent = () => {
         const step = currentStep;
 
         // Special rendering for decade announcement
         if (step.type === 'decade_announcement') {
             const decadeInfo = flowEngine.getCurrentDecadeInfo();
+
+            if (mysteryLayout === 'cinematic') {
+
+                return (
+                    <div className="immersive-mystery-container">
+                        <div className="immersive-bg">
+                            <img
+                                src={decadeInfo?.imageUrl || step.imageUrl}
+                                alt={step.title}
+                                className="immersive-img"
+                            />
+                            <div className="immersive-overlay"></div>
+                        </div>
+
+                        <div className="immersive-content">
+
+
+                            <main className="immersive-main">
+                                <div className="text-center space-y-6">
+
+
+                                    <div className="space-y-4 pt-4 text-center">
+                                        <h3 className="font-display text-base text-primary/80 tracking-widest">
+                                            {language === 'es' ? 'REFLEXIÓN' : 'REFLECTION'}
+                                        </h3>
+                                        <p className="font-sans text-lg leading-relaxed text-gray-200">
+                                            {step.text}
+                                        </p>
+                                    </div>
+
+                                    {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
+                                        <div className="pt-8">
+                                            {decadeInfo.fruit && (
+                                                <h3 className="font-display text-base text-primary/80 tracking-widest mb-4">
+                                                    {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}{decadeInfo.fruit.toUpperCase()}
+                                                </h3>
+                                            )}
+                                            {decadeInfo.scripture && (
+                                                <blockquote className="border-l-2 border-primary-50 pl-4">
+                                                    <p className="font-sans text-base italic leading-relaxed text-gray-300">
+                                                        "{decadeInfo.scripture.text}"
+                                                    </p>
+                                                    <footer className="text-right text-sm text-gray-400 mt-2">
+                                                        {decadeInfo.scripture.reference}
+                                                    </footer>
+                                                </blockquote>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </main>
+                        </div>
+
+
+
+
+                    </div>
+                );
+            }
+
             return (
                 <div className="mystery-intro">
                     <div className="mystery-content-card">
@@ -467,6 +542,141 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
 
 
+        // Special rendering for Our Father in Cinematic mode
+        if (step.type === 'decade_our_father' && mysteryLayout === 'cinematic') {
+            const decadeInfo = flowEngine.getCurrentDecadeInfo();
+
+
+            return (
+                <div className="immersive-mystery-container">
+                    <div className="immersive-bg">
+                        {(decadeInfo?.imageUrl || step.imageUrl) && (
+                            <img
+                                src={decadeInfo?.imageUrl || step.imageUrl}
+                                alt={decadeInfo?.title || step.title}
+                                className="immersive-img"
+                            />
+                        )}
+                        <div className="immersive-overlay"></div>
+                    </div>
+
+                    <div className="immersive-content">
+
+
+                        <main className="immersive-main flex flex-col justify-center h-full">
+                            <div className="text-center space-y-8">
+                                <h1 className="font-display text-3xl font-bold immersive-mystery-title tracking-wide mb-8">
+                                    {(step.title || '').toUpperCase()}
+                                </h1>
+
+
+                                <div className="max-w-2xl mx-auto px-6">
+                                    <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
+                                        {step.text}
+                                    </p>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+
+
+
+
+                </div>
+            );
+        }
+
+        // Unified Cinematic Rendering for Decade Prayers (Hail Mary, Glory Be, Jaculatory, Fatima Prayer)
+        if (['decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer'].includes(step.type) && mysteryLayout === 'cinematic') {
+            const decadeInfo = flowEngine.getCurrentDecadeInfo();
+
+
+            return (
+                <div className="immersive-mystery-container">
+                    <div className="immersive-bg">
+                        {(decadeInfo?.imageUrl || (step as any).imageUrl) && (
+                            <img
+                                src={decadeInfo?.imageUrl || (step as any).imageUrl}
+                                alt={decadeInfo?.title || step.title}
+                                className="immersive-img"
+                            />
+                        )}
+                        <div className="immersive-overlay"></div>
+                    </div>
+
+                    <div className="immersive-content">
+                        <main className="immersive-main flex flex-col justify-center h-full">
+                            <div className="text-center space-y-8">
+                                <h1 className="font-display text-3xl font-bold immersive-mystery-title tracking-wide mb-8">
+                                    {(step.title || '').toUpperCase()}
+                                </h1>
+
+
+                                <div className="max-w-2xl mx-auto px-6">
+                                    <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
+                                        {step.text}
+                                    </p>
+                                </div>
+
+                                {/* Bead Counter for Hail Mary */}
+                                {step.type === 'decade_hail_mary' && step.hailMaryNumber && (
+                                    <div className="bead-counter mt-8 justify-center">
+                                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((bead) => (
+                                            <div
+                                                key={bead}
+                                                className={`bead ${bead <= step.hailMaryNumber! ? 'bead-active' : ''}`}
+                                                style={{
+                                                    borderColor: 'rgba(255,255,255,0.3)',
+                                                    background: bead <= step.hailMaryNumber! ? '#D4AF37' : 'rgba(255,255,255,0.1)'
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </main>
+                    </div>
+                </div>
+            );
+        }
+        // Card Style Rendering for Closing Prayers (Cinematic Mode)
+        // Matches the design of Intro Prayers (Card with Title and Divider)
+        const closingCardTypes = ['final_jaculatory_start', 'hail_holy_queen', 'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'];
+
+        if (mysteryLayout === 'cinematic') {
+            if (closingCardTypes.includes(step.type)) {
+                return (
+                    <div className="intro-prayer-card">
+                        <h2 className="intro-title">{step.title || ''}</h2>
+                        <div className="intro-divider"></div>
+                        <p className="intro-text">{step.text}</p>
+                    </div>
+                );
+            }
+
+            if (step.type === 'final_hail_mary_intro') {
+                const parts = step.text.split('\n\n');
+                return (
+                    <div className="intro-prayer-card">
+                        <h2 className="intro-title">{step.title || ''}</h2>
+                        <div className="intro-divider"></div>
+                        <div className="final-hail-mary-container">
+                            <div className="final-hail-mary-invocation" style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                                {parts[0]}
+                            </div>
+                            {parts[1] && (
+                                <div className="final-hail-mary-prayer" style={{ textAlign: 'center' }}>
+                                    {parts[1]}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+        }
+
+
+
         // Special rendering for final Hail Mary intros
         if (step.type === 'final_hail_mary_intro') {
             const parts = step.text.split('\n\n');
@@ -490,49 +700,44 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         // Special rendering for Litany of Loreto
         if ((step.type as any) === 'litany_of_loreto' && step.litanyData) {
             const data = step.litanyData;
-            const repeatText = language === 'es' ? '(Repetir respuesta: Ruega por nosotros)' : '(Repeat response: Pray for us)';
+
+            // Helper to render a row with alternating background
+            const renderRow = (call: string, response: string, index: number, globalIndex: number) => (
+                <div key={`${index}-${globalIndex}`} className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''}`}>
+                    <div className="litany-call-new">{call}</div>
+                    <div className="litany-response-new">{response}</div>
+                </div>
+            );
+
+            let globalCount = 0;
 
             return (
-                <div className="prayer-section litany-container">
-                    <div className="litany-spacer"></div>
-                    {/* Initial Petitions - Stacked */}
-                    {data.initial_petitions.map((item: any, i: number) => (
-                        <div key={`init-${i}`} className="litany-row litany-row-stacked">
-                            <span className="litany-call">{item.call}</span>
-                            <span className="litany-response">{item.response}</span>
-                        </div>
-                    ))}
+                <div className="prayer-section litany-container-new">
+                    <h2 className="litany-title-new">{(step.title || '').toUpperCase()}</h2>
 
-                    <div className="litany-spacer"></div>
+                    <div className="litany-list-new">
+                        {data.initial_petitions.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
 
-                    {/* Trinity Invocations - Stacked */}
-                    {data.trinity_invocations.map((item: any, i: number) => (
-                        <div key={`trin-${i}`} className="litany-row litany-row-stacked">
-                            <span className="litany-call">{item.call}</span>
-                            <span className="litany-response">{item.response}</span>
-                        </div>
-                    ))}
+                        {data.trinity_invocations.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
 
-                    <div className="litany-spacer"></div>
+                        {/* Mary Invocations - Always show response for structured layout */}
+                        {data.mary_invocations.map((item: any, i: number) => {
+                            const response = item.response || (language === 'es' ? 'Ruega por nosotros' : 'Pray for us');
+                            return renderRow(item.call, response, i, globalCount++);
+                        })}
 
-                    {/* Mary Invocations - First with response, rest call-only */}
-                    <div className="litany-instruction">{repeatText}</div>
-                    {data.mary_invocations.map((item: any, i: number) => (
-                        <div key={`mary-${i}`} className={i === 0 ? "litany-row litany-row-stacked" : "litany-row litany-row-call-only"}>
-                            <span className="litany-call">{item.call}</span>
-                            {i === 0 && <span className="litany-response">{item.response}</span>}
-                        </div>
-                    ))}
+                        {data.agnus_dei.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
+                    </div>
+                </div>
+            );
+        }
 
-                    <div className="litany-spacer"></div>
-
-                    {/* Agnus Dei - Stacked Layout */}
-                    {data.agnus_dei.map((item: any, i: number) => (
-                        <div key={`agnus-${i}`} className="litany-row litany-row-stacked">
-                            <span className="litany-call">{item.call}</span>
-                            <span className="litany-response">{item.response}</span>
-                        </div>
-                    ))}
+        if (isIntroPrayer) {
+            return (
+                <div className="intro-prayer-card">
+                    <h2 className="intro-title">{step.title || ''}</h2>
+                    <div className="intro-divider"></div>
+                    <p className="intro-text">{step.text}</p>
                 </div>
             );
         }
@@ -546,6 +751,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     };
 
     const renderBeadCounter = () => {
+        // Hide in cinematic mode (rendered inside layout)
+        if (mysteryLayout === 'cinematic') return null;
+
         const step = currentStep;
 
         // Show bead counter only for Hail Marys within decades
@@ -565,6 +773,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     };
 
     const renderMysteryImageFooter = () => {
+        // Don't show if in cinematic mode
+        if (mysteryLayout === 'cinematic') return null;
+
         // Don't show on decade announcement as it already has it
         if (currentStep.type === 'decade_announcement') return null;
 
@@ -665,7 +876,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             <div className="mystery-screen-content" ref={contentRef}>
                 <div className="prayer-section">
                     <div className="prayer-header">
-                        {currentStep.type !== 'decade_announcement' && (
+                        {currentStep.type !== 'decade_announcement' && !isIntroPrayer && !(mysteryLayout === 'cinematic' && ['decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer', 'final_jaculatory_start', 'final_hail_mary_intro', 'hail_holy_queen', 'closing_under_your_protection', 'final_collect', 'sign_of_cross_end', 'litany_of_loreto'].includes(currentStep.type)) && (
                             <h3 className="prayer-name">{currentStep.title}</h3>
                         )}
                         <div className="audio-controls">

@@ -177,8 +177,6 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
         return mysterySet.days.map(day => t.days[day]).join(' & ');
     };
 
-
-
     const handleTabChange = useNavigationHandler({
         onNavigateToMysteries,
         onNavigateToPrayers
@@ -186,53 +184,47 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
 
     return (
         <div className="home-container">
-            {/* Header */}
-            <header className="home-header">
-                <button
-                    className="continuous-audio-btn-header"
-                    onClick={isPlayingHomeAudio ? handleStopHomeAudio : handleContinuousStart}
-                    aria-label={isPlayingHomeAudio ? t.stopAudio : t.continuousAudio}
-                    title={isPlayingHomeAudio ? t.stopAudio : t.continuousAudio}
-                >
-                    {isPlayingHomeAudio ? (
-                        <StopCircle size={20} />
-                    ) : (
-                        <Volume2 size={20} />
-                    )}
-                </button>
-                <h1 className="home-title">{t.title}</h1>
-                <button
-                    className="settings-btn-header"
-                    onClick={() => setShowSettings(true)}
-                    aria-label={t.settings}
-                >
-                    <SettingsIcon size={20} />
-                </button>
-            </header>
-
-            {/* Main Content */}
-            <main className="home-main">
-                {/* Hero Image */}
+            {/* Hero Section with Overlay Header */}
+            <div className="hero-section">
                 <div className="hero-image"></div>
+                <div className="hero-overlay"></div>
 
+                <div className="hero-header">
+                    <button
+                        className="icon-btn"
+                        onClick={isPlayingHomeAudio ? handleStopHomeAudio : handleContinuousStart}
+                        aria-label={isPlayingHomeAudio ? t.stopAudio : t.continuousAudio}
+                    >
+                        {isPlayingHomeAudio ? <StopCircle size={20} /> : <Volume2 size={20} />}
+                    </button>
+
+                    <h1 className="hero-title">{t.title}</h1>
+
+                    <button
+                        className="icon-btn"
+                        onClick={() => setShowSettings(true)}
+                        aria-label={t.settings}
+                    >
+                        <SettingsIcon size={20} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Main Content - Overlapping Hero */}
+            <main className="home-main">
                 {/* Mystery Card */}
-                <div className="mystery-card-new">
-                    <div className="mystery-gradient"></div>
-                    <div className="mystery-content">
-                        <h2 className="mystery-title-new">{mysterySet ? mysterySet.name[language] : ''}</h2>
-                        <p className="mystery-days">{t.forDays} {getDaysText()}</p>
-                    </div>
+                <div className="glass-card">
+                    <h2 className="mystery-card-title">{mysterySet ? mysterySet.name[language] : ''}</h2>
+                    <p className="mystery-card-subtitle">{t.forDays} {getDaysText()}</p>
                 </div>
 
                 {/* Daily Devotion */}
-                <div className="devotion-card">
+                <div className="glass-card">
                     <p className="devotion-label">{t.dailyDevotion}</p>
                     <h3 className="devotion-title">{devotion.title[language]}</h3>
-                    <div className="devotion-content">
-                        <p className="devotion-text">
-                            {devotion.fullText[language]}
-                        </p>
-                    </div>
+                    <p className="devotion-text">
+                        {devotion.fullText[language]}
+                    </p>
                 </div>
             </main>
 
