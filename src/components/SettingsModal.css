@@ -250,3 +250,26 @@
     margin: 0;
     font-size: 1rem;
 }
+.btn-clear:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.btn-clear:active {
+    background-color: rgba(239, 68, 68, 0.2);
+    transform: scale(0.98);
+}
+
+.btn-clear.confirm-active {
+    background-color: #ef4444;
+    color: white;
+    border-color: #ef4444;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}

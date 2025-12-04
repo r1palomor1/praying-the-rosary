@@ -201,3 +201,8 @@
    We might need to override BottomNav styles or wrap it.
    For now, we'll let BottomNav handle itself but ensure it sits on top.
 */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}

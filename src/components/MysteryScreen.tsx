@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, Lightbulb } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
-import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
+import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress } from '../utils/storage';
 import { wakeLockManager } from '../utils/wakeLock';
 
 import './MysteryScreen.css';
 import './MysteryBottomNav.css';
+import educationalDataEs from '../data/es-rosary-educational-content.json';
+import educationalDataEn from '../data/en-rosary-educational-content.json';
+import { LearnMoreModal, type EducationalContent } from './LearnMoreModal';
 
 interface MysteryScreenProps {
     onComplete: () => void;
@@ -65,49 +68,86 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         mysteryLayout
     } = useApp();
     const [showSettings, setShowSettings] = useState(false);
+    const [showLearnMore, setShowLearnMore] = useState(false);
 
     const [flowEngine] = useState(() => {
         const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
 
         const savedProgress = loadPrayerProgress(currentMysterySet);
-        if (savedProgress && hasValidPrayerProgress(currentMysterySet) && savedProgress.mysteryType === currentMysterySet) {
-            // Check if the saved progress is at the complete step (last step)
-            // If so, we should immediately show the completion screen
-            if (savedProgress.currentStepIndex >= engine.getTotalSteps() - 1) {
-                // Trigger completion immediately
-                setTimeout(() => {
-                    onComplete();
-                }, 0);
-            } else {
-                engine.jumpToStep(savedProgress.currentStepIndex);
-            }
+        if (savedProgress) {
+            console.log('Restoring progress to step:', savedProgress.currentStepIndex);
+            engine.jumpToStep(savedProgress.currentStepIndex);
         }
 
         return engine;
     });
 
     const [currentStep, setCurrentStep] = useState(flowEngine.getCurrentStep());
-    const [continuousMode, setContinuousMode] = useState(false);
-    const audioEndedRef = useRef(false);
+    const [continuousMode, setContinuousMode] = useState(startWithContinuous);
+    const continuousModeRef = useRef(startWithContinuous);
+    const playbackIdRef = useRef(0);
     const contentRef = useRef<HTMLDivElement>(null);
 
-    // Sync continuous mode with playing state on mount
-    // This handles the case where user navigates away and back while audio is playing
-    useEffect(() => {
-        if (isPlaying && !continuousMode) {
-            setContinuousMode(true);
-            audioEndedRef.current = true;
-        }
-    }, []);
+    // Get current educational data
+    const currentData = language === 'es' ? educationalDataEs : educationalDataEn;
 
-    // Cleanup: Release wake lock when component unmounts
-    useEffect(() => {
-        return () => {
-            wakeLockManager.release();
+    // Helper to get current educational content
+    const getCurrentEducationalContent = (): EducationalContent | null => {
+        const decadeInfo = flowEngine.getCurrentDecadeInfo();
+
+        const mysteryNameMap: Record<string, Record<string, string>> = {
+            'es': {
+                'joyful': 'Misterios Gozosos',
+                'luminous': 'Misterios Luminosos',
+                'sorrowful': 'Misterios Dolorosos',
+                'glorious': 'Misterios Gloriosos'
+            },
+            'en': {
+                'joyful': 'Joyful Mysteries',
+                'luminous': 'Luminous Mysteries',
+                'sorrowful': 'Sorrowful Mysteries',
+                'glorious': 'Glorious Mysteries'
+            }
         };
-    }, []);
 
-    // LAYER 4: Stop continuous mode when page becomes hidden (screen off, background)
+        if (decadeInfo) {
+            const targetName = mysteryNameMap[language]?.[currentMysterySet];
+            if (!targetName) return null;
+
+            // Find matching data in JSON
+            // Note: The JSON uses 1-based indexing for mystery_number
+            const data = currentData.mysteries.find((item: any) =>
+                item.mystery_name === targetName &&
+                item.mystery_number === decadeInfo.number
+            );
+            return (data as EducationalContent) || null;
+        }
+
+        // If not in a decade (start or end), show global intro
+        return currentData.global_intro as EducationalContent;
+    };
+
+    const currentEducationalData = getCurrentEducationalContent();
+    const hasEducationalContent = !!currentEducationalData;
+
+    // Update engine language when app language changes
+    useEffect(() => {
+        flowEngine.setLanguage(language);
+        setCurrentStep(flowEngine.getCurrentStep());
+    }, [language, flowEngine]);
+
+    // Save progress whenever step changes
+    useEffect(() => {
+        const progress = {
+            mysteryType: currentMysterySet,
+            currentStepIndex: flowEngine.getCurrentStepNumber(),
+            date: new Date().toISOString().split('T')[0],
+            language
+        };
+        savePrayerProgress(progress);
+    }, [currentStep, currentMysterySet, language, flowEngine]);
+
+    // Handle visibility change to stop audio if app goes background
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.hidden && continuousMode) {
@@ -120,72 +160,37 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [continuousMode, stopAudio]);
 
-    // Update language when it changes
+    // Handle continuous mode wake lock
     useEffect(() => {
-        flowEngine.setLanguage(language);
-        setCurrentStep(flowEngine.getCurrentStep());
-    }, [language, flowEngine]);
+        if (continuousMode) {
+            wakeLockManager.request();
+        } else {
+            wakeLockManager.release();
+        }
+        return () => {
+            wakeLockManager.release();
+        };
+    }, [continuousMode]);
+
+    // Start continuous mode on mount if requested
+    useEffect(() => {
+        if (startWithContinuous) {
+            handleToggleContinuous();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Scroll to top when step changes
     useEffect(() => {
-        // Small timeout to ensure DOM has updated before scrolling
-        const timer = setTimeout(() => {
-            if (contentRef.current) {
-                contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }, 100);
-        return () => clearTimeout(timer);
+        if (contentRef.current) {
+            contentRef.current.scrollTop = 0;
+        }
     }, [currentStep]);
-
-    // Save progress whenever step changes
-    useEffect(() => {
-        const progress = {
-            mysteryType: currentMysterySet,
-            currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
-            date: new Date().toISOString().split('T')[0],
-            language
-        };
-        savePrayerProgress(progress);
-    }, [currentStep, currentMysterySet, language, flowEngine]);
-
-    const t = language === 'es' ? {
-        back: 'Inicio',
-        step: 'Paso',
-        of: 'de',
-        complete: 'completo',
-        previous: 'Anterior',
-        next: 'Siguiente',
-        finish: 'Finalizar',
-        stopAudio: 'Detener audio',
-        playAudio: 'Reproducir audio',
-        continuousMode: 'Modo Continuo',
-        stopContinuous: 'Detener',
-        reflection: 'Reflexión',
-        mystery: 'Misterio',
-        mysteryOrdinal: 'º',
-        textSize: 'Tamaño de texto',
-        settings: 'Configuración'
-    } : {
-        back: 'Home',
-        step: 'Step',
-        of: 'of',
-        complete: 'complete',
-        previous: 'Previous',
-        next: 'Next',
-        finish: 'Finish',
-        stopAudio: 'Stop audio',
-        playAudio: 'Play audio',
-        continuousMode: 'Continuous Mode',
-        stopContinuous: 'Stop',
-        reflection: 'Reflection',
-        mystery: 'Mystery',
-        mysteryOrdinal: '',
-        textSize: 'Text Size',
-        settings: 'Settings'
-    };
 
     const getAudioSegments = (step: any): { text: string; gender: 'female' | 'male' }[] => {
         // Helper to create segments
@@ -200,48 +205,27 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             let text = `${step.title}. ${reflectionLabel}. ${step.text}`;
 
             if (decadeInfo) {
-                if (decadeInfo.fruit) {
-                    const fruitLabel = language === 'es' ? 'Fruto del misterio: ' : 'Fruit of the mystery: ';
-                    text += `. ${fruitLabel}${decadeInfo.fruit}`;
-                }
-                if (decadeInfo.scripture) {
-                    const scriptureLabel = language === 'es' ? 'Lectura: ' : 'Scripture: ';
-                    text += `. ${scriptureLabel}${decadeInfo.scripture.text}`;
-                }
+                const ordinal = getSpelledOrdinal(decadeInfo.number);
+                const mysteryWord = language === 'es' ? 'Misterio' : 'Mystery';
+                text = `${ordinal} ${mysteryWord}. ${step.title}. ${reflectionLabel}. ${step.text}`;
             }
-            // Announcement is all female (Call)
             return [{ text, gender: 'female' }];
         }
 
-        // Litany of Loreto
-        if (step.type === 'litany_of_loreto' && step.litanyData) {
-            const data = step.litanyData;
-            const segments: { text: string; gender: 'female' | 'male'; rate?: number }[] = [];
-
-            // Add all sections with call and response
-            [...data.initial_petitions, ...data.trinity_invocations, ...data.mary_invocations, ...data.agnus_dei].forEach((item: any) => {
-                segments.push({ text: item.call, gender: 'female', rate: 1.0 });
-                segments.push({ text: item.response, gender: 'male', rate: 1.0 });
-            });
-
-            return segments;
-        }
-
-        // Final Hail Marys (Intro + Prayer)
-        if (step.type === 'final_hail_mary_intro') {
-            const parts = step.text.split('\n\n');
-            if (parts.length > 1) {
-                return createSegments(parts[0], parts[1]);
-            }
-            // If only one part (e.g. the 4th one), it's all female
-            return [{ text: step.text, gender: 'female' }];
-        }
-
-        // Standard Prayers - Split logic
         const text = step.text;
 
+        // Sign of the Cross
+        if (step.title === 'The Sign of the Cross' || step.title === 'La Señal de la Cruz') {
+            return [{ text, gender: 'female' }];
+        }
+
+        // Apostles Creed
+        if (step.title === "Apostles' Creed" || step.title === 'Credo de los Apóstoles') {
+            return [{ text, gender: 'female' }];
+        }
+
         // Our Father
-        if (step.title.includes('Our Father') || step.title.includes('Padre Nuestro')) {
+        if (step.title === 'Our Father' || step.title === 'Padre Nuestro') {
             const splitPhrase = language === 'es' ? 'Danos hoy' : 'Give us this day';
             const parts = text.split(splitPhrase);
             if (parts.length > 1) {
@@ -250,7 +234,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
 
         // Hail Mary
-        if (step.title.includes('Hail Mary') || step.title.includes('Ave María')) {
+        if (step.title === 'Hail Mary' || step.title === 'Ave María') {
             const splitPhrase = language === 'es' ? 'Santa María' : 'Holy Mary';
             const parts = text.split(splitPhrase);
             if (parts.length > 1) {
@@ -259,7 +243,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
 
         // Glory Be
-        if (step.title.includes('Glory Be') || step.title.includes('Gloria')) {
+        if (step.title === 'Glory Be' || step.title === 'Gloria') {
             const splitPhrase = language === 'es' ? 'Como era' : 'As it was';
             const parts = text.split(splitPhrase);
             if (parts.length > 1) {
@@ -267,13 +251,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             }
         }
 
-        // O My Jesus
-        if (step.title.includes('O My Jesus') || step.title.includes('Oh Jesús Mío')) {
-            const splitPhrase = language === 'es' ? 'lleva al cielo' : 'and lead all souls';
-            const parts = text.split(splitPhrase);
-            if (parts.length > 1) {
-                return createSegments(parts[0], splitPhrase + parts.slice(1).join(splitPhrase));
-            }
+        // Fatima Prayer
+        if (step.title === 'Fatima Prayer' || step.title === 'Oh Jesús Mío') {
+            return [{ text, gender: 'female' }]; // Usually recited together or by leader
         }
 
         // Hail Holy Queen
@@ -289,19 +269,12 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         return [{ text: step.text, gender: 'female' }];
     };
 
-    // Ref to track continuous mode state inside callbacks
-    const continuousModeRef = useRef(continuousMode);
-
-    // Keep ref in sync with state and handle cleanup
-    useEffect(() => {
-        continuousModeRef.current = continuousMode;
-        return () => {
-            continuousModeRef.current = false;
-        };
-    }, [continuousMode]);
-
-    // Track playback session to invalidate stale callbacks
-    const playbackIdRef = useRef(0);
+    const getSpelledOrdinal = (num: number) => {
+        const ordinals = language === 'es'
+            ? ['Primer', 'Segundo', 'Tercer', 'Cuarto', 'Quinto']
+            : ['First', 'Second', 'Third', 'Fourth', 'Fifth'];
+        return ordinals[num - 1] || `${num}th`;
+    };
 
     // Recursive function to play audio sequence
     const playSequence = (step: any) => {
@@ -317,21 +290,17 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 return; // Don't advance - this callback is from an old session
             }
 
-            // LAYER 3: Check if continuous mode is still active
+            // Double check mode hasn't been turned off
             if (!continuousModeRef.current) {
-                console.log('[Continuous Mode] Stopped during playback - staying on current prayer:', currentStep.title);
-                return; // Don't advance - user will resume from current prayer
+                console.log('[Continuous Mode] Mode turned off during playback - stopping');
+                return;
             }
 
-            // All validations passed - safe to advance
             const nextStep = flowEngine.getNextStep();
             if (nextStep) {
                 setCurrentStep(nextStep);
-
                 if (nextStep.type === 'complete') {
                     setContinuousMode(false);
-
-                    // Save completion
                     const progress = {
                         mysteryType: currentMysterySet,
                         currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
@@ -350,36 +319,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 setContinuousMode(false);
             }
         });
-    };
-
-    const handleNext = () => {
-        setContinuousMode(false);
-        continuousModeRef.current = false;
-        stopAudio();
-        const nextStep = flowEngine.getNextStep();
-        if (nextStep) {
-            setCurrentStep(nextStep);
-            if (nextStep.type === 'complete') {
-                const progress = {
-                    mysteryType: currentMysterySet,
-                    currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
-                    date: new Date().toISOString().split('T')[0],
-                    language
-                };
-                savePrayerProgress(progress);
-                onComplete();
-            }
-        }
-    };
-
-    const handlePrevious = () => {
-        setContinuousMode(false);
-        continuousModeRef.current = false;
-        stopAudio();
-        const prevStep = flowEngine.getPreviousStep();
-        if (prevStep) {
-            setCurrentStep(prevStep);
-        }
     };
 
     const handleToggleContinuous = () => {
@@ -415,27 +354,56 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
     };
 
-    // Auto-start continuous mode if requested from home screen
-    useEffect(() => {
-        if (startWithContinuous && !continuousMode && !isPlaying) {
-            console.log('[MysteryScreen] Auto-starting continuous mode');
-            handleToggleContinuous();
+    const handleNext = () => {
+        setContinuousMode(false);
+        continuousModeRef.current = false;
+        stopAudio();
+        const nextStep = flowEngine.getNextStep();
+        if (nextStep) {
+            setCurrentStep(nextStep);
+            if (nextStep.type === 'complete') {
+                const progress = {
+                    mysteryType: currentMysterySet,
+                    currentStepIndex: flowEngine.getCurrentStepNumber() - 1,
+                    date: new Date().toISOString().split('T')[0],
+                    language
+                };
+                savePrayerProgress(progress);
+                onComplete();
+            }
         }
-    }, [startWithContinuous]);
+    };
 
-    // Check for Intro Prayers
-    const introPrayers = [
-        'Sign of the Cross', 'Señal de la Cruz',
-        'Opening Invocation', 'Invocación Inicial',
-        'Act of Contrition', 'Acto de Contrición',
-        'Apostles\' Creed', 'Credo de los Apóstoles',
-        'Invocation to the Holy Spirit', 'Invocación al Espíritu Santo',
-        'Moments of Intentions', 'Momentos de Intenciones',
-        'Moment of Intentions', 'Momento de Intenciones'
-    ];
+    const handlePrevious = () => {
+        setContinuousMode(false);
+        continuousModeRef.current = false;
+        stopAudio();
+        const prevStep = flowEngine.getPreviousStep();
+        if (prevStep) {
+            setCurrentStep(prevStep);
+        }
+    };
 
-    const stepTitle = currentStep?.title;
-    const isIntroPrayer = stepTitle ? introPrayers.some(t => stepTitle.includes(t)) : false;
+    const t = {
+        back: language === 'es' ? 'Volver' : 'Back',
+        of: language === 'es' ? 'de' : 'of',
+        complete: language === 'es' ? 'completado' : 'complete',
+        previous: language === 'es' ? 'Anterior' : 'Previous',
+        next: language === 'es' ? 'Siguiente' : 'Next',
+        finish: language === 'es' ? 'Terminar' : 'Finish',
+        stopAudio: language === 'es' ? 'Detener audio' : 'Stop audio',
+        playAudio: language === 'es' ? 'Reproducir audio' : 'Play audio',
+        continuousMode: language === 'es' ? 'Modo Continuo' : 'Continuous Mode',
+        stopContinuous: language === 'es' ? 'Detener' : 'Stop',
+        reflection: language === 'es' ? 'Reflexión' : 'Reflection',
+        mystery: language === 'es' ? 'Misterio' : 'Mystery',
+        mysteryOrdinal: '',
+        textSize: language === 'es' ? 'Tamaño de Texto' : 'Text Size',
+        settings: language === 'es' ? 'Configuración' : 'Settings',
+        learnMore: language === 'es' ? 'Aprender Más' : 'Learn More'
+    };
+
+    const isIntroPrayer = ['The Sign of the Cross', 'Apostles\' Creed', 'La Señal de la Cruz', 'Credo de los Apóstoles'].includes(currentStep.title || '');
 
     const renderStepContent = () => {
         const step = currentStep;
@@ -454,78 +422,27 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                 alt={step.title}
                                 className="immersive-img"
                             />
-                            <div className="immersive-overlay"></div>
+                            <div className="immersive-overlay" />
                         </div>
 
                         <div className="immersive-content">
+                            <div className="immersive-header">
+                                <span className="immersive-number">{getSpelledOrdinal(decadeInfo?.number || 1)} {t.mystery}</span>
+                                <h2 className="immersive-title">{step.title}</h2>
+                            </div>
 
-
-                            <main className="immersive-main">
-                                <div className="text-center space-y-6">
-
-
-                                    <div className="space-y-4 pt-4 text-center">
-                                        <h3 className="font-display text-base text-primary/80 tracking-widest">
-                                            {language === 'es' ? 'REFLEXIÓN' : 'REFLECTION'}
-                                        </h3>
-                                        <p className="font-sans text-lg leading-relaxed text-gray-200">
-                                            {step.text}
-                                        </p>
-                                    </div>
-
-                                    {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
-                                        <div className="pt-8">
-                                            {decadeInfo.fruit && (
-                                                <h3 className="font-display text-base text-primary/80 tracking-widest mb-4">
-                                                    {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}{decadeInfo.fruit.toUpperCase()}
-                                                </h3>
-                                            )}
-                                            {decadeInfo.scripture && (
-                                                <blockquote className="border-l-2 border-primary-50 pl-4">
-                                                    <p className="font-sans text-base italic leading-relaxed text-gray-300">
-                                                        "{decadeInfo.scripture.text}"
-                                                    </p>
-                                                    <footer className="text-right text-sm text-gray-400 mt-2">
-                                                        {decadeInfo.scripture.reference}
-                                                    </footer>
-                                                </blockquote>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </main>
-                        </div>
-
-
-
-
-                    </div>
-                );
-            }
-
-            return (
-                <div className="mystery-intro">
-                    <div className="mystery-content-card">
-                        <div className="mystery-image-container">
-                            <MysteryImage
-                                src={step.imageUrl}
-                                alt={step.title}
-                                number={step.decadeNumber}
-                            />
-                        </div>
-
-                        <div className="mystery-card-body">
-                            <h3 className="section-label">{t.reflection}</h3>
-                            <p className="reflection-text">{step.text}</p>
-
-                            {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
-                                <div className="meditation-footer" style={{ marginTop: 'var(--spacing-md)', paddingTop: 'var(--spacing-md)', borderTop: '1px solid var(--color-border-light)' }}>
+                            {decadeInfo && (
+                                <div className="immersive-body">
                                     {decadeInfo.fruit && (
-                                        <div className="fruit-container">
+                                        <div className="immersive-fruit">
                                             <span className="fruit-label">{language === 'es' ? 'Fruto:' : 'Fruit:'}</span>
-                                            <span className="fruit-text">{decadeInfo.fruit}</span>
+                                            <span className="fruit-value">{decadeInfo.fruit}</span>
                                         </div>
                                     )}
+
+                                    <div className="immersive-reflection">
+                                        <p>{step.text}</p>
+                                    </div>
 
                                     {decadeInfo.scripture && (
                                         <div className="scripture-container">
@@ -537,167 +454,24 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                             )}
                         </div>
                     </div>
-                </div>
-            );
-        }
-
-
-        // Special rendering for Our Father in Cinematic mode
-        if (step.type === 'decade_our_father' && mysteryLayout === 'cinematic') {
-            const decadeInfo = flowEngine.getCurrentDecadeInfo();
-
-
-            return (
-                <div className="immersive-mystery-container">
-                    <div className="immersive-bg">
-                        {(decadeInfo?.imageUrl || step.imageUrl) && (
-                            <img
-                                src={decadeInfo?.imageUrl || step.imageUrl}
-                                alt={decadeInfo?.title || step.title}
-                                className="immersive-img"
-                                style={currentMysterySet === 'sorrowful' && decadeInfo?.number === 5 ? { transform: 'translateY(20px)' } : undefined}
-                            />
-                        )}
-                        <div className="immersive-overlay"></div>
-                    </div>
-
-                    <div className="immersive-content">
-
-
-                        <main className="immersive-main flex flex-col h-full">
-                            <div className="text-center space-y-8">
-                                <h1 className="font-display text-3xl font-bold immersive-mystery-title tracking-wide mb-8">
-                                    {(step.title || '').toUpperCase()}
-                                </h1>
-
-
-                                <div className="max-w-2xl mx-auto px-6">
-                                    <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
-                                        {step.text}
-                                    </p>
-                                </div>
-                            </div>
-                        </main>
-                    </div>
-
-
-
-
-                </div>
-            );
-        }
-
-        // Unified Cinematic Rendering for Decade Prayers (Hail Mary, Glory Be, Jaculatory, Fatima Prayer)
-        if (['decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer'].includes(step.type) && mysteryLayout === 'cinematic') {
-            const decadeInfo = flowEngine.getCurrentDecadeInfo();
-
-
-            return (
-                <div className="immersive-mystery-container">
-                    <div className="immersive-bg">
-                        {(decadeInfo?.imageUrl || (step as any).imageUrl) && (
-                            <img
-                                src={decadeInfo?.imageUrl || (step as any).imageUrl}
-                                alt={decadeInfo?.title || step.title}
-                                className="immersive-img"
-
-                            />
-                        )}
-                        <div className="immersive-overlay"></div>
-                    </div>
-
-                    <div className="immersive-content">
-                        <main className="immersive-main flex flex-col h-full">
-                            <div className="text-center space-y-8">
-                                <h1 className="font-display text-3xl font-bold immersive-mystery-title tracking-wide mb-8">
-                                    {(step.title || '').toUpperCase()}
-                                </h1>
-
-
-                                <div className="max-w-2xl mx-auto px-6">
-                                    <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
-                                        {step.text}
-                                    </p>
-                                </div>
-
-                                {/* Bead Counter for Hail Mary */}
-                                {step.type === 'decade_hail_mary' && step.hailMaryNumber && (
-                                    <div className="bead-counter mt-8 justify-center">
-                                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((bead) => (
-                                            <div
-                                                key={bead}
-                                                className={`bead ${bead <= step.hailMaryNumber! ? 'bead-active' : ''}`}
-                                                style={{
-                                                    borderColor: 'rgba(255,255,255,0.3)',
-                                                    background: bead <= step.hailMaryNumber! ? '#D4AF37' : 'rgba(255,255,255,0.1)'
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </main>
-                    </div>
-                </div>
-            );
-        }
-        // Card Style Rendering for Closing Prayers (Cinematic Mode)
-        // Matches the design of Intro Prayers (Card with Title and Divider)
-        const closingCardTypes = ['final_jaculatory_start', 'hail_holy_queen', 'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'];
-
-        if (mysteryLayout === 'cinematic') {
-            if (closingCardTypes.includes(step.type)) {
-                return (
-                    <div className="intro-prayer-card">
-                        <h2 className="intro-title">{step.title || ''}</h2>
-                        <div className="intro-divider"></div>
-                        <p className="intro-text">{step.text}</p>
-                    </div>
                 );
             }
 
-            if (step.type === 'final_hail_mary_intro') {
-                const parts = step.text.split('\n\n');
-                return (
-                    <div className="intro-prayer-card">
-                        <h2 className="intro-title">{step.title || ''}</h2>
-                        <div className="intro-divider"></div>
-                        <div className="final-hail-mary-container">
-                            <div className="final-hail-mary-invocation" style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                                {parts[0]}
-                            </div>
-                            {parts[1] && (
-                                <div className="final-hail-mary-prayer" style={{ textAlign: 'center' }}>
-                                    {parts[1]}
-                                </div>
-                            )}
+            // Classic Layout
+            return (
+                <div className="prayer-content">
+                    <p className="prayer-text-main">{step.text}</p>
+                    {decadeInfo?.scripture && (
+                        <div className="scripture-container">
+                            <p className="scripture-text">"{decadeInfo.scripture.text}"</p>
+                            <p className="scripture-ref">{decadeInfo.scripture.reference}</p>
                         </div>
-                    </div>
-                );
-            }
-        }
-
-
-
-        // Special rendering for final Hail Mary intros
-        if (step.type === 'final_hail_mary_intro') {
-            const parts = step.text.split('\n\n');
-            return (
-                <div className="final-hail-mary-container">
-                    <div className="final-hail-mary-invocation">
-                        {parts[0]}
-                    </div>
-                    {parts[1] && (
-                        <>
-                            <div className="final-hail-mary-spacer"></div>
-                            <div className="final-hail-mary-prayer">
-                                {parts[1]}
-                            </div>
-                        </>
                     )}
                 </div>
             );
         }
+
+        const isIntroPrayer = ['The Sign of the Cross', 'Apostles\' Creed', 'La Señal de la Cruz', 'Credo de los Apóstoles'].includes(step.title);
 
         // Special rendering for Litany of Loreto
         if ((step.type as any) === 'litany_of_loreto' && step.litanyData) {
@@ -831,6 +605,28 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         return null;
     };
 
+    // Handle resetting progress for current mystery
+    const handleResetProgress = () => {
+        console.log('[MysteryScreen] Resetting progress for', currentMysterySet);
+
+        // 1. Clear storage for this mystery
+        clearPrayerProgress(currentMysterySet);
+
+        // 2. Reset flow engine to step 0
+        flowEngine.jumpToStep(0);
+
+        // 3. Update local state to reflect step 0
+        const initialStep = flowEngine.getCurrentStep();
+        setCurrentStep(initialStep);
+
+        // 4. Close settings
+        setShowSettings(false);
+
+        // 5. Ensure continuous mode is off
+        setContinuousMode(false);
+        stopAudio();
+    };
+
     return (
         <div className="mystery-screen-container">
             <div className="mystery-screen-header">
@@ -953,6 +749,17 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                             <span className="mystery-nav-label">{flowEngine.isLastStep() ? t.finish : t.next}</span>
                         </button>
                     </div>
+
+                    <button
+                        className={`mystery-nav-btn ${!hasEducationalContent ? 'nav-btn-dimmed' : ''}`}
+                        onClick={() => hasEducationalContent && setShowLearnMore(true)}
+                        disabled={!hasEducationalContent}
+                        aria-label={t.learnMore}
+                        title={t.learnMore}
+                    >
+                        <Lightbulb size={24} strokeWidth={hasEducationalContent ? 2 : 1.5} />
+                        <span className="mystery-nav-label">{t.learnMore}</span>
+                    </button>
                 </div>
             </div>
 
@@ -960,7 +767,17 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             <SettingsModal
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
+                onResetProgress={handleResetProgress}
+                currentMysteryName={flowEngine.getMysteryName()}
             />
-        </div >
+
+            {/* Learn More Modal */}
+            <LearnMoreModal
+                isOpen={showLearnMore}
+                onClose={() => setShowLearnMore(false)}
+                data={currentEducationalData}
+                language={language}
+            />
+        </div>
     );
 }

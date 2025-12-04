@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, Volume2, StopCircle } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, StopCircle, Lightbulb } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
@@ -9,6 +9,9 @@ import { BottomNav } from './BottomNav';
 import { getTodaysDevotion } from '../data/devotions';
 import { useNavigationHandler } from '../hooks/useNavigationHandler';
 import './HomeScreen.css';
+import educationalDataEs from '../data/es-rosary-educational-content.json';
+import educationalDataEn from '../data/en-rosary-educational-content.json';
+import { LearnMoreModal, type EducationalContent } from './LearnMoreModal';
 
 interface HomeScreenProps {
     onStartPrayer: () => void;
@@ -20,6 +23,7 @@ interface HomeScreenProps {
 export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavigateToMysteries, onNavigateToPrayers }: HomeScreenProps) {
     const { language, currentMysterySet, startNewSession, resumeSession, playAudio, audioEnabled, stopAudio } = useApp();
     const [showSettings, setShowSettings] = useState(false);
+    const [showLearnMore, setShowLearnMore] = useState(false);
     const [isPlayingHomeAudio, setIsPlayingHomeAudio] = useState(false);
 
     const hasSession = hasActiveSession();
@@ -38,6 +42,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             continuousAudio: 'Continuous Audio',
             stopAudio: 'Stop Audio',
             dailyDevotionAudio: 'Daily Devotion',
+            learnMore: 'Learn More',
             days: {
                 monday: 'Monday',
                 tuesday: 'Tuesday',
@@ -59,6 +64,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             continuousAudio: 'Audio Continuo',
             stopAudio: 'Detener Audio',
             dailyDevotionAudio: 'Devoción Diaria',
+            learnMore: 'Profundizar',
             days: {
                 monday: 'Lunes',
                 tuesday: 'Martes',
@@ -200,13 +206,22 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
 
                     <h1 className="hero-title">{t.title}</h1>
 
-                    <button
-                        className="icon-btn"
-                        onClick={() => setShowSettings(true)}
-                        aria-label={t.settings}
-                    >
-                        <SettingsIcon size={20} />
-                    </button>
+                    <div className="header-actions">
+                        <button
+                            className="icon-btn"
+                            onClick={() => setShowLearnMore(true)}
+                            aria-label={t.learnMore}
+                        >
+                            <Lightbulb size={20} />
+                        </button>
+                        <button
+                            className="icon-btn"
+                            onClick={() => setShowSettings(true)}
+                            aria-label={t.settings}
+                        >
+                            <SettingsIcon size={20} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -240,6 +255,13 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             <SettingsModal
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
+            />
+
+            <LearnMoreModal
+                isOpen={showLearnMore}
+                onClose={() => setShowLearnMore(false)}
+                data={(language === 'es' ? educationalDataEs.global_intro : educationalDataEn.global_intro) as EducationalContent}
+                language={language}
             />
         </div>
     );
