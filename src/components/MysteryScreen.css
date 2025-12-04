@@ -1031,7 +1031,7 @@
 .continuous-audio-btn-header:hover,
 .settings-btn-header:hover {
     background: var(--color-bg-tertiary);
-    color: var(--color-primary);
+    color: #FBBF24;
 }
 
 /* Intro Prayer Card Styles */
@@ -1348,8 +1348,25 @@
 }
 
 .litany-response-new {
-    color: var(--color-primary);
+    color: #FBBF24;
     font-weight: 600;
     padding-left: 1rem;
     font-size: var(--font-size-xl);
+}
+.litany-reminder-highlight {
+    color: #FBBF24;
+}
+.litany-reminder {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    padding: 0.5rem 0;
+    margin: 0;
+    text-align: left;
+    font-style: normal;
+    font-family: var(--font-body);
+}
+
+.litany-reminder-highlight {
+    color: #FBBF24;
 }

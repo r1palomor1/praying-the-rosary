@@ -21,6 +21,7 @@ function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
   const [hasSelectedLanguage, setHasSelectedLanguage] = useState(false);
   const [startWithContinuous, setStartWithContinuous] = useState(false);
+  const [autoPlayCompletion, setAutoPlayCompletion] = useState(false);
 
   // Check if language has been selected before
   useEffect(() => {
@@ -52,7 +53,8 @@ function AppContent() {
       const progress = engine.getProgress();
 
       if (progress >= 99) {
-        // Already complete - go directly to completion screen
+        // Already complete - go directly to completion screen (no audio)
+        setAutoPlayCompletion(false);
         setCurrentScreen('complete');
         return;
       }
@@ -64,8 +66,23 @@ function AppContent() {
   };
 
   const handleStartPrayerWithContinuous = () => {
-    // HomeScreen handles all the logic (progress check, home audio, session management)
-    // This just navigates to MysteryScreen with continuous mode enabled
+    // Check if today's rosary is already complete before starting
+    const savedProgress = loadPrayerProgress(currentMysterySet);
+    if (savedProgress && hasValidPrayerProgress(currentMysterySet)) {
+      // Create temporary engine to check progress
+      const engine = new PrayerFlowEngine(currentMysterySet as any, language);
+      engine.jumpToStep(savedProgress.currentStepIndex);
+      const progress = engine.getProgress();
+
+      if (progress >= 99) {
+        // Already complete - go directly to completion screen WITH audio
+        setAutoPlayCompletion(true);
+        setCurrentScreen('complete');
+        return;
+      }
+    }
+
+    // Not complete - proceed to prayer screen with continuous mode
     setStartWithContinuous(true);
     setCurrentScreen('prayer');
   };
@@ -74,6 +91,7 @@ function AppContent() {
     completeSession();
     // Don't clear prayer progress - keep it saved at completion step
     // so we can detect it's complete when user presses Pray again
+    setAutoPlayCompletion(startWithContinuous); // Auto-play if coming from continuous mode
     setCurrentScreen('complete');
   };
 
@@ -130,7 +148,7 @@ function AppContent() {
         />
       )}
       {currentScreen === 'complete' && (
-        <CompletionScreen onHome={handleBackToHome} onRestart={handleRestart} mysteryType={currentMysterySet} />
+        <CompletionScreen onHome={handleBackToHome} onRestart={handleRestart} mysteryType={currentMysterySet} autoPlayAudio={autoPlayCompletion} />
       )}
     </div>
   );

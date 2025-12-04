@@ -1,4 +1,5 @@
 
+
 import { useEffect, useRef } from 'react';
 import { CheckCircle, Home } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -10,9 +11,10 @@ interface CompletionScreenProps {
     onHome: () => void;
     onRestart: () => void;
     mysteryType: MysterySetType;
+    autoPlayAudio?: boolean;
 }
 
-export function CompletionScreen({ onHome, mysteryType }: CompletionScreenProps) {
+export function CompletionScreen({ onHome, mysteryType, autoPlayAudio = false }: CompletionScreenProps) {
     const { language, playAudio } = useApp();
 
     // Get the mystery name safely
@@ -36,16 +38,16 @@ export function CompletionScreen({ onHome, mysteryType }: CompletionScreenProps)
 
     const hasPlayedRef = useRef(false);
 
-    // Play completion audio on mount
+    // Play completion audio only if autoPlayAudio is true
     useEffect(() => {
-        if (!hasPlayedRef.current) {
+        if (autoPlayAudio && !hasPlayedRef.current) {
             const text = mysteryName
                 ? `${t.title}. ${mysteryName}. ${t.subtitle}`
                 : `${t.title}. ${t.subtitle}`;
             playAudio([{ text, gender: 'female' }]);
             hasPlayedRef.current = true;
         }
-    }, [language, playAudio, t.title, t.subtitle, mysteryName]);
+    }, [autoPlayAudio, language, playAudio, t.title, t.subtitle, mysteryName]);
 
     return (
         <div className="completion-container">

@@ -703,11 +703,18 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         if ((step.type as any) === 'litany_of_loreto' && step.litanyData) {
             const data = step.litanyData;
 
-            // Helper to render a row with alternating background
+            // Helper to render a row with alternating background (full call and response)
             const renderRow = (call: string, response: string, index: number, globalIndex: number) => (
                 <div key={`${index}-${globalIndex}`} className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''}`}>
                     <div className="litany-call-new">{call}</div>
                     <div className="litany-response-new">{response}</div>
+                </div>
+            );
+
+            // Helper to render call-only row (for Mary invocations after the first)
+            const renderCallOnly = (call: string, index: number, globalIndex: number) => (
+                <div key={`${index}-${globalIndex}`} className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''}`}>
+                    <div className="litany-call-new">{call}</div>
                 </div>
             );
 
@@ -722,10 +729,28 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
                         {data.trinity_invocations.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
 
-                        {/* Mary Invocations - Always show response for structured layout */}
+                        {/* Instruction reminder before Mary invocations */}
+                        <div className="litany-reminder">
+                            {language === 'es' ? (
+                                <>
+                                    (Repetir respuesta de oración: <span className="litany-reminder-highlight">Ruega por nosotros</span>)
+                                </>
+                            ) : (
+                                <>
+                                    (Repeat prayer response: <span className="litany-reminder-highlight">Pray for us</span>)
+                                </>
+                            )}
+                        </div>
+
+                        {/* Mary Invocations - Show first one fully, then only calls */}
                         {data.mary_invocations.map((item: any, i: number) => {
                             const response = item.response || (language === 'es' ? 'Ruega por nosotros' : 'Pray for us');
-                            return renderRow(item.call, response, i, globalCount++);
+                            // Show first invocation with full response, rest with call only
+                            if (i === 0) {
+                                return renderRow(item.call, response, i, globalCount++);
+                            } else {
+                                return renderCallOnly(item.call, i, globalCount++);
+                            }
                         })}
 
                         {data.agnus_dei.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
@@ -878,7 +903,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             <div className="mystery-screen-content" ref={contentRef}>
                 <div className="prayer-section">
                     <div className="prayer-header">
-                        {currentStep.type !== 'decade_announcement' && !isIntroPrayer && !(mysteryLayout === 'cinematic' && ['decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer', 'final_jaculatory_start', 'final_hail_mary_intro', 'hail_holy_queen', 'closing_under_your_protection', 'final_collect', 'sign_of_cross_end', 'litany_of_loreto'].includes(currentStep.type)) && (
+                        {currentStep.type !== 'decade_announcement' && !isIntroPrayer && currentStep.type !== 'litany_of_loreto' && !(mysteryLayout === 'cinematic' && ['decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer', 'final_jaculatory_start', 'final_hail_mary_intro', 'hail_holy_queen', 'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'].includes(currentStep.type)) && (
                             <h3 className="prayer-name">{currentStep.title}</h3>
                         )}
                         <div className="audio-controls">

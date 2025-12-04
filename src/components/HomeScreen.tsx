@@ -116,8 +116,8 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             const progress = engine.getProgress();
 
             if (progress >= 99) {
-                // Already complete - go to completion screen
-                onStartPrayer();
+                // Already complete - go to completion screen with audio
+                onStartPrayerWithContinuous();
                 return;
             }
 
