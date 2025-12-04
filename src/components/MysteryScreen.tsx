@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
-import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress } from '../utils/storage';
+import { savePrayerProgress, loadPrayerProgress, clearPrayerProgress } from '../utils/storage';
 import { wakeLockManager } from '../utils/wakeLock';
 
 import './MysteryScreen.css';
@@ -471,7 +471,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             );
         }
 
-        const isIntroPrayer = ['The Sign of the Cross', 'Apostles\' Creed', 'La Señal de la Cruz', 'Credo de los Apóstoles'].includes(step.title);
+        const isIntroPrayer = ['The Sign of the Cross', 'Apostles\' Creed', 'La Señal de la Cruz', 'Credo de los Apóstoles'].includes(step.title || '');
 
         // Special rendering for Litany of Loreto
         if ((step.type as any) === 'litany_of_loreto' && step.litanyData) {

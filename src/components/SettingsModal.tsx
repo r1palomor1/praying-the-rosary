@@ -1,4 +1,3 @@
-import React from 'react';
 import { Moon, Sun, Volume2, Languages, Trash2, Gauge, Type, Layout, Music } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../utils/storage';
