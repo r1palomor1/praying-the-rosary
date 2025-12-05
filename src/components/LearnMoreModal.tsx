@@ -107,7 +107,7 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
 
     return (
         <div className="learn-more-overlay" onClick={onClose}>
-            <div className="learn-more-content" onClick={(e) => e.stopPropagation()}>
+            <div className="learn-more-content mystery-mode" onClick={(e) => e.stopPropagation()}>
                 <header className="learn-more-header">
                     <div className="header-title-container">
                         <Lightbulb className="header-icon" size={24} />
@@ -123,13 +123,13 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
 
                     <div className="learn-more-tabs">
                         <button
-                            className={`tab-btn ${activeTab === 'context' ? 'active' : ''}`}
+                            className={`tab-button ${activeTab === 'context' ? 'active' : ''}`}
                             onClick={() => setActiveTab('context')}
                         >
                             {language === 'es' ? 'Contexto' : 'Context'}
                         </button>
                         <button
-                            className={`tab-btn ${activeTab === 'reflection' ? 'active' : ''}`}
+                            className={`tab-button ${activeTab === 'reflection' ? 'active' : ''}`}
                             onClick={() => setActiveTab('reflection')}
                         >
                             {language === 'es' ? 'Reflexión' : 'Reflection'}
