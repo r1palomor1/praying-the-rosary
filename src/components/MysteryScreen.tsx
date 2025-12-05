@@ -643,58 +643,47 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
         // Card Style Rendering for Closing Prayers (Cinematic Mode)
         // Matches the design of Intro Prayers (Card with Title and Divider)
-        const closingCardTypes = ['final_jaculatory_start', 'hail_holy_queen', 'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'];
-
-        if (mysteryLayout === 'cinematic') {
-            if (closingCardTypes.includes(step.type)) {
-                return (
-                    <div className="intro-prayer-card">
-                        <h2 className="intro-title">{step.title || ''}</h2>
-                        <div className="intro-divider"></div>
-                        <p className="intro-text">{step.text}</p>
-                    </div>
-                );
-            }
-
-            if (step.type === 'final_hail_mary_intro') {
-                const parts = step.text.split('\n\n');
-                return (
-                    <div className="intro-prayer-card">
-                        <h2 className="intro-title">{step.title || ''}</h2>
-                        <div className="intro-divider"></div>
-                        <div className="final-hail-mary-container">
-                            <div className="final-hail-mary-invocation" style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                                {parts[0]}
-                            </div>
-                            {parts[1] && (
-                                <div className="final-hail-mary-prayer" style={{ textAlign: 'center' }}>
-                                    {parts[1]}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                );
-            }
+        // Special rendering for Final Jaculatory using Intro Prayer Card theme
+        if (step.type === 'final_jaculatory_start') {
+            return (
+                <div className="intro-prayer-card">
+                    <h2 className="intro-title">{step.title || ''}</h2>
+                    <div className="intro-divider"></div>
+                    <p className="intro-text">{step.text}</p>
+                </div>
+            );
         }
 
-
-
-        // Special rendering for final Hail Mary intros
-        if (step.type === 'final_hail_mary_intro') {
+        // Special rendering for Final Hail Marys (Intro + 1-4)
+        if (['final_hail_mary_intro', 'final_hail_mary_1', 'final_hail_mary_2', 'final_hail_mary_3', 'final_hail_mary_4'].includes(step.type)) {
             const parts = step.text.split('\n\n');
             return (
-                <div className="final-hail-mary-container">
-                    <div className="final-hail-mary-invocation">
-                        {parts[0]}
-                    </div>
-                    {parts[1] && (
-                        <>
-                            <div className="final-hail-mary-spacer"></div>
-                            <div className="final-hail-mary-prayer">
+                <div className="intro-prayer-card">
+                    <h2 className="intro-title">{step.title || ''}</h2>
+                    <div className="intro-divider"></div>
+                    <div className="intro-text">
+                        <div>{parts[0]}</div>
+                        {parts[1] && (
+                            <div style={{ color: '#FBBF24', marginTop: '1rem', fontStyle: 'italic', fontWeight: 'normal' }}>
                                 {parts[1]}
                             </div>
-                        </>
-                    )}
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Card Style Rendering for Closing Prayers (Cinematic Mode)
+        // Matches the design of Intro Prayers (Card with Title and Divider)
+        // Card Style Rendering for Closing Prayers (Matches Intro Prayers)
+        const closingCardTypes = ['hail_holy_queen', 'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'];
+
+        if (closingCardTypes.includes(step.type)) {
+            return (
+                <div className="intro-prayer-card">
+                    <h2 className="intro-title">{step.title || ''}</h2>
+                    <div className="intro-divider"></div>
+                    <p className="intro-text">{step.text}</p>
                 </div>
             );
         }
@@ -765,6 +754,18 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     <h2 className="intro-title">{step.title || ''}</h2>
                     <div className="intro-divider"></div>
                     <p className="intro-text">{step.text}</p>
+                </div>
+            );
+        }
+
+        // Mystery Prayer Card for all decade prayers (Classic Mode only)
+        const decadePrayerTypes = ['decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer'];
+        if (mysteryLayout !== 'cinematic' && decadePrayerTypes.includes(step.type)) {
+            return (
+                <div className="mystery-prayer-card">
+                    <h2 className="mystery-title">{step.title}</h2>
+                    <div className="mystery-divider"></div>
+                    <p className="mystery-text">{step.text}</p>
                 </div>
             );
         }
@@ -903,9 +904,15 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             <div className="mystery-screen-content" ref={contentRef}>
                 <div className="prayer-section">
                     <div className="prayer-header">
-                        {currentStep.type !== 'decade_announcement' && !isIntroPrayer && currentStep.type !== 'litany_of_loreto' && !(mysteryLayout === 'cinematic' && ['decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer', 'final_jaculatory_start', 'final_hail_mary_intro', 'hail_holy_queen', 'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'].includes(currentStep.type)) && (
-                            <h3 className="prayer-name">{currentStep.title}</h3>
-                        )}
+                        {currentStep.type !== 'decade_announcement' &&
+                            !isIntroPrayer &&
+                            currentStep.type !== 'litany_of_loreto' &&
+                            currentStep.type !== 'final_jaculatory_start' &&
+                            !['final_hail_mary_intro', 'final_hail_mary_1', 'final_hail_mary_2', 'final_hail_mary_3', 'final_hail_mary_4', 'hail_holy_queen', 'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'].includes(currentStep.type) &&
+                            !(mysteryLayout !== 'cinematic' && ['decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer'].includes(currentStep.type)) &&
+                            !(mysteryLayout === 'cinematic' && ['decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer'].includes(currentStep.type)) && (
+                                <h3 className="prayer-name">{currentStep.title}</h3>
+                            )}
                         <div className="audio-controls">
                             {/* Duplicate audio button removed */}
                         </div>

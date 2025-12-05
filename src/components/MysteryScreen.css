@@ -852,6 +852,13 @@
     margin-left: auto !important;
 }
 
+/* Section Label (Reflection) - Centered */
+.section-label {
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
 /* Global Final Hail Mary Intro Styles */
 .final-hail-mary-container {
     text-align: left !important;
@@ -1081,6 +1088,53 @@
     .intro-text {
         font-size: 1.25rem;
         /* Desktop: 1.25rem */
+    }
+}
+
+/* Mystery Prayer Card Styles (Compact version for decade prayers) */
+.mystery-prayer-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    padding: var(--spacing-sm);
+    padding-top: var(--spacing-xs);
+    position: relative;
+    min-height: 10vh;
+}
+
+.mystery-title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: var(--font-size-lg) !important;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    margin-bottom: 0;
+}
+
+.mystery-divider {
+    width: 4rem;
+    height: 1px;
+    background-color: var(--color-border);
+    margin: 0.5rem auto;
+}
+
+.mystery-text {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-base) !important;
+    line-height: 1.625;
+    color: var(--color-text-secondary);
+}
+
+@media (min-width: 640px) {
+    .mystery-title {
+        font-size: var(--font-size-xl) !important;
+    }
+
+    .mystery-text {
+        font-size: var(--font-size-lg) !important;
     }
 }
 
@@ -1353,9 +1407,11 @@
     padding-left: 1rem;
     font-size: var(--font-size-xl);
 }
+
 .litany-reminder-highlight {
     color: #FBBF24;
 }
+
 .litany-reminder {
     font-size: 1.5rem;
     font-weight: 600;
