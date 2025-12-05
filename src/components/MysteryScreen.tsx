@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, Lightbulb } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
+import { LearnMoreModal, type EducationalContent } from './LearnMoreModal';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
 import { wakeLockManager } from '../utils/wakeLock';
+import educationalDataEs from '../data/es-rosary-educational-content.json';
+import educationalDataEn from '../data/en-rosary-educational-content.json';
 
 import './MysteryScreen.css';
 import './MysteryBottomNav.css';
@@ -65,6 +68,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         mysteryLayout
     } = useApp();
     const [showSettings, setShowSettings] = useState(false);
+    const [showLearnMore, setShowLearnMore] = useState(false);
 
     const [flowEngine] = useState(() => {
         const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
@@ -167,7 +171,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         mystery: 'Misterio',
         mysteryOrdinal: 'º',
         textSize: 'Tamaño de texto',
-        settings: 'Configuración'
+        settings: 'Configuración',
+        learnMore: 'Profundizar'
     } : {
         back: 'Home',
         step: 'Step',
@@ -184,8 +189,50 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         mystery: 'Mystery',
         mysteryOrdinal: '',
         textSize: 'Text Size',
-        settings: 'Settings'
+        settings: 'Settings',
+        learnMore: 'Learn More'
     };
+
+    // Get current educational data
+    const currentData = language === 'es' ? educationalDataEs : educationalDataEn;
+
+    // Helper to get current educational content
+    const getCurrentEducationalContent = (): EducationalContent | null => {
+        const decadeInfo = flowEngine.getCurrentDecadeInfo();
+
+        const mysteryNameMap: Record<string, Record<string, string>> = {
+            'es': {
+                'joyful': 'Misterios Gozosos',
+                'luminous': 'Misterios Luminosos',
+                'sorrowful': 'Misterios Dolorosos',
+                'glorious': 'Misterios Gloriosos'
+            },
+            'en': {
+                'joyful': 'Joyful Mysteries',
+                'luminous': 'Luminous Mysteries',
+                'sorrowful': 'Sorrowful Mysteries',
+                'glorious': 'Glorious Mysteries'
+            }
+        };
+
+        if (decadeInfo) {
+            const targetName = mysteryNameMap[language]?.[currentMysterySet];
+            if (!targetName) return null;
+
+            // Find matching data in JSON
+            const data = currentData.mysteries.find((item: any) =>
+                item.mystery_name === targetName &&
+                item.mystery_number === decadeInfo.number
+            );
+            return (data as EducationalContent) || null;
+        }
+
+        // If not in a decade (start or end), show global intro
+        return currentData.global_intro as EducationalContent;
+    };
+
+    const currentEducationalData = getCurrentEducationalContent();
+    const hasEducationalContent = !!currentEducationalData;
 
     const getAudioSegments = (step: any): { text: string; gender: 'female' | 'male' }[] => {
         // Helper to create segments
@@ -960,6 +1007,17 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                             <span className="mystery-nav-label">{flowEngine.isLastStep() ? t.finish : t.next}</span>
                         </button>
                     </div>
+
+                    <button
+                        className={`mystery-nav-btn ${!hasEducationalContent ? 'nav-btn-dimmed' : ''}`}
+                        onClick={() => hasEducationalContent && setShowLearnMore(true)}
+                        disabled={!hasEducationalContent}
+                        aria-label={t.learnMore}
+                        title={t.learnMore}
+                    >
+                        <Lightbulb size={24} strokeWidth={hasEducationalContent ? 2 : 1.5} />
+                        <span className="mystery-nav-label">{t.learnMore}</span>
+                    </button>
                 </div>
             </div>
 
@@ -967,6 +1025,14 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             <SettingsModal
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
+            />
+
+            {/* Learn More Modal */}
+            <LearnMoreModal
+                isOpen={showLearnMore}
+                onClose={() => setShowLearnMore(false)}
+                data={currentEducationalData}
+                language={language}
             />
         </div >
     );
