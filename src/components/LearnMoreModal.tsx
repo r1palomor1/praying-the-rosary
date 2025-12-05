@@ -85,30 +85,20 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                     </header>
                     <main className="learn-more-body">
                         <h1 className="mystery-title-large">{data.title}</h1>
-
-                        <div className="global-intro-card">
-                            <div className="global-intro-card-header">
-                                <Anchor size={20} style={{ color: 'var(--color-text-secondary)' }} />
-                                <h2 className="global-intro-card-title">
-                                    {language === 'es' ? 'FUNDAMENTO TEOLÓGICO' : 'THEOLOGICAL FOUNDATION'}
-                                </h2>
+                        <section className="info-section">
+                            <div className="section-header">
+                                <Anchor size={20} />
+                                <h3>{language === 'es' ? 'Fundamento Teológico' : 'Theological Foundation'}</h3>
                             </div>
-                            <p className="global-intro-text">
-                                {data.theological_foundation}
-                            </p>
-                        </div>
-
-                        <div className="global-intro-card">
-                            <div className="global-intro-card-header">
-                                <BookOpen size={20} style={{ color: 'var(--color-text-secondary)' }} />
-                                <h2 className="global-intro-card-title">
-                                    {language === 'es' ? 'COMPENDIO DEL EVANGELIO' : 'GOSPEL COMPENDIUM'}
-                                </h2>
+                            <p>{data.theological_foundation}</p>
+                        </section>
+                        <section className="info-section">
+                            <div className="section-header">
+                                <BookOpen size={20} />
+                                <h3>{language === 'es' ? 'Compendio del Evangelio' : 'Gospel Compendium'}</h3>
                             </div>
-                            <p className="global-intro-text">
-                                {data.gospel_compendium}
-                            </p>
-                        </div>
+                            <p>{data.gospel_compendium}</p>
+                        </section>
                     </main>
                 </div>
             </div>
@@ -117,7 +107,7 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
 
     return (
         <div className="learn-more-overlay" onClick={onClose}>
-            <div className="learn-more-content mystery-mode" onClick={(e) => e.stopPropagation()}>
+            <div className="learn-more-content" onClick={(e) => e.stopPropagation()}>
                 <header className="learn-more-header">
                     <div className="header-title-container">
                         <Lightbulb className="header-icon" size={24} />
@@ -136,106 +126,87 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                             className={`tab-btn ${activeTab === 'context' ? 'active' : ''}`}
                             onClick={() => setActiveTab('context')}
                         >
-                            {language === 'es' ? 'CONTEXTO' : 'CONTEXT'}
+                            {language === 'es' ? 'Contexto' : 'Context'}
                         </button>
                         <button
                             className={`tab-btn ${activeTab === 'reflection' ? 'active' : ''}`}
                             onClick={() => setActiveTab('reflection')}
                         >
-                            {language === 'es' ? 'REFLEXIÓN' : 'REFLECTION'}
+                            {language === 'es' ? 'Reflexión' : 'Reflection'}
                         </button>
                     </div>
 
                     {activeTab === 'context' ? (
                         <div className="tab-content fade-in">
-                            <section className="highlight-section">
+                            <section className="info-section highlight-section">
                                 <p className="meaning-text">{data.meaning}</p>
                             </section>
 
-                            <div className="space-y-8">
-                                <section className="info-card">
-                                    <div className="scripture-row">
-                                        <div className="card-header">
-                                            <BookOpen size={20} />
-                                            <h3>{t.scripture}</h3>
-                                        </div>
-                                        <div className="scripture-refs">
-                                            <p>{data.scripture_primary}</p>
-                                            {data.scripture_secondary && (
-                                                <p>{data.scripture_secondary}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </section>
+                            <section className="info-card">
+                                <div className="card-header">
+                                    <BookOpen size={18} />
+                                    <h3>{t.scripture}</h3>
+                                </div>
+                                <div className="card-body">
+                                    <p className="scripture-ref primary">{data.scripture_primary}</p>
+                                    {data.scripture_secondary && (
+                                        <p className="scripture-ref secondary">{data.scripture_secondary}</p>
+                                    )}
+                                </div>
+                            </section>
 
-                                <section className="info-card">
-                                    <div className="card-header">
-                                        <History size={20} />
-                                        <h3>{t.history}</h3>
-                                    </div>
-                                    <div className="card-body">
-                                        <p>{data.historical_context}</p>
-                                    </div>
-                                </section>
+                            <section className="info-section">
+                                <div className="section-header">
+                                    <History size={20} />
+                                    <h3>{t.history}</h3>
+                                </div>
+                                <p>{data.historical_context}</p>
+                            </section>
 
-                                <section className="info-card">
-                                    <div className="card-header">
-                                        <Anchor size={20} />
-                                        <h3>{language === 'es' ? 'ROL DE CRISTO Y MARÍA' : 'ROLE OF CHRIST & MARY'}</h3>
-                                    </div>
-                                    <div className="card-body">
-                                        <p>{data.mary_and_christ_role}</p>
-                                    </div>
-                                </section>
-                            </div>
+                            <section className="info-section">
+                                <div className="section-header">
+                                    <Anchor size={20} />
+                                    <h3>{language === 'es' ? 'Rol de Cristo y María' : 'Role of Christ & Mary'}</h3>
+                                </div>
+                                <p>{data.mary_and_christ_role}</p>
+                            </section>
                         </div>
                     ) : (
                         <div className="tab-content fade-in">
-                            <div className="space-y-8">
-                                <section className="info-card" style={{ borderTop: 'none', paddingTop: 0 }}>
-                                    <div className="card-header">
-                                        <Heart size={20} />
-                                        <h3>{t.fruit}: {data.fruit}</h3>
-                                    </div>
-                                    <div className="card-body">
-                                        <p>{data.fruit_explanation}</p>
-                                    </div>
-                                </section>
+                            <section className="info-card">
+                                <div className="card-header">
+                                    <Heart size={18} />
+                                    <h3>{t.fruit}: {data.fruit}</h3>
+                                </div>
+                                <div className="card-body">
+                                    <p>{data.fruit_explanation}</p>
+                                </div>
+                            </section>
 
-                                <section className="info-card">
-                                    <div className="card-header">
-                                        <Sparkles size={20} />
-                                        <h3>{t.meditation}</h3>
-                                    </div>
-                                    <div className="card-body">
-                                        <p>{data.meditation}</p>
-                                    </div>
-                                </section>
+                            <section className="info-section">
+                                <div className="section-header">
+                                    <Sparkles size={20} />
+                                    <h3>{t.meditation}</h3>
+                                </div>
+                                <p>{data.meditation}</p>
+                            </section>
 
-                                <section className="info-card">
-                                    <div className="card-header">
-                                        <Anchor size={20} />
-                                        <h3>{t.theology}</h3>
-                                    </div>
-                                    <div className="card-body">
-                                        <p>{data.deeper_theology}</p>
-                                    </div>
-                                </section>
+                            <section className="info-section">
+                                <div className="section-header">
+                                    <Anchor size={20} />
+                                    <h3>{t.theology}</h3>
+                                </div>
+                                <p>{data.deeper_theology}</p>
+                            </section>
 
-                                <section className="application-section">
-                                    <div className="card-header">
-                                        <BookOpen size={20} />
-                                        <h3>{t.application}</h3>
-                                    </div>
-                                    <div className="card-body">
-                                        <p>{data.life_application}</p>
-                                    </div>
-                                    <div className="virtue-tag">
-                                        <span className="label">{language === 'es' ? 'VIRTUD:' : 'VIRTUE:'}</span>
-                                        <span className="value">{data.virtue_formation}</span>
-                                    </div>
-                                </section>
-                            </div>
+                            <section className="info-section application-section">
+                                <h3>{t.application}</h3>
+                                <p>{data.life_application}</p>
+                                <div className="virtue-tag">
+                                    <span className="label">{language === 'es' ? 'Virtud:' : 'Virtue:'}</span>
+                                    <span className="value">{data.virtue_formation}</span>
+                                </div>
+                            </section>
                         </div>
                     )}
                 </main>

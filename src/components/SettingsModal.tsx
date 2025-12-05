@@ -1,26 +1,71 @@
 import { Moon, Sun, Volume2, Languages, Trash2, Gauge, Type, Layout, Music } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { clearPrayerProgress } from '../utils/storage';
+import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../utils/storage';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onResetProgress?: () => void;
+    currentMysteryName?: string;
 }
 
-export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, onResetProgress, currentMysteryName }: SettingsModalProps) {
     const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, fontSize, setFontSize, mysteryLayout, setMysteryLayout } = useApp();
 
     if (!isOpen) return null;
 
     const handleClearProgress = () => {
-        const confirmed = window.confirm(language === 'es'
-            ? '¿Estás seguro de que quieres borrar tu progreso de oración? La página se recargará.'
-            : 'Are you sure you want to clear your prayer progress? The page will reload.');
+        let message = '';
+        if (language === 'es') {
+            message = currentMysteryName
+                ? `¿Estás seguro de que quieres borrar el progreso de ${currentMysteryName}?`
+                : '¿Estás seguro de que quieres borrar todo el progreso de oración?';
+        } else {
+            message = currentMysteryName
+                ? `Are you sure you want to clear progress for ${currentMysteryName}?`
+                : 'Are you sure you want to clear all prayer progress?';
+        }
 
-        if (confirmed) {
+        if (window.confirm(message)) {
+            console.log('Confirmed. Clearing data...');
+
+            // If a specific reset handler is provided (e.g., from MysteryScreen), use it
+            if (onResetProgress) {
+                onResetProgress();
+                onClose();
+                return;
+            }
+
+            // Fallback: Global Clear (e.g., from Home Screen)
+            // Debug: Log keys before
+            const keysBefore = Object.keys(localStorage);
+            console.log('Keys before:', keysBefore);
+
+            // 1. Aggressive Clear
+            // Clear via utility
             clearPrayerProgress();
-            window.location.reload();
+            clearLocalStorageSession();
+
+            // Clear specific known keys manually to be absolutely sure
+            try {
+                localStorage.removeItem('rosary_session');
+                localStorage.removeItem('rosary_prayer_progress');
+                // Clear all mystery-specific keys found in the snapshot
+                keysBefore.forEach(key => {
+                    if (key.startsWith('rosary_prayer_progress') || key.startsWith('rosary_session')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+            } catch (e) {
+                console.error('Manual clear failed:', e);
+            }
+
+            // Debug: Log keys after
+            console.log('Keys after:', Object.keys(localStorage));
+
+            // 2. Force Hard Reset to Home
+            window.location.href = '/';
         }
     };
 
@@ -118,7 +163,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 <Trash2 size={20} />
                                 <h3>{t.clearProgress}</h3>
                             </div>
-                            <button className="btn-clear" onClick={handleClearProgress}>
+                            <button
+                                className="btn-clear"
+                                onClick={handleClearProgress}
+                            >
                                 {t.clearProgress}
                             </button>
                         </div>
@@ -220,6 +268,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         value={speechRate * 100}
                                         onChange={(e) => setSpeechRate(parseInt(e.target.value) / 100)}
                                         className="range-input"
+                                        aria-label={t.speed}
                                     />
                                 </div>
 
@@ -238,6 +287,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         value={volume * 100}
                                         onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
                                         className="range-input"
+                                        aria-label={t.volume}
                                     />
                                 </div>
                             </>

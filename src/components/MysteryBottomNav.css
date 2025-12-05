@@ -2,6 +2,7 @@
 .mystery-bottom-nav {
     display: flex;
     justify-content: space-between;
+    /* Changed from flex-start to space-between */
     align-items: center;
     padding: var(--spacing-sm) var(--spacing-md);
     background: var(--color-bg-elevated);
@@ -60,7 +61,8 @@
     transform: translateY(-2px);
 }
 
-.mystery-nav-btn:disabled {
+.mystery-nav-btn:disabled,
+.nav-btn-dimmed {
     opacity: 0.3;
     cursor: not-allowed;
 }
