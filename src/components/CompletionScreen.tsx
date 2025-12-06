@@ -5,6 +5,7 @@ import { CheckCircle, Home } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { prayerData } from '../data/prayerData';
 import type { MysterySetType } from '../types';
+import { savePrayerCompletion } from '../utils/prayerHistory';
 import './CompletionScreen.css';
 
 interface CompletionScreenProps {
@@ -37,6 +38,15 @@ export function CompletionScreen({ onHome, mysteryType, autoPlayAudio = false }:
     const t = translations[language];
 
     const hasPlayedRef = useRef(false);
+    const hasSavedCompletionRef = useRef(false);
+
+    // Save completion to history (once per mount)
+    useEffect(() => {
+        if (!hasSavedCompletionRef.current) {
+            savePrayerCompletion(mysteryType);
+            hasSavedCompletionRef.current = true;
+        }
+    }, [mysteryType]);
 
     // Play completion audio only if autoPlayAudio is true
     useEffect(() => {

@@ -65,6 +65,7 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries }: Prayers
             <BottomNav
                 activeTab="prayers"
                 onTabChange={handleTabChange}
+                showProgress={false}
             />
         </div>
     );

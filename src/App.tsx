@@ -14,10 +14,11 @@ const MysteriesScreen = lazy(() => import('./components/MysteriesScreen'));
 const MysteryScreen = lazy(() => import('./components/MysteryScreen'));
 const CompletionScreen = lazy(() => import('./components/CompletionScreen'));
 const PrayersScreen = lazy(() => import('./components/PrayersScreen'));
+const ProgressScreen = lazy(() => import('./components/ProgressScreen'));
 
 import './styles/index.css';
 
-type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete';
+type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete' | 'progress';
 
 function AppContent() {
   const { language, clearSession, completeSession, currentMysterySet } = useApp();
@@ -120,6 +121,10 @@ function AppContent() {
     setCurrentScreen('home');
   };
 
+  const handleNavigateToProgress = () => {
+    setCurrentScreen('progress');
+  };
+
   return (
     <div className="app-container">
       {currentScreen === 'language' && <LanguageSelector />}
@@ -130,6 +135,7 @@ function AppContent() {
             onStartPrayerWithContinuous={handleStartPrayerWithContinuous}
             onNavigateToMysteries={handleNavigateToMysteries}
             onNavigateToPrayers={handleNavigateToPrayers}
+            onNavigateToProgress={handleNavigateToProgress}
           />
         )}
         {currentScreen === 'mysteries' && (
@@ -142,6 +148,14 @@ function AppContent() {
           <PrayersScreen
             onNavigateHome={handleNavigateToHome}
             onNavigateToMysteries={handleNavigateToMysteries}
+          />
+        )}
+        {currentScreen === 'progress' && (
+          <ProgressScreen
+            onNavigateHome={handleNavigateToHome}
+            onNavigateToMysteries={handleNavigateToMysteries}
+            onNavigateToPrayers={handleNavigateToPrayers}
+            onStartPrayer={handleStartPrayer}
           />
         )}
         {currentScreen === 'prayer' && (

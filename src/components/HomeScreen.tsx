@@ -18,9 +18,10 @@ interface HomeScreenProps {
     onStartPrayerWithContinuous: () => void;
     onNavigateToMysteries: () => void;
     onNavigateToPrayers: () => void;
+    onNavigateToProgress?: () => void;
 }
 
-export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavigateToMysteries, onNavigateToPrayers }: HomeScreenProps) {
+export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavigateToMysteries, onNavigateToPrayers, onNavigateToProgress }: HomeScreenProps) {
     const { language, currentMysterySet, startNewSession, resumeSession, playAudio, audioEnabled, stopAudio } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [showLearnMore, setShowLearnMore] = useState(false);
@@ -184,6 +185,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
     };
 
     const handleTabChange = useNavigationHandler({
+        onNavigateToProgress,
         onNavigateToMysteries,
         onNavigateToPrayers
     });
@@ -246,9 +248,10 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             {/* Sticky Bottom Section */}
             <div className="bottom-section">
                 <BottomNav
-                    activeTab="home"
+                    activeTab="progress"
                     onTabChange={handleTabChange}
                     onStartPrayer={handleStart}
+                    showProgress={true}
                 />
             </div>
 

@@ -156,6 +156,7 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
                 <BottomNav
                     activeTab="mysteries"
                     onTabChange={handleTabChange}
+                    showProgress={false}
                 />
             </div>
         </div>

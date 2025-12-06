@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
 
-type Tab = 'home' | 'mysteries' | 'prayers' | 'settings';
+type Tab = 'home' | 'progress' | 'mysteries' | 'prayers' | 'settings';
 
 interface UseNavigationHandlerProps {
     onNavigateHome?: () => void;
+    onNavigateToProgress?: () => void;
     onNavigateToMysteries?: () => void;
     onNavigateToPrayers?: () => void;
     onNavigateToSettings?: () => void;
@@ -15,6 +16,7 @@ interface UseNavigationHandlerProps {
  */
 export function useNavigationHandler({
     onNavigateHome,
+    onNavigateToProgress,
     onNavigateToMysteries,
     onNavigateToPrayers,
     onNavigateToSettings
@@ -23,6 +25,9 @@ export function useNavigationHandler({
         switch (tab) {
             case 'home':
                 onNavigateHome?.();
+                break;
+            case 'progress':
+                onNavigateToProgress?.();
                 break;
             case 'mysteries':
                 onNavigateToMysteries?.();
@@ -34,5 +39,5 @@ export function useNavigationHandler({
                 onNavigateToSettings?.();
                 break;
         }
-    }, [onNavigateHome, onNavigateToMysteries, onNavigateToPrayers, onNavigateToSettings]);
+    }, [onNavigateHome, onNavigateToProgress, onNavigateToMysteries, onNavigateToPrayers, onNavigateToSettings]);
 }
