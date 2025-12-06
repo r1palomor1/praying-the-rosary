@@ -5,7 +5,7 @@ import { SettingsModal } from './SettingsModal';
 import { LearnMoreModal, type EducationalContent } from './LearnMoreModal';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysteryType } from '../utils/prayerFlowEngine';
-import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
+import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
 import { wakeLockManager } from '../utils/wakeLock';
 import educationalDataEs from '../data/es-rosary-educational-content.json';
 import educationalDataEn from '../data/en-rosary-educational-content.json';
@@ -429,6 +429,17 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
     };
 
+    // Handle clearing only the current mystery's progress
+    const handleResetCurrentMystery = () => {
+        console.log('Resetting current mystery:', currentMysterySet);
+
+        // Clear only this mystery's progress
+        clearPrayerProgress(currentMysterySet);
+        clearSession();
+
+        // Navigate back to home
+        onBack();
+    };
     const handleToggleContinuous = () => {
         if (continuousMode || isPlaying) {
             // Stop continuous mode
@@ -500,7 +511,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                 src={decadeInfo?.imageUrl || step.imageUrl}
                                 alt={step.title}
                                 className="immersive-img"
-                            />
+                                loading="lazy" decoding="async" />
                             <div className="immersive-overlay"></div>
                         </div>
 
@@ -603,7 +614,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                 alt={decadeInfo?.title || step.title}
                                 className="immersive-img"
                                 style={currentMysterySet === 'sorrowful' && decadeInfo?.number === 5 ? { transform: 'translateY(20px)' } : undefined}
-                            />
+                                loading="lazy" decoding="async" />
                         )}
                         <div className="immersive-overlay"></div>
                     </div>
@@ -648,7 +659,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                 alt={decadeInfo?.title || step.title}
                                 className="immersive-img"
 
-                            />
+                                loading="lazy" decoding="async" />
                         )}
                         <div className="immersive-overlay"></div>
                     </div>
@@ -888,9 +899,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     aria-label={(continuousMode || isPlaying) ? t.stopContinuous : t.continuousMode}
                 >
                     {(continuousMode || isPlaying) ? (
-                        <StopCircle size={20} />
+                        <StopCircle size={20} strokeWidth={3} />
                     ) : (
-                        <Volume2 size={20} />
+                        <Volume2 size={20} strokeWidth={3} />
                     )}
                 </button>
 
@@ -937,7 +948,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     onClick={() => setShowSettings(true)}
                     aria-label={t.settings}
                 >
-                    <SettingsIcon size={20} />
+                    <SettingsIcon size={20} strokeWidth={3} />
                 </button>
             </div>
 
@@ -992,7 +1003,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                             aria-label={t.previous}
                             title={t.previous}
                         >
-                            <ChevronLeft size={24} strokeWidth={5} />
+                            <ChevronLeft size={24} strokeWidth={3} />
                             <span className="mystery-nav-label">{t.previous}</span>
                         </button>
 
@@ -1003,7 +1014,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                             aria-label={flowEngine.isLastStep() ? t.finish : t.next}
                             title={flowEngine.isLastStep() ? t.finish : t.next}
                         >
-                            <ChevronRight size={24} strokeWidth={5} />
+                            <ChevronRight size={24} strokeWidth={3} />
                             <span className="mystery-nav-label">{flowEngine.isLastStep() ? t.finish : t.next}</span>
                         </button>
                     </div>
@@ -1015,7 +1026,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         aria-label={t.learnMore}
                         title={t.learnMore}
                     >
-                        <Lightbulb size={24} strokeWidth={hasEducationalContent ? 2 : 1.5} />
+                        <Lightbulb size={24} strokeWidth={3} />
                         <span className="mystery-nav-label">{t.learnMore}</span>
                     </button>
                 </div>
@@ -1025,6 +1036,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             <SettingsModal
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
+                onResetProgress={handleResetCurrentMystery}
+                currentMysteryName={flowEngine.getMysteryName()}
             />
 
             {/* Learn More Modal */}
@@ -1037,3 +1050,5 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         </div >
     );
 }
+
+export default MysteryScreen;

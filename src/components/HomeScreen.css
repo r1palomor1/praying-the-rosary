@@ -206,3 +206,11 @@
     align-items: center;
     gap: 0.75rem;
 }
+/* Force Hero Header Icons to be White (Visibility on Image) */
+.hero-header .icon-btn {
+    color: white !important;
+}
+
+.hero-header .icon-btn svg {
+    stroke: white !important;
+}

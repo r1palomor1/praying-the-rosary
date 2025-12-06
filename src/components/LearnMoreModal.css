@@ -489,7 +489,7 @@
     margin: 0;
 }
 
-/* Scripture Section - Special Layout with Right-Aligned References */
+/* Scripture Section */
 .mystery-mode .info-card {
     background: transparent;
     border: none;
@@ -522,7 +522,8 @@
 
 .mystery-mode .card-body {
     padding: 0;
-    text-align: right;
+
+    text-align: left;
 }
 
 .mystery-mode .card-body p {
@@ -657,5 +658,76 @@
 }
 
 [data-theme='dark'] .mystery-mode .virtue-tag {
+    background: rgba(234, 226, 211, 0.15);
     color: var(--mystery-text-dark);
+}
+
+/* Explicit Light Mode Override for Learn More Modal (All Content Types) */
+[data-theme='light'] .learn-more-content {
+    background: #F7F5F2 !important;
+    color: #4B443A !important;
+}
+
+[data-theme='light'] .learn-more-content .learn-more-header {
+    background: #F7F5F2 !important;
+    border-bottom: 1px solid #E5E1DA !important;
+}
+
+[data-theme='light'] .learn-more-content .header-title-container,
+[data-theme='light'] .learn-more-content .header-icon,
+[data-theme='light'] .learn-more-content .learn-more-header h2,
+[data-theme='light'] .learn-more-content .btn-close-learn-more {
+    color: #6F685D !important;
+}
+
+/* Light Mode Content Visibility Overrides */
+[data-theme='light'] .learn-more-content .mystery-title-large {
+    color: #1C1917 !important;
+    /* Almost Black */
+    font-weight: 700 !important;
+}
+
+[data-theme='light'] .learn-more-content .info-section p,
+[data-theme='light'] .learn-more-content .scripture-subsection p,
+[data-theme='light'] .learn-more-content .card-body p,
+[data-theme='light'] .learn-more-content .scripture-ref {
+    color: #4B443A !important;
+    font-weight: 500 !important;
+    /* Slightly clearer body text */
+}
+
+[data-theme='light'] .learn-more-content .section-header,
+[data-theme='light'] .learn-more-content .section-header h3,
+[data-theme='light'] .learn-more-content .scripture-section h3,
+[data-theme='light'] .learn-more-content .scripture-subsection h4,
+[data-theme='light'] .learn-more-content .fruit-section h3,
+[data-theme='light'] .learn-more-content .fruit-name {
+    color: #292524 !important;
+    /* Warm Black/Dark Brown */
+    font-weight: 700 !important;
+}
+
+/* Light Mode Cards Backgrounds */
+[data-theme='light'] .learn-more-content .info-section,
+[data-theme='light'] .learn-more-content .scripture-section,
+[data-theme='light'] .learn-more-content .fruit-section,
+[data-theme='light'] .learn-more-content .content-card {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Tabs Light Mode */
+[data-theme='light'] .learn-more-content .learn-more-tabs {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme='light'] .learn-more-content .tab-button {
+    color: #292524 !important;
+    /* Bold/Dark */
+    font-weight: 700 !important;
+}
+
+[data-theme='light'] .learn-more-content .tab-button:hover:not(.active) {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #1C1917 !important;
 }

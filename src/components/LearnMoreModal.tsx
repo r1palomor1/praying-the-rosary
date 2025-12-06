@@ -142,17 +142,15 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                                 <p className="meaning-text">{data.meaning}</p>
                             </section>
 
-                            <section className="info-card">
-                                <div className="card-header">
-                                    <BookOpen size={18} />
+                            <section className="info-section">
+                                <div className="section-header">
+                                    <BookOpen size={20} />
                                     <h3>{t.scripture}</h3>
                                 </div>
-                                <div className="card-body">
-                                    <p className="scripture-ref primary">{data.scripture_primary}</p>
-                                    {data.scripture_secondary && (
-                                        <p className="scripture-ref secondary">{data.scripture_secondary}</p>
-                                    )}
-                                </div>
+                                <p>{data.scripture_primary}</p>
+                                {data.scripture_secondary && (
+                                    <p>{data.scripture_secondary}</p>
+                                )}
                             </section>
 
                             <section className="info-section">
@@ -173,14 +171,12 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                         </div>
                     ) : (
                         <div className="tab-content fade-in">
-                            <section className="info-card">
-                                <div className="card-header">
-                                    <Heart size={18} />
+                            <section className="info-section">
+                                <div className="section-header">
+                                    <Heart size={20} />
                                     <h3>{t.fruit}: {data.fruit}</h3>
                                 </div>
-                                <div className="card-body">
-                                    <p>{data.fruit_explanation}</p>
-                                </div>
+                                <p>{data.fruit_explanation}</p>
                             </section>
 
                             <section className="info-section">

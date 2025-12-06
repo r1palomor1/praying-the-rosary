@@ -1,16 +1,19 @@
 /**
- * Checkpoint: Stable Hybrid V2 (Piper Desktop / System Mobile) - 112925 4pm
+ * Checkpoint: Stable Web Speech API - December 2025
+ * TTS: Web Speech API (browser-native, all platforms)
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { LanguageSelector } from './components/LanguageSelector';
-import { HomeScreen } from './components/HomeScreen';
-import { MysteriesScreen } from './components/MysteriesScreen';
-import { MysteryScreen } from './components/MysteryScreen';
-import { CompletionScreen } from './components/CompletionScreen';
-import { PrayersScreen } from './components/PrayersScreen';
 import { loadPrayerProgress, hasValidPrayerProgress } from './utils/storage';
 import { PrayerFlowEngine } from './utils/prayerFlowEngine';
+
+// Lazy load screen components for code splitting
+const HomeScreen = lazy(() => import('./components/HomeScreen'));
+const MysteriesScreen = lazy(() => import('./components/MysteriesScreen'));
+const MysteryScreen = lazy(() => import('./components/MysteryScreen'));
+const CompletionScreen = lazy(() => import('./components/CompletionScreen'));
+const PrayersScreen = lazy(() => import('./components/PrayersScreen'));
 
 import './styles/index.css';
 
@@ -120,36 +123,38 @@ function AppContent() {
   return (
     <div className="app-container">
       {currentScreen === 'language' && <LanguageSelector />}
-      {currentScreen === 'home' && (
-        <HomeScreen
-          onStartPrayer={handleStartPrayer}
-          onStartPrayerWithContinuous={handleStartPrayerWithContinuous}
-          onNavigateToMysteries={handleNavigateToMysteries}
-          onNavigateToPrayers={handleNavigateToPrayers}
-        />
-      )}
-      {currentScreen === 'mysteries' && (
-        <MysteriesScreen
-          onNavigateHome={handleNavigateToHome}
-          onNavigateToPrayers={handleNavigateToPrayers}
-        />
-      )}
-      {currentScreen === 'prayers' && (
-        <PrayersScreen
-          onNavigateHome={handleNavigateToHome}
-          onNavigateToMysteries={handleNavigateToMysteries}
-        />
-      )}
-      {currentScreen === 'prayer' && (
-        <MysteryScreen
-          onComplete={handleCompletePrayer}
-          onBack={handleBackToHome}
-          startWithContinuous={startWithContinuous}
-        />
-      )}
-      {currentScreen === 'complete' && (
-        <CompletionScreen onHome={handleBackToHome} onRestart={handleRestart} mysteryType={currentMysterySet} autoPlayAudio={autoPlayCompletion} />
-      )}
+      <Suspense fallback={<div className="loading-screen"><div className="loading-spinner"></div></div>}>
+        {currentScreen === 'home' && (
+          <HomeScreen
+            onStartPrayer={handleStartPrayer}
+            onStartPrayerWithContinuous={handleStartPrayerWithContinuous}
+            onNavigateToMysteries={handleNavigateToMysteries}
+            onNavigateToPrayers={handleNavigateToPrayers}
+          />
+        )}
+        {currentScreen === 'mysteries' && (
+          <MysteriesScreen
+            onNavigateHome={handleNavigateToHome}
+            onNavigateToPrayers={handleNavigateToPrayers}
+          />
+        )}
+        {currentScreen === 'prayers' && (
+          <PrayersScreen
+            onNavigateHome={handleNavigateToHome}
+            onNavigateToMysteries={handleNavigateToMysteries}
+          />
+        )}
+        {currentScreen === 'prayer' && (
+          <MysteryScreen
+            onComplete={handleCompletePrayer}
+            onBack={handleBackToHome}
+            startWithContinuous={startWithContinuous}
+          />
+        )}
+        {currentScreen === 'complete' && (
+          <CompletionScreen onHome={handleBackToHome} onRestart={handleRestart} mysteryType={currentMysterySet} autoPlayAudio={autoPlayCompletion} />
+        )}
+      </Suspense>
     </div>
   );
 }

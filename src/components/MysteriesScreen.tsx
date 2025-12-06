@@ -161,3 +161,5 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         </div>
     );
 }
+
+export default MysteriesScreen;

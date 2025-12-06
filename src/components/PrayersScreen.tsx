@@ -69,3 +69,5 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries }: Prayers
         </div>
     );
 }
+
+export default PrayersScreen;

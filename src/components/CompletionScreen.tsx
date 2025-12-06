@@ -69,3 +69,5 @@ export function CompletionScreen({ onHome, mysteryType, autoPlayAudio = false }:
         </div>
     );
 }
+
+export default CompletionScreen;

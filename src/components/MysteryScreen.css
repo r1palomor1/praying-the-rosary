@@ -909,7 +909,6 @@
     align-items: baseline;
     margin-bottom: 0.5rem;
     gap: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding-bottom: 0.25rem;
 }
 
@@ -1305,7 +1304,6 @@
     background-color: rgba(11, 17, 30, 0.8);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 20;
     padding: 0.5rem 1rem;
 }
@@ -1425,4 +1423,111 @@
 
 .litany-reminder-highlight {
     color: #FBBF24;
+}
+
+/* Light Mode Overrides for Cinematic/Immersive Mystery View */
+[data-theme='light'] .immersive-mystery-container .text-primary\/80,
+[data-theme='light'] .immersive-mystery-container .text-gray-200,
+[data-theme='light'] .immersive-mystery-container .text-gray-100,
+[data-theme='light'] .immersive-mystery-container .text-gray-300,
+[data-theme='light'] .immersive-mystery-container .text-gray-400 {
+    color: rgba(28, 25, 23, 0.9) !important; /* Dark text for light mode */
+}
+
+[data-theme='light'] .immersive-overlay {
+}
+/* Light Mode Overrides for Cinematic/Immersive Mystery View */
+[data-theme='light'] .immersive-mystery-container .text-primary\/80,
+[data-theme='light'] .immersive-mystery-container .text-gray-200,
+[data-theme='light'] .immersive-mystery-container .text-gray-100,
+[data-theme='light'] .immersive-mystery-container .text-gray-300,
+[data-theme='light'] .immersive-mystery-container .text-gray-400 {
+}
+
+[data-theme='light'] .immersive-overlay {
+    background: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Light Mode Overrides for Cinematic/Immersive Mystery View */
+[data-theme='light'] .immersive-mystery-container .text-primary\/80,
+[data-theme='light'] .immersive-mystery-container .text-gray-200,
+[data-theme='light'] .immersive-mystery-container .text-gray-100,
+[data-theme='light'] .immersive-mystery-container .text-gray-300,
+[data-theme='light'] .immersive-mystery-container .text-gray-400 {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+[data-theme='light'] .immersive-overlay {
+    background: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Light Mode - Darker Icons/Buttons for Better Visibility */
+[data-theme='light'] .mystery-nav-btn,
+[data-theme='light'] .bottom-nav-item,
+[data-theme='light'] button[aria-label*='Settings'],
+[data-theme='light'] button[aria-label*='Audio'],
+[data-theme='light'] button[aria-label*='Configuración'] {
+    color: rgb(71, 85, 105) !important; /* slate-600 */
+    opacity: 1 !important;
+}
+
+[data-theme='light'] .mystery-nav-btn:hover,
+[data-theme='light'] .bottom-nav-item:hover {
+    color: rgb(51, 65, 85) !important; /* slate-700 */
+}
+
+/* Light Mode - Force Darker Color for Top Header and Learn More Buttons */
+[data-theme='light'] .mystery-screen header button,
+[data-theme='light'] .mystery-screen .top-nav button,
+[data-theme='light'] .mystery-bottom-nav button,
+[data-theme='light'] .mystery-bottom-nav .nav-item,
+[data-theme='light'] .mystery-bottom-nav a {
+    color: rgb(71, 85, 105) !important; /* slate-600 */
+}
+
+[data-theme='light'] .mystery-screen header button svg,
+[data-theme='light'] .mystery-bottom-nav button svg,
+[data-theme='light'] .mystery-bottom-nav svg {
+    color: rgb(71, 85, 105) !important; /* slate-600 */
+}
+
+/* Light Mode - Make Icons Bolder/Thicker */
+[data-theme='light'] .mystery-screen header button svg,
+[data-theme='light'] .mystery-bottom-nav button svg {
+    stroke-width: 2.5 !important; /* Increase thickness */
+    color: rgb(71, 85, 105) !important;
+}
+
+[data-theme='light'] .mystery-screen header button,
+[data-theme='light'] .mystery-bottom-nav button[aria-label*='Learn'],
+[data-theme='light'] .mystery-bottom-nav button[aria-label*='Profundizar'] {
+    opacity: 1 !important;
+    filter: brightness(0.6) !important; /* Darken the icons */
+}
+
+/* Light Mode - Darker Text Labels for Bottom Nav */
+[data-theme='light'] .mystery-bottom-nav span,
+[data-theme='light'] .mystery-bottom-nav .nav-label,
+[data-theme='light'] .bottom-nav-item span,
+[data-theme='light'] .mystery-nav-btn span {
+    color: rgb(71, 85, 105) !important; /* slate-600 */
+}
+
+/* Light Mode - White Audio and Settings Icons in Header */
+[data-theme='light'] .mystery-screen header .continuous-audio-btn-header svg,
+[data-theme='light'] .mystery-screen header .settings-btn-header svg {
+    color: white !important;
+    filter: none !important;
+}
+
+[data-theme='light'] .mystery-screen header .continuous-audio-btn-header,
+[data-theme='light'] .mystery-screen header .settings-btn-header {
+    color: white !important;
+    filter: none !important;
+}
+
+/* Darker text for Intro and Closing prayers in Light Mode to improve readability */
+[data-theme='light'] .intro-text {
+    color: #1C1917 !important;
+    font-weight: 500 !important;
 }

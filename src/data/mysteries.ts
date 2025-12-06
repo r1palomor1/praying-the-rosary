@@ -33,7 +33,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Humility',
                     es: 'Humildad'
                 },
-                imageUrl: '/images/mysteries/annunciation.png'
+                imageUrl: '/images/mysteries/annunciation.webp'
             },
             {
                 number: 2,
@@ -59,7 +59,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Love of Neighbor',
                     es: 'Amor al Prójimo'
                 },
-                imageUrl: '/images/mysteries/visitation.png'
+                imageUrl: '/images/mysteries/visitation.webp'
             },
             {
                 number: 3,
@@ -85,7 +85,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Poverty',
                     es: 'Pobreza'
                 },
-                imageUrl: '/images/mysteries/nativity.png'
+                imageUrl: '/images/mysteries/nativity.webp'
             },
             {
                 number: 4,
@@ -111,7 +111,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Obedience',
                     es: 'Obediencia'
                 },
-                imageUrl: '/images/mysteries/presentation.png'
+                imageUrl: '/images/mysteries/presentation.webp'
             },
             {
                 number: 5,
@@ -137,7 +137,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Piety',
                     es: 'Piedad'
                 },
-                imageUrl: '/images/mysteries/finding-temple.png'
+                imageUrl: '/images/mysteries/finding-temple.webp'
             }
         ]
     },
@@ -173,7 +173,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Openness to the Holy Spirit',
                     es: 'Apertura al Espíritu Santo'
                 },
-                imageUrl: '/images/mysteries/baptism.jpg'
+                imageUrl: '/images/mysteries/baptism.webp'
             },
             {
                 number: 2,
@@ -199,7 +199,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'To Jesus through Mary',
                     es: 'A Jesús por María'
                 },
-                imageUrl: '/images/mysteries/wedding_cana.jpg'
+                imageUrl: '/images/mysteries/wedding_cana.webp'
             },
             {
                 number: 3,
@@ -225,7 +225,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Repentance and Trust in God',
                     es: 'Arrepentimiento y confianza en Dios'
                 },
-                imageUrl: '/images/mysteries/proclamation.jpg'
+                imageUrl: '/images/mysteries/proclamation.webp'
             },
             {
                 number: 4,
@@ -251,7 +251,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Desire for Holiness',
                     es: 'Deseo de santidad'
                 },
-                imageUrl: '/images/mysteries/transfiguration.jpg'
+                imageUrl: '/images/mysteries/transfiguration.webp'
             },
             {
                 number: 5,
@@ -277,7 +277,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Adoration',
                     es: 'Adoración'
                 },
-                imageUrl: '/images/mysteries/eucharist.jpg'
+                imageUrl: '/images/mysteries/eucharist.webp'
             }
         ]
     },
@@ -313,7 +313,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Sorrow for Sin',
                     es: 'Dolor por los pecados'
                 },
-                imageUrl: '/images/mysteries/agony_garden.jpg'
+                imageUrl: '/images/mysteries/agony_garden.webp'
             },
             {
                 number: 2,
@@ -339,7 +339,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Purity',
                     es: 'Pureza'
                 },
-                imageUrl: '/images/mysteries/scourging.jpg'
+                imageUrl: '/images/mysteries/scourging.webp'
             },
             {
                 number: 3,
@@ -365,7 +365,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Moral Courage',
                     es: 'Coraje moral'
                 },
-                imageUrl: '/images/mysteries/crowning_with_thorns.jpg'
+                imageUrl: '/images/mysteries/crowning_with_thorns.webp'
             },
             {
                 number: 4,
@@ -391,7 +391,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Patience',
                     es: 'Paciencia'
                 },
-                imageUrl: '/images/mysteries/carrying_cross.jpg'
+                imageUrl: '/images/mysteries/carrying_cross.webp'
             },
             {
                 number: 5,
@@ -417,7 +417,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Perseverance',
                     es: 'Perseverancia'
                 },
-                imageUrl: '/images/mysteries/crucifixion.jpg'
+                imageUrl: '/images/mysteries/crucifixion.webp'
             }
         ]
     },
@@ -453,7 +453,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Faith',
                     es: 'Fe'
                 },
-                imageUrl: '/images/mysteries/resurrection.jpg'
+                imageUrl: '/images/mysteries/resurrection.webp'
             },
             {
                 number: 2,
@@ -479,7 +479,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Hope',
                     es: 'Esperanza'
                 },
-                imageUrl: '/images/mysteries/ascension.jpg'
+                imageUrl: '/images/mysteries/ascension.webp'
             },
             {
                 number: 3,
@@ -505,7 +505,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Love of God',
                     es: 'Amor a Dios'
                 },
-                imageUrl: '/images/mysteries/pentecost.jpg'
+                imageUrl: '/images/mysteries/pentecost.webp'
             },
             {
                 number: 4,
@@ -531,7 +531,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Grace of a Happy Death',
                     es: 'Gracia de una buena muerte'
                 },
-                imageUrl: '/images/mysteries/assumption.jpg'
+                imageUrl: '/images/mysteries/assumption.webp'
             },
             {
                 number: 5,
@@ -557,7 +557,7 @@ export const mysterySets: MysterySet[] = [
                     en: 'Trust in Mary\'s Intercession',
                     es: 'Confianza en la intercesión de María'
                 },
-                imageUrl: '/images/mysteries/coronation.jpg'
+                imageUrl: '/images/mysteries/coronation.webp'
             }
         ]
     }
