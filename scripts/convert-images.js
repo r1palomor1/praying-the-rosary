@@ -6,8 +6,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const inputDir = path.join(__dirname, '../public/images/mysteries');
-const outputDir = inputDir; // Same directory
+const mysteriesDir = path.join(__dirname, '../public/images/mysteries');
+const imagesDir = path.join(__dirname, '../public/images');
 
 // Quality setting for WebP conversion
 const WEBP_QUALITY = 90;
@@ -15,12 +15,23 @@ const WEBP_QUALITY = 90;
 async function convertImagesToWebP() {
     console.log('🖼️  Starting image conversion to WebP...\n');
 
-    // Get all PNG and JPG files
-    const files = fs.readdirSync(inputDir).filter(file =>
-        file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg')
-    );
+    // Process both directories
+    const directories = [
+        { path: mysteriesDir, name: 'mysteries' },
+        { path: imagesDir, name: 'main images' }
+    ];
 
-    console.log(`Found ${files.length} images to process\n`);
+    let allFiles = [];
+    for (const dir of directories) {
+        if (fs.existsSync(dir.path)) {
+            const files = fs.readdirSync(dir.path)
+                .filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'))
+                .map(file => ({ file, dir: dir.path, dirName: dir.name }));
+            allFiles = allFiles.concat(files);
+        }
+    }
+
+    console.log(`Found ${allFiles.length} images to process\n`);
 
     const results = {
         converted: [],
@@ -28,14 +39,15 @@ async function convertImagesToWebP() {
         errors: []
     };
 
-    for (const file of files) {
+    for (const fileInfo of allFiles) {
+        const { file, dir: inputDir, dirName } = fileInfo;
         const inputPath = path.join(inputDir, file);
         const outputFile = file.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-        const outputPath = path.join(outputDir, outputFile);
+        const outputPath = path.join(inputDir, outputFile);
 
         // Skip if WebP already exists
         if (fs.existsSync(outputPath)) {
-            console.log(`⏭️  Skipping ${file} (WebP already exists)`);
+            console.log(`⏭️  Skipping ${file} (${dirName}) - WebP already exists`);
             results.skipped.push(file);
             continue;
         }
@@ -52,7 +64,7 @@ async function convertImagesToWebP() {
             const outputSizeKB = (outputStats.size / 1024).toFixed(2);
             const savings = ((1 - outputStats.size / inputStats.size) * 100).toFixed(1);
 
-            console.log(`✅ ${file}`);
+            console.log(`✅ ${file} (${dirName})`);
             console.log(`   ${inputSizeKB} KB → ${outputSizeKB} KB (${savings}% smaller)\n`);
 
             results.converted.push({

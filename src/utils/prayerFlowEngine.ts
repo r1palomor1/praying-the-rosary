@@ -73,40 +73,48 @@ export class PrayerFlowEngine {
         const t = this.getTranslations();
 
         // 1. Opening Prayers
+        const introPrayerImage = '/images/intro-prayers.webp';
+
         this.steps.push({
             type: 'sign_of_cross_start',
             text: fixed_prayers.sign_of_cross_start,
-            title: t.signOfCross
+            title: t.signOfCross,
+            imageUrl: introPrayerImage
         });
 
         this.steps.push({
             type: 'opening_invocation',
             text: fixed_prayers.opening_invocation,
-            title: t.openingInvocation
+            title: t.openingInvocation,
+            imageUrl: introPrayerImage
         });
 
         this.steps.push({
             type: 'act_of_contrition',
             text: fixed_prayers.act_of_contrition,
-            title: t.actOfContrition
+            title: t.actOfContrition,
+            imageUrl: introPrayerImage
         });
 
         this.steps.push({
             type: 'apostles_creed',
             text: fixed_prayers.apostles_creed,
-            title: t.apostlesCreed
+            title: t.apostlesCreed,
+            imageUrl: introPrayerImage
         });
 
         this.steps.push({
             type: 'invocation_holy_spirit',
             text: fixed_prayers.invocation_holy_spirit,
-            title: t.invocationHolySpirit
+            title: t.invocationHolySpirit,
+            imageUrl: introPrayerImage
         });
 
         this.steps.push({
             type: 'intention_placeholder',
             text: fixed_prayers.intention_placeholder,
-            title: t.intentions
+            title: t.intentions,
+            imageUrl: introPrayerImage
         });
 
         // 2. Five Decades
@@ -174,10 +182,13 @@ export class PrayerFlowEngine {
         }
 
         // 3. Closing Prayers
+        const closingPrayerImage = '/images/closing-prayers.webp';
+
         this.steps.push({
             type: 'final_jaculatory_start',
             text: fixed_prayers.final_jaculatory_start,
-            title: t.finalJaculatory
+            title: t.finalJaculatory,
+            imageUrl: closingPrayerImage
         });
 
         // Final Hail Marys with invocations (now 4 instead of 3)
@@ -189,14 +200,16 @@ export class PrayerFlowEngine {
                 type: 'final_hail_mary_intro',
                 text: prayerText,
                 title: `${t.hailMary} ${i + 1}/${fixed_prayers.final_hail_marys_intro.length}`,
-                finalHailMaryNumber: i + 1
+                finalHailMaryNumber: i + 1,
+                imageUrl: closingPrayerImage
             });
         }
 
         this.steps.push({
             type: 'hail_holy_queen',
             text: fixed_prayers.hail_holy_queen,
-            title: t.hailHolyQueen
+            title: t.hailHolyQueen,
+            imageUrl: closingPrayerImage
         });
 
         // Litany of Loreto - Consolidated into one scrollable step
@@ -212,19 +225,22 @@ export class PrayerFlowEngine {
         this.steps.push({
             type: 'closing_under_your_protection',
             text: fixed_prayers.closing_under_your_protection,
-            title: t.underYourProtection
+            title: t.underYourProtection,
+            imageUrl: closingPrayerImage
         });
 
         this.steps.push({
             type: 'final_collect',
             text: fixed_prayers.final_collect,
-            title: t.finalPrayer
+            title: t.finalPrayer,
+            imageUrl: closingPrayerImage
         });
 
         this.steps.push({
             type: 'sign_of_cross_end',
             text: fixed_prayers.sign_of_cross_end,
-            title: t.signOfCross
+            title: t.signOfCross,
+            imageUrl: closingPrayerImage
         });
 
         this.steps.push({

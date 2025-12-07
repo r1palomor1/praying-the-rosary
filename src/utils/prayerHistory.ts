@@ -20,6 +20,16 @@ export interface PrayerStats {
 const STORAGE_KEY = 'rosary_prayer_history';
 
 /**
+ * Get local date string in YYYY-MM-DD format (not UTC)
+ */
+function getLocalDateString(date: Date = new Date()): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+/**
  * Get all prayer completions from storage
  */
 export function getPrayerHistory(): PrayerCompletion[] {
@@ -38,7 +48,7 @@ export function getPrayerHistory(): PrayerCompletion[] {
 export function savePrayerCompletion(mysteryType: MysterySetType): void {
     try {
         const history = getPrayerHistory();
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalDateString();
 
         // Check if already completed today
         const alreadyCompleted = history.some(
@@ -67,12 +77,11 @@ export function calculateCurrentStreak(): number {
     // Get unique dates and sort descending
     const uniqueDates = [...new Set(history.map(c => c.date))].sort().reverse();
 
-    const today = new Date().toISOString().split('T')[0];
     let streak = 0;
-    let currentDate = new Date(today);
+    let currentDate = new Date();
 
     for (const date of uniqueDates) {
-        const checkDate = currentDate.toISOString().split('T')[0];
+        const checkDate = getLocalDateString(currentDate);
 
         if (date === checkDate) {
             streak++;
@@ -161,9 +170,35 @@ export function hasCompletionOnDate(date: string): boolean {
 
 /**
  * Get mystery type for a specific date (if completed)
+ * If multiple completions exist, prioritize the mystery that matches the day of the week
  */
 export function getMysteryForDate(date: string): MysterySetType | null {
     const history = getPrayerHistory();
-    const completion = history.find(c => c.date === date);
-    return completion ? completion.mysteryType : null;
+    const completions = history.filter(c => c.date === date);
+
+    if (completions.length === 0) return null;
+    if (completions.length === 1) return completions[0].mysteryType;
+
+    // Multiple completions - find the one that matches the day of the week
+    const dateObj = new Date(date + 'T12:00:00'); // Use noon to avoid timezone issues
+    const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+    // Map day of week to expected mystery type
+    const dayToMystery: { [key: number]: MysterySetType } = {
+        0: 'glorious',   // Sunday
+        1: 'joyful',     // Monday
+        2: 'sorrowful',  // Tuesday
+        3: 'glorious',   // Wednesday
+        4: 'luminous',   // Thursday
+        5: 'sorrowful',  // Friday
+        6: 'joyful'      // Saturday
+    };
+
+    const expectedMystery = dayToMystery[dayOfWeek];
+
+    // Try to find the completion that matches the day's mystery
+    const matchingCompletion = completions.find(c => c.mysteryType === expectedMystery);
+
+    // Return the matching one if found, otherwise return the first one
+    return matchingCompletion ? matchingCompletion.mysteryType : completions[0].mysteryType;
 }

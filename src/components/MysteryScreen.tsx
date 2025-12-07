@@ -492,8 +492,19 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         'Moment of Intentions', 'Momento de Intenciones'
     ];
 
+    // Check for Closing Prayers (with images, excluding litany)
+    const closingPrayerTypes = [
+        'final_jaculatory_start',
+        'final_hail_mary_intro',
+        'hail_holy_queen',
+        'closing_under_your_protection',
+        'final_collect',
+        'sign_of_cross_end'
+    ];
+
     const stepTitle = currentStep?.title;
     const isIntroPrayer = stepTitle ? introPrayers.some(t => stepTitle.includes(t)) : false;
+    const isClosingPrayer = closingPrayerTypes.includes(currentStep?.type as string);
 
     const renderStepContent = () => {
         const step = currentStep;
@@ -523,7 +534,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
 
                                     <div className="space-y-4 pt-4 text-center">
-                                        <h3 className="font-display text-base text-primary/80 tracking-widest">
+                                        <h3 className="section-label">
                                             {language === 'es' ? 'REFLEXIÓN' : 'REFLECTION'}
                                         </h3>
                                         <p className="font-sans text-lg leading-relaxed text-gray-200">
@@ -534,7 +545,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                     {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
                                         <div className="pt-8">
                                             {decadeInfo.fruit && (
-                                                <h3 className="font-display text-base text-primary/80 tracking-widest mb-4">
+                                                <h3 className="section-label">
                                                     {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}{decadeInfo.fruit.toUpperCase()}
                                                 </h3>
                                             )}
@@ -580,8 +591,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                 <div className="meditation-footer" style={{ marginTop: 'var(--spacing-md)', paddingTop: 'var(--spacing-md)', borderTop: '1px solid var(--color-border-light)' }}>
                                     {decadeInfo.fruit && (
                                         <div className="fruit-container">
-                                            <span className="fruit-label">{language === 'es' ? 'Fruto:' : 'Fruit:'}</span>
-                                            <span className="fruit-text">{decadeInfo.fruit}</span>
+                                            <h3 className="section-label">{language === 'es' ? 'Fruto:' : 'Fruit:'} {decadeInfo.fruit}</h3>
                                         </div>
                                     )}
 
@@ -624,7 +634,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
                         <main className="immersive-main flex flex-col h-full">
                             <div className="text-center space-y-8">
-                                <h1 className="font-display text-3xl font-bold immersive-mystery-title tracking-wide mb-8">
+                                <h1 className="font-display text-2xl font-bold immersive-mystery-title tracking-wide mb-8">
                                     {(step.title || '').toUpperCase()}
                                 </h1>
 
@@ -667,7 +677,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     <div className="immersive-content">
                         <main className="immersive-main flex flex-col h-full">
                             <div className="text-center space-y-8">
-                                <h1 className="font-display text-3xl font-bold immersive-mystery-title tracking-wide mb-8">
+                                <h1 className="font-display text-2xl font-bold immersive-mystery-title tracking-wide mb-8">
                                     {(step.title || '').toUpperCase()}
                                 </h1>
 
@@ -699,44 +709,91 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 </div>
             );
         }
-        // Card Style Rendering for Closing Prayers (Cinematic Mode)
-        // Matches the design of Intro Prayers (Card with Title and Divider)
-        // Special rendering for Final Jaculatory using Intro Prayer Card theme
-        if (step.type === 'final_jaculatory_start') {
-            return (
-                <div className="intro-prayer-card">
-                    <h2 className="intro-title">{step.title || ''}</h2>
-                    <div className="intro-divider"></div>
-                    <p className="intro-text">{step.text}</p>
-                </div>
-            );
-        }
+        // Closing Prayers - Support both classic and cinematic with images (same pattern as intro prayers)
+        if (isClosingPrayer) {
+            // Cinematic mode with image
+            if (mysteryLayout === 'cinematic' && step.imageUrl) {
+                return (
+                    <div className="immersive-mystery-container">
+                        <div className="immersive-bg">
+                            <img
+                                src={step.imageUrl}
+                                alt={step.title}
+                                className="immersive-img"
+                                loading="lazy" decoding="async" />
+                            <div className="immersive-overlay"></div>
+                        </div>
 
-        // Special rendering for Final Hail Marys (Intro + 1-4)
-        if (['final_hail_mary_intro', 'final_hail_mary_1', 'final_hail_mary_2', 'final_hail_mary_3', 'final_hail_mary_4'].includes(step.type)) {
-            const parts = step.text.split('\n\n');
-            return (
-                <div className="intro-prayer-card">
-                    <h2 className="intro-title">{step.title || ''}</h2>
-                    <div className="intro-divider"></div>
-                    <div className="intro-text">
-                        <div>{parts[0]}</div>
-                        {parts[1] && (
-                            <div style={{ color: '#FBBF24', marginTop: '1rem', fontStyle: 'italic', fontWeight: 'normal' }}>
-                                {parts[1]}
-                            </div>
-                        )}
+                        <div className="immersive-content">
+                            <main className="immersive-main flex flex-col h-full">
+                                <div className="text-center space-y-8">
+                                    <h1 className="font-display text-2xl font-bold immersive-mystery-title tracking-wide mb-8">
+                                        {(step.title || '').toUpperCase()}
+                                    </h1>
+
+                                    <div className="max-w-2xl mx-auto px-6">
+                                        {/* Handle Final Hail Marys with two parts */}
+                                        {step.type === 'final_hail_mary_intro' ? (
+                                            (() => {
+                                                const parts = step.text.split('\n\n');
+                                                return (
+                                                    <>
+                                                        <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
+                                                            {parts[0]}
+                                                        </p>
+                                                        {parts[1] && (
+                                                            <p className="font-sans text-xl leading-loose text-center drop-shadow-md mt-4" style={{ color: '#FBBF24', fontStyle: 'italic' }}>
+                                                                {parts[1]}
+                                                            </p>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()
+                                        ) : (
+                                            <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
+                                                {step.text}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </main>
+                        </div>
                     </div>
-                </div>
-            );
-        }
+                );
+            }
 
-        // Card Style Rendering for Closing Prayers (Cinematic Mode)
-        // Matches the design of Intro Prayers (Card with Title and Divider)
-        // Card Style Rendering for Closing Prayers (Matches Intro Prayers)
-        const closingCardTypes = ['hail_holy_queen', 'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'];
+            // Classic mode - prayer text (unboxed) with image rendered separately below
+            if (step.imageUrl) {
+                // Handle Final Hail Marys with two parts
+                if (step.type === 'final_hail_mary_intro') {
+                    const parts = step.text.split('\n\n');
+                    return (
+                        <div className="mystery-prayer-card">
+                            <h2 className="mystery-title">{step.title || ''}</h2>
+                            <div className="mystery-divider"></div>
+                            <div className="mystery-text">
+                                <div>{parts[0]}</div>
+                                {parts[1] && (
+                                    <div style={{ color: '#FBBF24', marginTop: '1rem', fontStyle: 'italic', fontWeight: 'normal' }}>
+                                        {parts[1]}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                }
 
-        if (closingCardTypes.includes(step.type)) {
+                // All other closing prayers
+                return (
+                    <div className="mystery-prayer-card">
+                        <h2 className="mystery-title">{step.title || ''}</h2>
+                        <div className="mystery-divider"></div>
+                        <p className="mystery-text">{step.text}</p>
+                    </div>
+                );
+            }
+
+            // Fallback for closing prayers without images
             return (
                 <div className="intro-prayer-card">
                     <h2 className="intro-title">{step.title || ''}</h2>
@@ -745,6 +802,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 </div>
             );
         }
+
+
 
         // Special rendering for Litany of Loreto
         if ((step.type as any) === 'litany_of_loreto' && step.litanyData) {
@@ -806,7 +865,52 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             );
         }
 
+        // Intro Prayers - Support both classic and cinematic with images
         if (isIntroPrayer) {
+            // Cinematic mode with image
+            if (mysteryLayout === 'cinematic' && step.imageUrl) {
+                return (
+                    <div className="immersive-mystery-container">
+                        <div className="immersive-bg">
+                            <img
+                                src={step.imageUrl}
+                                alt={step.title}
+                                className="immersive-img"
+                                loading="lazy" decoding="async" />
+                            <div className="immersive-overlay"></div>
+                        </div>
+
+                        <div className="immersive-content">
+                            <main className="immersive-main flex flex-col h-full">
+                                <div className="text-center space-y-8">
+                                    <h1 className="font-display text-2xl font-bold immersive-mystery-title tracking-wide mb-8">
+                                        {(step.title || '').toUpperCase()}
+                                    </h1>
+
+                                    <div className="max-w-2xl mx-auto px-6">
+                                        <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
+                                            {step.text}
+                                        </p>
+                                    </div>
+                                </div>
+                            </main>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Classic mode - prayer text (unboxed) with image rendered separately below
+            if (step.imageUrl) {
+                return (
+                    <div className="mystery-prayer-card">
+                        <h2 className="mystery-title">{step.title || ''}</h2>
+                        <div className="mystery-divider"></div>
+                        <p className="mystery-text">{step.text}</p>
+                    </div>
+                );
+            }
+
+            // Fallback for intro prayers without images
             return (
                 <div className="intro-prayer-card">
                     <h2 className="intro-title">{step.title || ''}</h2>
@@ -865,6 +969,39 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         // Don't show on decade announcement as it already has it
         if (currentStep.type === 'decade_announcement') return null;
 
+        // Check for intro prayers with images
+        if (isIntroPrayer && currentStep.imageUrl) {
+            return (
+                <div className="mystery-intro" style={{ paddingTop: 'var(--spacing-sm)' }}>
+                    <div className="mystery-content-card">
+                        <div className="mystery-image-container">
+                            <MysteryImage
+                                src={currentStep.imageUrl}
+                                alt={currentStep.title}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Check for closing prayers with images
+        if (isClosingPrayer && currentStep.imageUrl) {
+            return (
+                <div className="mystery-intro" style={{ paddingTop: 'var(--spacing-sm)' }}>
+                    <div className="mystery-content-card">
+                        <div className="mystery-image-container">
+                            <MysteryImage
+                                src={currentStep.imageUrl}
+                                alt={currentStep.title}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Check for decade prayers with images
         const decadeInfo = flowEngine.getCurrentDecadeInfo();
         if (decadeInfo && decadeInfo.imageUrl) {
             return (

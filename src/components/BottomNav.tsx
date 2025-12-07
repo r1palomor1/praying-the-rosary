@@ -42,7 +42,7 @@ export function BottomNav({ activeTab, onTabChange, onStartPrayer, showProgress 
             {/* First tab: Either Progress (on Home) or Home (on other pages) */}
             {showProgress ? (
                 <button
-                    className={`nav-tab ${activeTab === 'progress' ? 'active' : ''}`}
+                    className={`nav-tab no-active-color ${activeTab === 'progress' ? 'active' : ''}`}
                     onClick={() => handleTabClick('progress')}
                     aria-label={t.progress}
                 >
@@ -51,7 +51,7 @@ export function BottomNav({ activeTab, onTabChange, onStartPrayer, showProgress 
                 </button>
             ) : (
                 <button
-                    className={`nav-tab ${activeTab === 'home' ? 'active' : ''}`}
+                    className={`nav-tab no-active-color ${activeTab === 'home' ? 'active' : ''}`}
                     onClick={() => handleTabClick('home')}
                     aria-label={t.home}
                 >

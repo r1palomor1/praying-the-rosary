@@ -87,6 +87,18 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
         return emojis[mysteryType];
     };
 
+    const getMysteryTextColor = (mysteryType: MysterySetType): string => {
+        // Use dark text for light backgrounds (luminous and glorious)
+        // Use white text for dark backgrounds (joyful and sorrowful)
+        const textColors = {
+            joyful: 'white',      // Gold background - white text
+            sorrowful: 'white',   // Blue background - white text
+            glorious: '#1F2937',  // Light background - dark text
+            luminous: '#1F2937'   // Yellow background - dark text
+        };
+        return textColors[mysteryType];
+    };
+
     const getMysteryGradient = (mysteryType: MysterySetType): string => {
         const gradients = {
             joyful: 'from-amber-300 to-amber-500',
@@ -122,20 +134,35 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
             const date = new Date(currentYear, currentMonth, day);
             const dateStr = date.toISOString().split('T')[0];
             const mysteryType = getMysteryForDate(dateStr);
-            const isToday = dateStr === new Date().toISOString().split('T')[0];
+
+            // Use local date comparison to avoid timezone issues
+            const today = new Date();
+            const isToday = date.getDate() === today.getDate() &&
+                date.getMonth() === today.getMonth() &&
+                date.getFullYear() === today.getFullYear();
 
             days.push(
                 <div
                     key={day}
                     className={`calendar-day-v2 ${isToday ? 'today' : ''}`}
                 >
-                    <span className={`day-number-v2 ${isToday ? 'today-number' : ''}`}>{day}</span>
-                    {mysteryType && !isToday && (
-                        <div
-                            className="completion-dot-v2"
-                            style={{ backgroundColor: getMysteryColor(mysteryType) }}
-                        ></div>
-                    )}
+                    <span
+                        className={`${mysteryType && !isToday ? '' : 'day-number-v2'} ${isToday ? 'today-number' : ''}`}
+                        style={mysteryType && !isToday ? {
+                            backgroundColor: getMysteryColor(mysteryType),
+                            color: getMysteryTextColor(mysteryType),
+                            borderRadius: '50%',
+                            width: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: '600',
+                            fontSize: 'var(--font-size-sm)'
+                        } : undefined}
+                    >
+                        {day}
+                    </span>
                 </div>
             );
         }
