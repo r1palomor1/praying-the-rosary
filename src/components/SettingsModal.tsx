@@ -11,7 +11,7 @@ interface SettingsModalProps {
     currentMysteryName?: string;
 }
 
-export function SettingsModal({ isOpen, onClose, onResetProgress, currentMysteryName }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, onResetProgress, currentMysteryName: _currentMysteryName }: SettingsModalProps) {
     const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, fontSize, setFontSize, mysteryLayout, setMysteryLayout } = useApp();
     const [showConfirmClear, setShowConfirmClear] = useState(false);
 
