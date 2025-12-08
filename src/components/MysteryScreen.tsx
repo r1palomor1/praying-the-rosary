@@ -523,7 +523,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                 alt={step.title}
                                 className="immersive-img"
                                 loading="lazy" decoding="async" />
-                            <div className="immersive-overlay"></div>
+                            <div className="immersive-overlay-darker"></div>
                         </div>
 
                         <div className="immersive-content">
@@ -545,7 +545,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                     {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
                                         <div className="pt-8">
                                             {decadeInfo.fruit && (
-                                                <h3 className="section-label">
+                                                <h3 className="section-label" style={{ color: '#FFD700' }}>
                                                     {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}{decadeInfo.fruit.toUpperCase()}
                                                 </h3>
                                             )}
@@ -634,9 +634,24 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
                         <main className="immersive-main flex flex-col h-full">
                             <div className="text-center space-y-8">
-                                <h1 className="font-display text-2xl font-bold immersive-mystery-title tracking-wide mb-8">
-                                    {(step.title || '').toUpperCase()}
-                                </h1>
+                                {/* Title and Fruit grouped together */}
+                                <div className="space-y-2">
+                                    <h1 className="font-display text-2xl font-bold immersive-mystery-title tracking-wide">
+                                        {(step.title || '').toUpperCase()}
+                                    </h1>
+
+                                    {/* Show Fruit for Our Father */}
+                                    {decadeInfo?.fruit && (
+                                        <div className="text-center">
+                                            <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                                {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}
+                                            </span>
+                                            <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                                {decadeInfo.fruit.toUpperCase()}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
 
 
                                 <div className="max-w-2xl mx-auto px-6">
@@ -677,9 +692,26 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     <div className="immersive-content">
                         <main className="immersive-main flex flex-col h-full">
                             <div className="text-center space-y-8">
-                                <h1 className="font-display text-2xl font-bold immersive-mystery-title tracking-wide mb-8">
-                                    {(step.title || '').toUpperCase()}
-                                </h1>
+                                <div className="space-y-2">
+                                    <h1 className="font-display text-2xl font-bold immersive-mystery-title tracking-wide">
+                                        {(step.title || '').toUpperCase()}
+                                    </h1>
+
+                                    {/* Show Fruit for decade prayers */}
+                                    {step.decadeNumber && (() => {
+                                        const decadeInfo = flowEngine.getCurrentDecadeInfo();
+                                        return decadeInfo?.fruit ? (
+                                            <div className="text-center">
+                                                <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                                    {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}
+                                                </span>
+                                                <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                                    {decadeInfo.fruit.toUpperCase()}
+                                                </span>
+                                            </div>
+                                        ) : null;
+                                    })()}
+                                </div>
 
 
                                 <div className="max-w-2xl mx-auto px-6">
@@ -697,9 +729,21 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                                 className={`bead ${bead <= step.hailMaryNumber! ? 'bead-active' : ''}`}
                                                 style={{
                                                     borderColor: 'rgba(255,255,255,0.3)',
-                                                    background: bead <= step.hailMaryNumber! ? '#D4AF37' : 'rgba(255,255,255,0.1)'
+                                                    background: bead <= step.hailMaryNumber! ? '#7C3AED' : 'rgba(255,255,255,0.1)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
                                                 }}
-                                            />
+                                            >
+                                                {bead <= step.hailMaryNumber! && (
+                                                    <span style={{
+                                                        fontSize: '10px',
+                                                        fontWeight: '700',
+                                                        color: 'white',
+                                                        lineHeight: '1'
+                                                    }}>{bead}</span>
+                                                )}
+                                            </div>
                                         ))}
                                     </div>
                                 )}
@@ -721,7 +765,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                 alt={step.title}
                                 className="immersive-img"
                                 loading="lazy" decoding="async" />
-                            <div className="immersive-overlay"></div>
+                            <div className="immersive-overlay-darker"></div>
                         </div>
 
                         <div className="immersive-content">
@@ -877,7 +921,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                 alt={step.title}
                                 className="immersive-img"
                                 loading="lazy" decoding="async" />
-                            <div className="immersive-overlay"></div>
+                            <div className="immersive-overlay-darker"></div>
                         </div>
 
                         <div className="immersive-content">
@@ -954,7 +998,18 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         <div
                             key={bead}
                             className={`bead ${bead <= step.hailMaryNumber! ? 'bead-active' : ''}`}
-                        />
+                            style={{
+                                borderColor: 'rgba(255,255,255,0.3)',
+                                background: bead <= step.hailMaryNumber! ? '#7C3AED' : 'rgba(255,255,255,0.1)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            {bead <= step.hailMaryNumber! && (
+                                <span className="bead-number">{bead}</span>
+                            )}
+                        </div>
                     ))}
                 </div>
             );

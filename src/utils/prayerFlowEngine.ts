@@ -150,7 +150,7 @@ export class PrayerFlowEngine {
                 this.steps.push({
                     type: 'decade_hail_mary',
                     text: fixed_prayers.decade_hail_mary,
-                    title: `${t.hailMary} ${hailMaryNum}/10`,
+                    title: t.hailMary,
                     decadeNumber: decadeNum,
                     hailMaryNumber: hailMaryNum
                 });

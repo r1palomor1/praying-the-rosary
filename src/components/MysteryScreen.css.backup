@@ -985,7 +985,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     color: var(--color-secondary);
 }
 
-$11rem;
+.fruit-label {
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -995,7 +996,8 @@ $11rem;
     margin-bottom: 0;
 }
 
-$11rem;
+.fruit-text {
+    font-size: 0.75rem;
     color: var(--color-text-secondary);
     letter-spacing: 0.1em;
 }
@@ -1178,7 +1180,7 @@ $11rem;
 .immersive-img {
     height: 100%;
     width: 100%;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .immersive-overlay {
