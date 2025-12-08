@@ -78,7 +78,14 @@ export function calculateCurrentStreak(): number {
     const uniqueDates = [...new Set(history.map(c => c.date))].sort().reverse();
 
     let streak = 0;
-    let currentDate = new Date();
+    const today = new Date();
+    const todayStr = getLocalDateString(today);
+
+    // Check if today has a completion
+    const hasCompletedToday = uniqueDates.includes(todayStr);
+
+    // Start counting from today if completed, otherwise from yesterday
+    let currentDate = hasCompletedToday ? new Date() : new Date(today.getTime() - 24 * 60 * 60 * 1000);
 
     for (const date of uniqueDates) {
         const checkDate = getLocalDateString(currentDate);

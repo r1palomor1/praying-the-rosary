@@ -147,8 +147,8 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
                     className={`calendar-day-v2 ${isToday ? 'today' : ''}`}
                 >
                     <span
-                        className={`${mysteryType && !isToday ? '' : 'day-number-v2'} ${isToday ? 'today-number' : ''}`}
-                        style={mysteryType && !isToday ? {
+                        className={`${mysteryType ? '' : 'day-number-v2'} ${isToday && !mysteryType ? 'today-number' : ''}`}
+                        style={mysteryType ? {
                             backgroundColor: getMysteryColor(mysteryType),
                             color: getMysteryTextColor(mysteryType),
                             borderRadius: '50%',
@@ -218,7 +218,7 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
                         <div className="stat-card-header">
                             <span className="stat-emoji">🔥</span>
                             <div className="stat-values">
-                                <div className="stat-value-v2">{stats.currentStreak} {t.streak}</div>
+                                <div className="stat-value-v2">{t.streak}: {stats.currentStreak}</div>
                             </div>
                         </div>
                         <p className="stat-subtext">
@@ -229,15 +229,14 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
                     {/* Total Card with Gradient */}
                     <div className="stat-card-v2 total-card-v2">
                         <div className="stat-card-header">
-                            <div className="stat-value-large">{stats.totalCompletions}</div>
-                            <span className="stat-icon-large">🙏</span>
+                            <span className="stat-emoji">🙏</span>
+                            <div className="stat-values">
+                                <div className="stat-value-v2">{t.total}: {stats.totalCompletions}</div>
+                            </div>
                         </div>
-                        <div className="stat-footer">
-                            <p className="stat-label-v2">{t.total}</p>
-                            <p className="stat-subtext-light">
-                                {t.thisMonth}: {thisMonthCount}
-                            </p>
-                        </div>
+                        <p className="stat-subtext">
+                            {t.thisMonth}: {thisMonthCount}
+                        </p>
                     </div>
                 </div>
 
