@@ -103,7 +103,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
     // Auto-hide text when audio starts playing
     useEffect(() => {
-        let timeoutId: NodeJS.Timeout;
+        let timeoutId: ReturnType<typeof setTimeout>;
 
         if (isPlaying) {
             // Wait 2.5 seconds before hiding text

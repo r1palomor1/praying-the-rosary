@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, Volume2, StopCircle, Lightbulb } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, Lightbulb } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
@@ -22,7 +22,7 @@ interface HomeScreenProps {
 }
 
 export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavigateToMysteries, onNavigateToPrayers, onNavigateToProgress }: HomeScreenProps) {
-    const { language, currentMysterySet, startNewSession, resumeSession, playAudio, audioEnabled, stopAudio } = useApp();
+    const { language, currentMysterySet, startNewSession, resumeSession, audioEnabled } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [showLearnMore, setShowLearnMore] = useState(false);
 
