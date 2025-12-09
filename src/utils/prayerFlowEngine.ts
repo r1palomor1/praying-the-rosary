@@ -199,7 +199,7 @@ export class PrayerFlowEngine {
             this.steps.push({
                 type: 'final_hail_mary_intro',
                 text: prayerText,
-                title: `${t.hailMary} ${i + 1}/${fixed_prayers.final_hail_marys_intro.length}`,
+                title: t.hailMary,
                 finalHailMaryNumber: i + 1,
                 imageUrl: closingPrayerImage
             });
