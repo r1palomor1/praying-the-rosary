@@ -25,7 +25,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
     const { language, currentMysterySet, startNewSession, resumeSession, playAudio, audioEnabled, stopAudio } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [showLearnMore, setShowLearnMore] = useState(false);
-    const [isPlayingHomeAudio, setIsPlayingHomeAudio] = useState(false);
+
 
     const hasSession = hasActiveSession();
     const mysterySet = mysterySets.find(m => m.type === currentMysterySet);
@@ -131,53 +131,17 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             // Resume with continuous mode
             if (hasSession) {
                 resumeSession();
-            } else {
-                startNewSession(currentMysterySet);
             }
+            // Do not start new session if we have progress - that would wipe it!
             onStartPrayerWithContinuous();
         } else {
-            console.log('[Continuous Audio] No progress - playing home audio first');
-            // No progress - play home page audio first
-            if (audioEnabled && mysterySet && devotion) {
-                console.log('[Continuous Audio] Playing home audio...');
-
-                // Get the daily devotion label for audio
-                const dailyDevotionLabel = t.dailyDevotionAudio;
-
-                // Build audio segments for mystery name, daily devotion heading, title, and text
-                const audioSegments = [
-                    {
-                        text: `${mysterySet.name[language]}. ${dailyDevotionLabel}. ${devotion.title[language]}. ${devotion.fullText[language]}`,
-                        gender: 'female' as const
-                    }
-                ];
-
-                // Set playing state
-                setIsPlayingHomeAudio(true);
-
-                // Play audio, then navigate to mystery screen
-                playAudio(audioSegments, () => {
-                    console.log('[Continuous Audio] Home audio complete - navigating to mystery screen');
-                    setIsPlayingHomeAudio(false);
-                    // Start new session
-                    startNewSession(currentMysterySet);
-                    // Navigate to mystery screen with continuous mode
-                    onStartPrayerWithContinuous();
-                });
-            } else {
-                console.log('[Continuous Audio] Audio disabled or missing data - navigating directly');
-                // Audio disabled - just navigate
-                startNewSession(currentMysterySet);
-                onStartPrayerWithContinuous();
-            }
+            // No progress - Start fresh
+            startNewSession(currentMysterySet);
+            onStartPrayerWithContinuous();
         }
     };
 
-    const handleStopHomeAudio = () => {
-        console.log('[Home Audio] Stopping audio');
-        setIsPlayingHomeAudio(false);
-        stopAudio();
-    };
+
 
     const getDaysText = () => {
         if (!mysterySet) return '';
@@ -200,10 +164,10 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                 <div className="hero-header">
                     <button
                         className="icon-btn"
-                        onClick={isPlayingHomeAudio ? handleStopHomeAudio : handleContinuousStart}
-                        aria-label={isPlayingHomeAudio ? t.stopAudio : t.continuousAudio}
+                        onClick={handleContinuousStart}
+                        aria-label={t.continuousAudio}
                     >
-                        {isPlayingHomeAudio ? <StopCircle size={20} /> : <Volume2 size={20} />}
+                        <Volume2 size={20} />
                     </button>
 
                     <h1 className="hero-title">{t.title}</h1>

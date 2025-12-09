@@ -21,6 +21,7 @@
     /* Reduced from lg */
     padding: var(--spacing-sm);
 }
+
 /* Remove margin when followed by immersive container (cinematic mode) */
 body:has(.immersive-mystery-container) .mystery-screen-header {
     margin-bottom: 0;
@@ -429,10 +430,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
         margin-bottom: var(--spacing-xs);
         padding: 0;
     }
-/* Remove margin when followed by immersive container (cinematic mode) */
-body:has(.immersive-mystery-container) .mystery-screen-header {
-    margin-bottom: 0;
-}
+
+    /* Remove margin when followed by immersive container (cinematic mode) */
+    body:has(.immersive-mystery-container) .mystery-screen-header {
+        margin-bottom: 0;
+    }
 
     .progress-bar-container {
         margin-bottom: var(--spacing-xs);
@@ -578,6 +580,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     margin-bottom: var(--spacing-xs);
     padding: 0;
 }
+
 /* Remove margin when followed by immersive container (cinematic mode) */
 body:has(.immersive-mystery-container) .mystery-screen-header {
     margin-bottom: 0;
@@ -986,18 +989,18 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 $11rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--color-text-secondary);
-    margin-right: var(--spacing-xs);
-    padding: 0;
-    margin-bottom: 0;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 0.1em;
+color: var(--color-text-secondary);
+margin-right: var(--spacing-xs);
+padding: 0;
+margin-bottom: 0;
 }
 
 $11rem;
-    color: var(--color-text-secondary);
-    letter-spacing: 0.1em;
+color: var(--color-text-secondary);
+letter-spacing: 0.1em;
 }
 
 .scripture-container {
@@ -1035,7 +1038,9 @@ $11rem;
 
 /* Header Buttons */
 .continuous-audio-btn-header,
-.settings-btn-header {
+.settings-btn-header,
+.text-visibility-btn-header,
+.layout-mode-btn-header {
     background: transparent;
     border: none;
     color: var(--color-text-secondary);
@@ -1049,7 +1054,9 @@ $11rem;
 }
 
 .continuous-audio-btn-header:hover,
-.settings-btn-header:hover {
+.settings-btn-header:hover,
+.text-visibility-btn-header:hover,
+.layout-mode-btn-header:hover {
     background: var(--color-bg-tertiary);
     color: #FBBF24;
 }
@@ -1200,7 +1207,7 @@ $11rem;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    
+
 }
 
 .immersive-header {
@@ -1456,11 +1463,11 @@ $11rem;
 [data-theme='light'] .immersive-mystery-container .text-gray-100,
 [data-theme='light'] .immersive-mystery-container .text-gray-300,
 [data-theme='light'] .immersive-mystery-container .text-gray-400 {
-    color: rgba(28, 25, 23, 0.9) !important; /* Dark text for light mode */
+    color: rgba(28, 25, 23, 0.9) !important;
+    /* Dark text for light mode */
 }
 
-[data-theme='light'] .immersive-overlay {
-}
+[data-theme='light'] .immersive-overlay {}
 
 .immersive-overlay-darker {
     position: absolute;
@@ -1473,8 +1480,7 @@ $11rem;
 [data-theme='light'] .immersive-mystery-container .text-gray-200,
 [data-theme='light'] .immersive-mystery-container .text-gray-100,
 [data-theme='light'] .immersive-mystery-container .text-gray-300,
-[data-theme='light'] .immersive-mystery-container .text-gray-400 {
-}
+[data-theme='light'] .immersive-mystery-container .text-gray-400 {}
 
 [data-theme='light'] .immersive-overlay {
     background: rgba(0, 0, 0, 0.5) !important;
@@ -1513,13 +1519,15 @@ $11rem;
 [data-theme='light'] button[aria-label*='Settings'],
 [data-theme='light'] button[aria-label*='Audio'],
 [data-theme='light'] button[aria-label*='Configuración'] {
-    color: rgb(71, 85, 105) !important; /* slate-600 */
+    color: rgb(71, 85, 105) !important;
+    /* slate-600 */
     opacity: 1 !important;
 }
 
 [data-theme='light'] .mystery-nav-btn:hover,
 [data-theme='light'] .bottom-nav-item:hover {
-    color: rgb(51, 65, 85) !important; /* slate-700 */
+    color: rgb(51, 65, 85) !important;
+    /* slate-700 */
 }
 
 /* Light Mode - Force Darker Color for Top Header and Learn More Buttons */
@@ -1528,19 +1536,22 @@ $11rem;
 [data-theme='light'] .mystery-bottom-nav button,
 [data-theme='light'] .mystery-bottom-nav .nav-item,
 [data-theme='light'] .mystery-bottom-nav a {
-    color: rgb(71, 85, 105) !important; /* slate-600 */
+    color: rgb(71, 85, 105) !important;
+    /* slate-600 */
 }
 
 [data-theme='light'] .mystery-screen header button svg,
 [data-theme='light'] .mystery-bottom-nav button svg,
 [data-theme='light'] .mystery-bottom-nav svg {
-    color: rgb(71, 85, 105) !important; /* slate-600 */
+    color: rgb(71, 85, 105) !important;
+    /* slate-600 */
 }
 
 /* Light Mode - Make Icons Bolder/Thicker */
 [data-theme='light'] .mystery-screen header button svg,
 [data-theme='light'] .mystery-bottom-nav button svg {
-    stroke-width: 2.5 !important; /* Increase thickness */
+    stroke-width: 2.5 !important;
+    /* Increase thickness */
     color: rgb(71, 85, 105) !important;
 }
 
@@ -1548,7 +1559,8 @@ $11rem;
 [data-theme='light'] .mystery-bottom-nav button[aria-label*='Learn'],
 [data-theme='light'] .mystery-bottom-nav button[aria-label*='Profundizar'] {
     opacity: 1 !important;
-    filter: brightness(0.6) !important; /* Darken the icons */
+    filter: brightness(0.6) !important;
+    /* Darken the icons */
 }
 
 /* Light Mode - Darker Text Labels for Bottom Nav */
@@ -1556,7 +1568,8 @@ $11rem;
 [data-theme='light'] .mystery-bottom-nav .nav-label,
 [data-theme='light'] .bottom-nav-item span,
 [data-theme='light'] .mystery-nav-btn span {
-    color: rgb(71, 85, 105) !important; /* slate-600 */
+    color: rgb(71, 85, 105) !important;
+    /* slate-600 */
 }
 
 /* Light Mode - White Audio and Settings Icons in Header */
@@ -1589,6 +1602,5 @@ $11rem;
 .prayer-text-hidden .reflection-section,
 .prayer-text-hidden .reflection-text {
     opacity: 0 !important;
-    transition: opacity 0.3s ease;
+    transition: opacity 1s ease;
 }
-

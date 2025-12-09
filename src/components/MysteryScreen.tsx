@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, Lightbulb, Eye, EyeOff, Layout } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, Lightbulb } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { LearnMoreModal, type EducationalContent } from './LearnMoreModal';
@@ -58,6 +58,35 @@ const MysteryImage = ({ src, alt, number }: MysteryImageProps) => {
     );
 };
 
+const BookIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}>
+        <path fillRule="evenodd" clipRule="evenodd" d="M14.5 2H9l-.35.15-.65.64-.65-.64L7 2H1.5l-.5.5v10l.5.5h5.29l.86.85h.7l.86-.85h5.29l.5-.5v-10l-.5-.5zm-7 10.32l-.18-.17L7 12H2V3h4.79l.74.74-.03 8.58zM14 12H9l-.35.15-.14.13V3.7l.7-.7H14v9zM6 5H3v1h3V5zm0 4H3v1h3V9zM3 7h3v1H3V7zm10-2h-3v1h3V5zm-3 2h3v1h-3V7zm0 2h3v1h-3V9z" />
+    </svg>
+);
+
+const LayoutModeIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}>
+        <g>
+            <path d="M43.636,40.727v273.455h285.091V40.727H43.636z M311.273,296.727H61.091v-33.588l102.251-80.725l147.931,98.621V296.727z M311.272,260.056l-81.673-54.448l32.818-28.716l48.855,34.198V260.056z M311.273,189.783l-50.054-35.037l-46.665,40.832l-52.077-34.718l-101.385,80.04V58.182h250.182V189.783z" />
+        </g>
+        <g>
+            <path d="M369.455,157.091V0H2.909v354.909h139.636V512h366.545V157.091H369.455z M369.455,215.273h81.455v238.545H200.727v-98.909h168.727V215.273z M20.364,337.455v-320H352v320H20.364z M491.636,494.545H160V354.909h23.273v116.364h285.091V197.818h-98.909v-23.273h122.182V494.545z" />
+        </g>
+        <g>
+            <path d="M122.182,75.636c-20.852,0-37.818,16.965-37.818,37.818c0,20.854,16.966,37.818,37.818,37.818S160,134.308,160,113.455C160,92.601,143.034,75.636,122.182,75.636z M122.182,133.818c-11.228,0-20.364-9.136-20.364-20.364c0-11.228,9.136-20.364,20.364-20.364s20.364,9.136,20.364,20.364C142.545,124.682,133.41,133.818,122.182,133.818z" />
+        </g>
+        <g>
+            <rect x="197.818" y="87.273" width="81.455" height="17.455" />
+        </g>
+        <g>
+            <rect x="180.364" y="122.182" width="23.273" height="17.455" />
+        </g>
+        <g>
+            <rect x="215.273" y="122.182" width="23.273" height="17.455" />
+        </g>
+    </svg>
+);
+
 export function MysteryScreen({ onComplete, onBack, startWithContinuous = false }: MysteryScreenProps) {
     const {
         language,
@@ -71,6 +100,25 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     const [showSettings, setShowSettings] = useState(false);
     const [showLearnMore, setShowLearnMore] = useState(false);
     const [showPrayerText, setShowPrayerText] = useState(true);
+
+    // Auto-hide text when audio starts playing
+    useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+
+        if (isPlaying) {
+            // Wait 2.5 seconds before hiding text
+            timeoutId = setTimeout(() => {
+                setShowPrayerText(false);
+            }, 2500);
+        } else {
+            // When audio stops, immediately show text
+            setShowPrayerText(true);
+        }
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [isPlaying]);
 
     const [flowEngine] = useState(() => {
         const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
@@ -93,7 +141,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     });
 
     const [currentStep, setCurrentStep] = useState(flowEngine.getCurrentStep());
-    const [continuousMode, setContinuousMode] = useState(false);
+    const [continuousMode, setContinuousMode] = useState(startWithContinuous || isPlaying);
     const audioEndedRef = useRef(false);
     const contentRef = useRef<HTMLDivElement>(null);
 
@@ -1103,12 +1151,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     className="text-visibility-btn-header"
                     onClick={() => setShowPrayerText(!showPrayerText)}
                     aria-label={showPrayerText ? "Hide prayer text" : "Show prayer text"}
+                    style={{ marginLeft: '12px' }}
                 >
-                    {showPrayerText ? (
-                        <Eye size={20} strokeWidth={3} />
-                    ) : (
-                        <EyeOff size={20} strokeWidth={3} />
-                    )}
+                    <BookIcon size={20} className={!showPrayerText ? "opacity-50" : ""} />
                 </button>
 
                 <div className="mystery-progress">
@@ -1156,8 +1201,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         setMysteryLayout(newLayout);
                     }}
                     aria-label={`Switch to ${mysteryLayout === 'classic' ? 'cinematic' : 'classic'} mode`}
+                    style={{ marginRight: '12px' }}
                 >
-                    <Layout size={20} strokeWidth={3} />
+                    <LayoutModeIcon size={20} />
                 </button>
 
                 <button
