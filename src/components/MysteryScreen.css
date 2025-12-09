@@ -1,4 +1,4 @@
-.mystery-screen-container {
+﻿.mystery-screen-container {
     display: flex;
     flex-direction: column;
     max-width: 600px;
@@ -1512,7 +1512,7 @@ $11rem;
 [data-theme='light'] .bottom-nav-item,
 [data-theme='light'] button[aria-label*='Settings'],
 [data-theme='light'] button[aria-label*='Audio'],
-[data-theme='light'] button[aria-label*='Configuraci�n'] {
+[data-theme='light'] button[aria-label*='Configuración'] {
     color: rgb(71, 85, 105) !important; /* slate-600 */
     opacity: 1 !important;
 }
@@ -1587,14 +1587,8 @@ $11rem;
 .prayer-text-hidden .mystery-prayer-card p,
 .prayer-text-hidden .intro-prayer-card p,
 .prayer-text-hidden .reflection-section,
-.prayer-text-hidden .reflection-text,
 .prayer-text-hidden .reflection-text {
     opacity: 0 !important;
     transition: opacity 0.3s ease;
 }
 
-/* Hide fruit text in cinematic mode (has separate label and text) */
-.prayer-text-hidden .fruit-text {
-    opacity: 0 !important;
-    transition: opacity 0.3s ease;
-}
