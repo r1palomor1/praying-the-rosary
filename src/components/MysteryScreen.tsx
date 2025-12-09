@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, Lightbulb } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, Lightbulb, Eye, EyeOff, Layout } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { LearnMoreModal, type EducationalContent } from './LearnMoreModal';
@@ -65,10 +65,12 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         isPlaying,
         playAudio,
         stopAudio,
-        mysteryLayout
+        mysteryLayout,
+        setMysteryLayout
     } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [showLearnMore, setShowLearnMore] = useState(false);
+    const [showPrayerText, setShowPrayerText] = useState(true);
 
     const [flowEngine] = useState(() => {
         const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
@@ -1097,6 +1099,18 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     )}
                 </button>
 
+                <button
+                    className="text-visibility-btn-header"
+                    onClick={() => setShowPrayerText(!showPrayerText)}
+                    aria-label={showPrayerText ? "Hide prayer text" : "Show prayer text"}
+                >
+                    {showPrayerText ? (
+                        <Eye size={20} strokeWidth={3} />
+                    ) : (
+                        <EyeOff size={20} strokeWidth={3} />
+                    )}
+                </button>
+
                 <div className="mystery-progress">
                     {/* First row: mystery set name (large) */}
                     <div className="mystery-set-name">{flowEngine.getMysteryName()}</div>
@@ -1134,6 +1148,17 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         {Math.round(flowEngine.getProgress())}% {t.complete}
                     </div>
                 </div>
+
+                <button
+                    className="layout-mode-btn-header"
+                    onClick={() => {
+                        const newLayout = mysteryLayout === 'classic' ? 'cinematic' : 'classic';
+                        setMysteryLayout(newLayout);
+                    }}
+                    aria-label={`Switch to ${mysteryLayout === 'classic' ? 'cinematic' : 'classic'} mode`}
+                >
+                    <Layout size={20} strokeWidth={3} />
+                </button>
 
                 <button
                     className="settings-btn-header"
