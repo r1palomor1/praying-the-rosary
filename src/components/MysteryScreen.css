@@ -1580,3 +1580,21 @@ $11rem;
 
 
 
+/* Text Visibility Toggle */
+.prayer-text-hidden .prayer-name,
+.prayer-text-hidden .prayer-text-main,
+.prayer-text-hidden .immersive-content p,
+.prayer-text-hidden .mystery-prayer-card p,
+.prayer-text-hidden .intro-prayer-card p,
+.prayer-text-hidden .reflection-section,
+.prayer-text-hidden .reflection-text,
+.prayer-text-hidden .reflection-text {
+    opacity: 0 !important;
+    transition: opacity 0.3s ease;
+}
+
+/* Hide fruit text in cinematic mode (has separate label and text) */
+.prayer-text-hidden .fruit-text {
+    opacity: 0 !important;
+    transition: opacity 0.3s ease;
+}

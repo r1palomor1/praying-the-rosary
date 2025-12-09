@@ -1085,7 +1085,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     };
 
     return (
-        <div className="mystery-screen-container">
+        <div className={`mystery-screen-container ${!showPrayerText ? 'prayer-text-hidden' : ''}`}>
             <div className="mystery-screen-header">
                 <button
                     className="continuous-audio-btn-header"
