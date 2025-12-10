@@ -1623,20 +1623,35 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 /* Audio Read-Along Highlighting */
 .highlighted-sentence {
     background-color: rgba(91, 33, 182, 0.3);
-    /* Primary color low opacity */
     box-shadow: 0 0 10px rgba(91, 33, 182, 0.2);
     border-radius: 4px;
     padding: 2px 4px;
     margin: -2px -4px;
-    /* Compensate for padding to keep flow text aligned */
     transition: background-color 0.3s ease;
-    color: var(--color-primary-light);
-    /* Highlight text color */
+    color: #FFD700;
+    /* Keep text white since it's over dark background images */
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+    /* Subtle shadow for readability */
 }
 
 /* Ensure readability in dark mode */
 [data-theme="dark"] .highlighted-sentence {
-    background-color: rgba(167, 139, 250, 0.25);
-    color: #E8D4E5;
+    background-color: rgba(91, 33, 182, 0.3);
+    /* Same as light mode */
+    box-shadow: 0 0 10px rgba(91, 33, 182, 0.2);
+    /* Same as light mode */
+    color: #FFD700;
     text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+/* Litany Row Highlighting */
+.litany-row-active {
+    border-left: 4px solid #FFD700 !important;
+    background-color: rgba(255, 215, 0, 0.1) !important;
+    transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .litany-row-active {
+    border-left: 4px solid #FFD700 !important;
+    background-color: rgba(255, 215, 0, 0.15) !important;
 }

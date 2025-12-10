@@ -156,6 +156,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
     // --- Audio Highlighting Logic (Sentence Level) ---
     const [highlightIndex, setHighlightIndex] = useState(-1);
+    const [highlightingEnabled, setHighlightingEnabled] = useState(startWithContinuous || false); // Auto-enable if starting with audio
 
     // Helper to split text into sentences
     // Keeps punctuation attached to the sentence
@@ -164,45 +165,143 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         return text.match(/[^.!?:]+([.!?:]+|\s*$)/g) || [text];
     };
 
+    // Helper to render text with optional highlighting
+    const renderTextWithHighlighting = (text: string) => {
+        if (!text) return text; // Return empty string if no text
+
+        // If highlighting is disabled, return text as-is
+        if (!highlightingEnabled) {
+            return text;
+        }
+
+        // Try to split into sentences for highlighting
+        try {
+            const sentences = getSentences(text);
+
+            // Only apply highlighting if we successfully got sentences
+            if (sentences && sentences.length > 0) {
+                return sentences.map((sentence, idx) => (
+                    <span key={idx} className={idx === highlightIndex ? "highlighted-sentence" : ""}>
+                        {sentence}
+                    </span>
+                ));
+            }
+        } catch (error) {
+            console.error('[Highlighting] Error splitting sentences:', error);
+        }
+
+        // Fallback: always return the original text if anything goes wrong
+        return text;
+    };
+
     // Reset highlight when step changes
     useEffect(() => {
         setHighlightIndex(-1);
     }, [currentStep]);
 
     // Track audio boundary events for highlighting
+    // NOTE: Using time-based estimation because onboundary is unreliable across browsers
     useEffect(() => {
-        const handleBoundary = (event: SpeechSynthesisEvent) => {
-            const title = currentStep?.title || '';
-            // Only active for Creed currently
-            const isCreed = title.toLowerCase().includes("creed") || title.toLowerCase().includes("credo");
+        // Apply highlighting to all prayers when enabled
+        if (!isPlaying || !highlightingEnabled) {
+            setHighlightIndex(-1);
+            return;
+        }
 
-            if (isCreed && isPlaying) {
-                // Use 'word' boundary because 'sentence' is unreliable
-                // event.charIndex tells us where we are in the whole text
-                const charIndex = event.charIndex;
+        console.log('[Highlight Debug] Starting time-based highlighting for current prayer');
+        console.log('[Highlight Debug] Step type:', currentStep.type, 'Has litanyData:', !!currentStep.litanyData);
 
-                const sanitizedText = sanitizeTextForSpeech(currentStep.text || '');
-                const sentences = getSentences(sanitizedText);
-                let runningLength = 0;
+        const isLitany = currentStep.type === 'litany_of_loreto';
 
-                for (let i = 0; i < sentences.length; i++) {
-                    const len = sentences[i].length;
-                    // Check if current char is within this sentence's range
-                    if (charIndex >= runningLength && charIndex < runningLength + len) {
-                        setHighlightIndex(i);
-                        break;
-                    }
-                    runningLength += len;
+        // For litanies, use fixed timing per invocation
+        if (isLitany && currentStep.litanyData) {
+            console.log('[Highlight Debug] Using LITANY timing');
+            const data = currentStep.litanyData;
+            const timeouts: number[] = [];
+
+            // Count total invocations
+            const allInvocations = [
+                ...data.initial_petitions,
+                ...data.trinity_invocations,
+                ...data.mary_invocations
+            ];
+
+            // Calculate timing based on word count for each invocation
+            // Litanies are read at ~2.5 words per second at 0.85 rate
+            const wordsPerSecond = 2.5 * 0.85;
+            let cumulativeTime = 0;
+
+            allInvocations.forEach((item: any, i: number) => {
+                let duration;
+
+                if (i < 3) {
+                    // First 3 invocations: use fixed timing (they have pauses)
+                    duration = 3500; // 3.5 seconds
+                } else {
+                    // Rest: calculate based on word count
+                    const callWords = (item.call || '').trim().split(/\s+/).length;
+                    const responseWords = (item.response || '').trim().split(/\s+/).length;
+                    const totalWords = callWords + responseWords;
+                    duration = (totalWords / wordsPerSecond) * 1000;
                 }
-            }
-        };
 
-        ttsManager.setOnBoundary(handleBoundary);
+                const timeout = setTimeout(() => {
+                    console.log('[Highlight Debug] Litany row', i, 'duration:', duration);
+                    setHighlightIndex(i);
+                }, cumulativeTime);
+
+                timeouts.push(timeout);
+                cumulativeTime += duration;
+            });
+
+            // Clear highlight at the end
+            const finalTimeout = setTimeout(() => {
+                setHighlightIndex(-1);
+            }, cumulativeTime);
+            timeouts.push(finalTimeout);
+
+            return () => {
+                console.log('[Highlight Debug] Cleaning up timeouts');
+                timeouts.forEach(t => clearTimeout(t));
+            };
+        }
+
+        // For regular prayers, use word-count-based timing
+        const text = currentStep.text || '';
+        const sanitizedText = sanitizeTextForSpeech(text);
+        const sentences = getSentences(sanitizedText);
+
+        // Calculate timing for each sentence based on word count
+        // Average speech rate: ~3.0 words per second at 0.85 rate (adjusted for better sync)
+        const wordsPerSecond = 3.0 * 0.85;
+
+        const timeouts: number[] = [];
+        let cumulativeTime = 0;
+
+        sentences.forEach((sentence, index) => {
+            const words = sentence.trim().split(/\s+/).length;
+            const duration = (words / wordsPerSecond) * 1000; // milliseconds
+
+            const timeout = setTimeout(() => {
+                console.log('[Highlight Debug] Highlighting sentence', index, ':', sentence.substring(0, 30));
+                setHighlightIndex(index);
+            }, cumulativeTime);
+
+            timeouts.push(timeout);
+            cumulativeTime += duration;
+        });
+
+        // Clear highlight at the end
+        const finalTimeout = setTimeout(() => {
+            setHighlightIndex(-1);
+        }, cumulativeTime);
+        timeouts.push(finalTimeout);
 
         return () => {
-            ttsManager.setOnBoundary(() => { });
+            console.log('[Highlight Debug] Cleaning up timeouts');
+            timeouts.forEach(t => clearTimeout(t));
         };
-    }, [currentStep, isPlaying]);
+    }, [currentStep, isPlaying, highlightingEnabled]);
 
     // Cleanup: Release wake lock when component unmounts
     useEffect(() => {
@@ -636,7 +735,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                             {language === 'es' ? 'REFLEXIÓN' : 'REFLECTION'}
                                         </h3>
                                         <p className="font-sans text-lg leading-relaxed text-gray-200">
-                                            {step.text}
+                                            {renderTextWithHighlighting(step.text)}
                                         </p>
                                     </div>
 
@@ -683,7 +782,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
                         <div className="mystery-card-body">
                             <h3 className="section-label">{t.reflection}</h3>
-                            <p className="reflection-text">{step.text}</p>
+                            <p className="reflection-text">{renderTextWithHighlighting(step.text)}</p>
 
                             {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
                                 <div className="meditation-footer" style={{ marginTop: 'var(--spacing-md)', paddingTop: 'var(--spacing-md)', borderTop: '1px solid var(--color-border-light)' }}>
@@ -754,7 +853,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
                                 <div className="max-w-2xl mx-auto px-6">
                                     <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
-                                        {step.text}
+                                        {renderTextWithHighlighting(step.text)}
                                     </p>
                                 </div>
                             </div>
@@ -814,7 +913,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
                                 <div className="max-w-2xl mx-auto px-6">
                                     <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
-                                        {step.text}
+                                        {renderTextWithHighlighting(step.text)}
                                     </p>
                                 </div>
 
@@ -893,7 +992,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                             })()
                                         ) : (
                                             <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
-                                                {step.text}
+                                                {renderTextWithHighlighting(step.text)}
                                             </p>
                                         )}
                                     </div>
@@ -930,7 +1029,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     <div className="mystery-prayer-card">
                         <h2 className="mystery-title">{step.title || ''}</h2>
                         <div className="mystery-divider"></div>
-                        <p className="mystery-text">{step.text}</p>
+                        <p className="mystery-text">{renderTextWithHighlighting(step.text)}</p>
                     </div>
                 );
             }
@@ -940,7 +1039,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 <div className="intro-prayer-card">
                     <h2 className="intro-title">{step.title || ''}</h2>
                     <div className="intro-divider"></div>
-                    <p className="intro-text">{step.text}</p>
+                    <p className="intro-text">{renderTextWithHighlighting(step.text)}</p>
                 </div>
             );
         }
@@ -953,7 +1052,10 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
             // Helper to render a row with alternating background (full call and response)
             const renderRow = (call: string, response: string, index: number, globalIndex: number) => (
-                <div key={`${index}-${globalIndex}`} className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''}`}>
+                <div
+                    key={`${index}-${globalIndex}`}
+                    className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''} ${highlightingEnabled && highlightIndex === globalIndex ? 'litany-row-active' : ''}`}
+                >
                     <div className="litany-call-new">{call}</div>
                     <div className="litany-response-new">{response}</div>
                 </div>
@@ -961,7 +1063,10 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
             // Helper to render call-only row (for Mary invocations after the first)
             const renderCallOnly = (call: string, index: number, globalIndex: number) => (
-                <div key={`${index}-${globalIndex}`} className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''}`}>
+                <div
+                    key={`${index}-${globalIndex}`}
+                    className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''} ${highlightingEnabled && highlightIndex === globalIndex ? 'litany-row-active' : ''}`}
+                >
                     <div className="litany-call-new">{call}</div>
                 </div>
             );
@@ -1009,18 +1114,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
         // Intro Prayers - Support both classic and cinematic with images
         if (isIntroPrayer) {
-            const isCreed = (step.title || '').toLowerCase().includes("creed") || (step.title || '').toLowerCase().includes("credo");
-
-            const renderContent = () => {
-                if (isCreed) {
-                    return getSentences(step.text).map((sentence, idx) => (
-                        <span key={idx} className={idx === highlightIndex ? "highlighted-sentence" : ""}>
-                            {sentence}
-                        </span>
-                    ));
-                }
-                return step.text;
-            };
+            const renderContent = () => renderTextWithHighlighting(step.text || '');
 
             // Cinematic mode with image
             if (mysteryLayout === 'cinematic' && step.imageUrl) {
@@ -1082,7 +1176,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 <div className="mystery-prayer-card">
                     <h2 className="mystery-title">{step.title}</h2>
                     <div className="mystery-divider"></div>
-                    <p className="mystery-text">{step.text}</p>
+                    <p className="mystery-text">{renderTextWithHighlighting(step.text)}</p>
                 </div>
             );
         }
@@ -1090,7 +1184,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         // Default rendering for all other prayers
         return (
             <div className="prayer-content">
-                <p className="prayer-text-main">{step.text}</p>
+                <p className="prayer-text-main">{renderTextWithHighlighting(step.text)}</p>
             </div>
         );
     };
@@ -1223,6 +1317,26 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     style={{ marginLeft: '12px' }}
                 >
                     <BookIcon size={20} className={userWantsTextHidden ? "opacity-50" : ""} />
+                </button>
+
+                <button
+                    className={`text-visibility-btn-header ${highlightingEnabled ? 'pulsate-book-icon' : ''}`}
+                    onClick={() => setHighlightingEnabled(!highlightingEnabled)}
+                    aria-label={highlightingEnabled ? "Disable highlighting" : "Enable highlighting"}
+                    style={{ marginLeft: '12px' }}
+                >
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 36 36"
+                        fill="currentColor"
+                        className={highlightingEnabled ? "" : "opacity-50"}
+                    >
+                        <path d="M15.82,26.06a1,1,0,0,1-.71-.29L8.67,19.33a1,1,0,0,1-.29-.71,1,1,0,0,1,.29-.71L23,3.54a5.55,5.55,0,1,1,7.85,7.86L16.53,25.77A1,1,0,0,1,15.82,26.06Zm-5-7.44,5,5L29.48,10a3.54,3.54,0,0,0,0-5,3.63,3.63,0,0,0-5,0Z" />
+                        <path d="M10.38,28.28A1,1,0,0,1,9.67,28L6.45,24.77a1,1,0,0,1-.22-1.09l2.22-5.44a1,1,0,0,1,1.63-.33l6.45,6.44A1,1,0,0,1,16.2,26l-5.44,2.22A1.33,1.33,0,0,1,10.38,28.28ZM8.33,23.82l2.29,2.28,3.43-1.4L9.74,20.39Z" />
+                        <path d="M8.94,30h-5a1,1,0,0,1-.84-1.55l3.22-4.94a1,1,0,0,1,1.55-.16l3.21,3.22a1,1,0,0,1,.06,1.35L9.7,29.64A1,1,0,0,1,8.94,30ZM5.78,28H8.47L9,27.34l-1.7-1.7Z" />
+                        <rect x="3.06" y="31" width="30" height="3" />
+                    </svg>
                 </button>
 
                 <div className="mystery-progress">
