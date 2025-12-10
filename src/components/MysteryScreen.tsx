@@ -8,7 +8,6 @@ import { sanitizeTextForSpeech } from '../utils/textSanitizer';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
 import { wakeLockManager } from '../utils/wakeLock';
-import { ttsManager } from '../utils/ttsManager';
 import educationalDataEs from '../data/es-rosary-educational-content.json';
 import educationalDataEn from '../data/en-rosary-educational-content.json';
 
