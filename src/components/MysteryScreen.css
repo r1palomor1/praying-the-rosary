@@ -792,7 +792,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     line-height: 1.8;
     color: var(--color-text-primary);
     font-family: var(--font-body);
-    text-align: left;
+    text-align: center;
     margin-top: var(--spacing-sm);
 }
 
@@ -1126,7 +1126,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     font-size: var(--font-size-lg) !important;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--color-text-primary);
+    color: #FFD700;
+    /* Bright Gold - matches cinematic mode */
     margin-bottom: 0;
 }
 
@@ -1604,6 +1605,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 /* Pulsate animation for book icon when audio is playing */
 .pulsate-book-icon {
     animation: pulsate-book 2s ease-in-out infinite;
+    color: #FBBF24 !important;
+    /* Orange-gold color when pulsating */
 }
 
 @keyframes pulsate-book {

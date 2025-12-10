@@ -59,9 +59,19 @@ const MysteryImage = ({ src, alt, number }: MysteryImageProps) => {
     );
 };
 
-const BookIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
+const BookOpenIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}>
         <path fillRule="evenodd" clipRule="evenodd" d="M14.5 2H9l-.35.15-.65.64-.65-.64L7 2H1.5l-.5.5v10l.5.5h5.29l.86.85h.7l.86-.85h5.29l.5-.5v-10l-.5-.5zm-7 10.32l-.18-.17L7 12H2V3h4.79l.74.74-.03 8.58zM14 12H9l-.35.15-.14.13V3.7l.7-.7H14v9zM6 5H3v1h3V5zm0 4H3v1h3V9zM3 7h3v1H3V7zm10-2h-3v1h3V5zm-3 2h3v1h-3V7zm0 2h3v1h-3V9z" />
+    </svg>
+);
+
+const BookClosedIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path style={{ fill: '#B1974D', stroke: '#705F2E', strokeWidth: 3 }} d="M 22,10 77,2 77,27 22,28 z" />
+        <path style={{ fill: '#B1974D', stroke: '#705F2E', strokeWidth: 3 }} d="m 34,20 58,-7 0,76 -58,7 z" />
+        <path style={{ fill: '#5B4335', stroke: '#2E241F', strokeWidth: 3, strokeLinejoin: 'bevel' }} d="M 34,20 34,96 21,98 7,89 7,12 22,10 7,12 21,22 z" />
+        <path style={{ fill: '#D2D2B3' }} d="M 10,13 77,3 c 0,0 -2,5 2,7 4,2 9,2 9,2 l -67,9 z" />
+        <path style={{ fill: 'none', stroke: '#836959', strokeWidth: 3 }} d="m 21,23 0,74" />
     </svg>
 );
 
@@ -132,10 +142,10 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     // Handle text visibility based on user preference
     useEffect(() => {
         if (userWantsTextHidden) {
-            // User explicitly toggled text off - hide after 2.5s
+            // User explicitly toggled text off - hide after 1s
             const timeoutId = setTimeout(() => {
                 setShowPrayerText(false);
-            }, 2500);
+            }, 1000);
             return () => clearTimeout(timeoutId);
         } else {
             // User wants text visible - show immediately
@@ -155,7 +165,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
     // --- Audio Highlighting Logic (Sentence Level) ---
     const [highlightIndex, setHighlightIndex] = useState(-1);
-    const [highlightingEnabled, setHighlightingEnabled] = useState(startWithContinuous || false); // Auto-enable if starting with audio
+    const [highlightingEnabled, setHighlightingEnabled] = useState(false);
+    const [userDisabledHighlighting, setUserDisabledHighlighting] = useState(false); // Session-only preference
 
     // Helper to split text into sentences
     // Keeps punctuation attached to the sentence
@@ -165,7 +176,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     };
 
     // Helper to render text with optional highlighting
-    const renderTextWithHighlighting = (text: string) => {
+    const renderTextWithHighlighting = (text: string, sentenceOffset: number = 0) => {
         if (!text) return text; // Return empty string if no text
 
         // If highlighting is disabled, return text as-is
@@ -180,7 +191,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             // Only apply highlighting if we successfully got sentences
             if (sentences && sentences.length > 0) {
                 return sentences.map((sentence, idx) => (
-                    <span key={idx} className={idx === highlightIndex ? "highlighted-sentence" : ""}>
+                    <span key={idx} className={(idx + sentenceOffset) === highlightIndex ? "highlighted-sentence" : ""}>
                         {sentence}
                     </span>
                 ));
@@ -201,8 +212,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     // Track audio boundary events for highlighting
     // NOTE: Using time-based estimation because onboundary is unreliable across browsers
     useEffect(() => {
-        // Apply highlighting to all prayers when enabled
-        if (!isPlaying || !highlightingEnabled) {
+        // Tracking runs whenever audio is playing (regardless of visibility)
+        if (!isPlaying) {
             setHighlightIndex(-1);
             return;
         }
@@ -253,11 +264,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 cumulativeTime += duration;
             });
 
-            // Clear highlight at the end
-            const finalTimeout = setTimeout(() => {
-                setHighlightIndex(-1);
-            }, cumulativeTime);
-            timeouts.push(finalTimeout);
+            // Don't clear highlight at the end - keep last row highlighted until step changes
 
             return () => {
                 console.log('[Highlight Debug] Cleaning up timeouts');
@@ -277,6 +284,15 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         const timeouts: number[] = [];
         let cumulativeTime = 0;
 
+        // For decade announcements, add initial delay for title + "Reflection" label
+        if (currentStep.type === 'decade_announcement') {
+            const reflectionLabel = language === 'es' ? 'Reflexión' : 'Reflection';
+            const titleWords = (currentStep.title || '').trim().split(/\s+/).length;
+            const labelWords = reflectionLabel.split(/\s+/).length;
+            const initialDelay = ((titleWords + labelWords) / wordsPerSecond) * 1000;
+            cumulativeTime = initialDelay;
+        }
+
         sentences.forEach((sentence, index) => {
             const words = sentence.trim().split(/\s+/).length;
             const duration = (words / wordsPerSecond) * 1000; // milliseconds
@@ -290,17 +306,13 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             cumulativeTime += duration;
         });
 
-        // Clear highlight at the end
-        const finalTimeout = setTimeout(() => {
-            setHighlightIndex(-1);
-        }, cumulativeTime);
-        timeouts.push(finalTimeout);
+        // Don't clear highlight at the end - keep last sentence highlighted until step changes
 
         return () => {
             console.log('[Highlight Debug] Cleaning up timeouts');
             timeouts.forEach(t => clearTimeout(t));
         };
-    }, [currentStep, isPlaying, highlightingEnabled]);
+    }, [currentStep, isPlaying]); // Removed highlightingEnabled - tracking runs independently of visibility
 
     // Cleanup: Release wake lock when component unmounts
     useEffect(() => {
@@ -657,6 +669,11 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             // We need to set the ref immediately for the first call
             continuousModeRef.current = true;
 
+            // Auto-enable highlighting when audio starts (unless user disabled it)
+            if (!userDisabledHighlighting) {
+                setHighlightingEnabled(true);
+            }
+
             // LAYER 1: Request wake lock to keep screen on (non-blocking)
             wakeLockManager.request().then(wakeLockAcquired => {
                 if (wakeLockAcquired) {
@@ -730,7 +747,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
 
                                     <div className="space-y-4 pt-4 text-center">
-                                        <h3 className="section-label">
+                                        <h3 className="font-display text-2xl font-bold immersive-mystery-title tracking-wide">
                                             {language === 'es' ? 'REFLEXIÓN' : 'REFLECTION'}
                                         </h3>
                                         <p className="font-sans text-lg leading-relaxed text-gray-200">
@@ -741,7 +758,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                     {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
                                         <div className="pt-8">
                                             {decadeInfo.fruit && (
-                                                <h3 className="section-label" style={{ color: '#FFD700' }}>
+                                                <h3 className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
                                                     {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}{decadeInfo.fruit.toUpperCase()}
                                                 </h3>
                                             )}
@@ -780,14 +797,14 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         </div>
 
                         <div className="mystery-card-body">
-                            <h3 className="section-label">{t.reflection}</h3>
+                            <h3 className="mystery-title" style={{ textAlign: 'center' }}>{t.reflection}</h3>
                             <p className="reflection-text">{renderTextWithHighlighting(step.text)}</p>
 
                             {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
                                 <div className="meditation-footer" style={{ marginTop: 'var(--spacing-md)', paddingTop: 'var(--spacing-md)', borderTop: '1px solid var(--color-border-light)' }}>
                                     {decadeInfo.fruit && (
                                         <div className="fruit-container">
-                                            <h3 className="section-label">{language === 'es' ? 'Fruto:' : 'Fruit:'} {decadeInfo.fruit}</h3>
+                                            <h3 className="mystery-title" style={{ color: '#FBBF24', textAlign: 'center' }}>{language === 'es' ? 'Fruto:' : 'Fruit:'} {decadeInfo.fruit}</h3>
                                         </div>
                                     )}
 
@@ -976,14 +993,16 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                         {step.type === 'final_hail_mary_intro' ? (
                                             (() => {
                                                 const parts = step.text.split('\n\n');
+                                                const part0Sentences = getSentences(parts[0]);
+                                                const sentenceOffset = part0Sentences.length;
                                                 return (
                                                     <>
                                                         <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
-                                                            {parts[0]}
+                                                            {renderTextWithHighlighting(parts[0], 0)}
                                                         </p>
                                                         {parts[1] && (
                                                             <p className="font-sans text-xl leading-loose text-center drop-shadow-md mt-4" style={{ color: '#FBBF24', fontStyle: 'italic' }}>
-                                                                {parts[1]}
+                                                                {renderTextWithHighlighting(parts[1], sentenceOffset)}
                                                             </p>
                                                         )}
                                                     </>
@@ -1007,15 +1026,17 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 // Handle Final Hail Marys with two parts
                 if (step.type === 'final_hail_mary_intro') {
                     const parts = step.text.split('\n\n');
+                    const part0Sentences = getSentences(parts[0]);
+                    const sentenceOffset = part0Sentences.length;
                     return (
                         <div className="mystery-prayer-card">
                             <h2 className="mystery-title">{step.title || ''}</h2>
                             <div className="mystery-divider"></div>
                             <div className="mystery-text">
-                                <div>{parts[0]}</div>
+                                <div>{renderTextWithHighlighting(parts[0], 0)}</div>
                                 {parts[1] && (
                                     <div style={{ color: '#FBBF24', marginTop: '1rem', fontStyle: 'italic', fontWeight: 'normal' }}>
-                                        {parts[1]}
+                                        {renderTextWithHighlighting(parts[1], sentenceOffset)}
                                     </div>
                                 )}
                             </div>
@@ -1268,8 +1289,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     <div className="mystery-content-card">
                         {decadeInfo.fruit && (
                             <div className="fruit-container" style={{ marginBottom: 'var(--spacing-sm)', textAlign: 'center', padding: '0 var(--spacing-md)' }}>
-                                <span className="fruit-label">{language === 'es' ? 'Fruto:' : 'Fruit:'}</span>
-                                <span className="fruit-text">{decadeInfo.fruit}</span>
+                                <span className="fruit-label" style={{ color: '#FBBF24', fontWeight: 600, fontSize: 'var(--font-size-lg)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{language === 'es' ? 'Fruto:' : 'Fruit:'}</span>
+                                <span className="fruit-text" style={{ color: '#FBBF24', fontWeight: 600, fontSize: 'var(--font-size-lg)', marginLeft: '0.5rem' }}>{decadeInfo.fruit}</span>
                             </div>
                         )}
                         <div className="mystery-image-container">
@@ -1302,7 +1323,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 </button>
 
                 <button
-                    className={`text-visibility-btn-header ${isPlaying ? 'pulsate-book-icon' : ''}`}
+                    className="text-visibility-btn-header"
                     onClick={() => {
                         // Toggle user preference
                         const newPreference = !userWantsTextHidden;
@@ -1315,28 +1336,40 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     aria-label={userWantsTextHidden ? "Show prayer text" : "Hide prayer text"}
                     style={{ marginLeft: '12px' }}
                 >
-                    <BookIcon size={20} className={userWantsTextHidden ? "opacity-50" : ""} />
+                    {userWantsTextHidden ? (
+                        <BookClosedIcon size={20} />
+                    ) : (
+                        <BookOpenIcon size={20} />
+                    )}
                 </button>
 
-                <button
-                    className={`text-visibility-btn-header ${highlightingEnabled ? 'pulsate-book-icon' : ''}`}
-                    onClick={() => setHighlightingEnabled(!highlightingEnabled)}
-                    aria-label={highlightingEnabled ? "Disable highlighting" : "Enable highlighting"}
-                    style={{ marginLeft: '12px' }}
-                >
-                    <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 36 36"
-                        fill="currentColor"
-                        className={highlightingEnabled ? "" : "opacity-50"}
+
+                {isPlaying && (
+                    <button
+                        className={`text-visibility-btn-header ${highlightingEnabled ? 'pulsate-book-icon' : ''}`}
+                        onClick={() => {
+                            const newState = !highlightingEnabled;
+                            setHighlightingEnabled(newState);
+                            setUserDisabledHighlighting(!newState); // Track user preference
+                        }}
+                        aria-label={highlightingEnabled ? "Disable highlighting" : "Enable highlighting"}
+                        style={{ marginLeft: '12px' }}
                     >
-                        <path d="M15.82,26.06a1,1,0,0,1-.71-.29L8.67,19.33a1,1,0,0,1-.29-.71,1,1,0,0,1,.29-.71L23,3.54a5.55,5.55,0,1,1,7.85,7.86L16.53,25.77A1,1,0,0,1,15.82,26.06Zm-5-7.44,5,5L29.48,10a3.54,3.54,0,0,0,0-5,3.63,3.63,0,0,0-5,0Z" />
-                        <path d="M10.38,28.28A1,1,0,0,1,9.67,28L6.45,24.77a1,1,0,0,1-.22-1.09l2.22-5.44a1,1,0,0,1,1.63-.33l6.45,6.44A1,1,0,0,1,16.2,26l-5.44,2.22A1.33,1.33,0,0,1,10.38,28.28ZM8.33,23.82l2.29,2.28,3.43-1.4L9.74,20.39Z" />
-                        <path d="M8.94,30h-5a1,1,0,0,1-.84-1.55l3.22-4.94a1,1,0,0,1,1.55-.16l3.21,3.22a1,1,0,0,1,.06,1.35L9.7,29.64A1,1,0,0,1,8.94,30ZM5.78,28H8.47L9,27.34l-1.7-1.7Z" />
-                        <rect x="3.06" y="31" width="30" height="3" />
-                    </svg>
-                </button>
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 36 36"
+                            fill="currentColor"
+                            className={highlightingEnabled ? "" : "opacity-50"}
+                        >
+                            <path d="M15.82,26.06a1,1,0,0,1-.71-.29L8.67,19.33a1,1,0,0,1-.29-.71,1,1,0,0,1,.29-.71L23,3.54a5.55,5.55,0,1,1,7.85,7.86L16.53,25.77A1,1,0,0,1,15.82,26.06Zm-5-7.44,5,5L29.48,10a3.54,3.54,0,0,0,0-5,3.63,3.63,0,0,0-5,0Z" />
+                            <path d="M10.38,28.28A1,1,0,0,1,9.67,28L6.45,24.77a1,1,0,0,1-.22-1.09l2.22-5.44a1,1,0,0,1,1.63-.33l6.45,6.44A1,1,0,0,1,16.2,26l-5.44,2.22A1.33,1.33,0,0,1,10.38,28.28ZM8.33,23.82l2.29,2.28,3.43-1.4L9.74,20.39Z" />
+                            <path d="M8.94,30h-5a1,1,0,0,1-.84-1.55l3.22-4.94a1,1,0,0,1,1.55-.16l3.21,3.22a1,1,0,0,1,.06,1.35L9.7,29.64A1,1,0,0,1,8.94,30ZM5.78,28H8.47L9,27.34l-1.7-1.7Z" />
+                            <rect x="3.06" y="31" width="30" height="3" />
+                        </svg>
+                    </button>
+                )}
+
 
                 <div className="mystery-progress">
                     {/* First row: mystery set name (large) */}
