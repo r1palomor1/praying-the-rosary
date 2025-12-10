@@ -223,36 +223,66 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
         const isLitany = currentStep.type === 'litany_of_loreto';
 
+        // LITANY HIGHLIGHTING DISABLED
+        // Reason: Web Speech API doesn't provide reliable timing across languages/voices
+        // Time-based estimation works ~90% in English but fails in Spanish
+        // Excellence over compromise - no highlighting is better than inaccurate highlighting
+        if (isLitany) {
+            console.log('[Highlight Debug] Litany detected - highlighting disabled for accuracy');
+            return; // No highlighting for litanies
+        }
+
         // For litanies, use fixed timing per invocation
-        if (isLitany && currentStep.litanyData) {
+        if (false && currentStep.litanyData) {
             console.log('[Highlight Debug] Using LITANY timing');
             const data = currentStep.litanyData;
             const timeouts: number[] = [];
 
-            // Count total invocations
+            // Count total invocations (including Agnus Dei at the end)
             const allInvocations = [
                 ...data.initial_petitions,
                 ...data.trinity_invocations,
-                ...data.mary_invocations
+                ...data.mary_invocations,
+                ...data.agnus_dei  // Add the final 3 "Lamb of God" prayers
             ];
 
-            // Calculate timing based on word count for each invocation
-            // Litanies are read at ~2.5 words per second at 0.85 rate
-            const wordsPerSecond = 2.5 * 0.85;
-            let cumulativeTime = 0;
+            // LITANY-SPECIFIC TIMING (Option 5: Conservative with Safety Buffers)
+            // Litanies are short, repetitive phrases - use conservative estimates
+            // Better to lag slightly behind than jump ahead
+            const wordsPerSecond = 2.0 * 0.85; // Slower than regular prayers (was 2.5)
+            const safetyBufferMs = 100; // Safety buffer per row (reduced from 200ms for tighter sync)
+            const initialDelayMs = 800; // Give audio time to start before first highlight
+
+            let cumulativeTime = initialDelayMs;
 
             allInvocations.forEach((item: any, i: number) => {
                 let duration;
 
                 if (i < 3) {
-                    // First 3 invocations: use fixed timing (they have pauses)
-                    duration = 3500; // 3.5 seconds
-                } else {
-                    // Rest: calculate based on word count
+                    // First 3 invocations: use longer fixed timing (they have pauses)
+                    duration = 4000; // 4 seconds (was 3.5s)
+                } else if (i === 4) {
+                    // SYNC CHECKPOINT: "Christ, graciously hear us" - transition point
+                    // Add extra delay to account for natural pause before trinity invocations
                     const callWords = (item.call || '').trim().split(/\s+/).length;
                     const responseWords = (item.response || '').trim().split(/\s+/).length;
                     const totalWords = callWords + responseWords;
-                    duration = (totalWords / wordsPerSecond) * 1000;
+                    const syncCheckpointDelay = 800; // Extra 800ms at this transition
+                    duration = (totalWords / wordsPerSecond) * 1000 + safetyBufferMs + syncCheckpointDelay;
+                } else if (i >= 9) {
+                    // Mary invocations: 5% faster than base rate, no buffer
+                    const callWords = (item.call || '').trim().split(/\s+/).length;
+                    const responseWords = (item.response || '').trim().split(/\s+/).length;
+                    const totalWords = callWords + responseWords;
+                    const slightlyFasterWPS = 2.1 * 0.85; // 5% faster than base (2.0 -> 2.1)
+                    duration = (totalWords / slightlyFasterWPS) * 1000; // No buffer
+                } else {
+                    // Trinity invocations (rows 5-8): 10% faster to catch up
+                    const callWords = (item.call || '').trim().split(/\s+/).length;
+                    const responseWords = (item.response || '').trim().split(/\s+/).length;
+                    const totalWords = callWords + responseWords;
+                    const fasterWordsPerSecond = 2.2 * 0.85; // 10% faster than base (2.0 -> 2.2)
+                    duration = (totalWords / fasterWordsPerSecond) * 1000; // No buffer
                 }
 
                 const timeout = setTimeout(() => {
@@ -1322,26 +1352,28 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     )}
                 </button>
 
-                <button
-                    className="text-visibility-btn-header"
-                    onClick={() => {
-                        // Toggle user preference
-                        const newPreference = !userWantsTextHidden;
-                        setUserWantsTextHidden(newPreference);
-                        // If turning text back on, show immediately
-                        if (!newPreference) {
-                            setShowPrayerText(true);
-                        }
-                    }}
-                    aria-label={userWantsTextHidden ? "Show prayer text" : "Hide prayer text"}
-                    style={{ marginLeft: '12px' }}
-                >
-                    {userWantsTextHidden ? (
-                        <BookClosedIcon size={20} />
-                    ) : (
-                        <BookOpenIcon size={20} />
-                    )}
-                </button>
+                {currentStep.type !== 'litany_of_loreto' && (
+                    <button
+                        className="text-visibility-btn-header"
+                        onClick={() => {
+                            // Toggle user preference
+                            const newPreference = !userWantsTextHidden;
+                            setUserWantsTextHidden(newPreference);
+                            // If turning text back on, show immediately
+                            if (!newPreference) {
+                                setShowPrayerText(true);
+                            }
+                        }}
+                        aria-label={userWantsTextHidden ? "Show prayer text" : "Hide prayer text"}
+                        style={{ marginLeft: '12px' }}
+                    >
+                        {userWantsTextHidden ? (
+                            <BookClosedIcon size={20} />
+                        ) : (
+                            <BookOpenIcon size={20} />
+                        )}
+                    </button>
+                )}
 
 
                 {isPlaying && (
@@ -1409,17 +1441,19 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     </div>
                 </div>
 
-                <button
-                    className="layout-mode-btn-header"
-                    onClick={() => {
-                        const newLayout = mysteryLayout === 'classic' ? 'cinematic' : 'classic';
-                        setMysteryLayout(newLayout);
-                    }}
-                    aria-label={`Switch to ${mysteryLayout === 'classic' ? 'cinematic' : 'classic'} mode`}
-                    style={{ marginRight: '12px' }}
-                >
-                    <LayoutModeIcon size={20} />
-                </button>
+                {currentStep.type !== 'litany_of_loreto' && (
+                    <button
+                        className="layout-mode-btn-header"
+                        onClick={() => {
+                            const newLayout = mysteryLayout === 'classic' ? 'cinematic' : 'classic';
+                            setMysteryLayout(newLayout);
+                        }}
+                        aria-label={`Switch to ${mysteryLayout === 'classic' ? 'cinematic' : 'classic'} mode`}
+                        style={{ marginRight: '12px' }}
+                    >
+                        <LayoutModeIcon size={20} />
+                    </button>
+                )}
 
                 <button
                     className="settings-btn-header"
