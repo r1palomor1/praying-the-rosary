@@ -4,9 +4,11 @@ import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { LearnMoreModal, type EducationalContent } from './LearnMoreModal';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
+import { sanitizeTextForSpeech } from '../utils/textSanitizer';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
 import { wakeLockManager } from '../utils/wakeLock';
+import { ttsManager } from '../utils/ttsManager';
 import educationalDataEs from '../data/es-rosary-educational-content.json';
 import educationalDataEn from '../data/en-rosary-educational-content.json';
 
@@ -151,6 +153,56 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             audioEndedRef.current = true;
         }
     }, []);
+
+    // --- Audio Highlighting Logic (Sentence Level) ---
+    const [highlightIndex, setHighlightIndex] = useState(-1);
+
+    // Helper to split text into sentences
+    // Keeps punctuation attached to the sentence
+    const getSentences = (text: string) => {
+        if (!text) return [];
+        return text.match(/[^.!?:]+([.!?:]+|\s*$)/g) || [text];
+    };
+
+    // Reset highlight when step changes
+    useEffect(() => {
+        setHighlightIndex(-1);
+    }, [currentStep]);
+
+    // Track audio boundary events for highlighting
+    useEffect(() => {
+        const handleBoundary = (event: SpeechSynthesisEvent) => {
+            const title = currentStep?.title || '';
+            // Only active for Creed currently
+            const isCreed = title.toLowerCase().includes("creed") || title.toLowerCase().includes("credo");
+
+            if (isCreed && isPlaying) {
+                // Use 'word' boundary because 'sentence' is unreliable
+                // event.charIndex tells us where we are in the whole text
+                const charIndex = event.charIndex;
+
+                const sanitizedText = sanitizeTextForSpeech(currentStep.text || '');
+                const sentences = getSentences(sanitizedText);
+                let runningLength = 0;
+
+                for (let i = 0; i < sentences.length; i++) {
+                    const len = sentences[i].length;
+                    // Check if current char is within this sentence's range
+                    if (charIndex >= runningLength && charIndex < runningLength + len) {
+                        setHighlightIndex(i);
+                        break;
+                    }
+                    runningLength += len;
+                }
+            }
+        };
+
+        ttsManager.setOnBoundary(handleBoundary);
+
+        return () => {
+            ttsManager.setOnBoundary(() => { });
+        };
+    }, [currentStep, isPlaying]);
 
     // Cleanup: Release wake lock when component unmounts
     useEffect(() => {
@@ -957,6 +1009,19 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
         // Intro Prayers - Support both classic and cinematic with images
         if (isIntroPrayer) {
+            const isCreed = (step.title || '').toLowerCase().includes("creed") || (step.title || '').toLowerCase().includes("credo");
+
+            const renderContent = () => {
+                if (isCreed) {
+                    return getSentences(step.text).map((sentence, idx) => (
+                        <span key={idx} className={idx === highlightIndex ? "highlighted-sentence" : ""}>
+                            {sentence}
+                        </span>
+                    ));
+                }
+                return step.text;
+            };
+
             // Cinematic mode with image
             if (mysteryLayout === 'cinematic' && step.imageUrl) {
                 return (
@@ -979,7 +1044,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
                                     <div className="max-w-2xl mx-auto px-6">
                                         <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
-                                            {step.text}
+                                            {renderContent()}
                                         </p>
                                     </div>
                                 </div>
@@ -995,7 +1060,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     <div className="mystery-prayer-card">
                         <h2 className="mystery-title">{step.title || ''}</h2>
                         <div className="mystery-divider"></div>
-                        <p className="mystery-text">{step.text}</p>
+                        <p className="mystery-text">{renderContent()}</p>
                     </div>
                 );
             }
@@ -1005,7 +1070,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 <div className="intro-prayer-card">
                     <h2 className="intro-title">{step.title || ''}</h2>
                     <div className="intro-divider"></div>
-                    <p className="intro-text">{step.text}</p>
+                    <p className="intro-text">{renderContent()}</p>
                 </div>
             );
         }

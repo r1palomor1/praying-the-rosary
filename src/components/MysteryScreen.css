@@ -988,19 +988,15 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     color: var(--color-secondary);
 }
 
-$11rem;
-font-weight: 700;
-text-transform: uppercase;
-letter-spacing: 0.1em;
-color: var(--color-text-secondary);
-margin-right: var(--spacing-xs);
-padding: 0;
-margin-bottom: 0;
-}
-
-$11rem;
-color: var(--color-text-secondary);
-letter-spacing: 0.1em;
+.section-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    margin-right: var(--spacing-xs);
+    padding: 0;
+    margin-bottom: 0;
 }
 
 .scripture-container {
@@ -1603,18 +1599,44 @@ letter-spacing: 0.1em;
 .prayer-text-hidden .reflection-text {
     opacity: 0 !important;
     transition: opacity 1s ease;
-}/* Pulsate animation for book icon when audio is playing */
+}
+
+/* Pulsate animation for book icon when audio is playing */
 .pulsate-book-icon {
     animation: pulsate-book 2s ease-in-out infinite;
 }
 
 @keyframes pulsate-book {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
         transform: scale(1);
     }
+
     50% {
         opacity: 0.6;
         transform: scale(1.1);
     }
+}
+
+/* Audio Read-Along Highlighting */
+.highlighted-sentence {
+    background-color: rgba(91, 33, 182, 0.3);
+    /* Primary color low opacity */
+    box-shadow: 0 0 10px rgba(91, 33, 182, 0.2);
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    /* Compensate for padding to keep flow text aligned */
+    transition: background-color 0.3s ease;
+    color: var(--color-primary-light);
+    /* Highlight text color */
+}
+
+/* Ensure readability in dark mode */
+[data-theme="dark"] .highlighted-sentence {
+    background-color: rgba(167, 139, 250, 0.25);
+    color: #E8D4E5;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }

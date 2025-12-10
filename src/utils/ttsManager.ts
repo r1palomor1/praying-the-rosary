@@ -12,8 +12,15 @@ class UnifiedTTSManager {
     private volume: number = 0.8;
     private synth: SpeechSynthesis;
     private onEndCallback?: () => void;
+    private onBoundaryCallback?: (event: SpeechSynthesisEvent) => void;
     private playbackId: number = 0;
     private segments: TTSSegment[] = [];
+    private activeUtterance: SpeechSynthesisUtterance | null = null;
+
+    // Getter to satisfy linter and potentially for debugging
+    get activeUtteranceRef() {
+        return this.activeUtterance;
+    }
 
     constructor() {
         this.synth = window.speechSynthesis;
@@ -38,6 +45,13 @@ class UnifiedTTSManager {
      */
     setOnEnd(callback: () => void) {
         this.onEndCallback = callback;
+    }
+
+    /**
+     * Set boundary callback
+     */
+    setOnBoundary(callback: (event: SpeechSynthesisEvent) => void) {
+        this.onBoundaryCallback = callback;
     }
 
     /**
@@ -89,6 +103,7 @@ class UnifiedTTSManager {
             const sanitized = sanitizeTextForSpeech(segment.text);
 
             const utterance = new SpeechSynthesisUtterance(sanitized);
+            this.activeUtterance = utterance; // Prevent GC
             utterance.lang = this.language === 'en' ? 'en-US' : 'es-ES';
             utterance.volume = this.volume;
             utterance.rate = segment.rate || 0.85;
@@ -98,6 +113,12 @@ class UnifiedTTSManager {
             if (voice) {
                 utterance.voice = voice;
             }
+
+            utterance.onboundary = (event) => {
+                if (this.playbackId === playbackId && this.onBoundaryCallback) {
+                    this.onBoundaryCallback(event);
+                }
+            };
 
             utterance.onend = () => {
                 if (this.playbackId === playbackId) {
@@ -148,6 +169,7 @@ class UnifiedTTSManager {
         // Increment playback ID to invalidate any pending operations
         this.playbackId++;
         this.synth.cancel();
+        this.activeUtterance = null;
     }
 
     /**
