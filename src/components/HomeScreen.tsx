@@ -22,7 +22,7 @@ interface HomeScreenProps {
 }
 
 export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavigateToMysteries, onNavigateToPrayers, onNavigateToProgress }: HomeScreenProps) {
-    const { language, currentMysterySet, startNewSession, resumeSession, audioEnabled } = useApp();
+    const { language, currentMysterySet, startNewSession, resumeSession, playAudio } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [showLearnMore, setShowLearnMore] = useState(false);
 
@@ -107,17 +107,11 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
     const handleContinuousStart = () => {
         // Check if there's saved progress
         const savedProgress = loadPrayerProgress(currentMysterySet);
-        const hasProgress = savedProgress && hasValidPrayerProgress(currentMysterySet);
-
-        console.log('[Continuous Audio] savedProgress:', savedProgress);
-        console.log('[Continuous Audio] hasProgress:', hasProgress);
-        console.log('[Continuous Audio] audioEnabled:', audioEnabled);
-        console.log('[Continuous Audio] mysterySet:', mysterySet);
-        console.log('[Continuous Audio] devotion:', devotion);
+        // Treat step 0 as no progress (beginning of prayer)
+        const hasProgress = savedProgress && hasValidPrayerProgress(currentMysterySet) && savedProgress.currentStepIndex > 0;
 
         if (hasProgress) {
-            console.log('[Continuous Audio] Has progress - navigating to mystery screen');
-            // Has progress - navigate directly to mystery screen
+            // Has progress - navigate directly to mystery screen at saved position
             const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
             engine.jumpToStep(savedProgress.currentStepIndex);
             const progress = engine.getProgress();
@@ -128,16 +122,28 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                 return;
             }
 
-            // Resume with continuous mode
+            // Resume with continuous mode at saved position
             if (hasSession) {
                 resumeSession();
             }
-            // Do not start new session if we have progress - that would wipe it!
             onStartPrayerWithContinuous();
         } else {
-            // No progress - Start fresh
+            // No progress - Play home page audio FIRST, then navigate
             startNewSession(currentMysterySet);
-            onStartPrayerWithContinuous();
+
+            // Build complete audio: Mystery Name + "Daily Devotion" + Devotion Title + Devotion Text
+            const mysteryName = mysterySet ? mysterySet.name[language] : '';
+            const dailyDevotionLabel = t.dailyDevotion;
+            const devotionTitle = devotion.title[language];
+            const devotionText = devotion.fullText[language];
+
+            const completeAudioText = `${mysteryName}. ${dailyDevotionLabel}. ${devotionTitle}. ${devotionText}`;
+
+            // Play audio and wait for completion before navigating
+            playAudio(completeAudioText, () => {
+                // After home audio completes, navigate to prayer screen
+                onStartPrayerWithContinuous();
+            });
         }
     };
 

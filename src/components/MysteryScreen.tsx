@@ -99,26 +99,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [showLearnMore, setShowLearnMore] = useState(false);
+    // User-controlled text visibility preference (persists across prayers)
+    const [userWantsTextHidden, setUserWantsTextHidden] = useState(false);
     const [showPrayerText, setShowPrayerText] = useState(true);
-
-    // Auto-hide text when audio starts playing
-    useEffect(() => {
-        let timeoutId: ReturnType<typeof setTimeout>;
-
-        if (isPlaying) {
-            // Wait 2.5 seconds before hiding text
-            timeoutId = setTimeout(() => {
-                setShowPrayerText(false);
-            }, 2500);
-        } else {
-            // When audio stops, immediately show text
-            setShowPrayerText(true);
-        }
-
-        return () => {
-            if (timeoutId) clearTimeout(timeoutId);
-        };
-    }, [isPlaying]);
 
     const [flowEngine] = useState(() => {
         const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
@@ -141,9 +124,24 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     });
 
     const [currentStep, setCurrentStep] = useState(flowEngine.getCurrentStep());
-    const [continuousMode, setContinuousMode] = useState(startWithContinuous || isPlaying);
+    const [continuousMode, setContinuousMode] = useState(isPlaying);
     const audioEndedRef = useRef(false);
     const contentRef = useRef<HTMLDivElement>(null);
+
+    // Handle text visibility based on user preference
+    useEffect(() => {
+        if (userWantsTextHidden) {
+            // User explicitly toggled text off - hide after 2.5s
+            const timeoutId = setTimeout(() => {
+                setShowPrayerText(false);
+            }, 2500);
+            return () => clearTimeout(timeoutId);
+        } else {
+            // User wants text visible - show immediately
+            setShowPrayerText(true);
+        }
+    }, [userWantsTextHidden]);
+
 
     // Sync continuous mode with playing state on mount
     // This handles the case where user navigates away and back while audio is playing
@@ -491,14 +489,13 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         onBack();
     };
     const handleToggleContinuous = () => {
-        if (continuousMode || isPlaying) {
+        if (continuousMode) {
             // Stop continuous mode
             setContinuousMode(false);
             continuousModeRef.current = false;
 
             // LAYER 2: Invalidate all pending callbacks
             playbackIdRef.current++;
-            console.log('[Continuous Mode] Stopped - invalidating callbacks (session:', playbackIdRef.current, ')');
 
             stopAudio();
 
@@ -525,8 +522,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
     // Auto-start continuous mode if requested from home screen
     useEffect(() => {
-        if (startWithContinuous && !continuousMode && !isPlaying) {
-            console.log('[MysteryScreen] Auto-starting continuous mode');
+        if (startWithContinuous && !continuousMode) {
             handleToggleContinuous();
         }
     }, [startWithContinuous]);
@@ -1148,12 +1144,20 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 </button>
 
                 <button
-                    className="text-visibility-btn-header"
-                    onClick={() => setShowPrayerText(!showPrayerText)}
-                    aria-label={showPrayerText ? "Hide prayer text" : "Show prayer text"}
+                    className={`text-visibility-btn-header ${isPlaying && !userWantsTextHidden ? 'pulsate-book-icon' : ''}`}
+                    onClick={() => {
+                        // Toggle user preference
+                        const newPreference = !userWantsTextHidden;
+                        setUserWantsTextHidden(newPreference);
+                        // If turning text back on, show immediately
+                        if (!newPreference) {
+                            setShowPrayerText(true);
+                        }
+                    }}
+                    aria-label={userWantsTextHidden ? "Show prayer text" : "Hide prayer text"}
                     style={{ marginLeft: '12px' }}
                 >
-                    <BookIcon size={20} className={!showPrayerText ? "opacity-50" : ""} />
+                    <BookIcon size={20} className={userWantsTextHidden ? "opacity-50" : ""} />
                 </button>
 
                 <div className="mystery-progress">

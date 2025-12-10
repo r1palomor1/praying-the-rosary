@@ -1603,4 +1603,18 @@ letter-spacing: 0.1em;
 .prayer-text-hidden .reflection-text {
     opacity: 0 !important;
     transition: opacity 1s ease;
+}/* Pulsate animation for book icon when audio is playing */
+.pulsate-book-icon {
+    animation: pulsate-book 2s ease-in-out infinite;
+}
+
+@keyframes pulsate-book {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
 }
