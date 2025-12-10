@@ -1144,7 +1144,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 </button>
 
                 <button
-                    className={`text-visibility-btn-header ${isPlaying && !userWantsTextHidden ? 'pulsate-book-icon' : ''}`}
+                    className={`text-visibility-btn-header ${isPlaying ? 'pulsate-book-icon' : ''}`}
                     onClick={() => {
                         // Toggle user preference
                         const newPreference = !userWantsTextHidden;
