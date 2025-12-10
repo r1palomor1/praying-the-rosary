@@ -1,16 +1,50 @@
 # Holy Rosary App - Feature To-Do List
 
 ## ✅ Completed Features
+
+### Audio & Highlighting
 - [x] Audio read-along highlighting for all prayers (gold text)
 - [x] Highlighter toggle button with pulsate animation
 - [x] Auto-enable highlighting from home page audio
+- [x] Session-based highlighting preference (persists until app restart)
 - [x] Time-based sentence synchronization
 - [x] Universal highlighting across all prayer types
-- [x] Experimental litany row highlighting
+- [x] Last sentence/row stays highlighted until step changes
+- [x] Final Hail Mary continuous highlighting (sentence offset)
+- [x] **Litany highlighting - DISABLED** (see decision below)
+
+### UI/UX Polish
+- [x] Book icon states: open (white) when visible, closed (colored) when hidden
+- [x] Highlighter icon pulsates orange-gold when active
+- [x] Book icon and layout toggle hidden on litany page (not applicable)
+- [x] Classic mode prayer titles in bright gold (#FFD700)
+- [x] Reflection text centered for consistency
+- [x] Fruit labels styled with bright gold (#FBBF24)
+- [x] Text visibility delay reduced to 1s (from 2.5s)
+- [x] Initial delay for mystery announcements
 
 ## 🔄 In Progress / Needs Refinement
-- [ ] Litany highlighting timing calibration (currently drifts)
 - [ ] Remove debug console logs from production code
+- [ ] Update HIGHLIGHTING_IMPLEMENTATION_STATUS.md with final state
+
+## ⚠️ Litany Highlighting Decision
+
+**Status:** DISABLED after extensive testing
+
+**Attempts Made:**
+- Option 2: TTS boundary events (browser incompatibility)
+- Option 3: Conservative timing estimates
+- Option 4: Sync checkpoints at transition points
+- Option 5: Adaptive speeds with safety buffers
+
+**Root Cause:** Web Speech API doesn't provide reliable timing across languages/voices
+- English: ~90% accuracy achieved
+- Spanish: Failed due to different TTS speeds
+- Time-based estimation inherently unreliable
+
+**Decision:** Excellence over compromise - no highlighting is better than inaccurate highlighting
+- Litany text remains fully visible and readable
+- Code preserved (unreachable) for future reference if better TTS APIs emerge
 
 ## 📋 Planned Features
 
@@ -27,13 +61,10 @@
 ### Audio & Highlighting Enhancements
 - [ ] Pause/Resume support for highlighting (track elapsed time)
 - [ ] Fine-tune timing based on actual TTS performance
-- [ ] Consider alternative litany highlighting approach (or disable)
 
 ### Code Quality
 - [ ] Clean up debug logs
 - [ ] Add error boundaries for highlighting feature
-- [ ] Document litany timing algorithm
-- [ ] Update HIGHLIGHTING_IMPLEMENTATION_STATUS.md with final state
 
 ## 🚀 Advanced TTS Exploration (For Perfect Sync)
 

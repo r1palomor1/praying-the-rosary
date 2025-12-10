@@ -32,7 +32,11 @@ export interface Mystery {
         en: string;
         es: string;
     };
-    imageUrl: string;
+    imageUrl: {
+        sm: string;   // 640px - Mobile
+        md: string;   // 1024px - Tablet
+        lg: string;   // 1920px - Desktop
+    };
 }
 
 // Mystery set (collection of 5 mysteries)

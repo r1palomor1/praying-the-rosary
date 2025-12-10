@@ -37,7 +37,11 @@ export interface PrayerStep {
     litanySection?: 'initial' | 'trinity' | 'mary' | 'agnus'; // For litany subsections
     litanyIndex?: number; // Index within litany section
     litanyData?: any; // Full litany data for scrollable view
-    imageUrl?: string; // Image URL for the mystery
+    imageUrl?: string | {
+        sm: string;
+        md: string;
+        lg: string;
+    }; // Image URL (string for static, object for responsive mystery images)
 }
 
 export type MysteryType = 'joyful' | 'luminous' | 'sorrowful' | 'glorious';
@@ -360,7 +364,11 @@ export class PrayerFlowEngine {
         number: number;
         title: string;
         reflection: string;
-        imageUrl?: string;
+        imageUrl?: string | {
+            sm: string;
+            md: string;
+            lg: string;
+        };
         fruit?: string;
         scripture?: { text: string; reference: string };
     } | null {

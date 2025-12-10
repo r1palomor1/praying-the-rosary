@@ -10,6 +10,7 @@ import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress, clearPr
 import { wakeLockManager } from '../utils/wakeLock';
 import educationalDataEs from '../data/es-rosary-educational-content.json';
 import educationalDataEn from '../data/en-rosary-educational-content.json';
+import { ResponsiveImage } from './ResponsiveImage';
 
 import './MysteryScreen.css';
 import './MysteryBottomNav.css';
@@ -21,32 +22,23 @@ interface MysteryScreenProps {
 }
 
 interface MysteryImageProps {
-    src?: string;
+    src?: string | {
+        sm: string;
+        md: string;
+        lg: string;
+    };
     alt?: string;
     number?: number;
 }
 
 const MysteryImage = ({ src, alt, number }: MysteryImageProps) => {
-    const [error, setError] = useState(false);
-
-    // Reset error state if src changes
-    useEffect(() => {
-        setError(false);
-    }, [src]);
-
-    if (src && !error) {
+    if (src) {
         return (
-            <div
-                className="mystery-image-bg"
-                style={{ backgroundImage: `url('${src}')` }}
-                role="img"
-                aria-label={alt}
-            >
-                <img
-                    src={src}
-                    style={{ display: 'none' }}
-                    onError={() => setError(true)}
-                    alt=""
+            <div className="mystery-image-wrapper">
+                <ResponsiveImage
+                    imageUrl={src}
+                    alt={alt || ''}
+                    className="mystery-image-bg"
                 />
             </div>
         );
@@ -761,11 +753,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 return (
                     <div className="immersive-mystery-container">
                         <div className="immersive-bg">
-                            <img
-                                src={decadeInfo?.imageUrl || step.imageUrl}
-                                alt={step.title}
-                                className="immersive-img"
-                                loading="lazy" decoding="async" />
+                            <ResponsiveImage imageUrl={decadeInfo?.imageUrl || step.imageUrl} alt={step.title} className="immersive-img" loading="lazy" />
                             <div className="immersive-overlay-darker"></div>
                         </div>
 
@@ -862,12 +850,12 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 <div className="immersive-mystery-container">
                     <div className="immersive-bg">
                         {(decadeInfo?.imageUrl || step.imageUrl) && (
-                            <img
-                                src={decadeInfo?.imageUrl || step.imageUrl}
+                            <ResponsiveImage
+                                imageUrl={decadeInfo?.imageUrl || step.imageUrl}
                                 alt={decadeInfo?.title || step.title}
                                 className="immersive-img"
-                                style={currentMysterySet === 'sorrowful' && decadeInfo?.number === 5 ? { transform: 'translateY(20px)' } : undefined}
-                                loading="lazy" decoding="async" />
+                                loading="lazy"
+                            />
                         )}
                         <div className="immersive-overlay"></div>
                     </div>
@@ -922,12 +910,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 <div className="immersive-mystery-container">
                     <div className="immersive-bg">
                         {(decadeInfo?.imageUrl || (step as any).imageUrl) && (
-                            <img
-                                src={decadeInfo?.imageUrl || (step as any).imageUrl}
-                                alt={decadeInfo?.title || step.title}
-                                className="immersive-img"
-
-                                loading="lazy" decoding="async" />
+                            <ResponsiveImage imageUrl={decadeInfo?.imageUrl || (step as any).imageUrl} alt={decadeInfo?.title || step.title} className="immersive-img" loading="lazy" />
                         )}
                         <div className="immersive-overlay"></div>
                     </div>
@@ -1003,11 +986,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 return (
                     <div className="immersive-mystery-container">
                         <div className="immersive-bg">
-                            <img
-                                src={step.imageUrl}
-                                alt={step.title}
-                                className="immersive-img"
-                                loading="lazy" decoding="async" />
+                            <ResponsiveImage imageUrl={step.imageUrl} alt={step.title} className="immersive-img" loading="lazy" />
                             <div className="immersive-overlay-darker"></div>
                         </div>
 
@@ -1171,11 +1150,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 return (
                     <div className="immersive-mystery-container">
                         <div className="immersive-bg">
-                            <img
-                                src={step.imageUrl}
-                                alt={step.title}
-                                className="immersive-img"
-                                loading="lazy" decoding="async" />
+                            <ResponsiveImage imageUrl={step.imageUrl} alt={step.title} className="immersive-img" loading="lazy" />
                             <div className="immersive-overlay-darker"></div>
                         </div>
 
