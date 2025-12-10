@@ -162,6 +162,8 @@ body {
     color: var(--color-text-primary);
     background-color: var(--color-bg-primary);
     transition: background-color var(--transition-base), color var(--transition-base);
+    overflow-x: hidden;
+    width: 100%;
 }
 
 /* ===== TYPOGRAPHY ===== */
@@ -516,6 +518,7 @@ p {
         font-size: var(--font-size-2xl);
     }
 }
+
 /* ===== LOADING SCREEN ===== */
 .loading-screen {
     position: fixed;
