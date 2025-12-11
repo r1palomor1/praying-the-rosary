@@ -1179,10 +1179,22 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     z-index: 0;
 }
 
+.immersive-bg picture {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
 .immersive-img {
     height: 100%;
     width: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
+}
+
+.mystery-img {
+    object-fit: cover !important;
+    object-position: top center !important;
 }
 
 .immersive-overlay {
