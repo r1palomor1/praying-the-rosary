@@ -1353,7 +1353,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
                 {/* Highlighter icon - always visible to prevent layout shifts */}
                 <button
-                    className={`text-visibility-btn-header ${highlightingEnabled ? 'pulsate-book-icon' : ''}`}
+                    className={`text-visibility-btn-header ${highlightingEnabled && !userWantsTextHidden ? 'pulsate-book-icon' : ''}`}
                     onClick={() => {
                         if (!isPlaying) return; // Disabled when not playing
                         const newState = !highlightingEnabled;
@@ -1361,8 +1361,13 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         setUserDisabledHighlighting(!newState); // Track user preference
                     }}
                     aria-label={highlightingEnabled ? "Disable highlighting" : "Enable highlighting"}
-                    style={{ marginLeft: '12px', opacity: isPlaying ? 1 : 0.3, cursor: isPlaying ? 'pointer' : 'not-allowed' }}
-                    disabled={!isPlaying}
+                    style={{
+                        marginLeft: '12px',
+                        opacity: isPlaying && !userWantsTextHidden ? 1 : 0.3,
+                        cursor: isPlaying && !userWantsTextHidden ? 'pointer' : 'not-allowed',
+                        color: (!highlightingEnabled && isPlaying && !userWantsTextHidden) ? 'var(--color-text-secondary)' : undefined
+                    }}
+                    disabled={!isPlaying || userWantsTextHidden}
                 >
                     <svg
                         width="20"
