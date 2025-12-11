@@ -1315,77 +1315,107 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     return (
         <div className={`mystery-screen-container ${!showPrayerText ? 'prayer-text-hidden' : ''}`}>
             <div className="mystery-screen-header">
-                <button
-                    className="continuous-audio-btn-header"
-                    onClick={handleToggleContinuous}
-                    aria-label={(continuousMode || isPlaying) ? t.stopContinuous : t.continuousMode}
-                >
-                    {(continuousMode || isPlaying) ? (
-                        <StopCircle size={20} strokeWidth={3} />
-                    ) : (
-                        <Volume2 size={20} strokeWidth={3} />
-                    )}
-                </button>
+                {/* Top Row: Icons */}
+                <div className="header-top-row" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
 
-                {currentStep.type !== 'litany_of_loreto' && (
-                    <button
-                        className="text-visibility-btn-header"
-                        onClick={() => {
-                            // Toggle user preference
-                            const newPreference = !userWantsTextHidden;
-                            setUserWantsTextHidden(newPreference);
-                            // If turning text back on, show immediately
-                            if (!newPreference) {
-                                setShowPrayerText(true);
-                            }
-                        }}
-                        aria-label={userWantsTextHidden ? "Show prayer text" : "Hide prayer text"}
-                        style={{ marginLeft: '12px' }}
-                    >
-                        {userWantsTextHidden ? (
-                            <BookClosedIcon size={20} />
-                        ) : (
-                            <BookOpenIcon size={20} />
+                    {/* Left Icon Group */}
+                    <div className="header-left-icons" style={{ display: 'flex', alignItems: 'center' }}>
+                        <button
+                            className="continuous-audio-btn-header"
+                            onClick={handleToggleContinuous}
+                            aria-label={(continuousMode || isPlaying) ? t.stopContinuous : t.continuousMode}
+                        >
+                            {(continuousMode || isPlaying) ? (
+                                <StopCircle size={20} strokeWidth={3} />
+                            ) : (
+                                <Volume2 size={20} strokeWidth={3} />
+                            )}
+                        </button>
+
+                        {currentStep.type !== 'litany_of_loreto' && (
+                            <button
+                                className="text-visibility-btn-header"
+                                onClick={() => {
+                                    // Toggle user preference
+                                    const newPreference = !userWantsTextHidden;
+                                    setUserWantsTextHidden(newPreference);
+                                    // If turning text back on, show immediately
+                                    if (!newPreference) {
+                                        setShowPrayerText(true);
+                                    }
+                                }}
+                                aria-label={userWantsTextHidden ? "Show prayer text" : "Hide prayer text"}
+                                style={{ marginLeft: '12px' }}
+                            >
+                                {userWantsTextHidden ? (
+                                    <BookClosedIcon size={20} />
+                                ) : (
+                                    <BookOpenIcon size={20} />
+                                )}
+                            </button>
                         )}
-                    </button>
-                )}
 
+                        {/* Highlighter icon - always visible to prevent layout shifts */}
+                        <button
+                            className={`text-visibility-btn-header ${highlightingEnabled && !userWantsTextHidden ? 'pulsate-book-icon' : ''}`}
+                            onClick={() => {
+                                if (!isPlaying) return; // Disabled when not playing
+                                const newState = !highlightingEnabled;
+                                setHighlightingEnabled(newState);
+                                setUserDisabledHighlighting(!newState); // Track user preference
+                            }}
+                            aria-label={highlightingEnabled ? "Disable highlighting" : "Enable highlighting"}
+                            style={{
+                                marginLeft: '12px',
+                                opacity: isPlaying && !userWantsTextHidden ? 1 : 0.3,
+                                cursor: isPlaying && !userWantsTextHidden ? 'pointer' : 'not-allowed',
+                                color: (!highlightingEnabled && isPlaying && !userWantsTextHidden) ? 'var(--color-text-secondary)' : undefined
+                            }}
+                            disabled={!isPlaying || userWantsTextHidden}
+                        >
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 36 36"
+                                fill="currentColor"
+                                className={highlightingEnabled ? "" : "opacity-50"}
+                            >
+                                <path d="M15.82,26.06a1,1,0,0,1-.71-.29L8.67,19.33a1,1,0,0,1-.29-.71,1,1,0,0,1,.29-.71L23,3.54a5.55,5.55,0,1,1,7.85,7.86L16.53,25.77A1,1,0,0,1,15.82,26.06Zm-5-7.44,5,5L29.48,10a3.54,3.54,0,0,0,0-5,3.63,3.63,0,0,0-5,0Z" />
+                                <path d="M10.38,28.28A1,1,0,0,1,9.67,28L6.45,24.77a1,1,0,0,1-.22-1.09l2.22-5.44a1,1,0,0,1,1.63-.33l6.45,6.44A1,1,0,0,1,16.2,26l-5.44,2.22A1.33,1.33,0,0,1,10.38,28.28ZM8.33,23.82l2.29,2.28,3.43-1.4L9.74,20.39Z" />
+                                <path d="M8.94,30h-5a1,1,0,0,1-.84-1.55l3.22-4.94a1,1,0,0,1,1.55-.16l3.21,3.22a1,1,0,0,1,.06,1.35L9.7,29.64A1,1,0,0,1,8.94,30ZM5.78,28H8.47L9,27.34l-1.7-1.7Z" />
+                                <rect x="3.06" y="31" width="30" height="3" />
+                            </svg>
+                        </button>
+                    </div>
 
-                {/* Highlighter icon - always visible to prevent layout shifts */}
-                <button
-                    className={`text-visibility-btn-header ${highlightingEnabled && !userWantsTextHidden ? 'pulsate-book-icon' : ''}`}
-                    onClick={() => {
-                        if (!isPlaying) return; // Disabled when not playing
-                        const newState = !highlightingEnabled;
-                        setHighlightingEnabled(newState);
-                        setUserDisabledHighlighting(!newState); // Track user preference
-                    }}
-                    aria-label={highlightingEnabled ? "Disable highlighting" : "Enable highlighting"}
-                    style={{
-                        marginLeft: '12px',
-                        opacity: isPlaying && !userWantsTextHidden ? 1 : 0.3,
-                        cursor: isPlaying && !userWantsTextHidden ? 'pointer' : 'not-allowed',
-                        color: (!highlightingEnabled && isPlaying && !userWantsTextHidden) ? 'var(--color-text-secondary)' : undefined
-                    }}
-                    disabled={!isPlaying || userWantsTextHidden}
-                >
-                    <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 36 36"
-                        fill="currentColor"
-                        className={highlightingEnabled ? "" : "opacity-50"}
-                    >
-                        <path d="M15.82,26.06a1,1,0,0,1-.71-.29L8.67,19.33a1,1,0,0,1-.29-.71,1,1,0,0,1,.29-.71L23,3.54a5.55,5.55,0,1,1,7.85,7.86L16.53,25.77A1,1,0,0,1,15.82,26.06Zm-5-7.44,5,5L29.48,10a3.54,3.54,0,0,0,0-5,3.63,3.63,0,0,0-5,0Z" />
-                        <path d="M10.38,28.28A1,1,0,0,1,9.67,28L6.45,24.77a1,1,0,0,1-.22-1.09l2.22-5.44a1,1,0,0,1,1.63-.33l6.45,6.44A1,1,0,0,1,16.2,26l-5.44,2.22A1.33,1.33,0,0,1,10.38,28.28ZM8.33,23.82l2.29,2.28,3.43-1.4L9.74,20.39Z" />
-                        <path d="M8.94,30h-5a1,1,0,0,1-.84-1.55l3.22-4.94a1,1,0,0,1,1.55-.16l3.21,3.22a1,1,0,0,1,.06,1.35L9.7,29.64A1,1,0,0,1,8.94,30ZM5.78,28H8.47L9,27.34l-1.7-1.7Z" />
-                        <rect x="3.06" y="31" width="30" height="3" />
-                    </svg>
-                </button>
+                    {/* Right Icon Group */}
+                    <div className="header-right-icons" style={{ display: 'flex', alignItems: 'center' }}>
+                        {currentStep.type !== 'litany_of_loreto' && (
+                            <button
+                                className="layout-mode-btn-header"
+                                onClick={() => {
+                                    const newLayout = mysteryLayout === 'classic' ? 'cinematic' : 'classic';
+                                    setMysteryLayout(newLayout);
+                                }}
+                                aria-label={`Switch to ${mysteryLayout === 'classic' ? 'cinematic' : 'classic'} mode`}
+                                style={{ marginRight: '12px' }}
+                            >
+                                <LayoutModeIcon size={20} />
+                            </button>
+                        )}
 
+                        <button
+                            className="settings-btn-header"
+                            onClick={() => setShowSettings(true)}
+                            aria-label={t.settings}
+                        >
+                            <SettingsIcon size={20} strokeWidth={3} />
+                        </button>
+                    </div>
+                </div>
 
-
-                <div className="mystery-progress">
+                {/* Bottom Row: Text (Centered) */}
+                <div className="mystery-progress" style={{ width: '100%', textAlign: 'center' }}>
                     {/* First row: mystery set name (large) */}
                     <div className="mystery-set-name">{flowEngine.getMysteryName()}</div>
                     {/* Second row: current decade subheader, same size as mystery name */}
@@ -1422,28 +1452,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         {Math.round(flowEngine.getProgress())}% {t.complete}
                     </div>
                 </div>
-
-                {currentStep.type !== 'litany_of_loreto' && (
-                    <button
-                        className="layout-mode-btn-header"
-                        onClick={() => {
-                            const newLayout = mysteryLayout === 'classic' ? 'cinematic' : 'classic';
-                            setMysteryLayout(newLayout);
-                        }}
-                        aria-label={`Switch to ${mysteryLayout === 'classic' ? 'cinematic' : 'classic'} mode`}
-                        style={{ marginRight: '12px' }}
-                    >
-                        <LayoutModeIcon size={20} />
-                    </button>
-                )}
-
-                <button
-                    className="settings-btn-header"
-                    onClick={() => setShowSettings(true)}
-                    aria-label={t.settings}
-                >
-                    <SettingsIcon size={20} strokeWidth={3} />
-                </button>
             </div>
 
             <div className="progress-bar-container">
