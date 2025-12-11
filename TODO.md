@@ -66,6 +66,118 @@
 - [ ] Clean up debug logs
 - [ ] Add error boundaries for highlighting feature
 
+## 🔬 Lightweight On-Device TTS Research (Priority)
+
+### Problem Statement
+Web Speech API works but has limitations:
+- No precise timing control (litany highlighting issues)
+- Voice quality varies by device/OS
+- No control over pace/tone
+
+Previous attempts with Sherpa/Piper failed due to integration issues, NOT download size.
+Need to revisit with fresh debugging approach.
+
+### Lightweight TTS Candidates to Research
+
+**1. Piper TTS** ⭐ (Most Promising)
+- **Size:** 10-30 MB per voice
+- **Quality:** Good, natural-sounding
+- **Timing:** Provides phoneme-level timing data
+- **WebAssembly:** Yes (runs in browser)
+- **Languages:** English + Spanish supported
+- **GitHub:** https://github.com/rhasspy/piper
+- **Status:** Actively maintained
+- **Action:** Debug previous integration failure, try fresh implementation
+
+**2. Sherpa-ONNX** (Previously Attempted)
+- **Size:** 50-200 MB per model
+- **Quality:** Excellent
+- **Timing:** Word-level timestamps available
+- **WebAssembly:** Yes
+- **GitHub:** https://github.com/k2-fsa/sherpa-onnx
+- **Status:** We had integration issues - models downloaded but app never used them
+- **Action:** Debug why fallback to Web Speech always occurred
+
+**3. eSpeak-NG**
+- **Size:** <5 MB (tiny!)
+- **Quality:** Robotic (1990s sound)
+- **Timing:** Excellent control
+- **WebAssembly:** Available
+- **GitHub:** https://github.com/espeak-ng/espeak-ng
+- **Status:** Maintained but quality may be too low
+- **Action:** Test quality vs. Web Speech API
+
+**4. Coqui TTS**
+- **Size:** 50-100 MB
+- **Quality:** Excellent
+- **GitHub:** https://github.com/coqui-ai/TTS
+- **Status:** ⚠️ Project archived (no longer maintained)
+- **Action:** Skip unless no other options
+
+**5. New/Emerging Options**
+- [ ] Research latest WebAssembly TTS projects on GitHub
+- [ ] Check for new lightweight neural TTS models (2024)
+- [ ] Look for ONNX-based TTS with small model sizes
+- [ ] Investigate WebGPU-accelerated TTS options
+
+### Implementation Requirements
+
+**Must Have:**
+- ✅ Runs entirely on-device (browser/WebAssembly)
+- ✅ Works offline after initial download
+- ✅ Provides timing data (word or phoneme level)
+- ✅ Supports English + Spanish
+- ✅ <50 MB total download size
+- ✅ Free/open source
+
+**Nice to Have:**
+- Voice customization (pace, pitch, tone)
+- Multiple voice options per language
+- Low battery/CPU usage on mobile
+- Streaming synthesis (start playing before full generation)
+
+### Debugging Previous Failures
+
+**Sherpa/Piper Integration Issues to Investigate:**
+1. Model loading - Did models actually initialize?
+2. API calls - Were Sherpa functions being called correctly?
+3. Fallback logic - Why did it always default to Web Speech?
+4. Error handling - Were errors silently caught?
+5. Browser compatibility - Did it work in some browsers but not others?
+
+**Action Items:**
+- [ ] Review old Sherpa integration code (if still exists)
+- [ ] Check browser console for model loading errors
+- [ ] Test model initialization in isolation
+- [ ] Verify WebAssembly support in target browsers
+- [ ] Create minimal reproduction case
+
+### Next Steps
+1. **Research Phase** (1-2 hours)
+   - Survey latest lightweight TTS options on GitHub
+   - Check for 2024 releases/updates
+   - Read integration docs for top 3 candidates
+
+2. **Proof of Concept** (2-3 hours)
+   - Implement Piper TTS in isolated test page
+   - Verify model loading and audio generation
+   - Test timing data accuracy
+   - Measure performance on mobile
+
+3. **Integration** (3-4 hours)
+   - Wire into existing `ttsManager.ts`
+   - Add settings toggle: "Enhanced Voices (requires download)"
+   - Implement graceful fallback to Web Speech
+   - Test across devices
+
+4. **Polish** (1-2 hours)
+   - Add download progress indicator
+   - Cache models in IndexedDB
+   - Optimize for mobile performance
+
+**Target Outcome:** Perfect litany highlighting with on-device TTS
+
+
 ## 🚀 Advanced TTS Exploration (For Perfect Sync)
 
 ### Problem Statement
