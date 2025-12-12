@@ -1369,7 +1369,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         {/* Highlighter icon - always visible to prevent layout shifts */}
                         <button
                             className={`text-visibility-btn-header ${highlightingEnabled && !userWantsTextHidden ? 'pulsate-book-icon' : ''}`}
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.currentTarget.blur(); // Remove focus to prevent sticky hover/focus states
                                 if (!isPlaying) return; // Disabled when not playing
                                 const newState = !highlightingEnabled;
                                 setHighlightingEnabled(newState);
