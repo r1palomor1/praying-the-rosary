@@ -148,6 +148,7 @@ function AppContent() {
           <PrayersScreen
             onNavigateHome={handleNavigateToHome}
             onNavigateToMysteries={handleNavigateToMysteries}
+            onStartPrayer={handleStartPrayer}
           />
         )}
         {currentScreen === 'progress' && (

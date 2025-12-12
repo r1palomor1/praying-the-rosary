@@ -7,9 +7,10 @@ import './PrayersScreen.css';
 interface PrayersScreenProps {
     onNavigateHome: () => void;
     onNavigateToMysteries: () => void;
+    onStartPrayer: () => void;
 }
 
-export function PrayersScreen({ onNavigateHome, onNavigateToMysteries }: PrayersScreenProps) {
+export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPrayer }: PrayersScreenProps) {
     const { language } = useApp();
 
     const translations = {
@@ -62,11 +63,14 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries }: Prayers
                 {renderPrayerSection(t.sections.closing, prayers.closing)}
             </main>
 
-            <BottomNav
-                activeTab="prayers"
-                onTabChange={handleTabChange}
-                showProgress={false}
-            />
+            <div className="bottom-nav-fixed-container">
+                <BottomNav
+                    activeTab="prayers"
+                    onTabChange={handleTabChange}
+                    onStartPrayer={onStartPrayer}
+                    showProgress={false}
+                />
+            </div>
         </div>
     );
 }

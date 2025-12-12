@@ -1052,12 +1052,15 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     height: 28px;
 }
 
-.continuous-audio-btn-header:hover,
-.settings-btn-header:hover,
-.text-visibility-btn-header:hover,
-.layout-mode-btn-header:hover {
-    background: var(--color-bg-tertiary);
-    color: #FBBF24;
+@media (hover: hover) {
+
+    .continuous-audio-btn-header:hover,
+    .settings-btn-header:hover,
+    .text-visibility-btn-header:hover,
+    .layout-mode-btn-header:hover {
+        background: var(--color-bg-tertiary);
+        color: #FBBF24;
+    }
 }
 
 /* Intro Prayer Card Styles */
@@ -1226,7 +1229,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 .immersive-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.95) 0%, rgba(11, 17, 30, 0.6) 40%, transparent 80%);
+    /* Unified 98/30 opacity for consistent atmosphere */
+    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%);
     z-index: 2;
 }
 
@@ -1408,18 +1412,16 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 /* Enhanced Visibility for Immersive Text */
+/* Enhanced Visibility for Immersive Text - Synced with Classic Mode */
 .immersive-set-title {
-    color: #F9FAFB !important;
-    /* Gray-50 (Almost White) */
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+    /* Color inherited from theme (var(--color-text-primary)) to match Classic brightness */
     font-weight: 700;
-    opacity: 1 !important;
 }
 
 .immersive-mystery-title {
-    color: #FFD700 !important;
-    /* Bright Gold */
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    /* Color inherited from theme or specified variables */
+    color: #FFD700;
+    /* Keep gold for Mystery Title as accent, or remove if wanting pure classic */
     font-weight: 800;
 }
 
@@ -1504,7 +1506,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     /* Dark text for light mode */
 }
 
-[data-theme='light'] .immersive-overlay {}
+
 
 .immersive-overlay-darker {
     position: absolute;
@@ -1520,7 +1522,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 [data-theme='light'] .immersive-mystery-container .text-gray-400 {}
 
 [data-theme='light'] .immersive-overlay {
-    background: rgba(0, 0, 0, 0.5) !important;
+    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%) !important;
 }
 
 .immersive-overlay-darker {
@@ -1540,7 +1542,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 [data-theme='light'] .immersive-overlay {
-    background: rgba(0, 0, 0, 0.5) !important;
+    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%) !important;
 }
 
 .immersive-overlay-darker {
@@ -1641,6 +1643,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     opacity: 0 !important;
     transition: opacity 1s ease;
 }
+
+
 
 /* Pulsate animation for book icon when audio is playing */
 .pulsate-book-icon {

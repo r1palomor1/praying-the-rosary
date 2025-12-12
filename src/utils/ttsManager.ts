@@ -127,8 +127,12 @@ class UnifiedTTSManager {
                 }
             };
 
-            utterance.onerror = (error) => {
-                console.error('Speech synthesis error:', error);
+            utterance.onerror = (event) => {
+                // Ignore interruption errors (caused by stop/cancel)
+                if (event.error === 'interrupted' || event.error === 'canceled') {
+                    return;
+                }
+                console.error('Speech synthesis error:', event);
                 if (this.playbackId === playbackId) {
                     currentIndex++;
                     speakNext();

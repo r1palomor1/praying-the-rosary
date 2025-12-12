@@ -154,3 +154,29 @@
         gap: var(--spacing-xl);
     }
 }
+
+/* Fixed Bottom Navigation Container */
+.bottom-nav-fixed-container {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 600px;
+    /* Default match to container */
+    z-index: 100;
+}
+
+/* Tablet Nav Width */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .bottom-nav-fixed-container {
+        max-width: 700px;
+    }
+}
+
+/* Desktop Nav Width */
+@media (min-width: 1025px) {
+    .bottom-nav-fixed-container {
+        max-width: 800px;
+    }
+}
