@@ -1183,6 +1183,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 .immersive-bg picture {
+    position: absolute;
+    inset: 0;
     display: block;
     height: 100%;
     width: 100%;
@@ -1195,21 +1197,44 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     object-position: center;
 }
 
+.immersive-backdrop-blur {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(20px) brightness(0.6);
+    z-index: 0;
+    transform: scale(1.1);
+    /* Prevent blur edges from showing */
+}
+
 .mystery-img {
-    object-fit: cover !important;
-    object-position: top center !important;
+    z-index: 1;
+    object-fit: contain !important;
+    object-position: center !important;
+    border: none !important;
+    outline: none !important;
+}
+
+.immersive-bg img,
+.immersive-bg picture {
+    border: none !important;
+    outline: none !important;
 }
 
 .immersive-overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, rgba(11, 17, 30, 0.95) 0%, rgba(11, 17, 30, 0.6) 40%, transparent 80%);
+    z-index: 2;
 }
 
 .immersive-overlay-darker {
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%);
+    z-index: 2;
 }
 
 

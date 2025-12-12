@@ -753,6 +753,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 return (
                     <div className="immersive-mystery-container">
                         <div className="immersive-bg">
+                            <ResponsiveImage imageUrl={decadeInfo?.imageUrl || step.imageUrl} className="immersive-backdrop-blur" alt="" />
                             <ResponsiveImage imageUrl={decadeInfo?.imageUrl || step.imageUrl} alt={step.title} className="immersive-img mystery-img" loading="lazy" />
                             <div className="immersive-overlay-darker"></div>
                         </div>
@@ -850,12 +851,19 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 <div className="immersive-mystery-container">
                     <div className="immersive-bg">
                         {(decadeInfo?.imageUrl || step.imageUrl) && (
-                            <ResponsiveImage
-                                imageUrl={decadeInfo?.imageUrl || step.imageUrl}
-                                alt={decadeInfo?.title || step.title}
-                                className="immersive-img mystery-img"
-                                loading="lazy"
-                            />
+                            <>
+                                <ResponsiveImage
+                                    imageUrl={decadeInfo?.imageUrl || step.imageUrl}
+                                    className="immersive-backdrop-blur"
+                                    alt=""
+                                />
+                                <ResponsiveImage
+                                    imageUrl={decadeInfo?.imageUrl || step.imageUrl}
+                                    alt={decadeInfo?.title || step.title}
+                                    className="immersive-img mystery-img"
+                                    loading="lazy"
+                                />
+                            </>
                         )}
                         <div className="immersive-overlay"></div>
                     </div>
@@ -910,7 +918,10 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 <div className="immersive-mystery-container">
                     <div className="immersive-bg">
                         {(decadeInfo?.imageUrl || (step as any).imageUrl) && (
-                            <ResponsiveImage imageUrl={decadeInfo?.imageUrl || (step as any).imageUrl} alt={decadeInfo?.title || step.title} className="immersive-img mystery-img" loading="lazy" />
+                            <>
+                                <ResponsiveImage imageUrl={decadeInfo?.imageUrl || (step as any).imageUrl} className="immersive-backdrop-blur" alt="" />
+                                <ResponsiveImage imageUrl={decadeInfo?.imageUrl || (step as any).imageUrl} alt={decadeInfo?.title || step.title} className="immersive-img mystery-img" loading="lazy" />
+                            </>
                         )}
                         <div className="immersive-overlay"></div>
                     </div>

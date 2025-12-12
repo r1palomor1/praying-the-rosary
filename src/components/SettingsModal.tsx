@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Moon, Sun, Volume2, Languages, Trash2, Gauge, Type, Layout, Music } from 'lucide-react';
+import { Moon, Sun, Languages, Trash2, Gauge, Type } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../utils/storage';
 import './SettingsModal.css';
@@ -12,7 +12,7 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose, onResetProgress, currentMysteryName: _currentMysteryName }: SettingsModalProps) {
-    const { language, setLanguage, theme, toggleTheme, audioEnabled, setAudioEnabled, volume, setVolume, speechRate, setSpeechRate, fontSize, setFontSize, mysteryLayout, setMysteryLayout } = useApp();
+    const { language, setLanguage, theme, toggleTheme, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
     const [showConfirmClear, setShowConfirmClear] = useState(false);
 
     if (!isOpen) return null;
@@ -69,22 +69,15 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             theme: 'Theme',
             display: 'Display',
             audio: 'Audio',
-            volume: 'Volume',
             speed: 'Speed',
             light: 'Light',
             dark: 'Dark',
-            enabled: 'Enabled',
-            disabled: 'Disabled',
             clearProgress: 'Clear Prayer Progress',
             close: 'CLOSE',
             textSize: 'Text Size',
             normal: 'Normal',
             large: 'Large',
-            extraLarge: 'Extra Large',
-            mysteryLayout: 'Mystery Layout',
-            classic: 'Classic',
-            cinematic: 'Cinematic',
-            audioToggle: 'Audio'
+            extraLarge: 'Extra Large'
         },
         es: {
             title: 'CONFIGURACIÓN',
@@ -93,22 +86,15 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             theme: 'Tema',
             display: 'Pantalla',
             audio: 'Audio',
-            volume: 'Volumen',
             speed: 'Velocidad',
             light: 'Claro',
             dark: 'Oscuro',
-            enabled: 'Activado',
-            disabled: 'Desactivado',
             clearProgress: 'Borrar Progreso',
             close: 'CERRAR',
             textSize: 'Tamaño de Texto',
             normal: 'Normal',
             large: 'Grande',
-            extraLarge: 'Extra Grande',
-            mysteryLayout: 'Diseño',
-            classic: 'Clásico',
-            cinematic: 'Cine',
-            audioToggle: 'Audio'
+            extraLarge: 'Extra Grande'
         }
     };
 
@@ -194,27 +180,6 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
 
                         <div className="setting-group">
                             <div className="setting-header">
-                                <Layout size={20} />
-                                <h3>{t.mysteryLayout}</h3>
-                            </div>
-                            <div className="setting-grid-2">
-                                <button
-                                    className={`btn-option ${mysteryLayout === 'classic' ? 'active' : 'inactive'}`}
-                                    onClick={() => setMysteryLayout('classic')}
-                                >
-                                    {t.classic}
-                                </button>
-                                <button
-                                    className={`btn-option ${mysteryLayout === 'cinematic' ? 'active' : 'inactive'}`}
-                                    onClick={() => setMysteryLayout('cinematic')}
-                                >
-                                    {t.cinematic}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="setting-group">
-                            <div className="setting-header">
                                 <Type size={20} />
                                 <h3>{t.textSize}</h3>
                             </div>
@@ -245,68 +210,24 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                     <div className="settings-card">
                         <h2 className="card-title">{t.audio}</h2>
 
-                        {audioEnabled && (
-                            <>
-                                <div className="setting-group">
-                                    <div className="range-header">
-                                        <div className="flex items-center gap-3">
-                                            <Gauge size={20} className="mr-3" />
-                                            <h3>{t.speed}</h3>
-                                        </div>
-                                        <span className="range-value">{Math.round(speechRate * 100)}%</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="50"
-                                        max="150"
-                                        step="5"
-                                        value={speechRate * 100}
-                                        onChange={(e) => setSpeechRate(parseInt(e.target.value) / 100)}
-                                        className="range-input"
-                                        aria-label={t.speed}
-                                    />
-                                </div>
-
-                                <div className="setting-group">
-                                    <div className="range-header">
-                                        <div className="flex items-center gap-3">
-                                            <Volume2 size={20} className="mr-3" />
-                                            <h3>{t.volume}</h3>
-                                        </div>
-                                        <span className="range-value">{Math.round(volume * 100)}%</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="100"
-                                        value={volume * 100}
-                                        onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
-                                        className="range-input"
-                                        aria-label={t.volume}
-                                    />
-                                </div>
-                            </>
-                        )}
-
                         <div className="setting-group">
-                            <div className="setting-header">
-                                <Music size={20} />
-                                <h3>{t.audioToggle}</h3>
+                            <div className="range-header">
+                                <div className="flex items-center gap-3">
+                                    <Gauge size={20} className="mr-3" />
+                                    <h3>{t.speed}</h3>
+                                </div>
+                                <span className="range-value">{Math.round(speechRate * 100)}%</span>
                             </div>
-                            <div className="setting-grid-2">
-                                <button
-                                    className={`btn-option ${audioEnabled ? 'active' : 'inactive'}`}
-                                    onClick={() => setAudioEnabled(true)}
-                                >
-                                    {t.enabled}
-                                </button>
-                                <button
-                                    className={`btn-option ${!audioEnabled ? 'active' : 'inactive'}`}
-                                    onClick={() => setAudioEnabled(false)}
-                                >
-                                    {t.disabled}
-                                </button>
-                            </div>
+                            <input
+                                type="range"
+                                min="50"
+                                max="150"
+                                step="5"
+                                value={speechRate * 100}
+                                onChange={(e) => setSpeechRate(parseInt(e.target.value) / 100)}
+                                className="range-input"
+                                aria-label={t.speed}
+                            />
                         </div>
                     </div>
                 </main>
