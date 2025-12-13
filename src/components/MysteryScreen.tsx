@@ -152,7 +152,16 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     // --- Audio Highlighting Logic (Sentence Level) ---
     const [highlightIndex, setHighlightIndex] = useState(-1);
     const [highlightingEnabled, setHighlightingEnabled] = useState(false);
-    const [userDisabledHighlighting, setUserDisabledHighlighting] = useState(false); // Session-only preference
+
+    // PERMANENT PREFERENCE: Load from local storage (default to false/enabled)
+    const [userDisabledHighlighting, setUserDisabledHighlighting] = useState(() => {
+        try {
+            const saved = localStorage.getItem('rosary_highlight_preference');
+            return saved ? JSON.parse(saved) : false;
+        } catch (e) {
+            return false;
+        }
+    });
 
     // Helper to split text into sentences
     // Keeps punctuation attached to the sentence
@@ -194,6 +203,11 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     useEffect(() => {
         setHighlightIndex(-1);
     }, [currentStep]);
+
+    // Save highlighting preference when it changes
+    useEffect(() => {
+        localStorage.setItem('rosary_highlight_preference', JSON.stringify(userDisabledHighlighting));
+    }, [userDisabledHighlighting]);
 
     // Track audio boundary events for highlighting
     // NOTE: Using time-based estimation because onboundary is unreliable across browsers

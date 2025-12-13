@@ -59,7 +59,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const [mysteryLayout, setMysteryLayout] = useState<'classic' | 'cinematic'>('cinematic');
 
     // Session state
-    const [currentMysterySet, setCurrentMysterySet] = useState<MysterySetType>(getTodaysMystery());
+    // Load last active mystery from storage, or default to today's mystery
+    const [currentMysterySet, setCurrentMysterySet] = useState<MysterySetType>(() => {
+        try {
+            const saved = localStorage.getItem('last_active_mystery');
+            if (saved && ['joyful', 'sorrowful', 'glorious', 'luminous'].includes(saved)) {
+                return saved as MysterySetType;
+            }
+        } catch (e) {
+            console.error('Error loading last mystery', e);
+        }
+        return getTodaysMystery();
+    });
     const [currentMysteryNumber, setCurrentMysteryNumber] = useState(1);
     const [currentBeadNumber, setCurrentBeadNumber] = useState(0);
     const [isSessionActive, setIsSessionActive] = useState(false);
@@ -84,9 +95,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         document.documentElement.setAttribute('data-theme', settings.theme);
         document.documentElement.setAttribute('data-font-size', settings.fontSize || 'normal');
 
-        // Always set today's mystery first
+        // Helper for session validation
         const todaysMystery = getTodaysMystery();
-        setCurrentMysterySet(todaysMystery);
+        // setCurrentMysterySet(todaysMystery); // Disabled to allow persistence
 
         // Check for existing session
         const session = loadSession();
@@ -141,6 +152,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const interval = setInterval(updateEngine, 1000);
         return () => clearInterval(interval);
     }, []);
+
+    // Save current mystery set whenever it changes
+    useEffect(() => {
+        localStorage.setItem('last_active_mystery', currentMysterySet);
+    }, [currentMysterySet]);
 
     // Save session whenever it changes
     useEffect(() => {

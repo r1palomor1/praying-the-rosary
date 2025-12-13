@@ -11,6 +11,7 @@
 - [x] Universal highlighting across all prayer types
 - [x] Last sentence/row stays highlighted until step changes
 - [x] Final Hail Mary continuous highlighting (sentence offset)
+- [x] Persist last active mystery selection across reloads
 - [x] **Litany highlighting - DISABLED** (see decision below)
 
 ### UI/UX Polish
@@ -239,7 +240,7 @@ Current Web Speech API doesn't provide real-time feedback on what's being read, 
 - [ ] Consider user preference: "High Quality Audio" toggle
 
 ## 💡 Future Considerations
-- [ ] User preference to save highlighting state
+- [x] User preference to save highlighting state
 - [ ] Adjustable highlighting speed/timing in settings
 - [ ] Different highlight colors/styles option
 - [ ] Accessibility improvements (screen reader announcements)
