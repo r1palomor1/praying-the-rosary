@@ -1654,27 +1654,37 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 /* Audio Read-Along Highlighting */
+/* Audio Read-Along Highlighting */
 .highlighted-sentence {
-    background-color: rgba(91, 33, 182, 0.3);
-    box-shadow: 0 0 10px rgba(91, 33, 182, 0.2);
     border-radius: 4px;
     padding: 2px 4px;
     margin: -2px -4px;
     transition: background-color 0.3s ease;
-    color: #FFD700;
-    /* Keep text white since it's over dark background images */
-    text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
-    /* Subtle shadow for readability */
 }
 
-/* Ensure readability in dark mode */
-[data-theme="dark"] .highlighted-sentence {
-    background-color: rgba(91, 33, 182, 0.3);
-    /* Same as light mode */
-    box-shadow: 0 0 10px rgba(91, 33, 182, 0.2);
-    /* Same as light mode */
+/* Light Mode Highlighting - Classic Mode ONLY (Paper Background) */
+[data-theme="light"] .mystery-screen-container .highlighted-sentence {
+    background-color: rgba(255, 215, 0, 0.4);
+    color: #000000;
+    text-shadow: none;
+    font-weight: 600;
+}
+
+/* Light Mode Highlighting - Cinematic Mode (Image Background) */
+/* Must remain bright/gold to be visible over dark images */
+[data-theme="light"] .immersive-mystery-container .highlighted-sentence {
+    background-color: rgba(91, 33, 182, 0.4);
     color: #FFD700;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+    font-weight: normal;
+}
+
+/* Dark Mode Highlighting - Purple Background, Gold Text */
+[data-theme="dark"] .highlighted-sentence {
+    background-color: rgba(91, 33, 182, 0.4);
+    box-shadow: 0 0 10px rgba(91, 33, 182, 0.2);
+    color: #FFD700;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
 }
 
 /* Litany Row Highlighting */
