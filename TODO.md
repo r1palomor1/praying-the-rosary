@@ -22,9 +22,10 @@
 - [x] Fruit labels styled with bright gold (#FBBF24)
 - [x] Text visibility delay reduced to 1s (from 2.5s)
 - [x] Initial delay for mystery announcements
+- [x] Toast notifications for user interactions (audio, layout, visibility, highlighting)
 
 ## 🔄 In Progress / Needs Refinement
-- [ ] Remove debug console logs from production code
+- [x] Remove debug console logs from production code
 - [ ] Update HIGHLIGHTING_IMPLEMENTATION_STATUS.md with final state
 
 ## ⚠️ Litany Highlighting Decision
@@ -49,14 +50,6 @@
 ## 📋 Planned Features
 
 ### User Feedback & UX Improvements
-- [ ] **Toast Notifications for Icon Toggles**
-  - Add brief toast messages (1-1.5 seconds) when user clicks header icons:
-    - Audio button: "Audio On" / "Audio Off"
-    - Book icon: "Prayer Text Visible" / "Prayer Text Hidden"
-    - Highlighter icon: "Highlighting On" / "Highlighting Off"
-    - Layout toggle: "Cinematic Mode" / "Classic Mode"
-  - Should be subtle, non-intrusive, and auto-dismiss
-  - Consider using a toast library or custom component
 
 ### Audio & Highlighting Enhancements
 - [ ] Pause/Resume support for highlighting (track elapsed time)
@@ -252,4 +245,4 @@ Current Web Speech API doesn't provide real-time feedback on what's being read, 
 - [ ] Accessibility improvements (screen reader announcements)
 
 ---
-**Last Updated:** December 9, 2024
+**Last Updated:** December 13, 2024

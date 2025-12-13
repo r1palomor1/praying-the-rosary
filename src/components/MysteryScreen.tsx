@@ -204,8 +204,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             return;
         }
 
-        console.log('[Highlight Debug] Starting time-based highlighting for current prayer');
-        console.log('[Highlight Debug] Step type:', currentStep.type, 'Has litanyData:', !!currentStep.litanyData);
+
 
         const isLitany = currentStep.type === 'litany_of_loreto';
 
@@ -214,13 +213,13 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         // Time-based estimation works ~90% in English but fails in Spanish
         // Excellence over compromise - no highlighting is better than inaccurate highlighting
         if (isLitany) {
-            console.log('[Highlight Debug] Litany detected - highlighting disabled for accuracy');
+
             return; // No highlighting for litanies
         }
 
         // For litanies, use fixed timing per invocation
         if (false && currentStep.litanyData) {
-            console.log('[Highlight Debug] Using LITANY timing');
+
             const data = currentStep.litanyData;
             const timeouts: number[] = [];
 
@@ -272,7 +271,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 }
 
                 const timeout = setTimeout(() => {
-                    console.log('[Highlight Debug] Litany row', i, 'duration:', duration);
                     setHighlightIndex(i);
                 }, cumulativeTime);
 
@@ -283,7 +281,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             // Don't clear highlight at the end - keep last row highlighted until step changes
 
             return () => {
-                console.log('[Highlight Debug] Cleaning up timeouts');
                 timeouts.forEach(t => clearTimeout(t));
             };
         }
@@ -314,7 +311,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             const duration = (words / wordsPerSecond) * 1000; // milliseconds
 
             const timeout = setTimeout(() => {
-                console.log('[Highlight Debug] Highlighting sentence', index, ':', sentence.substring(0, 30));
                 setHighlightIndex(index);
             }, cumulativeTime);
 
@@ -325,7 +321,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         // Don't clear highlight at the end - keep last sentence highlighted until step changes
 
         return () => {
-            console.log('[Highlight Debug] Cleaning up timeouts');
             timeouts.forEach(t => clearTimeout(t));
         };
     }, [currentStep, isPlaying]); // Removed highlightingEnabled - tracking runs independently of visibility
@@ -341,7 +336,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.hidden && continuousMode) {
-                console.log('[Continuous Mode] Page hidden - stopping to prevent callback issues');
                 setContinuousMode(false);
                 continuousModeRef.current = false;
                 playbackIdRef.current++; // Invalidate pending callbacks
@@ -592,13 +586,11 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         playAudio(getAudioSegments(step), () => {
             // LAYER 2: Validate this callback is not stale
             if (playbackIdRef.current !== currentPlaybackId) {
-                console.log('[Continuous Mode] Stale callback detected (playback session changed) - ignoring');
                 return; // Don't advance - this callback is from an old session
             }
 
             // LAYER 3: Check if continuous mode is still active
             if (!continuousModeRef.current) {
-                console.log('[Continuous Mode] Stopped during playback - staying on current prayer:', currentStep.title);
                 return; // Don't advance - user will resume from current prayer
             }
 
@@ -663,7 +655,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
     // Handle clearing only the current mystery's progress
     const handleResetCurrentMystery = () => {
-        console.log('Resetting current mystery:', currentMysterySet);
 
         // Clear only this mystery's progress
         clearPrayerProgress(currentMysterySet);
@@ -701,9 +692,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             // LAYER 1: Request wake lock to keep screen on (non-blocking)
             wakeLockManager.request().then(wakeLockAcquired => {
                 if (wakeLockAcquired) {
-                    console.log('🔒 Screen will stay on during continuous mode');
+                    // Lock acquired
                 } else {
-                    console.log('⚠️ Wake Lock not available - screen may turn off');
+                    // Lock failed
                 }
             });
 

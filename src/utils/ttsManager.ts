@@ -79,7 +79,6 @@ class UnifiedTTSManager {
         this.stop();
         const currentId = this.playbackId;
 
-        console.log('🔊 Using Web Speech API');
         this.speakWithWebSpeech(currentId);
     }
 
