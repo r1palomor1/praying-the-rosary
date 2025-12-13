@@ -1635,13 +1635,23 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 /* Text Visibility Toggle */
 .prayer-text-hidden .prayer-name,
 .prayer-text-hidden .prayer-text-main,
-.prayer-text-hidden .immersive-content p,
 .prayer-text-hidden .mystery-prayer-card p,
 .prayer-text-hidden .intro-prayer-card p,
 .prayer-text-hidden .reflection-section,
-.prayer-text-hidden .reflection-text {
+.prayer-text-hidden .reflection-text,
+.prayer-text-hidden .immersive-content p {
     opacity: 0 !important;
     transition: opacity 1s ease;
+}
+
+/* Adjusted Overlay for Hidden Text Mode (Brighter Top: 90%) */
+.prayer-text-hidden .immersive-overlay,
+.prayer-text-hidden .immersive-overlay-darker {
+    background: linear-gradient(to bottom,
+            rgba(11, 17, 30, 0.90) 0%,
+            rgba(11, 17, 30, 0.75) 30%,
+            rgba(11, 17, 30, 0.50) 60%,
+            rgba(11, 17, 30, 0.30) 90%) !important;
 }
 
 
