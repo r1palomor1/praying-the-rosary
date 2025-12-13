@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, Lightbulb } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
 import { SettingsModal } from './SettingsModal';
 import { LearnMoreModal, type EducationalContent } from './LearnMoreModal';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
@@ -100,6 +101,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         mysteryLayout,
         setMysteryLayout
     } = useApp();
+    const { showToast } = useToast();
     const [showSettings, setShowSettings] = useState(false);
     const [showLearnMore, setShowLearnMore] = useState(false);
     // User-controlled text visibility preference (persists across prayers)
@@ -683,8 +685,10 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
             // LAYER 1: Release wake lock
             wakeLockManager.release();
+            showToast(language === 'es' ? 'Audio detenido' : 'Audio stopped', 'info');
         } else {
             // Start continuous mode
+            showToast(language === 'es' ? 'Modo continuo activado' : 'Continuous mode enabled', 'success');
             setContinuousMode(true);
             // We need to set the ref immediately for the first call
             continuousModeRef.current = true;
@@ -1351,6 +1355,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                     // If turning text back on, show immediately
                                     if (!newPreference) {
                                         setShowPrayerText(true);
+                                        showToast(language === 'es' ? 'Texto visible' : 'Text visible', 'info');
+                                    } else {
+                                        showToast(language === 'es' ? 'Texto oculto' : 'Text hidden', 'info');
                                     }
                                 }}
                                 aria-label={userWantsTextHidden ? "Show prayer text" : "Hide prayer text"}
@@ -1373,6 +1380,12 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                 const newState = !highlightingEnabled;
                                 setHighlightingEnabled(newState);
                                 setUserDisabledHighlighting(!newState); // Track user preference
+                                showToast(
+                                    newState
+                                        ? (language === 'es' ? 'Resaltado activado' : 'Highlighting enabled')
+                                        : (language === 'es' ? 'Resaltado desactivado' : 'Highlighting disabled'),
+                                    'info'
+                                );
                             }}
                             aria-label={highlightingEnabled ? "Disable highlighting" : "Enable highlighting"}
                             style={{
@@ -1406,6 +1419,12 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                 onClick={() => {
                                     const newLayout = mysteryLayout === 'classic' ? 'cinematic' : 'classic';
                                     setMysteryLayout(newLayout);
+                                    showToast(
+                                        newLayout === 'cinematic'
+                                            ? (language === 'es' ? 'Modo inmersivo activado' : 'Cinematic mode enabled')
+                                            : (language === 'es' ? 'Modo clásico activado' : 'Classic mode enabled'),
+                                        'success'
+                                    );
                                 }}
                                 aria-label={`Switch to ${mysteryLayout === 'classic' ? 'cinematic' : 'classic'} mode`}
                                 style={{ marginRight: '12px' }}

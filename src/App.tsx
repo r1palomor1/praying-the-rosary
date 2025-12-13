@@ -174,10 +174,16 @@ function AppContent() {
   );
 }
 
+import { ToastProvider } from './context/ToastContext';
+
+// ... (existing imports)
+
 function App() {
   return (
     <AppProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </AppProvider>
   );
 }
