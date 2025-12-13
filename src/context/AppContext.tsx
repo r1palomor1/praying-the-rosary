@@ -38,7 +38,7 @@ interface AppContextType {
     // Audio
     isPlaying: boolean;
     playAudio: (
-        textOrSegments: string | { text: string; gender: 'female' | 'male'; rate?: number }[],
+        textOrSegments: string | { text: string; gender: 'female' | 'male'; rate?: number; postPause?: number }[],
         onEnd?: () => void
     ) => void;
     pauseAudio: () => void;
@@ -121,7 +121,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // Configure audio player
         ttsManager.setLanguage(language);
         ttsManager.setVolume(volume);
-        ttsManager.setOnEnd(() => setIsPlaying(false));
     }, [language, theme, audioEnabled, volume, speechRate, fontSize, mysteryLayout]);
 
     // Apply font size to document whenever it changes
@@ -234,7 +233,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     // Audio controls
     const playAudio = (
-        textOrSegments: string | { text: string; gender: 'female' | 'male'; rate?: number }[],
+        textOrSegments: string | { text: string; gender: 'female' | 'male'; rate?: number; postPause?: number }[],
         onEnd?: () => void
     ) => {
         if (audioEnabled) {

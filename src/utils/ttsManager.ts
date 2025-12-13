@@ -5,6 +5,7 @@ interface TTSSegment {
     text: string;
     gender: 'female' | 'male';
     rate?: number;
+    postPause?: number;
 }
 
 class UnifiedTTSManager {
@@ -122,8 +123,17 @@ class UnifiedTTSManager {
 
             utterance.onend = () => {
                 if (this.playbackId === playbackId) {
-                    currentIndex++;
-                    speakNext();
+                    const nextStep = () => {
+                        currentIndex++;
+                        speakNext();
+                    };
+
+                    // Handle programmable pause after this segment
+                    if (segment.postPause && segment.postPause > 0) {
+                        setTimeout(nextStep, segment.postPause);
+                    } else {
+                        nextStep();
+                    }
                 }
             };
 

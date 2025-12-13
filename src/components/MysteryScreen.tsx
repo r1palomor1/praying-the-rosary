@@ -487,10 +487,16 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         // Litany of Loreto
         if (step.type === 'litany_of_loreto' && step.litanyData) {
             const data = step.litanyData;
-            const segments: { text: string; gender: 'female' | 'male'; rate?: number }[] = [];
+            const segments: { text: string; gender: 'female' | 'male'; rate?: number; postPause?: number }[] = [];
 
-            // Add all sections with call and response
-            [...data.initial_petitions, ...data.trinity_invocations, ...data.mary_invocations, ...data.agnus_dei].forEach((item: any) => {
+            // 1. Initial Petitions & Trinity Invocations (Need 350ms Pause)
+            [...data.initial_petitions, ...data.trinity_invocations].forEach((item: any) => {
+                segments.push({ text: item.call, gender: 'female', rate: 1.0, postPause: 300 });
+                segments.push({ text: item.response, gender: 'male', rate: 1.0 });
+            });
+
+            // 2. Mary Invocations & Agnus Dei (Standard Timing - No extra pause)
+            [...data.mary_invocations, ...data.agnus_dei].forEach((item: any) => {
                 segments.push({ text: item.call, gender: 'female', rate: 1.0 });
                 segments.push({ text: item.response, gender: 'male', rate: 1.0 });
             });
