@@ -1229,16 +1229,41 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 .immersive-overlay {
     position: absolute;
     inset: 0;
-    /* Unified 98/30 opacity for consistent atmosphere */
-    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%);
+    /* Base overlay: 90/30% (lighter, for text-hidden state) */
+    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.90) 0%, rgba(11, 17, 30, 0.75) 30%, rgba(11, 17, 30, 0.50) 60%, rgba(11, 17, 30, 0.30) 90%);
     z-index: 2;
+}
+
+/* Secondary overlay layer: adds 8% opacity to create 98% effect when text is visible */
+.immersive-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Additional darkening layer: 8% uniform opacity */
+    background: rgba(11, 17, 30, 0.08);
+    opacity: 1;
+    transition: opacity 1s ease;
+    pointer-events: none;
 }
 
 .immersive-overlay-darker {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%);
+    /* Base overlay: 90/30% (lighter, for text-hidden state) */
+    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.90) 0%, rgba(11, 17, 30, 0.75) 30%, rgba(11, 17, 30, 0.50) 60%, rgba(11, 17, 30, 0.30) 90%);
     z-index: 2;
+}
+
+/* Secondary overlay layer: adds 8% opacity to create 98% effect when text is visible */
+.immersive-overlay-darker::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Additional darkening layer: 8% uniform opacity */
+    background: rgba(11, 17, 30, 0.08);
+    opacity: 1;
+    transition: opacity 1s ease;
+    pointer-events: none;
 }
 
 
@@ -1502,53 +1527,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 [data-theme='light'] .immersive-mystery-container .text-gray-100,
 [data-theme='light'] .immersive-mystery-container .text-gray-300,
 [data-theme='light'] .immersive-mystery-container .text-gray-400 {
-    color: rgba(28, 25, 23, 0.9) !important;
-    /* Dark text for light mode */
-}
-
-
-
-.immersive-overlay-darker {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%);
-}
-
-/* Light Mode Overrides for Cinematic/Immersive Mystery View */
-[data-theme='light'] .immersive-mystery-container .text-primary\/80,
-[data-theme='light'] .immersive-mystery-container .text-gray-200,
-[data-theme='light'] .immersive-mystery-container .text-gray-100,
-[data-theme='light'] .immersive-mystery-container .text-gray-300,
-[data-theme='light'] .immersive-mystery-container .text-gray-400 {}
-
-[data-theme='light'] .immersive-overlay {
-    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%) !important;
-}
-
-.immersive-overlay-darker {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%);
-}
-
-
-/* Light Mode Overrides for Cinematic/Immersive Mystery View */
-[data-theme='light'] .immersive-mystery-container .text-primary\/80,
-[data-theme='light'] .immersive-mystery-container .text-gray-200,
-[data-theme='light'] .immersive-mystery-container .text-gray-100,
-[data-theme='light'] .immersive-mystery-container .text-gray-300,
-[data-theme='light'] .immersive-mystery-container .text-gray-400 {
     color: rgba(255, 255, 255, 0.95) !important;
-}
-
-[data-theme='light'] .immersive-overlay {
-    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%) !important;
-}
-
-.immersive-overlay-darker {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(11, 17, 30, 0.98) 0%, rgba(11, 17, 30, 0.85) 30%, rgba(11, 17, 30, 0.6) 60%, rgba(11, 17, 30, 0.3) 90%);
 }
 
 
@@ -1644,14 +1623,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     transition: opacity 1s ease;
 }
 
-/* Adjusted Overlay for Hidden Text Mode (Brighter Top: 90%) */
-.prayer-text-hidden .immersive-overlay,
-.prayer-text-hidden .immersive-overlay-darker {
-    background: linear-gradient(to bottom,
-            rgba(11, 17, 30, 0.90) 0%,
-            rgba(11, 17, 30, 0.75) 30%,
-            rgba(11, 17, 30, 0.50) 60%,
-            rgba(11, 17, 30, 0.30) 90%) !important;
+/* Fade out the secondary overlay layer when text is hidden (creates 98% -> 90% transition) */
+.prayer-text-hidden .immersive-overlay::before,
+.prayer-text-hidden .immersive-overlay-darker::before {
+    opacity: 0;
+    transition: opacity 1s ease;
 }
 
 

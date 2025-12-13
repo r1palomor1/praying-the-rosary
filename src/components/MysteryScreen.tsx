@@ -133,16 +133,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
     // Handle text visibility based on user preference
     useEffect(() => {
-        if (userWantsTextHidden) {
-            // User explicitly toggled text off - hide after 1s
-            const timeoutId = setTimeout(() => {
-                setShowPrayerText(false);
-            }, 1000);
-            return () => clearTimeout(timeoutId);
-        } else {
-            // User wants text visible - show immediately
-            setShowPrayerText(true);
-        }
+        // Apply state change immediately - CSS transitions handle the smooth fade
+        setShowPrayerText(!userWantsTextHidden);
     }, [userWantsTextHidden]);
 
 

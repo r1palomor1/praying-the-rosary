@@ -60,7 +60,8 @@
 }
 
 .prayer-text {
-    font-size: var(--font-size-base);
+    font-size: 1.125rem;
+    /* Desktop: 18px (slightly smaller than Apostle's Creed 24px) */
     line-height: 1.6;
     color: var(--color-text-secondary);
     margin: 0;
@@ -75,6 +76,14 @@
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-widest);
     margin: var(--spacing-md) 0 var(--spacing-xs) 0;
+}
+
+/* Tablet Responsive Styles (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .prayer-text {
+        font-size: 1.0625rem;
+        /* Tablet: 17px */
+    }
 }
 
 /* Mobile Responsive Styles */
@@ -105,7 +114,8 @@
     }
 
     .prayer-text {
-        font-size: var(--font-size-sm);
+        font-size: 1rem;
+        /* Mobile: 16px (slightly smaller than Apostle's Creed 18px) */
     }
 }
 
