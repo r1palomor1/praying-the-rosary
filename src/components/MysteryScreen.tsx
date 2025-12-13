@@ -489,14 +489,14 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             const data = step.litanyData;
             const segments: { text: string; gender: 'female' | 'male'; rate?: number; postPause?: number }[] = [];
 
-            // 1. Initial Petitions & Trinity Invocations (Need 350ms Pause)
-            [...data.initial_petitions, ...data.trinity_invocations].forEach((item: any) => {
+            // 1. Initial Petitions ONLY (Need 300ms Pause)
+            [...data.initial_petitions].forEach((item: any) => {
                 segments.push({ text: item.call, gender: 'female', rate: 1.0, postPause: 300 });
                 segments.push({ text: item.response, gender: 'male', rate: 1.0 });
             });
 
-            // 2. Mary Invocations & Agnus Dei (Standard Timing - No extra pause)
-            [...data.mary_invocations, ...data.agnus_dei].forEach((item: any) => {
+            // 2. All other invocations (Trinity, Mary, Agnus Dei) - Standard Timing
+            [...data.trinity_invocations, ...data.mary_invocations, ...data.agnus_dei].forEach((item: any) => {
                 segments.push({ text: item.call, gender: 'female', rate: 1.0 });
                 segments.push({ text: item.response, gender: 'male', rate: 1.0 });
             });
