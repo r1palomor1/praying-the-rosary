@@ -59,16 +59,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const [mysteryLayout, setMysteryLayout] = useState<'classic' | 'cinematic'>('cinematic');
 
     // Session state
-    // Load last active mystery from storage, or default to today's mystery
+    // Load last active mystery from storage, ONLY if it was set 'today'
     const [currentMysterySet, setCurrentMysterySet] = useState<MysterySetType>(() => {
         try {
-            const saved = localStorage.getItem('last_active_mystery');
-            if (saved && ['joyful', 'sorrowful', 'glorious', 'luminous'].includes(saved)) {
-                return saved as MysterySetType;
+            const savedDate = localStorage.getItem('last_active_date');
+            const today = getISODate();
+
+            // If the saved mystery is from TODAY, we respect it (user manually selected it or refreshed)
+            if (savedDate === today) {
+                const saved = localStorage.getItem('last_active_mystery');
+                if (saved && ['joyful', 'sorrowful', 'glorious', 'luminous'].includes(saved)) {
+                    return saved as MysterySetType;
+                }
             }
         } catch (e) {
             console.error('Error loading last mystery', e);
         }
+        // Otherwise (new day or first launch), default to the canonical mystery of the day
         return getTodaysMystery();
     });
     const [currentMysteryNumber, setCurrentMysteryNumber] = useState(1);
@@ -156,6 +163,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // Save current mystery set whenever it changes
     useEffect(() => {
         localStorage.setItem('last_active_mystery', currentMysterySet);
+        localStorage.setItem('last_active_date', getISODate());
     }, [currentMysterySet]);
 
     // Save session whenever it changes
