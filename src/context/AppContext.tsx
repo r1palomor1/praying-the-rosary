@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Language, MysterySetType, AppSettings, UserSession } from '../types';
 import { getTodaysMystery, getISODate } from '../utils/mysterySelector';
-import { loadSettings, saveSettings, getDefaultSettings, loadSession, saveSession, clearSession as clearStoredSession, clearPrayerProgress } from '../utils/storage';
+import { loadSettings, saveSettings, getDefaultSettings, loadSession, saveSession, clearSession as clearStoredSession, clearPrayerProgress, loadPrayerProgress } from '../utils/storage';
 import { ttsManager } from '../utils/ttsManager';
 
 interface AppContextType {
@@ -69,7 +69,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
             if (savedDate === today) {
                 const saved = localStorage.getItem('last_active_mystery');
                 if (saved && ['joyful', 'sorrowful', 'glorious', 'luminous'].includes(saved)) {
-                    return saved as MysterySetType;
+                    // Check if this mystery actually has progress!
+                    // If user cleared it, we shouldn't force them back to an empty state
+                    const progress = loadPrayerProgress(saved as MysterySetType);
+                    if (progress) {
+                        return saved as MysterySetType;
+                    }
                 }
             }
         } catch (e) {

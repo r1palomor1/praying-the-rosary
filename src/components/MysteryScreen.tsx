@@ -12,6 +12,7 @@ import { wakeLockManager } from '../utils/wakeLock';
 import educationalDataEs from '../data/es-rosary-educational-content.json';
 import educationalDataEn from '../data/en-rosary-educational-content.json';
 import { ResponsiveImage } from './ResponsiveImage';
+import { HighlightErrorBoundary } from './HighlightErrorBoundary';
 
 import './MysteryScreen.css';
 import './MysteryBottomNav.css';
@@ -1512,7 +1513,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         </div>
                     </div>
 
-                    {renderStepContent()}
+                    <HighlightErrorBoundary>
+                        {renderStepContent()}
+                    </HighlightErrorBoundary>
                     {renderBeadCounter()}
                     {renderMysteryImageFooter()}
                 </div>

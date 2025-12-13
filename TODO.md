@@ -57,8 +57,8 @@
 - [ ] Fine-tune timing based on actual TTS performance
 
 ### Code Quality
-- [ ] Clean up debug logs
-- [ ] Add error boundaries for highlighting feature
+- [x] Clean up debug logs
+- [x] Add error boundaries for highlighting feature
 
 ## 🔬 Lightweight On-Device TTS Research (Priority)
 
