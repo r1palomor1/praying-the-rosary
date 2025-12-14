@@ -1698,3 +1698,21 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     border-left: 4px solid #FFD700 !important;
     background-color: rgba(255, 215, 0, 0.15) !important;
 }
+
+/* Light Mode Classic Tweaks for Warm Paper Background */
+/* Override bright gold/yellow with darker orange-gold for better contrast */
+[data-theme='light'] .mystery-screen-container .prayer-name,
+[data-theme='light'] .mystery-screen-container .fruit-label,
+[data-theme='light'] .mystery-screen-container .fruit-text {
+    color: #B45309 !important;
+    /* Amber-700 */
+}
+
+/* Keep Cinematic Mode Bright Gold (because it's over dark images) */
+[data-theme='light'] .immersive-mystery-container .prayer-name,
+[data-theme='light'] .immersive-mystery-container .mystery-set-name,
+[data-theme='light'] .immersive-mystery-container .fruit-label,
+[data-theme='light'] .immersive-mystery-container .fruit-text {
+    color: #FFD700 !important;
+    /* Gold */
+}
