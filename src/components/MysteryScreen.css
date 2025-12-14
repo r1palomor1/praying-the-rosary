@@ -1702,8 +1702,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 /* Light Mode Classic Tweaks for Warm Paper Background */
 /* Override bright gold/yellow with darker orange-gold for better contrast */
 [data-theme='light'] .mystery-screen-container .prayer-name,
+[data-theme='light'] .mystery-screen-container .mystery-set-name,
 [data-theme='light'] .mystery-screen-container .fruit-label,
-[data-theme='light'] .mystery-screen-container .fruit-text {
+[data-theme='light'] .mystery-screen-container .fruit-text,
+[data-theme='light'] .mystery-screen-container .mystery-title,
+[data-theme='light'] .mystery-screen-container .intro-title {
     color: #B45309 !important;
     /* Amber-700 */
 }
@@ -1712,7 +1715,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 [data-theme='light'] .immersive-mystery-container .prayer-name,
 [data-theme='light'] .immersive-mystery-container .mystery-set-name,
 [data-theme='light'] .immersive-mystery-container .fruit-label,
-[data-theme='light'] .immersive-mystery-container .fruit-text {
+[data-theme='light'] .immersive-mystery-container .fruit-text,
+[data-theme='light'] .immersive-mystery-container .mystery-title,
+[data-theme='light'] .immersive-mystery-container .intro-title,
+[data-theme='light'] .immersive-mystery-container h1,
+[data-theme='light'] .immersive-mystery-container h2 {
     color: #FFD700 !important;
     /* Gold */
 }
