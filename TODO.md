@@ -12,13 +12,16 @@
 - [x] Last sentence/row stays highlighted until step changes
 - [x] Final Hail Mary continuous highlighting (sentence offset)
 - [x] Persist last active mystery selection across reloads
+- [x] **Refined Persistence:** "New Day" logic prioritizes today's mystery over old state
+- [x] **Light Mode Highlighting:** Fixed unreadable text with yellow/black high contrast style
 - [x] **Litany highlighting - DISABLED** (see decision below)
 
 ### UI/UX Polish
 - [x] Book icon states: open (white) when visible, closed (colored) when hidden
 - [x] Highlighter icon pulsates orange-gold when active
 - [x] Book icon and layout toggle hidden on litany page (not applicable)
-- [x] Classic mode prayer titles in bright gold (#FFD700)
+- [x] Classic mode prayer titles in bright gold (#FFD700) (Cinematic Mode)
+- [x] **Light Mode Classic:** Standardized headers/titles to Amber-700 (#B45309) for readability
 - [x] Reflection text centered for consistency
 - [x] Fruit labels styled with bright gold (#FBBF24)
 - [x] Text visibility delay reduced to 1s (from 2.5s)
@@ -27,6 +30,7 @@
 
 ## 🔄 In Progress / Needs Refinement
 - [x] Remove debug console logs from production code
+- [x] Add error boundaries for highlighting feature
 - [ ] Update HIGHLIGHTING_IMPLEMENTATION_STATUS.md with final state
 
 ## ⚠️ Litany Highlighting Decision
