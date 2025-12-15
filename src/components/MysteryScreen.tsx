@@ -150,6 +150,48 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
     }, []);
 
+    // Scroll to top when prayer step changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [currentStep]);
+
+    // Dynamically enable/disable scrolling in cinematic mode based on content overflow
+    useEffect(() => {
+        if (mysteryLayout === 'cinematic') {
+            const checkOverflow = () => {
+                const body = document.body;
+                const html = document.documentElement;
+
+                // Check if content height exceeds viewport height
+                const hasOverflow = Math.max(
+                    body.scrollHeight,
+                    body.offsetHeight,
+                    html.clientHeight,
+                    html.scrollHeight,
+                    html.offsetHeight
+                ) > window.innerHeight;
+
+                // Enable/disable scrolling based on overflow
+                if (hasOverflow) {
+                    document.body.style.overflowY = 'auto';
+                } else {
+                    document.body.style.overflowY = 'hidden';
+                }
+            };
+
+            // Check on mount and after images load
+            checkOverflow();
+            const timer = setTimeout(checkOverflow, 500); // Recheck after images load
+
+            return () => {
+                clearTimeout(timer);
+                document.body.style.overflowY = 'auto'; // Reset on unmount
+            };
+        } else {
+            document.body.style.overflowY = 'auto'; // Always allow scrolling in classic mode
+        }
+    }, [currentStep, mysteryLayout]);
+
     // --- Audio Highlighting Logic (Sentence Level) ---
     const [highlightIndex, setHighlightIndex] = useState(-1);
     const [highlightingEnabled, setHighlightingEnabled] = useState(false);
@@ -967,7 +1009,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
                                 {/* Bead Counter for Hail Mary */}
                                 {step.type === 'decade_hail_mary' && step.hailMaryNumber && (
-                                    <div className="bead-counter mt-8 justify-center">
+                                    <div className="bead-counter cinematic-bead-counter mt-8 justify-center">
                                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((bead) => (
                                             <div
                                                 key={bead}
@@ -1005,7 +1047,21 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 return (
                     <div className="immersive-mystery-container">
                         <div className="immersive-bg">
-                            <ResponsiveImage imageUrl={step.imageUrl} alt={step.title} className="immersive-img" loading="lazy" />
+                            {step.imageUrl && (
+                                <>
+                                    <ResponsiveImage
+                                        imageUrl={step.imageUrl}
+                                        className="immersive-backdrop-blur"
+                                        alt=""
+                                    />
+                                    <ResponsiveImage
+                                        imageUrl={step.imageUrl}
+                                        alt={step.title}
+                                        className="immersive-img mystery-img"
+                                        loading="lazy"
+                                    />
+                                </>
+                            )}
                             <div className="immersive-overlay-darker"></div>
                         </div>
 
@@ -1169,7 +1225,21 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 return (
                     <div className="immersive-mystery-container">
                         <div className="immersive-bg">
-                            <ResponsiveImage imageUrl={step.imageUrl} alt={step.title} className="immersive-img" loading="lazy" />
+                            {step.imageUrl && (
+                                <>
+                                    <ResponsiveImage
+                                        imageUrl={step.imageUrl}
+                                        className="immersive-backdrop-blur"
+                                        alt=""
+                                    />
+                                    <ResponsiveImage
+                                        imageUrl={step.imageUrl}
+                                        alt={step.title}
+                                        className="immersive-img mystery-img"
+                                        loading="lazy"
+                                    />
+                                </>
+                            )}
                             <div className="immersive-overlay-darker"></div>
                         </div>
 

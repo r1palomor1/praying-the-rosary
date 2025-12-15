@@ -6,6 +6,11 @@
     animation: fadeIn var(--transition-slow);
 }
 
+.mystery-screen-content {
+    padding-bottom: 100px;
+    /* Space for fixed bottom nav */
+}
+
 .mystery-screen-header {
     position: sticky;
     top: 0;
@@ -18,8 +23,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-bottom: var(--spacing-sm);
-    /* Reduced from lg */
+    margin-bottom: 0;
     padding: var(--spacing-sm);
 }
 
@@ -45,8 +49,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 .progress-bar-container {
     height: 4px;
     align-items: center;
-    margin-bottom: var(--spacing-md);
-    /* Reduced from xl */
+    margin-bottom: 0;
     padding-bottom: var(--spacing-md);
     border-bottom: 1px solid var(--color-border-light);
 }
@@ -424,11 +427,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 
     /* --- Layout & Spacing Compactness --- */
     .mystery-screen-container {
-        padding: var(--spacing-xs);
+        padding: 0;
     }
 
     .mystery-screen-header {
-        margin-bottom: var(--spacing-xs);
+        margin-bottom: 0;
         padding: 0;
     }
 
@@ -438,12 +441,14 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     }
 
     .progress-bar-container {
-        margin-bottom: var(--spacing-xs);
+        margin-bottom: 0;
         padding-bottom: 0;
     }
 
     .mystery-screen-content {
         padding: 0;
+        padding-bottom: 80px;
+        /* Space for fixed bottom nav */
     }
 
     .bead-counter {
@@ -462,11 +467,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 
     .reflection-section {
         margin-top: var(--spacing-sm);
-        padding: var(--spacing-md);
+        padding: var(--spacing-sm);
     }
 
     .prayer-section {
-        padding: var(--spacing-md);
+        padding: var(--spacing-sm);
         margin-bottom: var(--spacing-sm);
         border-radius: var(--radius-lg);
     }
@@ -574,7 +579,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 
 /* --- Layout & Spacing Compactness --- */
 .final-hail-mary-prayer .mystery-screen-container {
-    padding: var(--spacing-xs);
+    padding: 0;
 }
 
 .final-hail-mary-prayer .mystery-screen-header {
@@ -608,11 +613,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 
 .final-hail-mary-prayer .reflection-section {
     margin-top: var(--spacing-sm);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
 }
 
 .final-hail-mary-prayer .prayer-section {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
     margin-bottom: var(--spacing-sm);
     border-radius: var(--radius-lg);
 }
@@ -1164,19 +1169,25 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 /* Immersive Mystery Layout */
 .immersive-mystery-container {
     position: relative;
-    height: calc(100vh - 134px);
-    max-height: calc(100vh - 134px);
+    height: calc(100vh - 80px);
+    /* Reduced from 134px - accounts for header + bottom nav */
+    max-height: calc(100vh - 80px);
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
-    margin-top: 2px;
-    margin-bottom: 2px;
+    margin-top: 0;
+    margin-bottom: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     background-color: #0B111E;
     color: white;
     font-family: 'Roboto', sans-serif;
+}
+
+/* Remove excessive bottom padding in cinematic mode */
+.immersive-mystery-container .mystery-screen-content {
+    padding-bottom: 0;
 }
 
 .immersive-bg {
@@ -1194,10 +1205,13 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 .immersive-img {
+    position: absolute;
+    inset: 0;
     height: 100%;
     width: 100%;
     object-fit: contain;
     object-position: center;
+    z-index: 1;
 }
 
 .immersive-backdrop-blur {
@@ -1272,8 +1286,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     z-index: 10;
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
-
+    flex-grow: 0;
+    /* Don't expand to fill space */
 }
 
 .immersive-header {
@@ -1284,12 +1298,26 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 .immersive-main {
-    flex-grow: 1;
+    flex-grow: 0;
+    /* Don't expand to fill space */
+    max-height: 100%;
+    /* Constrain to parent height */
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     padding-top: 2rem;
+}
+
+.cinematic-bead-counter {
+    position: absolute;
+    bottom: 5%;
+    /* Near the bottom navigation bar */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    flex-wrap: nowrap;
+    /* Prevent wrapping - beads fit in 312px, container is 600px */
 }
 
 .font-display {
