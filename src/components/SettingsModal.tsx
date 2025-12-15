@@ -25,8 +25,6 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
         }
 
         // Second click - actually clear
-        console.log('Confirmed. Clearing data...');
-
         // If a specific reset handler is provided (e.g., from MysteryScreen), use it
         if (onResetProgress) {
             onResetProgress();
@@ -34,11 +32,12 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             return;
         }
 
-        // Fallback: Global Clear (e.g., from Home Screen)
+        // Fallback: Global Clear (SAFETY FALLBACK ONLY - should not execute in normal usage)
+        // All screens (HomeScreen, MysteryScreen) now provide onResetProgress to clear only the current mystery
+        // This fallback exists for edge cases or if called from an unexpected context
         const keysBefore = Object.keys(localStorage);
-        console.log('Keys before:', keysBefore);
 
-        // 1. Aggressive Clear
+        // 1. Aggressive Clear ALL mysteries (not recommended - use onResetProgress instead)
         clearPrayerProgress();
         clearLocalStorageSession();
 
@@ -54,8 +53,6 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
         } catch (e) {
             console.error('Manual clear failed:', e);
         }
-
-        console.log('Keys after:', Object.keys(localStorage));
 
         // 2. Force Hard Reset to Home
         window.location.href = '/';

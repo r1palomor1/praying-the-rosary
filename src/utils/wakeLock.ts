@@ -11,10 +11,6 @@ class WakeLockManager {
         // Check if Wake Lock API is supported
         this.isSupported = 'wakeLock' in navigator;
 
-        if (!this.isSupported) {
-            console.warn('Wake Lock API not supported on this device');
-        }
-
         // Re-acquire wake lock when page becomes visible again
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && this.wakeLock !== null) {
@@ -28,7 +24,6 @@ class WakeLockManager {
      */
     async request(): Promise<boolean> {
         if (!this.isSupported) {
-            console.log('Wake Lock not supported, screen may turn off');
             return false;
         }
 
@@ -38,13 +33,6 @@ class WakeLockManager {
 
             // Request new wake lock
             this.wakeLock = await navigator.wakeLock.request('screen');
-
-            console.log('✅ Wake Lock acquired - screen will stay on');
-
-            // Listen for wake lock release
-            this.wakeLock.addEventListener('release', () => {
-                console.log('Wake Lock released');
-            });
 
             return true;
         } catch (err) {
@@ -61,7 +49,6 @@ class WakeLockManager {
             try {
                 await this.wakeLock.release();
                 this.wakeLock = null;
-                console.log('Wake Lock manually released');
             } catch (err) {
                 console.error('Failed to release Wake Lock:', err);
             }

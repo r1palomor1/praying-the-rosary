@@ -229,34 +229,13 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
                 onResetProgress={() => {
-                    // Check if there's active progress for the current mystery
-                    const savedProgress = loadPrayerProgress(currentMysterySet);
-                    if (hasSession || (savedProgress && hasValidPrayerProgress(currentMysterySet))) {
-                        clearPrayerProgress(currentMysterySet);
-                        clearSession();
-                        window.location.reload();
-                    } else {
-                        // If no specific active mystery, we can either do nothing or let the modal handle global clear
-                        // By returning undefined here, the modal falls back to global clear? 
-                        // Actually, we should probably handle it here to be explicit
-                        // But to match the requested behavior: "if user ... decide to clear progress... it should only clear Joyful"
-                        // If valid progress exists, we clear IT.
-                        // If NO valid progress exists, we probably want to allow clearing ALL?
-                        // For safety, let's just trigger global clear here or let the modal do it.
-                        // Given the modal logic: if onResetProgress is passed, it uses it.
-                        // So we should handle the fallback logic too if we want "Clear All" when no active session.
-
-                        // Fallback to clearing everything if no specific active session found
-                        const keys = Object.keys(localStorage);
-                        keys.forEach(key => {
-                            if (key.startsWith('rosary_prayer_progress') || key.startsWith('rosary_session')) {
-                                localStorage.removeItem(key);
-                            }
-                        });
-                        window.location.reload();
-                    }
+                    // ALWAYS clear only the current mystery being viewed
+                    // This ensures completed mysteries are not affected when clearing a different mystery
+                    clearPrayerProgress(currentMysterySet);
+                    clearSession();
+                    window.location.reload();
                 }}
-                currentMysteryName={(hasSession || hasValidPrayerProgress(currentMysterySet)) && mysterySet ? mysterySet.name[language] : undefined}
+                currentMysteryName={mysterySet ? mysterySet.name[language] : undefined}
             />
 
             <LearnMoreModal

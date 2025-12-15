@@ -85,7 +85,7 @@ export function calculateCurrentStreak(): number {
     const hasCompletedToday = uniqueDates.includes(todayStr);
 
     // Start counting from today if completed, otherwise from yesterday
-    let currentDate = hasCompletedToday ? new Date() : new Date(today.getTime() - 24 * 60 * 60 * 1000);
+    const currentDate = hasCompletedToday ? new Date() : new Date(today.getTime() - 24 * 60 * 60 * 1000);
 
     for (const date of uniqueDates) {
         const checkDate = getLocalDateString(currentDate);

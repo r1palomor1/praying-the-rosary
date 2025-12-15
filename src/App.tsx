@@ -52,7 +52,7 @@ function AppContent() {
     const savedProgress = loadPrayerProgress(currentMysterySet);
     if (savedProgress && hasValidPrayerProgress(currentMysterySet)) {
       // Create temporary engine to check progress
-      const engine = new PrayerFlowEngine(currentMysterySet as any, language);
+      const engine = new PrayerFlowEngine(currentMysterySet, language);
       engine.jumpToStep(savedProgress.currentStepIndex);
       const progress = engine.getProgress();
 
@@ -74,7 +74,7 @@ function AppContent() {
     const savedProgress = loadPrayerProgress(currentMysterySet);
     if (savedProgress && hasValidPrayerProgress(currentMysterySet)) {
       // Create temporary engine to check progress
-      const engine = new PrayerFlowEngine(currentMysterySet as any, language);
+      const engine = new PrayerFlowEngine(currentMysterySet, language);
       engine.jumpToStep(savedProgress.currentStepIndex);
       const progress = engine.getProgress();
 
