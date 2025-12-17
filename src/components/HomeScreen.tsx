@@ -171,42 +171,46 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                 <div className="hero-overlay"></div>
 
                 <div className="hero-header">
-                    <div className="flex items-center gap-2">
-                        {onNavigateToSelection && (
+                    <div className="header-top-row">
+                        <div className="flex items-center gap-2">
+                            {onNavigateToSelection && (
+                                <button
+                                    className="icon-btn"
+                                    onClick={onNavigateToSelection}
+                                    aria-label={t.returnToMenu}
+                                >
+                                    <ArrowLeft size={24} />
+                                </button>
+                            )}
                             <button
                                 className="icon-btn"
-                                onClick={onNavigateToSelection}
-                                aria-label={t.returnToMenu}
+                                onClick={handleContinuousStart}
+                                aria-label={t.continuousAudio}
                             >
-                                <ArrowLeft size={24} />
+                                <Volume2 size={24} />
                             </button>
-                        )}
-                        <button
-                            className="icon-btn"
-                            onClick={handleContinuousStart}
-                            aria-label={t.continuousAudio}
-                        >
-                            <Volume2 size={24} />
-                        </button>
+                        </div>
+
+                        <div className="header-actions">
+                            <button
+                                className="icon-btn"
+                                onClick={() => setShowLearnMore(true)}
+                                aria-label={t.learnMore}
+                            >
+                                <Lightbulb size={24} />
+                            </button>
+                            <button
+                                className="icon-btn"
+                                onClick={() => setShowSettings(true)}
+                                aria-label={t.settings}
+                            >
+                                <SettingsIcon size={24} />
+                            </button>
+                        </div>
                     </div>
 
-                    <h1 className="hero-title">{t.title}</h1>
-
-                    <div className="header-actions">
-                        <button
-                            className="icon-btn"
-                            onClick={() => setShowLearnMore(true)}
-                            aria-label={t.learnMore}
-                        >
-                            <Lightbulb size={24} />
-                        </button>
-                        <button
-                            className="icon-btn"
-                            onClick={() => setShowSettings(true)}
-                            aria-label={t.settings}
-                        >
-                            <SettingsIcon size={24} />
-                        </button>
+                    <div className="header-title-row">
+                        <h1 className="hero-title">{t.title}</h1>
                     </div>
                 </div>
             </div>

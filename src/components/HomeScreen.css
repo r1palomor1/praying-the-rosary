@@ -76,16 +76,30 @@
     top: 0;
     left: 0;
     right: 0;
-    padding: 3rem 0.75rem 1rem;
-    /* Adjusted padding for mobile */
+    padding: 1rem 0.75rem;
+    /* Reduced top padding as it now takes more vertical space */
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: white;
+    flex-direction: column;
+    /* Stack rows vertically */
+    gap: 0.5rem;
     z-index: 10;
     width: 100%;
     box-sizing: border-box;
-    /* Crucial for padding to not cause overflow */
+}
+
+.header-top-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title-row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 0.25rem;
 }
 
 /* Header Buttons */
@@ -151,22 +165,20 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     margin: 0;
     text-align: center;
-    flex: 1;
-    /* Take up center space */
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    /* Truncate if too long */
+    overflow: visible;
+    /* text should fit now */
+    text-overflow: clip;
     padding: 0 0.5rem;
 }
 
 [data-font-size="large"] .hero-title {
-    font-size: 1.8rem;
-    /* Smaller font on large setting to fit header */
+    font-size: 2rem;
+    /* Can be slightly larger now that it has full width */
 }
 
 [data-font-size="xl"] .hero-title {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
 }
 
 
