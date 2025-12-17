@@ -1,0 +1,140 @@
+.selection-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    background: var(--bg-color);
+    color: var(--text-primary);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+.selection-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.selection-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--accent-color);
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.selection-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.selection-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 320px;
+    height: 200px;
+    background-color: rgba(255, 255, 255, 0.05);
+    /* Changed to background-color to preserve bg images */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.selection-card:hover {
+    transform: translateY(-5px);
+    background-color: rgba(255, 255, 255, 0.08);
+    /* Changed to background-color */
+    border-color: var(--accent-color);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.selection-card:active {
+    transform: scale(0.98);
+}
+
+.card-icon-wrapper {
+    margin-bottom: 1.5rem;
+    color: var(--accent-color);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    z-index: 2;
+    /* Ensure over overlay */
+}
+
+.selection-card:hover .card-icon-wrapper {
+    transform: scale(1.1);
+    opacity: 1;
+    text-shadow: 0 0 20px var(--accent-color);
+}
+
+.card-label {
+    font-size: 1.5rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: white;
+    /* Ensure visible on dark bg */
+    z-index: 2;
+    /* Ensure over overlay */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    /* Add drop shadow for readability */
+}
+
+/* Specific styling for distinct backgrounds */
+.sacred-prayers-card {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('/images/sacred-prayers-bg.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+.rosary-card {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('/images/rosary-bg.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+@media (min-width: 768px) {
+    .selection-content {
+        flex-direction: row;
+        gap: 3rem;
+    }
+
+    .selection-card {
+        height: 300px;
+        width: 300px;
+    }
+}

@@ -15,10 +15,15 @@ const MysteryScreen = lazy(() => import('./components/MysteryScreen'));
 const CompletionScreen = lazy(() => import('./components/CompletionScreen'));
 const PrayersScreen = lazy(() => import('./components/PrayersScreen'));
 const ProgressScreen = lazy(() => import('./components/ProgressScreen'));
+const PrayerSelectionScreen = lazy(() => import('./components/PrayerSelectionScreen'));
+// Placeholder for SacredPrayersScreen until we create it - using MysteryScreen temporarily if needed or just null
+// We will create it shortly, but defining the lazy load now
+const SacredPrayersScreen = lazy(() => import('./components/SacredPrayersScreen'));
+const SacredCompletionScreen = lazy(() => import('./components/SacredCompletionScreen'));
 
 import './styles/index.css';
 
-type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete' | 'progress';
+type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete' | 'progress' | 'prayer-selection' | 'sacred-prayers' | 'sacred-complete';
 
 function AppContent() {
   const { language, clearSession, completeSession, currentMysterySet } = useApp();
@@ -34,7 +39,7 @@ function AppContent() {
       const { language: savedLanguage } = JSON.parse(savedSettings);
       if (savedLanguage) {
         setHasSelectedLanguage(true);
-        setCurrentScreen('home');
+        setCurrentScreen('prayer-selection');
       }
     }
   }, []);
@@ -43,7 +48,7 @@ function AppContent() {
   useEffect(() => {
     if (!hasSelectedLanguage && language) {
       setHasSelectedLanguage(true);
-      setCurrentScreen('home');
+      setCurrentScreen('prayer-selection');
     }
   }, [language, hasSelectedLanguage]);
 
@@ -125,6 +130,23 @@ function AppContent() {
     setCurrentScreen('progress');
   };
 
+  const handleSelectRosary = () => {
+    setCurrentScreen('home');
+  };
+
+  const handleBackToSelection = () => {
+    setCurrentScreen('prayer-selection');
+  };
+
+  const handleSelectSacredPrayers = () => {
+    setCurrentScreen('sacred-prayers');
+  };
+
+  const handleCompleteSacredPrayers = () => {
+    // Logic for completing sacred prayers
+    setCurrentScreen('sacred-complete');
+  };
+
   return (
     <div className="app-container">
       {currentScreen === 'language' && <LanguageSelector />}
@@ -136,6 +158,7 @@ function AppContent() {
             onNavigateToMysteries={handleNavigateToMysteries}
             onNavigateToPrayers={handleNavigateToPrayers}
             onNavigateToProgress={handleNavigateToProgress}
+            onNavigateToSelection={handleBackToSelection}
           />
         )}
         {currentScreen === 'mysteries' && (
@@ -168,6 +191,21 @@ function AppContent() {
         )}
         {currentScreen === 'complete' && (
           <CompletionScreen onHome={handleBackToHome} onRestart={handleRestart} mysteryType={currentMysterySet} autoPlayAudio={autoPlayCompletion} />
+        )}
+        {currentScreen === 'prayer-selection' && (
+          <PrayerSelectionScreen
+            onSelectRosary={handleSelectRosary}
+            onSelectSacredPrayers={handleSelectSacredPrayers}
+          />
+        )}
+        {currentScreen === 'sacred-prayers' && (
+          <SacredPrayersScreen
+            onComplete={handleCompleteSacredPrayers}
+            onBack={handleBackToSelection}
+          />
+        )}
+        {currentScreen === 'sacred-complete' && (
+          <SacredCompletionScreen onHome={handleBackToSelection} />
         )}
       </Suspense>
     </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, Volume2, Lightbulb } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, Lightbulb, ArrowLeft } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
@@ -19,9 +19,10 @@ interface HomeScreenProps {
     onNavigateToMysteries: () => void;
     onNavigateToPrayers: () => void;
     onNavigateToProgress?: () => void;
+    onNavigateToSelection?: () => void;
 }
 
-export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavigateToMysteries, onNavigateToPrayers, onNavigateToProgress }: HomeScreenProps) {
+export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavigateToMysteries, onNavigateToPrayers, onNavigateToProgress, onNavigateToSelection }: HomeScreenProps) {
     const { language, currentMysterySet, startNewSession, resumeSession, playAudio } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [showLearnMore, setShowLearnMore] = useState(false);
@@ -44,6 +45,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             stopAudio: 'Stop Audio',
             dailyDevotionAudio: 'Daily Devotion',
             learnMore: 'Learn More',
+            returnToMenu: 'Back to Selection',
             days: {
                 monday: 'Monday',
                 tuesday: 'Tuesday',
@@ -66,6 +68,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             stopAudio: 'Detener Audio',
             dailyDevotionAudio: 'Devoción Diaria',
             learnMore: 'Profundizar',
+            returnToMenu: 'Volver a la Selección',
             days: {
                 monday: 'Lunes',
                 tuesday: 'Martes',
@@ -168,13 +171,24 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                 <div className="hero-overlay"></div>
 
                 <div className="hero-header">
-                    <button
-                        className="icon-btn"
-                        onClick={handleContinuousStart}
-                        aria-label={t.continuousAudio}
-                    >
-                        <Volume2 size={20} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {onNavigateToSelection && (
+                            <button
+                                className="icon-btn"
+                                onClick={onNavigateToSelection}
+                                aria-label={t.returnToMenu}
+                            >
+                                <ArrowLeft size={24} />
+                            </button>
+                        )}
+                        <button
+                            className="icon-btn"
+                            onClick={handleContinuousStart}
+                            aria-label={t.continuousAudio}
+                        >
+                            <Volume2 size={24} />
+                        </button>
+                    </div>
 
                     <h1 className="hero-title">{t.title}</h1>
 
@@ -184,14 +198,14 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                             onClick={() => setShowLearnMore(true)}
                             aria-label={t.learnMore}
                         >
-                            <Lightbulb size={20} />
+                            <Lightbulb size={24} />
                         </button>
                         <button
                             className="icon-btn"
                             onClick={() => setShowSettings(true)}
                             aria-label={t.settings}
                         >
-                            <SettingsIcon size={20} />
+                            <SettingsIcon size={24} />
                         </button>
                     </div>
                 </div>
