@@ -1136,7 +1136,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 .mystery-title {
     font-family: var(--font-heading);
     font-weight: 600;
-    font-size: var(--font-size-lg) !important;
+    font-size: 1.5rem !important;
+    /* Matches .prayer-name (24px desktop / 21px mobile) */
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: #FFD700;
@@ -1159,9 +1160,6 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 @media (min-width: 640px) {
-    .mystery-title {
-        font-size: var(--font-size-xl) !important;
-    }
 
     .mystery-text {
         font-size: var(--font-size-lg) !important;
