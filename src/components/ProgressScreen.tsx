@@ -77,15 +77,6 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
         return colors[mysteryType];
     };
 
-    const getMysteryEmoji = (mysteryType: MysterySetType): string => {
-        const emojis = {
-            joyful: '👑',
-            sorrowful: '✝️',
-            glorious: '✨',
-            luminous: '💡'
-        };
-        return emojis[mysteryType];
-    };
 
     const getMysteryTextColor = (mysteryType: MysterySetType): string => {
         // Use dark text for light backgrounds (luminous and glorious)
@@ -99,25 +90,6 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
         return textColors[mysteryType];
     };
 
-    const getMysteryGradient = (mysteryType: MysterySetType): string => {
-        const gradients = {
-            joyful: 'from-amber-300 to-amber-500',
-            sorrowful: 'from-blue-400 to-indigo-600',
-            glorious: 'from-gray-200 to-gray-400 dark:from-gray-500 dark:to-gray-300',
-            luminous: 'from-yellow-200 to-orange-300'
-        };
-        return gradients[mysteryType];
-    };
-
-    const getMaxCount = () => {
-        const counts = Object.values(stats.completionsByMystery);
-        return Math.max(...counts, 1); // Avoid division by zero
-    };
-
-    const getProgressPercentage = (count: number): number => {
-        const max = getMaxCount();
-        return (count / max) * 100;
-    };
 
     const renderCalendar = () => {
         const firstDay = new Date(currentYear, currentMonth, 1).getDay();
@@ -276,88 +248,7 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
                     </div>
                 </div>
 
-                {/* Mystery Breakdown with Progress Bars */}
-                <div className="mysteries-section-v2">
-                    <h2 className="section-title-v2">{t.mysteriesPrayed}</h2>
 
-                    <div className="mystery-list-v2">
-                        {/* Joyful */}
-                        <div className="mystery-item-v2">
-                            <span className="mystery-emoji-v2">{getMysteryEmoji('joyful')}</span>
-                            <div className="mystery-content">
-                                <div className="mystery-header">
-                                    <span className="mystery-name-v2">{t.joyful}</span>
-                                    <span className="mystery-count-v2">
-                                        {stats.completionsByMystery.joyful} {t.times}
-                                    </span>
-                                </div>
-                                <div className="progress-bar-container">
-                                    <div
-                                        className={`progress-bar bg-gradient-to-r ${getMysteryGradient('joyful')}`}
-                                        style={{ width: `${getProgressPercentage(stats.completionsByMystery.joyful)}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Sorrowful */}
-                        <div className="mystery-item-v2">
-                            <span className="mystery-emoji-v2">{getMysteryEmoji('sorrowful')}</span>
-                            <div className="mystery-content">
-                                <div className="mystery-header">
-                                    <span className="mystery-name-v2">{t.sorrowful}</span>
-                                    <span className="mystery-count-v2">
-                                        {stats.completionsByMystery.sorrowful} {t.times}
-                                    </span>
-                                </div>
-                                <div className="progress-bar-container">
-                                    <div
-                                        className={`progress-bar bg-gradient-to-r ${getMysteryGradient('sorrowful')}`}
-                                        style={{ width: `${getProgressPercentage(stats.completionsByMystery.sorrowful)}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Glorious */}
-                        <div className="mystery-item-v2">
-                            <span className="mystery-emoji-v2">{getMysteryEmoji('glorious')}</span>
-                            <div className="mystery-content">
-                                <div className="mystery-header">
-                                    <span className="mystery-name-v2">{t.glorious}</span>
-                                    <span className="mystery-count-v2">
-                                        {stats.completionsByMystery.glorious} {t.times}
-                                    </span>
-                                </div>
-                                <div className="progress-bar-container">
-                                    <div
-                                        className={`progress-bar bg-gradient-to-r ${getMysteryGradient('glorious')}`}
-                                        style={{ width: `${getProgressPercentage(stats.completionsByMystery.glorious)}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Luminous */}
-                        <div className="mystery-item-v2">
-                            <span className="mystery-emoji-v2">{getMysteryEmoji('luminous')}</span>
-                            <div className="mystery-content">
-                                <div className="mystery-header">
-                                    <span className="mystery-name-v2">{t.luminous}</span>
-                                    <span className="mystery-count-v2">
-                                        {stats.completionsByMystery.luminous} {t.times}
-                                    </span>
-                                </div>
-                                <div className="progress-bar-container">
-                                    <div
-                                        className={`progress-bar bg-gradient-to-r ${getMysteryGradient('luminous')}`}
-                                        style={{ width: `${getProgressPercentage(stats.completionsByMystery.luminous)}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </main>
 
             {/* Bottom Navigation */}

@@ -55,10 +55,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 .prayer-name {
-    font-size: var(--font-size-xl);
+    font-size: 1.5rem;
+    /* Matches Cinematic text-2xl (24px desktop / 21px mobile) */
     color: var(--color-secondary-light);
     margin: 0;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: var(--letter-spacing-wide);
 }
 
@@ -407,7 +408,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     }
 
     .prayer-name {
-        font-size: 1.125rem;
+        font-size: 1.5rem;
+        /* Matches Cinematic text-2xl on mobile */
         font-weight: 700;
     }
 
@@ -1325,7 +1327,15 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 .text-primary {
+    font-family: var(--font-heading);
+    /* Match Classic font family for consistency */
+    font-size: var(--font-size-lg);
+    /* Match Classic font size */
     color: #D4AF37;
+    font-weight: 600;
+    /* Match Classic font weight */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .text-gray-300 {

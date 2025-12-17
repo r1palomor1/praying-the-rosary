@@ -827,7 +827,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                     {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
                                         <div className="pt-8">
                                             {decadeInfo.fruit && (
-                                                <h3 className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                                <h3 className="text-primary" style={{ textAlign: 'center' }}>
                                                     {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}{decadeInfo.fruit.toUpperCase()}
                                                 </h3>
                                             )}
@@ -935,7 +935,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                             <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
                                                 {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}
                                             </span>
-                                            <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                            <span className="text-primary">
                                                 {decadeInfo.fruit.toUpperCase()}
                                             </span>
                                         </div>
@@ -992,7 +992,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                                 <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
                                                     {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}
                                                 </span>
-                                                <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                                <span className="text-primary">
                                                     {decadeInfo.fruit.toUpperCase()}
                                                 </span>
                                             </div>
