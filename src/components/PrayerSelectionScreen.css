@@ -116,14 +116,16 @@
 .sacred-prayers-card {
     background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('/images/sacred-prayers-bg.jpg');
     background-size: cover;
-    background-position: center center;
+    background-position: center 20%;
+    /* Shift focus slightly up to avoid top cropping */
     background-repeat: no-repeat;
 }
 
 .rosary-card {
     background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('/images/rosary-bg.jpg');
     background-size: cover;
-    background-position: center center;
+    background-position: center 20%;
+    /* Shift focus slightly up to avoid top cropping */
     background-repeat: no-repeat;
 }
 
@@ -136,5 +138,19 @@
     .selection-card {
         height: 300px;
         width: 300px;
+
+        .selection-card {
+            height: 300px;
+            width: 300px;
+        }
+    }
+
+    /* Mobile adjustments to ensure image integrity */
+    @media (max-width: 767px) {
+        .selection-card {
+            background-position: center top;
+            /* Pin to top on mobile to avoid head cropping */
+            /* height: 200px; - Already set in base style, but confirming intention */
+        }
     }
 }

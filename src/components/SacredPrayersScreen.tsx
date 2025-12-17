@@ -381,11 +381,12 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
     return (
         <div className={`mystery-screen-container ${!showPrayerText ? 'prayer-text-hidden' : ''}`} ref={contentRef}>
             {/* Header */}
+            {/* Header */}
             <div className="mystery-screen-header">
-                <div className="header-top-row" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <div className="mystery-header-row">
 
                     {/* Left Icons */}
-                    <div className="header-left-icons" style={{ display: 'flex', alignItems: 'center' }}>
+                    <div className="mystery-header-icons-left">
                         <button
                             className="continuous-audio-btn-header"
                             onClick={handleToggleContinuous}
@@ -397,14 +398,14 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                         <button
                             className="text-visibility-btn-header"
                             onClick={() => setUserWantsTextHidden(!userWantsTextHidden)}
-                            style={{ marginLeft: '12px' }}
+                            aria-label={userWantsTextHidden ? "Show Text" : "Hide Text"}
                         >
                             {userWantsTextHidden ? <BookClosedIcon size={20} /> : <BookOpenIcon size={20} />}
                         </button>
                     </div>
 
                     {/* Right Icons */}
-                    <div className="header-right-icons" style={{ display: 'flex', alignItems: 'center' }}>
+                    <div className="mystery-header-icons-right">
                         <button
                             className="layout-mode-btn-header"
                             onClick={() => {
@@ -412,12 +413,16 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                                 setMysteryLayout(newLayout);
                                 showToast(newLayout === 'cinematic' ? 'Cinematic mode enabled' : 'Classic mode enabled', 'success');
                             }}
-                            style={{ marginRight: '12px' }}
+                            aria-label="Toggle Layout Mode"
                         >
                             <LayoutModeIcon size={20} />
                         </button>
 
-                        <button className="settings-btn-header" onClick={() => setShowSettings(true)}>
+                        <button
+                            className="settings-btn-header"
+                            onClick={() => setShowSettings(true)}
+                            aria-label={t.settings}
+                        >
                             <SettingsIcon size={20} strokeWidth={3} />
                         </button>
                     </div>

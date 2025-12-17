@@ -1,3 +1,5 @@
+/* HomeScreen.css */
+
 .home-container {
     /* Theme Variables - Default (Light Mode) */
     --home-bg: #F3F4F6;
@@ -22,8 +24,13 @@
     color: var(--home-text-primary);
     transition: background-color 0.3s ease, color 0.3s ease;
     max-width: 600px;
+    /* Constrain width on desktop */
     margin: 0 auto;
+    /* Center on desktop */
     position: relative;
+    overflow-x: hidden;
+    /* Prevent horizontal scrolling */
+    width: 100%;
 }
 
 /* Dark Mode Overrides */
@@ -44,15 +51,14 @@
 .hero-section {
     position: relative;
     height: 240px;
-    /* h-60 */
     width: 100%;
+    /* Ensure no scrolling from hero */
 }
 
 .hero-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Use existing image */
     background-image: url('/stained_glass_hero_1764033304587.png');
     background-size: cover;
     background-position: top center;
@@ -64,36 +70,29 @@
     background: linear-gradient(to top, var(--home-gradient-from), transparent);
 }
 
+/* Hero Header - The navigation bar */
 .hero-header {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    padding: 3rem 1rem 1rem;
-    /* pt-12 p-4 */
+    padding: 3rem 0.75rem 1rem;
+    /* Adjusted padding for mobile */
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: white;
     z-index: 10;
+    width: 100%;
+    box-sizing: border-box;
+    /* Crucial for padding to not cause overflow */
 }
 
-.hero-title {
-    font-family: var(--font-heading);
-    font-size: 2.25rem;
-    /* text-4xl */
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    /* tracking-wider */
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    margin: 0;
-}
-
+/* Header Buttons */
 .icon-btn {
     width: 2.5rem;
-    /* w-10 */
+    /* 40px */
     height: 2.5rem;
-    /* h-10 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -105,22 +104,79 @@
     color: white;
     cursor: pointer;
     transition: background 0.2s;
+    flex-shrink: 0;
+    /* Prevent icons from shrinking */
 }
 
 .icon-btn:hover {
     background: rgba(0, 0, 0, 0.5);
 }
 
+/* Adjustments for Large Font Size to prevent overflow */
+[data-font-size="large"] .icon-btn,
+[data-font-size="xl"] .icon-btn {
+    width: 2.4rem;
+    /* Slightly smaller */
+    height: 2.4rem;
+}
+
+/* Force icons white in hero */
+.hero-header .icon-btn {
+    color: white !important;
+}
+
+.hero-header .icon-btn svg {
+    stroke: white !important;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    /* Standard Gap */
+}
+
+[data-font-size="large"] .header-actions,
+[data-font-size="xl"] .header-actions {
+    gap: 0.5rem;
+    /* Tighter gap for large fonts */
+}
+
+/* Title */
+.hero-title {
+    font-family: var(--font-heading);
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 0;
+    text-align: center;
+    flex: 1;
+    /* Take up center space */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Truncate if too long */
+    padding: 0 0.5rem;
+}
+
+[data-font-size="large"] .hero-title {
+    font-size: 1.8rem;
+    /* Smaller font on large setting to fit header */
+}
+
+[data-font-size="xl"] .hero-title {
+    font-size: 1.6rem;
+}
+
+
 /* Main Content */
 .home-main {
     padding: 0 1rem;
-    /* px-4 */
     margin-top: -2rem;
-    /* -mt-8 */
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    /* space-y-6 */
     position: relative;
     z-index: 20;
     padding-bottom: 120px;
@@ -132,20 +188,15 @@
     background: var(--home-card-bg);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
-    /* backdrop-blur-md */
     border-radius: 1rem;
-    /* rounded-lg */
     padding: 1.5rem;
-    /* p-6 */
     box-shadow: var(--home-shadow);
     border: 1px solid var(--home-card-border);
 }
 
-/* Mystery Card Content */
 .mystery-card-title {
     font-family: var(--font-heading);
     font-size: 1.875rem;
-    /* text-3xl */
     font-weight: 700;
     color: var(--home-text-primary);
     margin: 0;
@@ -157,13 +208,10 @@
     font-size: 1rem;
 }
 
-/* Devotion Card Content */
 .devotion-label {
     font-size: 0.75rem;
-    /* text-xs */
     font-weight: 700;
     letter-spacing: 0.1em;
-    /* tracking-widest */
     color: var(--home-text-tertiary);
     text-transform: uppercase;
     margin-bottom: 0.25rem;
@@ -172,7 +220,6 @@
 .devotion-title {
     font-family: var(--font-heading);
     font-size: 1.5rem;
-    /* text-2xl */
     font-weight: 700;
     color: var(--home-text-primary);
     margin: 0;
@@ -181,36 +228,17 @@
 .devotion-text {
     margin-top: 1rem;
     line-height: 1.625;
-    /* leading-relaxed */
     color: var(--home-text-secondary);
 }
 
-/* Bottom Section */
+/* Bottom Section - Sticky Bar */
 .bottom-section {
     position: fixed;
+    /* Must be fixed to stay on screen */
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
     max-width: 600px;
     width: 100%;
-    z-index: 100;
-}
-
-/* Hide default bottom nav background if we want to style it here, 
-   but BottomNav component has its own styles. 
-   We might need to override BottomNav styles or wrap it.
-   For now, we'll let BottomNav handle itself but ensure it sits on top.
-*/
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-/* Force Hero Header Icons to be White (Visibility on Image) */
-.hero-header .icon-btn {
-    color: white !important;
-}
-
-.hero-header .icon-btn svg {
-    stroke: white !important;
+    z-index: 1000;
 }

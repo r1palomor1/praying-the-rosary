@@ -27,6 +27,21 @@
     padding: var(--spacing-sm);
 }
 
+.mystery-header-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.mystery-header-icons-left,
+.mystery-header-icons-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 /* Remove margin when followed by immersive container (cinematic mode) */
 body:has(.immersive-mystery-container) .mystery-screen-header {
     margin-bottom: 0;
