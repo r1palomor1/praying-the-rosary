@@ -16,7 +16,7 @@ export function SacredProgressModal() {
 
     const translations = {
         en: {
-            title: 'Sacred Prayers Journey',
+            title: 'Your Prayer Journey',
             streak: 'Day Streak',
             total: 'Total Completed',
             bestStreak: 'Best streak',
@@ -25,8 +25,8 @@ export function SacredProgressModal() {
             times: 'times'
         },
         es: {
-            title: 'Viaje de Oraciones Sagradas',
-            streak: 'Racha Actual',
+            title: 'Tu Camino de Oración',
+            streak: 'Días Seguidos',
             total: 'Total Completado',
             bestStreak: 'Mejor racha',
             thisMonth: 'Este mes',
@@ -160,7 +160,7 @@ export function SacredProgressModal() {
 
                 {/* Header */}
                 <div className="p-4 border-b border-white/10 flex justify-center items-center bg-[#16213e]">
-                    <h2 className="text-xl font-serif text-[#D4AF37]">{t.title}</h2>
+                    <h2 className="text-xl font-serif text-[#D4AF37]" style={{ textAlign: 'center' }}>{t.title}</h2>
                 </div>
 
                 {/* Content */}
