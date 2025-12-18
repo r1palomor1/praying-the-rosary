@@ -589,7 +589,7 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
             />
 
             {showProgress && (
-                <SacredProgressModal onClose={() => setShowProgress(false)} />
+                <SacredProgressModal />
             )}
         </div>
     );

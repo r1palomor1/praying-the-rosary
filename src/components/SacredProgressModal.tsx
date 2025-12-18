@@ -4,12 +4,7 @@ import { useApp } from '../context/AppContext';
 import { getSacredStats, getSacredCompletionsForMonth, hasSacredCompletionOnDate, getMysteryTypeForDate } from '../utils/sacredHistory';
 import './ProgressScreen.css'; // Reusing the same styles as Rosary progress
 
-interface SacredProgressModalProps {
-    onClose: () => void;
-}
-
-export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
-    // onClose kept for future use (currently closes via home button)
+export function SacredProgressModal() {
     const { language } = useApp();
     const [currentDate, setCurrentDate] = useState(new Date());
 
