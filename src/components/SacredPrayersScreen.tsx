@@ -322,6 +322,8 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
         if (nextStep) {
             setCurrentStep(nextStep);
             if (nextStep.type === 'complete') {
+                // Clear saved progress so it starts fresh next time
+                clearPrayerProgress(sacredMysteryKey);
                 onComplete();
             }
         }
