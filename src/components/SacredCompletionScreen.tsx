@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Home } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { saveSacredCompletion } from '../utils/sacredHistory';
 import './CompletionScreen.css';
 
 interface SacredCompletionScreenProps {
@@ -8,6 +10,11 @@ interface SacredCompletionScreenProps {
 
 export default function SacredCompletionScreen({ onHome }: SacredCompletionScreenProps) {
     const { language } = useApp();
+
+    useEffect(() => {
+        saveSacredCompletion();
+        // Also clear progress (already handled by logic, but ensuring cleanup)
+    }, []);
 
     const t = language === 'es' ? {
         title: 'Oraciones Sagradas Completadas',

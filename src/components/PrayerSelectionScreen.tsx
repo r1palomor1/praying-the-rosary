@@ -24,6 +24,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers }:
         }
     }[language];
 
+
+
     return (
         <div className="selection-container fade-in">
             <div className="selection-header">

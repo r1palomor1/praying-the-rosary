@@ -81,11 +81,10 @@
         font-size: 10px;
     }
 }
+
 /* Prevent active color for Progress and Home icons - they should match other icons */
 .nav-tab.no-active-color.active .material-icons,
 .nav-tab.no-active-color.active svg,
 .nav-tab.no-active-color.active .nav-label {
-    color: var(--color-text-primary) !important;
+    color: var(--color-text-tertiary) !important;
 }
-
-

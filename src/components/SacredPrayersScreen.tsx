@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, CalendarCheck } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
 import { SettingsModal } from './SettingsModal';
+import { SacredProgressModal } from './SacredProgressModal';
 import { SacredPrayerFlowEngine } from '../utils/SacredPrayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
 import { wakeLockManager } from '../utils/wakeLock';
@@ -84,6 +85,7 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
     } = useApp();
     const { showToast } = useToast();
     const [showSettings, setShowSettings] = useState(false);
+    const [showProgress, setShowProgress] = useState(false);
 
     // User-controlled text visibility preference
     const [userWantsTextHidden, setUserWantsTextHidden] = useState(false);
@@ -196,6 +198,8 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
     useEffect(() => {
         setHighlightIndex(-1);
     }, [currentStep]);
+
+
 
     // --- Audio & Highlighting Logic ---
 
@@ -378,7 +382,8 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
         stopContinuous: 'Detener',
         reflection: 'Reflexión',
         menu: 'Menú',
-        settings: 'Configuración'
+        settings: 'Configuración',
+        progress: 'Progreso'
     } : {
         back: 'Home',
         step: 'Step',
@@ -393,7 +398,8 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
         stopContinuous: 'Stop',
         reflection: 'Reflection',
         menu: 'Menu',
-        settings: 'Settings'
+        settings: 'Settings',
+        progress: 'Progress'
     };
 
     if (!currentStep) {
@@ -562,9 +568,17 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                         </button>
                     </div>
 
-                    <button className="mystery-nav-btn nav-btn-dimmed">
-                        {/* Placeholder for symmetry (maybe settings or help later) */}
-                    </button>
+                    {/* Progress button - only show on Sign of the Cross page */}
+                    {currentStep?.type === 'sign_of_cross_start' && (
+                        <button
+                            className="mystery-nav-btn"
+                            onClick={() => setShowProgress(true)}
+                            aria-label={t.progress}
+                        >
+                            <CalendarCheck size={24} strokeWidth={2} />
+                            <span className="mystery-nav-label">{t.progress}</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -573,6 +587,10 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                 onClose={() => setShowSettings(false)}
                 onResetProgress={handleReset}
             />
+
+            {showProgress && (
+                <SacredProgressModal onClose={() => setShowProgress(false)} />
+            )}
         </div>
     );
 }
