@@ -147,6 +147,11 @@ function AppContent() {
     setCurrentScreen('sacred-complete');
   };
 
+  const handleResetProgress = () => {
+    clearSession();
+    // This will reset both Rosary and Sacred Prayers progress
+  };
+
   return (
     <div className="app-container">
       {currentScreen === 'language' && <LanguageSelector />}
@@ -196,6 +201,7 @@ function AppContent() {
           <PrayerSelectionScreen
             onSelectRosary={handleSelectRosary}
             onSelectSacredPrayers={handleSelectSacredPrayers}
+            onResetProgress={handleResetProgress}
           />
         )}
         {currentScreen === 'sacred-prayers' && (
