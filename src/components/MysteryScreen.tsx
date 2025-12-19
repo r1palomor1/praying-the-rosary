@@ -13,6 +13,7 @@ import educationalDataEs from '../data/es-rosary-educational-content.json';
 import educationalDataEn from '../data/en-rosary-educational-content.json';
 import { ResponsiveImage } from './ResponsiveImage';
 import { HighlightErrorBoundary } from './HighlightErrorBoundary';
+import { DebugOpacitySlider } from './DebugOpacitySlider';
 
 import './MysteryScreen.css';
 import './MysteryBottomNav.css';
@@ -108,6 +109,10 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     // User-controlled text visibility preference (persists across prayers)
     const [userWantsTextHidden, setUserWantsTextHidden] = useState(false);
     const [showPrayerText, setShowPrayerText] = useState(true);
+
+    // DEBUG: Opacity sliders for cinematic mode (only visible when text is hidden)
+    const [debugBaseOpacity, setDebugBaseOpacity] = useState(90); // Base gradient (default 90%)
+    const [debugSecondaryOpacity, setDebugSecondaryOpacity] = useState(0); // Secondary layer (default 0% when text hidden)
 
     const [flowEngine] = useState(() => {
         const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
@@ -1656,6 +1661,34 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 data={currentEducationalData}
                 language={language}
             />
+
+            {/* DEBUG: Opacity Sliders (only visible in cinematic mode when text is hidden) */}
+            <DebugOpacitySlider
+                baseOpacity={debugBaseOpacity}
+                secondaryOpacity={debugSecondaryOpacity}
+                onBaseOpacityChange={setDebugBaseOpacity}
+                onSecondaryOpacityChange={setDebugSecondaryOpacity}
+                visible={mysteryLayout === 'cinematic' && userWantsTextHidden}
+            />
+
+            {/* DEBUG: Dynamic CSS Override for Opacity */}
+            {mysteryLayout === 'cinematic' && userWantsTextHidden && (
+                <style>{`
+                    .immersive-overlay,
+                    .immersive-overlay-darker {
+                        background: linear-gradient(to bottom, 
+                            rgba(11, 17, 30, ${debugBaseOpacity / 100}) 0%, 
+                            rgba(11, 17, 30, ${(debugBaseOpacity - 15) / 100}) 30%, 
+                            rgba(11, 17, 30, ${(debugBaseOpacity - 40) / 100}) 60%, 
+                            rgba(11, 17, 30, ${(debugBaseOpacity - 60) / 100}) 90%) !important;
+                    }
+                    .immersive-overlay::before,
+                    .immersive-overlay-darker::before {
+                        background: rgba(11, 17, 30, ${debugSecondaryOpacity / 100}) !important;
+                        opacity: 1 !important;
+                    }
+                `}</style>
+            )}
         </div >
     );
 }
