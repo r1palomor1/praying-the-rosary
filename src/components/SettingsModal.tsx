@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Moon, Sun, Languages, Trash2, Gauge, Type } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../utils/storage';
-import { useToast } from '../context/ToastContext';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
@@ -14,7 +13,6 @@ interface SettingsModalProps {
 
 export function SettingsModal({ isOpen, onClose, onResetProgress, currentMysteryName: _currentMysteryName }: SettingsModalProps) {
     const { language, setLanguage, theme, toggleTheme, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
-    const { showToast } = useToast();
     const [showConfirmClear, setShowConfirmClear] = useState(false);
 
 
