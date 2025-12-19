@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Moon, Sun, Languages, Trash2, Gauge, Type } from 'lucide-react';
+import { Moon, Sun, Languages, Trash2, Gauge, Type, Database } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../utils/storage';
+import { cleanupPrayerHistory } from '../utils/cleanupHistory';
+import { useToast } from '../context/ToastContext';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
@@ -13,7 +15,27 @@ interface SettingsModalProps {
 
 export function SettingsModal({ isOpen, onClose, onResetProgress, currentMysteryName: _currentMysteryName }: SettingsModalProps) {
     const { language, setLanguage, theme, toggleTheme, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
+    const { showToast } = useToast();
     const [showConfirmClear, setShowConfirmClear] = useState(false);
+
+    const handleCleanupHistory = () => {
+        const result = cleanupPrayerHistory();
+        if (result.removed > 0) {
+            showToast(
+                language === 'es'
+                    ? `Se eliminaron ${result.removed} entradas inválidas. Total: ${result.remaining}`
+                    : `Removed ${result.removed} invalid entries. Total: ${result.remaining}`,
+                'success'
+            );
+        } else {
+            showToast(
+                language === 'es'
+                    ? 'No se encontraron entradas inválidas'
+                    : 'No invalid entries found',
+                'info'
+            );
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -70,6 +92,7 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             light: 'Light',
             dark: 'Dark',
             clearProgress: 'Clear Prayer Progress',
+            cleanupHistory: 'Fix History Data',
             close: 'CLOSE',
             textSize: 'Text Size',
             normal: 'Normal',
@@ -87,6 +110,7 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             light: 'Claro',
             dark: 'Oscuro',
             clearProgress: 'Borrar Progreso',
+            cleanupHistory: 'Reparar Datos',
             close: 'CERRAR',
             textSize: 'Tamaño de Texto',
             normal: 'Normal',
@@ -146,6 +170,20 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                                     ? (language === 'es' ? '¡Haz clic de nuevo para confirmar!' : 'Click again to confirm!')
                                     : t.clearProgress
                                 }
+                            </button>
+                        </div>
+
+                        <div className="setting-group">
+                            <div className="setting-header">
+                                <Database size={20} />
+                                <h3>{t.cleanupHistory}</h3>
+                            </div>
+                            <button
+                                className="btn-clear"
+                                onClick={handleCleanupHistory}
+                                style={{ backgroundColor: '#4C6EF5' }}
+                            >
+                                {t.cleanupHistory}
                             </button>
                         </div>
                     </div>
