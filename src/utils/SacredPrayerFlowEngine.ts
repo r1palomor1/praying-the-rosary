@@ -131,7 +131,7 @@ export class SacredPrayerFlowEngine {
         // --- 11. Final Prayer ---
         this.steps.push({
             type: 'final_collect',
-            text: fixed_prayers.final_collect,
+            text: fixed_prayers.sacred_final_collect,
             title: t.finalPrayer,
             imageUrl: closingPrayerImage
         });

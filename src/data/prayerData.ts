@@ -36,6 +36,7 @@ export interface FixedPrayers {
     litany_of_loreto: LitanyOfLoreto;
     closing_under_your_protection: string;
     final_collect: string;
+    sacred_final_collect: string;
     sign_of_cross_end: string;
 }
 
@@ -173,6 +174,7 @@ export const prayerData: Record<Language, PrayerDataStructure> = {
             },
             closing_under_your_protection: "We fly to your patronage, O holy Mother of God; despise not our petitions in our necessities, but ever deliver us from all dangers, O glorious and blessed Virgin. Pray for us, O Holy Mother of God, that we may be made worthy of the promises and divine grace of our Lord Jesus Christ. Amen.",
             final_collect: "O God, whose only begotten Son, by His life, death, and resurrection, has purchased for us the rewards of eternal life, grant, we beseech Thee, that meditating upon these mysteries of the Most Holy Rosary of the Blessed Virgin Mary, we may imitate what they contain and obtain what they promise, through the same Christ our Lord. Amen.",
+            sacred_final_collect: "O God, whose only begotten Son, by His life, death, and resurrection, has purchased for us the rewards of eternal life, grant, we beseech Thee, that meditating upon these prayers, we may imitate what they contain and obtain what they promise, through the same Christ our Lord. Amen.",
             sign_of_cross_end: "In the name of the Father, and of the Son, and of the Holy Spirit. Amen."
         },
         mysteries_data: {
@@ -410,6 +412,7 @@ export const prayerData: Record<Language, PrayerDataStructure> = {
             },
             closing_under_your_protection: "Bajo tu amparo nos acogemos, Santa Madre de Dios; no desprecies nuestras súplicas que dirigimos ante nuestras necesidades, antes bien, líbranos de todo peligro, ¡Oh, Virgen Gloriosa y Bendita! Ruega por nosotros Santa Madre de Dios, para que seamos dignos de alcanzar las promesas y divinas gracias de nuestro Señor Jesucristo. Amén.",
             final_collect: "Oh Dios, cuyo Unigénito Hijo, con su vida, muerte y resurrección, nos alcanzó el premio de la vida eterna, concédenos a los que recordamos estos Misterios del Santo Rosario, imitar lo que contienen y alcanzar lo que prometen, por el mismo Jesucristo Nuestro Señor. Amén.",
+            sacred_final_collect: "Oh Dios, cuyo Unigénito Hijo, con su vida, muerte y resurrección, nos alcanzó el premio de la vida eterna, concédenos a los que recordamos estas oraciones, imitar lo que contienen y alcanzar lo que prometen, por el mismo Jesucristo Nuestro Señor. Amén.",
             sign_of_cross_end: "En el nombre del Padre, del Hijo y del Espíritu Santo. Amén."
         },
         mysteries_data: {

@@ -255,6 +255,16 @@ Te rogamos nos concedas, Señor Dios nuestro, gozar de continua salud de alma y 
                 es: 'Oh Dios, cuyo Hijo Unigénito, por su vida, muerte y resurrección, nos ha merecido el premio de la vida eterna, concédenos, te rogamos, que meditando estos misterios del Santísimo Rosario de la Bienaventurada Virgen María, imitemos lo que contienen y alcancemos lo que prometen. Por el mismo Cristo nuestro Señor. Amén.'
             }
         },
+        sacredFinalPrayer: {
+            name: {
+                en: 'Final Prayer',
+                es: 'Oración Final'
+            },
+            text: {
+                en: 'O God, whose only begotten Son, by His life, death, and resurrection, has purchased for us the rewards of eternal life, grant, we beseech Thee, that meditating upon these prayers, we may imitate what they contain and obtain what they promise, through the same Christ our Lord. Amen.',
+                es: 'Oh Dios, cuyo Hijo Unigénito, por su vida, muerte y resurrección, nos ha merecido el premio de la vida eterna, concédenos, te rogamos, que meditando estas oraciones, imitemos lo que contienen y alcancemos lo que prometen. Por el mismo Cristo nuestro Señor. Amén.'
+            }
+        },
         signOfTheCross: {
             name: {
                 en: 'Sign of the Cross',

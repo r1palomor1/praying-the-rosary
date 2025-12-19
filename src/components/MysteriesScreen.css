@@ -94,6 +94,11 @@
     gap: 1.5rem;
 }
 
+/* Mystery Card Wrapper - Contains button and badge */
+.mystery-card-wrapper {
+    position: relative;
+}
+
 /* Mystery Cards */
 .mystery-card-btn {
     position: relative;
@@ -152,6 +157,9 @@
 
 /* Badges */
 .mystery-badge {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
     background: var(--mys-badge-bg);
     color: var(--mys-badge-text);
     font-size: 0.75rem;
@@ -163,8 +171,8 @@
     gap: 0.375rem;
     border: 1px solid var(--mys-badge-border);
     white-space: nowrap;
-    margin-left: 1rem;
     transition: all 0.3s ease;
+    z-index: 10;
 }
 
 .mystery-badge svg {
@@ -184,6 +192,61 @@
 
 .mystery-badge-progress svg {
     color: var(--mys-text-primary);
+}
+
+/* Clear Progress Button */
+.mystery-badge-clear {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--mys-text-secondary);
+    opacity: 0.6;
+    transition: all 0.2s ease;
+}
+
+.mystery-badge-clear:hover {
+    opacity: 1;
+    color: #ef4444;
+    transform: scale(1.1);
+}
+
+.mystery-badge-clear:active {
+    transform: scale(0.95);
+}
+
+.mystery-badge-clear svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Clear All Progress Button */
+.btn-clear-all {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.btn-clear-all:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-clear-all:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);
 }
 
 /* Bottom Section - Fixed Navigation */

@@ -76,6 +76,7 @@ export interface ClosingPrayers {
     hailHolyQueen: Prayer;
     litany: Prayer;
     finalPrayer: Prayer;
+    sacredFinalPrayer: Prayer;
     signOfTheCross: Prayer;
 }
 

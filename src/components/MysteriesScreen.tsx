@@ -2,13 +2,13 @@ import { useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { BottomNav } from './BottomNav';
-import { loadPrayerProgress, hasValidPrayerProgress } from '../utils/storage';
+import { loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress } from '../utils/storage';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysterySetType } from '../types';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { useNavigationHandler } from '../hooks/useNavigationHandler';
 import { sortMysteriesWithPriority, hasInProgressMystery } from '../utils/mysterySorting';
-import { CheckCircle, Timer } from 'lucide-react';
+import { CheckCircle, Timer, X } from 'lucide-react';
 import './MysteriesScreen.css';
 
 interface MysteriesScreenProps {
@@ -37,6 +37,8 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         en: {
             title: 'Mysteries',
             completed: 'Done',
+            clearAll: 'Clear All Progress',
+            clearAllConfirm: 'Clear all mystery progress? Any completed mysteries will remain counted in your statistics.',
             days: {
                 monday: 'Monday',
                 tuesday: 'Tuesday',
@@ -50,6 +52,8 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         es: {
             title: 'Misterios',
             completed: 'Completado',
+            clearAll: 'Borrar Todo el Progreso',
+            clearAllConfirm: '¿Borrar todo el progreso de misterios? Los misterios completados permanecerán contados en tus estadísticas.',
             days: {
                 monday: 'Lunes',
                 tuesday: 'Martes',
@@ -69,11 +73,41 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         onNavigateHome();
     };
 
+    const handleClearProgress = (e: React.MouseEvent, mysteryType: MysterySetType, mysteryName: string, isComplete: boolean) => {
+        e.stopPropagation(); // Prevent card click
+
+        const message = isComplete
+            ? (language === 'es'
+                ? `¿Reiniciar ${mysteryName}? Tu completación permanecerá contada en tus estadísticas.`
+                : `Restart ${mysteryName}? Your completion will remain counted in your statistics.`)
+            : (language === 'es'
+                ? `¿Borrar progreso de ${mysteryName}? Esto reiniciará tu oración actual.`
+                : `Clear progress for ${mysteryName}? This will reset your current prayer.`);
+
+        if (window.confirm(message)) {
+            clearPrayerProgress(mysteryType);
+            // Force re-render by navigating home and back
+            window.location.reload();
+        }
+    };
+
+    const handleClearAllProgress = () => {
+        if (window.confirm(t.clearAllConfirm)) {
+            // Clear all mystery types
+            orderedMysteries.forEach(mysterySet => {
+                clearPrayerProgress(mysterySet.type);
+            });
+            window.location.reload();
+        }
+    };
+
     const getDaysText = (days: string[]) => {
         return days.map((day) => t.days[day as keyof typeof t.days]).join(' & ');
     };
 
     // Memoize progress calculation to avoid instantiating PrayerFlowEngine on every render
+    // Include current date to ensure progress refreshes daily
+    const currentDate = new Date().toISOString().split('T')[0];
     const progressData = useMemo(() => {
         const data: Record<string, MysteryProgress | null> = {};
 
@@ -98,7 +132,7 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
         });
 
         return data;
-    }, [language]);
+    }, [language, currentDate]);
 
     // Smart sorting: In-progress first, then today's mystery, then traditional order
     const sortedMysteries = useMemo(() => {
@@ -124,32 +158,59 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
                         const isComplete = progress?.percentage === 100;
 
                         return (
-                            <button
-                                key={mysterySet.type}
-                                className="mystery-card-btn"
-                                onClick={() => handleMysterySelect(mysterySet.type)}
-                            >
-                                <div className="mystery-card-content">
-                                    <h2 className="mystery-card-title">{mysterySet.name[language]}</h2>
-                                    <p className="mystery-card-days">{getDaysText(mysterySet.days)}</p>
-                                </div>
+                            <div key={mysterySet.type} className="mystery-card-wrapper">
+                                <button
+                                    className="mystery-card-btn"
+                                    onClick={() => handleMysterySelect(mysterySet.type)}
+                                >
+                                    <div className="mystery-card-content">
+                                        <h2 className="mystery-card-title">{mysterySet.name[language]}</h2>
+                                        <p className="mystery-card-days">{getDaysText(mysterySet.days)}</p>
+                                    </div>
+                                </button>
 
-                                {/* Status Badges */}
+                                {/* Status Badges - Outside button to avoid nesting */}
                                 {isComplete ? (
                                     <div className="mystery-badge mystery-badge-done">
                                         <CheckCircle />
                                         <span>{t.completed}</span>
+                                        <button
+                                            className="mystery-badge-clear"
+                                            onClick={(e) => handleClearProgress(e, mysterySet.type, mysterySet.name[language], true)}
+                                            aria-label="Clear progress"
+                                        >
+                                            <X size={16} />
+                                        </button>
                                     </div>
                                 ) : isInProgress ? (
                                     <div className="mystery-badge mystery-badge-progress">
                                         <Timer />
                                         <span>{progress?.percentage}%</span>
+                                        <button
+                                            className="mystery-badge-clear"
+                                            onClick={(e) => handleClearProgress(e, mysterySet.type, mysterySet.name[language], false)}
+                                            aria-label="Clear progress"
+                                        >
+                                            <X size={16} />
+                                        </button>
                                     </div>
                                 ) : null}
-                            </button>
+                            </div>
                         );
                     })}
                 </div>
+
+                {/* Clear All Progress Button */}
+                {(sortedMysteries.some(m => progressData[m.type] !== null)) && (
+                    <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                        <button
+                            className="btn-clear-all"
+                            onClick={handleClearAllProgress}
+                        >
+                            {t.clearAll}
+                        </button>
+                    </div>
+                )}
             </main>
 
             <div className="bottom-section">
