@@ -7,6 +7,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import { LanguageSelector } from './components/LanguageSelector';
 import { loadPrayerProgress, hasValidPrayerProgress } from './utils/storage';
 import { PrayerFlowEngine } from './utils/prayerFlowEngine';
+import { cleanupPrayerHistory } from './utils/cleanupHistory';
 
 // Lazy load screen components for code splitting
 const HomeScreen = lazy(() => import('./components/HomeScreen'));
@@ -32,8 +33,14 @@ function AppContent() {
   const [startWithContinuous, setStartWithContinuous] = useState(false);
   const [autoPlayCompletion, setAutoPlayCompletion] = useState(false);
 
-  // Check if language has been selected before
+  // Check if language has been selected before and cleanup contaminated history
   useEffect(() => {
+    // Clean up any Sacred Prayer entries that were mistakenly saved to Rosary history
+    const cleanup = cleanupPrayerHistory();
+    if (cleanup.removed > 0) {
+      console.log(`Removed ${cleanup.removed} contaminated entries from Rosary history`);
+    }
+
     const savedSettings = localStorage.getItem('rosary_settings');
     if (savedSettings) {
       const { language: savedLanguage } = JSON.parse(savedSettings);

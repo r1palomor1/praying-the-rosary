@@ -187,7 +187,12 @@ export function hasCompletionOnDate(date: string): boolean {
  */
 export function getMysteryForDate(date: string): MysterySetType | null {
     const history = getPrayerHistory();
-    const completions = history.filter(c => c.date === date);
+
+    // Filter to only include valid Rosary mystery types
+    const validMysteryTypes: MysterySetType[] = ['joyful', 'sorrowful', 'glorious', 'luminous'];
+    const completions = history
+        .filter(c => c.date === date)
+        .filter(c => validMysteryTypes.includes(c.mysteryType as MysterySetType));
 
     if (completions.length === 0) return null;
     if (completions.length === 1) return completions[0].mysteryType;
