@@ -149,10 +149,16 @@ export function getCompletionsByMystery() {
  * Get all prayer statistics
  */
 export function getPrayerStats(): PrayerStats {
+    // Filter to only include valid Rosary mystery types
+    const validMysteryTypes: MysterySetType[] = ['joyful', 'sorrowful', 'glorious', 'luminous'];
+    const rosaryHistory = getPrayerHistory().filter(completion =>
+        validMysteryTypes.includes(completion.mysteryType as MysterySetType)
+    );
+
     return {
         currentStreak: calculateCurrentStreak(),
         longestStreak: calculateLongestStreak(),
-        totalCompletions: getPrayerHistory().length,
+        totalCompletions: rosaryHistory.length,  // Only count Rosary completions
         completionsByMystery: getCompletionsByMystery()
     };
 }
