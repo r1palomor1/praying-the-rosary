@@ -54,6 +54,19 @@
 - Litany text remains fully visible and readable
 - Code preserved (unreachable) for future reference if better TTS APIs emerge
 
+## 🎯 Priority Items for Next Session
+
+### Progress Bar Gap Issue (Dec 19, 2024)
+- [ ] **Remove gap between progress bar and cinematic content**
+  - **Location:** `.progress-bar-container` in `MysteryScreen.css` (line 64-70)
+  - **Current Issue:** `padding-bottom: var(--spacing-md)` creates unwanted gap below progress bar
+  - **Options to consider:**
+    1. Remove gap completely: `padding-bottom: 0`
+    2. Make gap smaller: `padding-bottom: 4px`
+    3. Remove both padding and border-bottom
+  - **Decision needed:** Which option provides best visual hierarchy?
+  - **DevTools finding:** Hovering over `.progress-bar-container` highlights the gap itself
+
 ## 📋 Planned Features
 
 ### User Feedback & UX Improvements
@@ -322,8 +335,27 @@ Current Web Speech API doesn't provide real-time feedback on what's being read, 
 - Phase 3 (Liturgical Intelligence): ~3-4 hours
 - Phase 4 (Calendar Features): ~6-8 hours
 - Phase 5 (Advanced Integration): ~8-10 hours
+- Phase 6 (AI Chatbot): ~6-8 hours
 
-**Total**: ~23-31 hours for full implementation
+**Total**: ~29-39 hours for full implementation
+
+### Phase 6: AI-Powered Rosary Education (Future Enhancement)
+- [ ] **AI Chatbot for Mystery Explanations**
+  - Replace static "Learn More" with interactive AI assistant
+  - Users can ask questions about mysteries, fruits, scriptures
+  - Personalized explanations adapted to user's understanding level
+  - **Technology**: Google Gemini API (FREE tier - 1500 requests/day)
+  - **UI**: "💬 Ask About This Mystery" button next to Learn More
+  - **Features**:
+    - "What does this mystery mean?"
+    - "Why is the fruit 'Humility'?"
+    - "Explain this scripture in simple terms"
+    - "How does this relate to my daily life?"
+  - **Cost**: FREE (Gemini API free tier)
+  - **Implementation**: Serverless API route on Vercel
+  - **No authentication needed** - just rate limiting
+  - **Privacy**: Conversations not stored, no user data collected
+
 
 ---
 **Last Updated:** December 19, 2024
