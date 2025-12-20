@@ -24,7 +24,14 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 0;
-    padding: var(--spacing-sm);
+    padding-top: 0.625rem;
+    /* 10px top */
+    padding-left: 0.75rem;
+    /* 12px left */
+    padding-right: 0.75rem;
+    /* 12px right */
+    padding-bottom: 0;
+    /* No bottom padding for tighter spacing */
 }
 
 .mystery-header-row {
@@ -65,7 +72,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     height: 4px;
     align-items: center;
     margin-bottom: 0;
-    padding-bottom: var(--spacing-md);
+    padding-bottom: 0.5rem;
+    /* 8px - reduced from 16px for tighter spacing */
     border-bottom: 1px solid var(--color-border-light);
 }
 
@@ -449,7 +457,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 
     .mystery-screen-header {
         margin-bottom: 0;
-        padding: 0;
+        padding-top: 0.625rem;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        padding-bottom: 0;
+        /* No bottom padding on mobile either */
     }
 
     /* Remove margin when followed by immersive container (cinematic mode) */
@@ -460,6 +472,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     .progress-bar-container {
         margin-bottom: 0;
         padding-bottom: 0;
+        /* No padding on mobile for tightest spacing */
     }
 
     .mystery-screen-content {
@@ -488,7 +501,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     }
 
     .prayer-section {
-        padding: var(--spacing-sm);
+        padding: 0;
         margin-bottom: var(--spacing-sm);
         border-radius: var(--radius-lg);
     }
@@ -496,11 +509,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     /* --- Header Layout --- */
     .prayer-header {
         flex-direction: column;
-        gap: var(--spacing-xs);
+        gap: 0;
         text-align: center;
         border-bottom: none;
         padding-bottom: 0;
-        margin-bottom: var(--spacing-sm);
+        margin-bottom: 0;
     }
 
     /* --- Button Resizing (15% Smaller -> ~40px) --- */
@@ -581,6 +594,12 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
         border: 1px solid var(--color-border-light);
         color: var(--color-text-secondary);
     }
+
+    /* Reduce top padding in cinematic mode for tighter spacing */
+    .immersive-main {
+        padding-top: 0.5rem;
+        /* 8px - reduced from 16px for mobile */
+    }
 }
 
 .final-hail-mary-prayer {
@@ -601,7 +620,11 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 
 .final-hail-mary-prayer .mystery-screen-header {
     margin-bottom: var(--spacing-xs);
-    padding: 0;
+    padding-top: 0.625rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-bottom: 0;
+    /* No bottom padding */
 }
 
 /* Remove margin when followed by immersive container (cinematic mode) */
@@ -864,7 +887,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     align-items: center !important;
     justify-content: space-between !important;
     text-align: left !important;
-    gap: var(--spacing-sm) !important;
+    gap: 0 !important;
 }
 
 .prayer-name {
@@ -1258,7 +1281,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 .immersive-overlay {
     position: absolute;
     inset: 0;
-    /* Base overlay: 90/30% (lighter, for text-hidden state) */
+    /* Base overlay: 90% → 30% gradient (for text-visible state) */
     background: linear-gradient(to bottom, rgba(11, 17, 30, 0.90) 0%, rgba(11, 17, 30, 0.75) 30%, rgba(11, 17, 30, 0.50) 60%, rgba(11, 17, 30, 0.30) 90%);
     z-index: 2;
 }
@@ -1278,7 +1301,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 .immersive-overlay-darker {
     position: absolute;
     inset: 0;
-    /* Base overlay: 90/30% (lighter, for text-hidden state) */
+    /* Base overlay: 90% → 30% gradient (for text-visible state) */
     background: linear-gradient(to bottom, rgba(11, 17, 30, 0.90) 0%, rgba(11, 17, 30, 0.75) 30%, rgba(11, 17, 30, 0.50) 60%, rgba(11, 17, 30, 0.30) 90%);
     z-index: 2;
 }
@@ -1297,7 +1320,6 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 
 
 .immersive-content {
-    position: relative;
     z-index: 10;
     display: flex;
     flex-direction: column;
@@ -1321,13 +1343,13 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: 2rem;
+    padding-top: 1rem;
 }
 
 .cinematic-bead-counter {
     position: absolute;
-    bottom: 5%;
-    /* Near the bottom navigation bar */
+    bottom: 30%;
+    /* 30% from bottom - optimal position in lighter overlay area */
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -1499,6 +1521,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     color: #FFD700;
     /* Keep gold for Mystery Title as accent, or remove if wanting pure classic */
     font-weight: 800;
+    margin-bottom: 0.625rem;
+    /* 10px - reduced from default 16px for tighter spacing */
 }
 
 .progress-bar-container {

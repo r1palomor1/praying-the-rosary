@@ -60,7 +60,9 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
             <main className="prayers-main">
                 {renderPrayerSection(t.sections.opening, prayers.opening)}
                 {renderPrayerSection(t.sections.sequence, prayers.sequence)}
-                {renderPrayerSection(t.sections.closing, prayers.closing)}
+                {renderPrayerSection(t.sections.closing, Object.fromEntries(
+                    Object.entries(prayers.closing).filter(([key]) => key !== 'sacredFinalPrayer')
+                ))}
             </main>
 
             <div className="bottom-nav-fixed-container">

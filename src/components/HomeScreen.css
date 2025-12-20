@@ -76,8 +76,8 @@
     top: 0;
     left: 0;
     right: 0;
-    padding: 1rem 0.75rem;
-    /* Reduced top padding as it now takes more vertical space */
+    padding: 0.625rem 0.75rem;
+    /* 10px top padding to match prayer screens */
     display: flex;
     flex-direction: column;
     /* Stack rows vertically */
