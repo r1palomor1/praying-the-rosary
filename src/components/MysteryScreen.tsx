@@ -839,14 +839,14 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                     {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
                                         <div className="pt-8">
                                             {decadeInfo.fruit && (
-                                                <h3 style={{ textAlign: 'center' }}>
-                                                    <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                                <div style={{ textAlign: 'center' }}>
+                                                    <span className="font-display text-xl font-bold tracking-wide immersive-mystery-title">
                                                         {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}
                                                     </span>
-                                                    <span style={{ color: 'var(--color-text-primary)', fontWeight: 700 }}>
+                                                    <span className="font-display text-xl font-bold tracking-wide immersive-mystery-title">
                                                         {decadeInfo.fruit.toUpperCase()}
                                                     </span>
-                                                </h3>
+                                                </div>
                                             )}
                                             {decadeInfo.scripture && (
                                                 <blockquote className="border-l-2 border-primary-50 pl-4">
@@ -949,10 +949,10 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                     {/* Show Fruit for Our Father */}
                                     {decadeInfo?.fruit && (
                                         <div className="text-center">
-                                            <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                            <span className="font-display text-xl font-bold tracking-wide immersive-mystery-title">
                                                 {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}
                                             </span>
-                                            <span style={{ color: 'var(--color-text-primary)', fontWeight: 700 }}>
+                                            <span className="font-display text-xl font-bold tracking-wide immersive-mystery-title">
                                                 {decadeInfo.fruit.toUpperCase()}
                                             </span>
                                         </div>
@@ -1006,10 +1006,10 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                         const decadeInfo = flowEngine.getCurrentDecadeInfo();
                                         return decadeInfo?.fruit ? (
                                             <div className="text-center">
-                                                <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                                <span className="font-display text-xl font-bold tracking-wide immersive-mystery-title">
                                                     {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}
                                                 </span>
-                                                <span style={{ color: 'var(--color-text-primary)', fontWeight: 700 }}>
+                                                <span className="font-display text-xl font-bold tracking-wide immersive-mystery-title">
                                                     {decadeInfo.fruit.toUpperCase()}
                                                 </span>
                                             </div>
