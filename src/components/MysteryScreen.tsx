@@ -839,8 +839,13 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                     {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
                                         <div className="pt-8">
                                             {decadeInfo.fruit && (
-                                                <h3 className="text-primary" style={{ textAlign: 'center' }}>
-                                                    {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}{decadeInfo.fruit.toUpperCase()}
+                                                <h3 style={{ textAlign: 'center' }}>
+                                                    <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
+                                                        {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}
+                                                    </span>
+                                                    <span style={{ color: 'var(--color-text-primary)', fontWeight: 700 }}>
+                                                        {decadeInfo.fruit.toUpperCase()}
+                                                    </span>
                                                 </h3>
                                             )}
                                             {decadeInfo.scripture && (
@@ -947,7 +952,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                             <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
                                                 {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}
                                             </span>
-                                            <span className="text-primary">
+                                            <span style={{ color: 'var(--color-text-primary)', fontWeight: 700 }}>
                                                 {decadeInfo.fruit.toUpperCase()}
                                             </span>
                                         </div>
@@ -1004,7 +1009,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                                                 <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#D4AF37' }}>
                                                     {language === 'es' ? 'FRUTO: ' : 'FRUIT: '}
                                                 </span>
-                                                <span className="text-primary">
+                                                <span style={{ color: 'var(--color-text-primary)', fontWeight: 700 }}>
                                                     {decadeInfo.fruit.toUpperCase()}
                                                 </span>
                                             </div>
