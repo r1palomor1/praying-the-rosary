@@ -251,5 +251,79 @@ Current Web Speech API doesn't provide real-time feedback on what's being read, 
 - [ ] Different highlight colors/styles option
 - [ ] Accessibility improvements (screen reader announcements)
 
+## 🎨 Catholic Calendar API Integration (Future Enhancement)
+
+**API:** [Catholic Calendar API](https://calapi.inadiutorium.cz/) - Free, no API key required
+
+### Phase 1: Liturgical Colors (Foundation)
+- [ ] **Dynamic Theme Color** - Status bar changes based on liturgical season
+  - Green (Ordinary Time)
+  - Violet (Advent & Lent)
+  - White (Christmas, Easter, Feasts of the Lord/Mary)
+  - Red (Pentecost, Passion Sunday, Martyrs)
+  - Rose (Gaudete & Laetare Sundays)
+  - Black (All Souls)
+- [ ] **App Theme Integration** - Optional: Full app color scheme follows liturgical calendar
+- [ ] **Settings Toggle** - "Follow Liturgical Colors" preference
+
+### Phase 2: Daily Content
+- [ ] **📅 Daily Saint Card** - Display on home screen
+  - Saint name
+  - Brief biography
+  - Feast day rank (Solemnity, Feast, Memorial)
+  - Tap to expand for full details
+- [ ] **📖 Daily Gospel Reading** - Integration with Mass readings
+  - Gospel passage of the day
+  - Optional: Full Mass readings (First Reading, Psalm, Second Reading)
+  - Bilingual support (EN/ES)
+
+### Phase 3: Liturgical Intelligence
+- [ ] **🙏 Suggested Mysteries** - Based on liturgical season/day
+  - Example: Joyful Mysteries during Advent
+  - Example: Sorrowful Mysteries during Lent
+  - Example: Glorious Mysteries during Easter
+  - Smart recommendations on feast days
+- [ ] **🔔 Feast Day Notifications** - Optional push notifications
+  - Solemnities (Holy Days of Obligation)
+  - Major feast days
+  - Patron saint days
+  - User-selected saints
+
+### Phase 4: Calendar Features
+- [ ] **📊 Liturgical Calendar View** - Full calendar interface
+  - Month view with color-coded days
+  - Upcoming feasts preview
+  - Tap day to see details
+- [ ] **🌍 Localized Calendars** - Regional variations
+  - Different countries have different patron saints
+  - Local diocesan calendars
+  - Language-specific feast days
+
+### Phase 5: Advanced Integration
+- [ ] **Prayer Customization** - Liturgical season-aware prayers
+  - Special prayers for Advent/Lent
+  - Seasonal variations of prayers
+  - Feast-specific additions
+- [ ] **Educational Content** - Learn about the liturgical year
+  - Explanation of each season
+  - History of feast days
+  - Significance of liturgical colors
+
+### Implementation Notes
+- **API Endpoint**: `https://calapi.inadiutorium.cz/api/v0/{language}/calendars/default/today`
+- **Caching Strategy**: Cache daily data to reduce API calls
+- **Offline Support**: Graceful degradation when offline
+- **Performance**: Fetch on app load, update once per day
+- **Privacy**: No user data sent to API (public endpoint)
+
+### Estimated Effort
+- Phase 1 (Liturgical Colors): ~2-3 hours
+- Phase 2 (Daily Content): ~4-6 hours
+- Phase 3 (Liturgical Intelligence): ~3-4 hours
+- Phase 4 (Calendar Features): ~6-8 hours
+- Phase 5 (Advanced Integration): ~8-10 hours
+
+**Total**: ~23-31 hours for full implementation
+
 ---
-**Last Updated:** December 15, 2024
+**Last Updated:** December 19, 2024
