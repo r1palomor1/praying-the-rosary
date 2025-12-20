@@ -111,8 +111,15 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     const [showPrayerText, setShowPrayerText] = useState(true);
 
     // DEBUG: Opacity sliders for cinematic mode (only visible when text is hidden)
-    const [debugBaseOpacity, setDebugBaseOpacity] = useState(90); // Base gradient (default 90%)
-    const [debugSecondaryOpacity, setDebugSecondaryOpacity] = useState(0); // Secondary layer (default 0% when text hidden)
+    // Load from localStorage or use defaults
+    const [debugBaseOpacity, setDebugBaseOpacity] = useState(() => {
+        const saved = localStorage.getItem('debug_base_opacity');
+        return saved ? parseFloat(saved) : 90;
+    });
+    const [debugSecondaryOpacity, setDebugSecondaryOpacity] = useState(() => {
+        const saved = localStorage.getItem('debug_secondary_opacity');
+        return saved ? parseFloat(saved) : 0;
+    });
 
     const [flowEngine] = useState(() => {
         const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);

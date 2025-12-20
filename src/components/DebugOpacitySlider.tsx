@@ -1,5 +1,5 @@
-import { Plus, Minus, Settings } from 'lucide-react';
-import { useState } from 'react';
+import { Plus, Minus, Bug } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface DebugOpacitySliderProps {
     baseOpacity: number;
@@ -17,6 +17,15 @@ export function DebugOpacitySlider({
     visible
 }: DebugOpacitySliderProps) {
     const [isExpanded, setIsExpanded] = useState(true);
+
+    // Persist opacity changes to localStorage
+    useEffect(() => {
+        localStorage.setItem('debug_base_opacity', baseOpacity.toString());
+    }, [baseOpacity]);
+
+    useEffect(() => {
+        localStorage.setItem('debug_secondary_opacity', secondaryOpacity.toString());
+    }, [secondaryOpacity]);
 
     if (!visible) return null;
 
@@ -50,21 +59,19 @@ export function DebugOpacitySlider({
                     bottom: '90px',
                     right: '20px',
                     zIndex: 100,
-                    background: 'rgba(76, 110, 245, 0.9)',
-                    backdropFilter: 'blur(10px)',
-                    padding: '12px',
-                    borderRadius: '50%',
+                    background: 'transparent',
+                    padding: '4px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-                    border: '2px solid rgba(255, 255, 255, 0.2)',
+                    border: 'none',
                     cursor: 'pointer',
-                    color: 'white'
+                    color: '#4C6EF5',
+                    filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
                 }}
                 aria-label="Open debug controls"
             >
-                <Settings size={24} />
+                <Bug size={20} />
             </button>
         );
     }
