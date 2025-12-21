@@ -153,6 +153,8 @@ html {
     font-size: calc(16px * var(--font-scale));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    /* Prevent pinch-to-zoom on mobile */
 }
 
 body {
@@ -164,6 +166,8 @@ body {
     transition: background-color var(--transition-base), color var(--transition-base);
     overflow-x: hidden;
     width: 100%;
+    touch-action: manipulation;
+    /* Prevent pinch-to-zoom on mobile */
 }
 
 /* ===== TYPOGRAPHY ===== */
