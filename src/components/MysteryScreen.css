@@ -136,12 +136,23 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 .bead {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: var(--color-bg-tertiary);
     border: 2px solid var(--color-border-light);
     transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bead-number {
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+    padding-top: 1px;
 }
 
 .bead-active {
@@ -481,10 +492,7 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
         /* Space for fixed bottom nav */
     }
 
-    .bead-counter {
-        margin-top: var(--spacing-sm);
-        gap: var(--spacing-xs);
-    }
+
 
     .mystery-content-card {
         margin-bottom: var(--spacing-sm);
