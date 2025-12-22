@@ -1,0 +1,326 @@
+/* ========================================
+   CINEMATIC MYSTERY VIEW STYLES
+   ======================================== */
+
+/* Container - Full screen immersive */
+.cinematic-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ========================================
+   4-LAYER BACKGROUND SYSTEM
+   ======================================== */
+
+/* Layer 1: Blurred Background */
+.cinematic-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.cinematic-bg-blur {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(20px);
+    transform: scale(1.1);
+}
+
+/* Layer 2: Clear Main Image */
+.cinematic-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 2;
+}
+
+/* Layer 3: Dynamic Overlay - Text ON (default gradient) */
+.cinematic-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.90) 0%,
+            rgba(0, 0, 0, 0.75) 30%,
+            rgba(0, 0, 0, 0.50) 60%,
+            rgba(0, 0, 0, 0.30) 90%);
+    z-index: 3;
+    transition: all 0.5s ease;
+}
+
+/* Darker overlay for intro/closing prayers */
+.cinematic-overlay-darker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.90) 0%,
+            rgba(0, 0, 0, 0.75) 30%,
+            rgba(0, 0, 0, 0.50) 60%,
+            rgba(0, 0, 0, 0.30) 90%);
+    z-index: 3;
+    transition: all 0.5s ease;
+}
+
+/* Layer 4: Content */
+.cinematic-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 10vh;
+}
+
+.cinematic-main {
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 var(--spacing-lg);
+}
+
+/* ========================================
+   TEXT HIDING BEHAVIOR
+   CRITICAL: Only hide body text and scripture, NOT titles/fruit
+   ======================================== */
+
+.cinematic-content.text-hidden .cinematic-text,
+.cinematic-content.text-hidden .cinematic-scripture {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* ========================================
+   TYPOGRAPHY - EXACT FONT SIZES FROM TESTING
+   ======================================== */
+
+/* Prayer Titles - ALWAYS VISIBLE */
+.cinematic-title {
+    font-size: 2rem;
+    /* 32px - EXACT */
+    color: #FFD700;
+    /* Gold */
+    text-transform: uppercase;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Fruit Label - ALWAYS VISIBLE */
+.cinematic-fruit-label {
+    font-size: 1.75rem;
+    /* 28px - EXACT */
+    color: #FFD700;
+    /* Gold */
+    text-transform: uppercase;
+    font-weight: bold;
+    text-align: center;
+    margin: var(--spacing-sm) 0;
+}
+
+/* Prayer Text - Can be hidden */
+.cinematic-text {
+    font-size: 1.375rem;
+    /* 22px - EXACT */
+    text-align: center;
+    max-width: 800px;
+    line-height: 1.7;
+    color: #f3f4f6;
+    /* Gray-100 */
+}
+
+/* Scripture - Can be hidden */
+.cinematic-scripture {
+    border-left: 2px solid rgba(255, 215, 0, 0.3);
+    padding-left: 1rem;
+    margin-top: var(--spacing-lg);
+}
+
+.cinematic-scripture-text {
+    font-size: 1.25rem;
+    /* 20px - EXACT */
+    font-style: italic;
+    text-align: center;
+    margin: var(--spacing-md) 0;
+    line-height: 1.6;
+    color: #d1d5db;
+    /* Gray-300 */
+}
+
+.cinematic-scripture-ref {
+    font-size: 1.25rem;
+    /* 20px - EXACT */
+    font-style: italic;
+    color: #9ca3af;
+    /* Gray-400 */
+    text-align: right;
+    margin-top: var(--spacing-sm);
+}
+
+/* ========================================
+   BEAD COUNTER - CRITICAL FIX
+   MUST be OUTSIDE .cinematic-main
+   Positioned at bottom 15%
+   ======================================== */
+
+.cinematic-container .bead-counter {
+    position: absolute;
+    bottom: 15%;
+    /* CRITICAL: Not middle of screen! */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
+.cinematic-bead-counter {
+    margin-top: var(--spacing-lg);
+}
+
+/* Bead styling */
+.bead {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    /* CRITICAL FIX */
+    align-items: center;
+    /* CRITICAL FIX */
+    justify-content: center;
+    /* CRITICAL FIX */
+    transition: all 0.2s ease;
+}
+
+.bead-active {
+    background: #7C3AED;
+    /* Purple-600 */
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.bead-number {
+    font-size: 13px;
+    /* EXACT - CRITICAL FIX */
+    font-weight: 700;
+    /* CRITICAL FIX */
+    color: white;
+    /* CRITICAL FIX */
+    line-height: 1;
+    /* CRITICAL FIX */
+    padding-top: 1px;
+    /* CRITICAL FIX - centers vertically */
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.space-y-2>*+* {
+    margin-top: 0.5rem;
+}
+
+.space-y-4>*+* {
+    margin-top: 1rem;
+}
+
+.space-y-6>*+* {
+    margin-top: 1.5rem;
+}
+
+.space-y-8>*+* {
+    margin-top: 2rem;
+}
+
+.pt-4 {
+    padding-top: 1rem;
+}
+
+.pt-8 {
+    padding-top: 2rem;
+}
+
+.mb-8 {
+    margin-bottom: 2rem;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.mt-8 {
+    margin-top: 2rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.h-full {
+    height: 100%;
+}
+
+.max-w-2xl {
+    max-width: 42rem;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .cinematic-title {
+        font-size: 1.75rem;
+    }
+
+    .cinematic-fruit-label {
+        font-size: 1.5rem;
+    }
+
+    .cinematic-text {
+        font-size: 1.25rem;
+    }
+
+    .cinematic-scripture-text,
+    .cinematic-scripture-ref {
+        font-size: 1.125rem;
+    }
+
+    .cinematic-container .bead-counter {
+        bottom: 10%;
+    }
+}
