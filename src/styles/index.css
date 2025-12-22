@@ -548,3 +548,75 @@ p {
         transform: rotate(360deg);
     }
 }
+
+/* ===== CENTRALIZED LITANY DESIGN SYSTEM (Restored) ===== */
+/* structural solution: Single Source of Truth for all modes */
+
+.litany-container-new {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-md) 0;
+}
+
+.litany-row-new {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    border-left: 4px solid transparent;
+    /* Placeholder for active state */
+    margin-bottom: var(--spacing-sm);
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    transition: all var(--transition-base);
+}
+
+/* Common text styling for both Call and Response */
+.litany-call-new,
+.litany-response-new {
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    /* Locked at 20px for readability */
+    line-height: 1.5;
+}
+
+/* Call (Priest/Leader) */
+.litany-call-new {
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Response (People) */
+.litany-response-new {
+    font-weight: 500;
+    font-style: italic;
+    color: var(--color-text-secondary);
+}
+
+/* Active State - Unified for Classic & Cinematic */
+.litany-row-new.litany-row-active {
+    border-left: 4px solid #FFD700;
+    /* Gold Accent */
+    background-color: rgba(255, 215, 0, 0.1);
+    /* Subtle Gold Tint */
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] .litany-call-new {
+    color: var(--color-primary-lighter);
+}
+
+[data-theme="dark"] .litany-response-new {
+    color: var(--color-text-tertiary);
+}
+
+[data-theme="dark"] .litany-row-new.litany-row-active {
+    background-color: rgba(255, 215, 0, 0.15);
+    /* Slightly stronger in dark mode */
+    border-left-color: #FFD700;
+}
+
+/* Cinematic Mode Specific Adjustments (if any needed, but keeping it unified) */
+/* The goal was bulletproof parity, so we avoid varying sizes here */

@@ -1,5 +1,26 @@
 # Holy Rosary App - Feature To-Do List
 
+---
+
+## 🚨 CRITICAL SAFETY PROTOCOL 🚨
+
+**BEFORE switching to a new agent (when current model hits quota):**
+
+```bash
+# USER must manually run these commands in terminal:
+git add .
+git commit -m "WIP: [describe current state]"
+git push
+```
+
+**Why?** Prevents data loss from rogue agent actions (like `git checkout .`)
+
+**Lesson Learned (Dec 21, 2024):** Lost 3+ hours of refactor work because uncommitted changes were reverted by next agent. **NEVER let an agent handle final commits when switching models!**
+
+**Rule:** Commit frequently during work, and **ALWAYS commit manually before ending a session.**
+
+---
+
 ## ✅ Completed Features
 
 ### Audio & Highlighting
@@ -55,6 +76,29 @@
 - Code preserved (unreachable) for future reference if better TTS APIs emerge
 
 ## 🎯 Priority Items for Next Session
+
+### 🚨 CRITICAL: Reconstruct Lost Refactor Work (Dec 21, 2024)
+- [ ] **Rebuild Classic/Cinematic Layout Separation**
+  - **Reference Documents:**
+    - `C:\Users\palom\.gemini\antigravity\brain\25310c92-fd9e-4bc5-88c9-f681c88482eb\REFACTOR_RECONSTRUCTION_PLAN.md`
+    - `C:\Users\palom\.gemini\antigravity\brain\25310c92-fd9e-4bc5-88c9-f681c88482eb\task.md`
+  - **What Was Lost:** Complete refactor separating MysteryScreen.tsx into ClassicMysteryView and CinematicMysteryView
+  - **Critical Fixes to Restore:**
+    - ✅ Image compression fix (Classic mode proper aspect ratios)
+    - ✅ Bead counter positioning (bottom 15%)
+    - ✅ Unified litany styling (centralized in index.css)
+    - ✅ Text hiding behavior (titles/fruit stay visible)
+    - ✅ Font sizes standardized (all documented)
+    - ✅ Overlay opacity optimized (4-stop gradient)
+  - **⚠️ LESSON LEARNED: Commit After Each Phase!**
+    - Phase 1: Shared components → `git commit -m "WIP: Phase 1 - Shared components"`
+    - Phase 2: ClassicMysteryView → `git commit -m "WIP: Phase 2 - Classic view"`
+    - Phase 3: CinematicMysteryView → `git commit -m "WIP: Phase 3 - Cinematic view"`
+    - Phase 4: MysteryScreen router → `git commit -m "WIP: Phase 4 - Router conversion"`
+    - Phase 5: Litany CSS → `git commit -m "WIP: Phase 5 - Litany styling"`
+    - **DO NOT wait for all phases to complete before committing!**
+  - **Estimated Time:** 2-3 hours with frequent commits
+  - **Testing:** Test after each phase, not just at the end
 
 ### Progress Bar Gap Issue (Dec 19, 2024)
 - [ ] **Remove gap between progress bar and cinematic content**
