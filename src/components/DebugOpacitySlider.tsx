@@ -16,7 +16,7 @@ export function DebugOpacitySlider({
     onSecondaryOpacityChange,
     visible
 }: DebugOpacitySliderProps) {
-    const [isExpanded, setIsExpanded] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     // Persist opacity changes to localStorage
     useEffect(() => {
