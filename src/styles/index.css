@@ -620,3 +620,29 @@ p {
 
 /* Cinematic Mode Specific Adjustments (if any needed, but keeping it unified) */
 /* The goal was bulletproof parity, so we avoid varying sizes here */
+
+/* Litany Title */
+.litany-title {
+    font-size: 1.5rem;
+    color: #FFD700;
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+/* Litany Reminder Text */
+.litany-reminder {
+    text-align: left !important;
+    font-size: 1.25rem !important;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    margin: var(--spacing-md) 0;
+}
+
+.litany-reminder-highlight {
+    color: #FBBF24;
+    font-weight: 600;
+}
