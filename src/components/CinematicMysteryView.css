@@ -6,7 +6,8 @@
 .cinematic-container {
     position: relative;
     width: 100%;
-    height: 100vh;
+    height: calc(100vh - 80px);
+    /* Account for bottom nav bar */
     overflow: hidden;
 }
 
@@ -87,13 +88,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding-top: 10vh;
+    padding-top: 3vh;
+    overflow-y: auto;
+    /* Allow scrolling for long prayers like litanies */
 }
 
 .cinematic-main {
     width: 100%;
     max-width: 1200px;
-    padding: 0 var(--spacing-lg);
 }
 
 /* ========================================
@@ -150,7 +152,7 @@
 .cinematic-scripture {
     border-left: 2px solid rgba(255, 215, 0, 0.3);
     padding-left: 1rem;
-    margin-top: var(--spacing-lg);
+    margin-top: 0.5rem;
 }
 
 .cinematic-scripture-text {
@@ -158,7 +160,7 @@
     /* 20px - EXACT */
     font-style: italic;
     text-align: center;
-    margin: var(--spacing-md) 0;
+    margin: var(--spacing-sm) 0;
     line-height: 1.6;
     color: #d1d5db;
     /* Gray-300 */
@@ -171,7 +173,7 @@
     color: #9ca3af;
     /* Gray-400 */
     text-align: right;
-    margin-top: var(--spacing-sm);
+    margin-top: 0.25rem;
 }
 
 /* ========================================
@@ -182,18 +184,14 @@
 
 .cinematic-container .bead-counter {
     position: absolute;
-    bottom: 15%;
-    /* CRITICAL: Not middle of screen! */
+    bottom: 20%;
+    /* Desktop: 20% from bottom */
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
     display: flex;
     justify-content: center;
     gap: var(--spacing-xs);
-}
-
-.cinematic-bead-counter {
-    margin-top: var(--spacing-lg);
 }
 
 /* Bead styling */
@@ -204,11 +202,8 @@
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.3);
     display: flex;
-    /* CRITICAL FIX */
     align-items: center;
-    /* CRITICAL FIX */
     justify-content: center;
-    /* CRITICAL FIX */
     transition: all 0.2s ease;
 }
 
@@ -320,7 +315,13 @@
         font-size: 1.125rem;
     }
 
+    .bead {
+        width: 24px;
+        height: 24px;
+    }
+
     .cinematic-container .bead-counter {
-        bottom: 10%;
+        bottom: 30%;
+        /* Mobile: Higher position to clear nav bar */
     }
 }

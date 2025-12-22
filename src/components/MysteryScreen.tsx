@@ -576,25 +576,25 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             {/* NEW: Use shared ProgressBar component */}
             <ProgressBar progress={flowEngine.getProgress()} />
 
-            <div className="mystery-screen-content" ref={contentRef}>
-                <HighlightErrorBoundary>
-                    {/* NEW: ROUTER PATTERN - Switch between Classic and Cinematic views */}
-                    {mysteryLayout === 'cinematic' ? (
-                        <CinematicMysteryView
-                            currentStep={currentStep}
-                            decadeInfo={decadeInfo}
-                            userWantsTextHidden={userWantsTextHidden}
-                            showPrayerText={showPrayerText}
-                            language={language}
-                            renderTextWithHighlighting={renderTextWithHighlighting}
-                            getSentences={getSentences}
-                            beadCount={beadCount}
-                            currentBead={currentBead}
-                            debugBaseOpacity={debugBaseOpacity}
-                            debugSecondaryOpacity={debugSecondaryOpacity}
-                            spokenIndex={highlightIndex}
-                        />
-                    ) : (
+            <HighlightErrorBoundary>
+                {/* NEW: ROUTER PATTERN - Switch between Classic and Cinematic views */}
+                {mysteryLayout === 'cinematic' ? (
+                    <CinematicMysteryView
+                        currentStep={currentStep}
+                        decadeInfo={decadeInfo}
+                        userWantsTextHidden={userWantsTextHidden}
+                        showPrayerText={showPrayerText}
+                        language={language}
+                        renderTextWithHighlighting={renderTextWithHighlighting}
+                        getSentences={getSentences}
+                        beadCount={beadCount}
+                        currentBead={currentBead}
+                        debugBaseOpacity={debugBaseOpacity}
+                        debugSecondaryOpacity={debugSecondaryOpacity}
+                        spokenIndex={highlightIndex}
+                    />
+                ) : (
+                    <div className="mystery-screen-content" ref={contentRef}>
                         <ClassicMysteryView
                             currentStep={currentStep}
                             decadeInfo={decadeInfo}
@@ -606,9 +606,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                             currentBead={currentBead}
                             spokenIndex={highlightIndex}
                         />
-                    )}
-                </HighlightErrorBoundary>
-            </div>
+                    </div>
+                )}
+            </HighlightErrorBoundary>
 
             {/* NEW: Use shared MysteryNavigation component */}
             <MysteryNavigation
@@ -648,8 +648,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             />
 
             {/* DEBUG: Dynamic CSS Override for Opacity */}
-            {mysteryLayout === 'cinematic' && userWantsTextHidden && (
-                <style>{`
+            {
+                mysteryLayout === 'cinematic' && userWantsTextHidden && (
+                    <style>{`
                     .immersive-overlay,
                     .immersive-overlay-darker {
                         background: linear-gradient(to bottom, 
@@ -664,7 +665,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         opacity: 1 !important;
                     }
                 `}</style>
-            )}
+                )
+            }
         </div>
     );
 }

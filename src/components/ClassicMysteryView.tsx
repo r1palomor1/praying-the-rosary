@@ -25,7 +25,8 @@ export function ClassicMysteryView({
     spokenIndex
 }: ClassicMysteryViewProps) {
     // CRITICAL: Use correct prayer type strings (fixed from original implementation)
-    const isIntroPrayer = ['sign_of_cross_start', 'intention_placeholder'].includes(currentStep.type);
+    const isIntroPrayer = ['sign_of_cross_start', 'opening_invocation', 'act_of_contrition',
+        'apostles_creed', 'invocation_holy_spirit', 'intention_placeholder'].includes(currentStep.type);
     const isClosingPrayer = ['final_jaculatory_start', 'final_hail_mary_intro', 'hail_holy_queen',
         'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'].includes(currentStep.type);
     const isReflection = currentStep.type === 'decade_announcement';
@@ -45,50 +46,61 @@ export function ClassicMysteryView({
         prayForUs: 'Pray for us'
     };
 
-    // Litany rendering helper
-    const renderLitanyRow = (call: string, response: string, index: number, globalCount: number) => (
-        <div key={globalCount} className={`litany-row-new ${spokenIndex === globalCount ? 'litany-row-active' : ''}`}>
-            <div className="litany-call-new">{call}</div>
-            {response && <div className="litany-response-new">{response}</div>}
-        </div>
-    );
-
-    const renderLitanyCallOnly = (call: string, index: number, globalCount: number) => (
-        <div key={globalCount} className={`litany-row-new ${spokenIndex === globalCount ? 'litany-row-active' : ''}`}>
-            <div className="litany-call-new">{call}</div>
-        </div>
-    );
-
-    // LITANY - Use centralized styling from index.css
+    // LITANY - Restored original format from commit b58f671
     if (isLitany && currentStep.litanyData) {
         const data = currentStep.litanyData;
+
+        // Helper to render a row with alternating background (full call and response)
+        const renderRow = (call: string, response: string, index: number, globalIndex: number) => (
+            <div
+                key={`${index}-${globalIndex}`}
+                className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''} ${spokenIndex === globalIndex ? 'litany-row-active' : ''}`}
+            >
+                <div className="litany-call-new">{call}</div>
+                <div className="litany-response-new">{response}</div>
+            </div>
+        );
+
+        // Helper to render call-only row (for Mary invocations after the first)
+        const renderCallOnly = (call: string, index: number, globalIndex: number) => (
+            <div
+                key={`${index}-${globalIndex}`}
+                className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''} ${spokenIndex === globalIndex ? 'litany-row-active' : ''}`}
+            >
+                <div className="litany-call-new">{call}</div>
+            </div>
+        );
+
         let globalCount = 0;
 
         return (
             <div className="classic-container">
                 <div className="classic-litany-card">
-                    <h2 className="litany-title">{currentStep.title}</h2>
-                    <div className="litany-container-new">
-                        {data.initial_petitions.map((item: any, i: number) => renderLitanyRow(item.call, item.response, i, globalCount++))}
+                    <div className="prayer-section litany-container-new">
+                        <h2 className="litany-title-new">{(currentStep.title || '').toUpperCase()}</h2>
 
-                        {data.trinity_invocations.map((item: any, i: number) => renderLitanyRow(item.call, item.response, i, globalCount++))}
+                        <div className="litany-list-new">
+                            {data.initial_petitions.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
 
-                        {/* Instruction reminder */}
-                        <div className="litany-reminder">
-                            ({t.repeatResponse} <span className="litany-reminder-highlight">{t.prayForUs}</span>)
+                            {data.trinity_invocations.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
+
+                            {/* Instruction reminder before Mary invocations */}
+                            <div className="litany-reminder">
+                                ({t.repeatResponse} <span className="litany-reminder-highlight">{t.prayForUs}</span>)
+                            </div>
+
+                            {/* Mary Invocations - Show first one fully, then only calls */}
+                            {data.mary_invocations.map((item: any, i: number) => {
+                                const response = item.response || t.prayForUs;
+                                if (i === 0) {
+                                    return renderRow(item.call, response, i, globalCount++);
+                                } else {
+                                    return renderCallOnly(item.call, i, globalCount++);
+                                }
+                            })}
+
+                            {data.agnus_dei.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
                         </div>
-
-                        {/* Mary Invocations - Show first one fully, then only calls */}
-                        {data.mary_invocations.map((item: any, i: number) => {
-                            const response = item.response || t.prayForUs;
-                            if (i === 0) {
-                                return renderLitanyRow(item.call, response, i, globalCount++);
-                            } else {
-                                return renderLitanyCallOnly(item.call, i, globalCount++);
-                            }
-                        })}
-
-                        {data.agnus_dei.map((item: any, i: number) => renderLitanyRow(item.call, item.response, i, globalCount++))}
                     </div>
                 </div>
             </div>
@@ -254,6 +266,12 @@ export function ClassicMysteryView({
     return (
         <div className="classic-container">
             <div className="classic-card">
+                {currentStep.title && (
+                    <>
+                        <h2 className="classic-card-title">{currentStep.title}</h2>
+                        <div className="classic-divider"></div>
+                    </>
+                )}
                 <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
             </div>
         </div>

@@ -31,7 +31,8 @@ export function CinematicMysteryView({
     spokenIndex
 }: CinematicMysteryViewProps) {
     // CRITICAL: Use correct prayer type strings (fixed from original)
-    const isIntroPrayer = ['sign_of_cross_start', 'intention_placeholder'].includes(currentStep.type);
+    const isIntroPrayer = ['sign_of_cross_start', 'opening_invocation', 'act_of_contrition',
+        'apostles_creed', 'invocation_holy_spirit', 'intention_placeholder'].includes(currentStep.type);
     const isClosingPrayer = ['final_jaculatory_start', 'final_hail_mary_intro', 'hail_holy_queen',
         'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'].includes(currentStep.type);
     const isReflection = currentStep.type === 'decade_announcement';
@@ -54,23 +55,32 @@ export function CinematicMysteryView({
     // Get image URL
     const imageUrl = decadeInfo?.imageUrl || currentStep.imageUrl;
 
-    // Litany rendering helpers
-    const renderLitanyRow = (call: string, response: string, index: number, globalCount: number) => (
-        <div key={globalCount} className={`litany-row-new ${spokenIndex === globalCount ? 'litany-row-active' : ''}`}>
-            <div className="litany-call-new">{call}</div>
-            {response && <div className="litany-response-new">{response}</div>}
-        </div>
-    );
 
-    const renderLitanyCallOnly = (call: string, index: number, globalCount: number) => (
-        <div key={globalCount} className={`litany-row-new ${spokenIndex === globalCount ? 'litany-row-active' : ''}`}>
-            <div className="litany-call-new">{call}</div>
-        </div>
-    );
-
-    // LITANY - Use centralized styling from index.css
+    // LITANY - Restored original format from commit b58f671
     if (isLitany && currentStep.litanyData) {
         const data = currentStep.litanyData;
+
+        // Helper to render a row with alternating background (full call and response)
+        const renderRow = (call: string, response: string, index: number, globalIndex: number) => (
+            <div
+                key={`${index}-${globalIndex}`}
+                className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''} ${spokenIndex === globalIndex ? 'litany-row-active' : ''}`}
+            >
+                <div className="litany-call-new">{call}</div>
+                <div className="litany-response-new">{response}</div>
+            </div>
+        );
+
+        // Helper to render call-only row (for Mary invocations after the first)
+        const renderCallOnly = (call: string, index: number, globalIndex: number) => (
+            <div
+                key={`${index}-${globalIndex}`}
+                className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''} ${spokenIndex === globalIndex ? 'litany-row-active' : ''}`}
+            >
+                <div className="litany-call-new">{call}</div>
+            </div>
+        );
+
         let globalCount = 0;
 
         return (
@@ -88,26 +98,31 @@ export function CinematicMysteryView({
 
                 <div className="cinematic-content">
                     <main className="cinematic-main">
-                        <h1 className="litany-title">{currentStep.title}</h1>
-                        <div className="litany-container-new">
-                            {data.initial_petitions.map((item: any, i: number) => renderLitanyRow(item.call, item.response, i, globalCount++))}
+                        <div className="prayer-section litany-container-new">
+                            <h2 className="litany-title-new">{(currentStep.title || '').toUpperCase()}</h2>
 
-                            {data.trinity_invocations.map((item: any, i: number) => renderLitanyRow(item.call, item.response, i, globalCount++))}
+                            <div className="litany-list-new">
+                                {data.initial_petitions.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
 
-                            <div className="litany-reminder">
-                                ({t.repeatResponse} <span className="litany-reminder-highlight">{t.prayForUs}</span>)
+                                {data.trinity_invocations.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
+
+                                {/* Instruction reminder before Mary invocations */}
+                                <div className="litany-reminder">
+                                    ({t.repeatResponse} <span className="litany-reminder-highlight">{t.prayForUs}</span>)
+                                </div>
+
+                                {/* Mary Invocations - Show first one fully, then only calls */}
+                                {data.mary_invocations.map((item: any, i: number) => {
+                                    const response = item.response || t.prayForUs;
+                                    if (i === 0) {
+                                        return renderRow(item.call, response, i, globalCount++);
+                                    } else {
+                                        return renderCallOnly(item.call, i, globalCount++);
+                                    }
+                                })}
+
+                                {data.agnus_dei.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
                             </div>
-
-                            {data.mary_invocations.map((item: any, i: number) => {
-                                const response = item.response || t.prayForUs;
-                                if (i === 0) {
-                                    return renderLitanyRow(item.call, response, i, globalCount++);
-                                } else {
-                                    return renderLitanyCallOnly(item.call, i, globalCount++);
-                                }
-                            })}
-
-                            {data.agnus_dei.map((item: any, i: number) => renderLitanyRow(item.call, item.response, i, globalCount++))}
                         </div>
                     </main>
                 </div>
@@ -134,17 +149,19 @@ export function CinematicMysteryView({
                     <main className="cinematic-main">
                         <div className="text-center space-y-6">
                             {/* CRITICAL: Title always visible */}
-                            <div className="space-y-4 pt-4 text-center">
+                            <div className="space-y-4 text-center">
                                 <h3 className="cinematic-title">{t.reflection}</h3>
                                 {/* CRITICAL: Only hide text, not title */}
-                                <p className="cinematic-text">
-                                    {renderTextWithHighlighting(currentStep.text)}
-                                </p>
+                                <div className="max-w-2xl mx-auto px-6">
+                                    <p className="cinematic-text">
+                                        {renderTextWithHighlighting(currentStep.text)}
+                                    </p>
+                                </div>
                             </div>
 
                             {/* CRITICAL: Fruit and scripture always visible when present */}
                             {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
-                                <div className="pt-8">
+                                <div className="pt-2">
                                     {decadeInfo.fruit && (
                                         <div className="cinematic-fruit-label">
                                             <span>{t.fruit}</span>
@@ -152,14 +169,16 @@ export function CinematicMysteryView({
                                         </div>
                                     )}
                                     {decadeInfo.scripture && (
-                                        <blockquote className="cinematic-scripture">
-                                            <p className="cinematic-scripture-text">
-                                                "{decadeInfo.scripture.text}"
-                                            </p>
-                                            <footer className="cinematic-scripture-ref">
-                                                {decadeInfo.scripture.reference}
-                                            </footer>
-                                        </blockquote>
+                                        <div className="max-w-2xl mx-auto px-6">
+                                            <blockquote className="cinematic-scripture">
+                                                <p className="cinematic-scripture-text">
+                                                    "{decadeInfo.scripture.text}"
+                                                </p>
+                                                <footer className="cinematic-scripture-ref">
+                                                    {decadeInfo.scripture.reference}
+                                                </footer>
+                                            </blockquote>
+                                        </div>
                                     )}
                                 </div>
                             )}
@@ -183,7 +202,7 @@ export function CinematicMysteryView({
 
                 <div className={`cinematic-content ${!showPrayerText ? 'text-hidden' : ''}`}>
                     <main className="cinematic-main flex flex-col h-full">
-                        <div className="text-center space-y-8">
+                        <div className="text-center space-y-4">
                             {/* CRITICAL: Title always visible */}
                             <h1 className="cinematic-title">
                                 {(currentStep.title || '').toUpperCase()}
@@ -215,9 +234,9 @@ export function CinematicMysteryView({
 
                 <div className={`cinematic-content ${!showPrayerText ? 'text-hidden' : ''}`}>
                     <main className="cinematic-main flex flex-col h-full">
-                        <div className="text-center space-y-8">
+                        <div className="text-center space-y-4">
                             {/* CRITICAL: Title always visible */}
-                            <h1 className="cinematic-title mb-8">
+                            <h1 className="cinematic-title">
                                 {(currentStep.title || '').toUpperCase()}
                             </h1>
 
@@ -270,8 +289,8 @@ export function CinematicMysteryView({
                 </div>
 
                 <div className={`cinematic-content ${!showPrayerText ? 'text-hidden' : ''}`}>
-                    <main className="cinematic-main flex flex-col h-full">
-                        <div className="text-center space-y-8">
+                    <main className="cinematic-main">
+                        <div className="text-center space-y-4">
                             {/* Title and Fruit grouped together - ALWAYS VISIBLE */}
                             <div className="space-y-2">
                                 <h1 className="cinematic-title">

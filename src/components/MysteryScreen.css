@@ -1,7 +1,7 @@
 ﻿.mystery-screen-container {
     display: flex;
     flex-direction: column;
-    max-width: 600px;
+    width: 100%;
     margin: 0 auto;
     animation: fadeIn var(--transition-slow);
 }
@@ -131,7 +131,6 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     display: flex;
     justify-content: center;
     gap: var(--spacing-sm);
-    margin-top: var(--spacing-lg);
     flex-wrap: wrap;
 }
 

@@ -5,8 +5,6 @@
 /* Container */
 .classic-container {
     width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
     padding: var(--spacing-md);
 }
 
@@ -100,6 +98,10 @@
 /* Scripture */
 .classic-scripture-container {
     margin-top: var(--spacing-md);
+    text-align: left;
+    width: 100%;
+    border-left: 2px solid #FBBF24;
+    padding-left: var(--spacing-md);
 }
 
 .classic-scripture-text {
@@ -109,6 +111,8 @@
     text-align: center;
     margin: var(--spacing-md) 0;
     line-height: 1.6;
+    width: 100%;
+    word-wrap: break-word;
 }
 
 .classic-scripture-ref {
@@ -133,7 +137,6 @@
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     margin: var(--spacing-md) auto;
-    max-width: 800px;
     box-shadow: var(--shadow-md);
 }
 
