@@ -113,10 +113,35 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
                 date.getMonth() === today.getMonth() &&
                 date.getFullYear() === today.getFullYear();
 
+            // Determine if we should show the "today" highlight
+            // Remove highlight if today's recommended mystery is completed
+            // Keep highlight if only other mysteries are completed (as a reminder)
+            let showTodayHighlight = isToday;
+            if (isToday && mysteryType) {
+                // Get today's recommended mystery
+                const dayOfWeek = date.getDay();
+                const dayToMystery: { [key: number]: MysterySetType } = {
+                    0: 'glorious',   // Sunday
+                    1: 'joyful',     // Monday
+                    2: 'sorrowful',  // Tuesday
+                    3: 'glorious',   // Wednesday
+                    4: 'luminous',   // Thursday
+                    5: 'sorrowful',  // Friday
+                    6: 'joyful'      // Saturday
+                };
+                const todaysRecommendedMystery = dayToMystery[dayOfWeek];
+
+                // Only remove highlight if the completed mystery IS today's recommended mystery
+                if (mysteryType === todaysRecommendedMystery) {
+                    showTodayHighlight = false;
+                }
+                // If mysteryType !== todaysRecommendedMystery, keep the highlight (blended look)
+            }
+
             days.push(
                 <div
                     key={day}
-                    className={`calendar-day-v2 ${isToday ? 'today' : ''}`}
+                    className={`calendar-day-v2 ${showTodayHighlight ? 'today' : ''}`}
                 >
                     <span
                         className={`${mysteryType ? '' : 'day-number-v2'} ${isToday && !mysteryType ? 'today-number' : ''}`}

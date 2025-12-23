@@ -89,13 +89,16 @@ export function SacredProgressModal() {
                 date.getMonth() === today.getMonth() &&
                 date.getFullYear() === today.getFullYear();
 
+            // Remove highlight when completed (clean badge display)
+            const showTodayHighlight = isToday && !isCompleted;
+
             days.push(
                 <div
                     key={day}
-                    className={`calendar-day-v2 ${isToday ? 'today' : ''}`}
+                    className={`calendar-day-v2 ${showTodayHighlight ? 'today' : ''}`}
                 >
                     <span
-                        className={`${isCompleted ? '' : 'day-number-v2'} ${isToday && !isCompleted ? 'today-number' : ''}`}
+                        className={`${isCompleted ? '' : 'day-number-v2'} ${showTodayHighlight ? 'today-number' : ''}`}
                         style={isCompleted && mysteryType ? {
                             backgroundColor: getMysteryColor(mysteryType),
                             color: getMysteryTextColor(mysteryType),

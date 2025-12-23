@@ -4,6 +4,7 @@ import type { Language, MysterySetType, AppSettings, UserSession } from '../type
 import { getTodaysMystery, getISODate } from '../utils/mysterySelector';
 import { loadSettings, saveSettings, getDefaultSettings, loadSession, saveSession, clearSession as clearStoredSession, clearPrayerProgress, loadPrayerProgress } from '../utils/storage';
 import { ttsManager } from '../utils/ttsManager';
+import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 
 interface AppContextType {
     // Settings
@@ -59,8 +60,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const [mysteryLayout, setMysteryLayout] = useState<'classic' | 'cinematic'>('cinematic');
 
     // Session state
-    // Load last active mystery from storage, ONLY if it was set 'today'
+    // Load last active mystery from storage, ONLY if it was set 'today' AND matches today's recommended mystery
     const [currentMysterySet, setCurrentMysterySet] = useState<MysterySetType>(() => {
+        const todaysMystery = getTodaysMystery();
+
         try {
             const savedDate = localStorage.getItem('last_active_date');
             const today = getISODate();
@@ -73,15 +76,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
                     // If user cleared it, we shouldn't force them back to an empty state
                     const progress = loadPrayerProgress(saved as MysterySetType);
                     if (progress) {
-                        return saved as MysterySetType;
+                        // IMPORTANT: Only use saved mystery if it's today's recommended mystery
+                        // OR if today's mystery is already complete
+                        const todaysProgress = loadPrayerProgress(todaysMystery);
+                        const todaysEngine = todaysProgress ? new PrayerFlowEngine(todaysMystery as any, 'en') : null;
+                        if (todaysEngine && todaysProgress) {
+                            todaysEngine.jumpToStep(todaysProgress.currentStepIndex);
+                        }
+                        const todaysComplete = todaysEngine ? todaysEngine.getProgress() >= 99 : false;
+
+                        // If today's mystery is complete, allow switching to other mysteries
+                        // Otherwise, force today's mystery
+                        if (saved === todaysMystery || todaysComplete) {
+                            return saved as MysterySetType;
+                        }
                     }
                 }
             }
         } catch (e) {
             console.error('Error loading last mystery', e);
         }
-        // Otherwise (new day or first launch), default to the canonical mystery of the day
-        return getTodaysMystery();
+        // Default to the canonical mystery of the day
+        return todaysMystery;
     });
     const [currentMysteryNumber, setCurrentMysteryNumber] = useState(1);
     const [currentBeadNumber, setCurrentBeadNumber] = useState(0);

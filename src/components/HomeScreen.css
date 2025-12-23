@@ -23,10 +23,7 @@
     font-family: var(--font-body);
     color: var(--home-text-primary);
     transition: background-color 0.3s ease, color 0.3s ease;
-    max-width: 600px;
-    /* Constrain width on desktop */
     margin: 0 auto;
-    /* Center on desktop */
     position: relative;
     overflow-x: hidden;
     /* Prevent horizontal scrolling */
@@ -74,8 +71,8 @@
 .hero-header {
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
     padding: 0.625rem 0.75rem;
     /* 10px top padding to match prayer screens */
     display: flex;
@@ -84,6 +81,7 @@
     gap: 0.5rem;
     z-index: 10;
     width: 100%;
+    max-width: 600px;
     box-sizing: border-box;
 }
 
@@ -185,7 +183,7 @@
 /* Main Content */
 .home-main {
     padding: 0 1rem;
-    margin-top: -2rem;
+    margin: -2rem auto 0;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -193,6 +191,8 @@
     z-index: 20;
     padding-bottom: 120px;
     /* Space for bottom nav */
+    max-width: 600px;
+    width: 100%;
 }
 
 /* Glass Cards */
@@ -204,6 +204,9 @@
     padding: 1.5rem;
     box-shadow: var(--home-shadow);
     border: 1px solid var(--home-card-border);
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .mystery-card-title {

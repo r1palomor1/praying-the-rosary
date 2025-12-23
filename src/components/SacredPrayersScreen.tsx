@@ -570,8 +570,8 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                         </button>
                     </div>
 
-                    {/* Progress button - only show on Sign of the Cross page */}
-                    {currentStep?.type === 'sign_of_cross_start' && (
+                    {/* Progress button - show on all pages except completion */}
+                    {currentStep?.type !== 'complete' && (
                         <button
                             className="mystery-nav-btn"
                             onClick={() => setShowProgress(true)}
