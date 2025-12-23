@@ -625,8 +625,11 @@ p {
 /* The goal was bulletproof parity, so we avoid varying sizes here */
 
 /* Litany Title */
-.litany-title {
-    font-size: 1.5rem;
+/* Litany Title */
+.litany-title,
+.litany-title-new {
+    font-size: 2rem;
+    /* 32px - EXACT match to .cinematic-title */
     color: #FFD700;
     text-align: center;
     margin-bottom: var(--spacing-lg);

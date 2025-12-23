@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, Volume2, Lightbulb, ArrowLeft } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, StopCircle, Lightbulb, ArrowLeft } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
@@ -23,7 +23,7 @@ interface HomeScreenProps {
 }
 
 export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavigateToMysteries, onNavigateToPrayers, onNavigateToProgress, onNavigateToSelection }: HomeScreenProps) {
-    const { language, currentMysterySet, startNewSession, resumeSession, playAudio } = useApp();
+    const { language, currentMysterySet, startNewSession, resumeSession, playAudio, stopAudio, isPlaying } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [showLearnMore, setShowLearnMore] = useState(false);
 
@@ -108,7 +108,13 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
     };
 
     const handleContinuousStart = () => {
-        // Check if there's saved progress
+        // Toggle Logic: If playing, STOP.
+        if (isPlaying) {
+            stopAudio();
+            return;
+        }
+
+        // Logic to START (existing code)
         const savedProgress = loadPrayerProgress(currentMysterySet);
         // Treat step 0 as no progress (beginning of prayer)
         const hasProgress = savedProgress && hasValidPrayerProgress(currentMysterySet) && savedProgress.currentStepIndex > 0;
@@ -185,9 +191,9 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                             <button
                                 className="icon-btn"
                                 onClick={handleContinuousStart}
-                                aria-label={t.continuousAudio}
+                                aria-label={isPlaying ? t.stopAudio : t.continuousAudio}
                             >
-                                <Volume2 size={24} />
+                                {isPlaying ? <StopCircle size={24} /> : <Volume2 size={24} />}
                             </button>
                         </div>
 

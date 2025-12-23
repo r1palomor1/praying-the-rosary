@@ -1546,12 +1546,16 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 .litany-title-new {
     font-family: var(--font-heading);
     font-size: 1.5rem;
+    /* 24px */
     font-weight: 700;
     text-align: center;
-    color: var(--color-text-primary);
-    border-bottom: 2px solid rgba(212, 175, 55, 0.5);
-    padding-bottom: 0.5rem;
-    margin-bottom: 1.5rem;
+    color: #FFD700;
+    /* Gold */
+    text-transform: uppercase;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: none;
+    /* Remove border to match prayer names */
+    padding-bottom: 0;
 }
 
 .litany-list-new {
