@@ -576,24 +576,24 @@ p {
 .litany-call-new,
 .litany-response-new {
     font-family: var(--font-body);
-    font-size: 1.25rem;
-    /* Locked at 20px for readability */
+    font-size: var(--font-size-xl);
+    /* 1.375rem = 22px */
     line-height: 1.5;
 }
 
 /* Call (Priest/Leader) */
 .litany-call-new {
-    font-weight: 700;
-    color: var(--color-primary);
-    margin-bottom: var(--spacing-xs);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    font-size: var(--font-size-xl);
 }
 
 /* Response (People) */
 .litany-response-new {
-    font-weight: 500;
-    font-style: italic;
     color: #FBBF24;
-    /* Bright amber - matches original */
+    font-weight: 600;
+    padding-left: 1rem;
+    font-size: var(--font-size-xl);
 }
 
 /* Active State - Unified for Classic & Cinematic */
@@ -606,11 +606,13 @@ p {
 
 /* Dark Mode Overrides */
 [data-theme="dark"] .litany-call-new {
-    color: var(--color-primary-lighter);
+    color: var(--color-text-secondary);
+    /* Dimmed light white in dark mode */
 }
 
 [data-theme="dark"] .litany-response-new {
-    color: var(--color-text-tertiary);
+    color: #FBBF24;
+    /* Keep bright amber in dark mode */
 }
 
 [data-theme="dark"] .litany-row-new.litany-row-active {
@@ -634,13 +636,14 @@ p {
 
 /* Litany Reminder Text */
 .litany-reminder {
-    text-align: left !important;
-    font-size: 1.25rem !important;
-    padding: 0.5rem 1rem;
-    width: 100%;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    margin: var(--spacing-md) 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    padding: 0.5rem 0;
+    margin: 0;
+    text-align: left;
+    font-style: normal;
+    font-family: var(--font-body);
 }
 
 .litany-reminder-highlight {

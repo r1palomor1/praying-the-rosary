@@ -146,6 +146,15 @@
     line-height: 1.7;
     color: #f3f4f6;
     /* Gray-100 */
+    text-indent: 0;
+    /* No first-line indentation */
+}
+
+/* Hail Mary Response (second paragraph) */
+.cinematic-text.mt-4 {
+    color: #FBBF24;
+    /* Bright amber - matches litany response */
+    font-weight: 600;
 }
 
 /* Scripture - Can be hidden */
