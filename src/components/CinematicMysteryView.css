@@ -105,8 +105,8 @@
 
 .cinematic-content.text-hidden .cinematic-text,
 .cinematic-content.text-hidden .cinematic-scripture {
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    display: none;
+    /* Use display:none instead of opacity:0 to collapse space */
 }
 
 /* ========================================

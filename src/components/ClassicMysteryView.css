@@ -5,6 +5,10 @@
 /* Container */
 .classic-container {
     width: 100%;
+    max-width: 704px;
+    /* 672px (cinematic) + 32px to compensate for card padding */
+    /* Effective text width: 704 - 16*2 (container) - 24*2 (card) = 624px (matches cinematic) */
+    margin: 0 auto;
     padding: var(--spacing-md);
 }
 
@@ -15,17 +19,24 @@
     padding: var(--spacing-lg);
     margin-bottom: var(--spacing-md);
     box-shadow: var(--shadow-md);
-    transition: all 0.5s ease-in-out;
+}
+
+/* Collapsed card - minimal padding when text is hidden */
+.classic-card.collapsed {
+    padding: var(--spacing-sm);
+    margin-bottom: 0;
+    /* Remove bottom margin to eliminate gap before image */
 }
 
 .classic-card-title {
-    font-size: 1.5rem;
-    /* 24px */
-    color: #B45309;
-    /* Amber-700 */
+    font-size: 1.75rem;
+    /* 28px - matches cinematic */
+    color: #FFD700;
+    /* Gold - matches cinematic */
     text-align: center;
-    margin-bottom: var(--spacing-sm);
-    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 .classic-divider {
@@ -35,10 +46,19 @@
 }
 
 .classic-text {
-    font-size: var(--font-size-base);
-    /* 17px */
+    font-size: 1.375rem;
+    /* 22px - matches cinematic */
     line-height: 1.7;
     text-align: center;
+    color: #f3f4f6;
+    /* Gray-100 - matches cinematic */
+}
+
+/* Hail Mary Response (second paragraph) */
+.classic-text.mt-4 {
+    color: #FBBF24;
+    /* Bright amber - matches cinematic response */
+    font-weight: 600;
 }
 
 /* Image Container - CRITICAL: Proper aspect ratios */
@@ -47,7 +67,6 @@
     display: flex;
     justify-content: center;
     margin-bottom: var(--spacing-md);
-    transition: all 0.5s ease-in-out;
 }
 
 .classic-image-container.normal {
@@ -57,6 +76,10 @@
 .classic-image-container.expanded {
     height: 70vh;
     max-height: none;
+    align-items: flex-start;
+    /* Align image to top, not center, to eliminate gap */
+    margin-top: 16px;
+    /* Match gap when text is visible (var(--spacing-md)) */
 }
 
 /* Image - NO 35vh compression! */
@@ -75,8 +98,10 @@
 
 .classic-image-container.expanded .classic-image {
     max-width: 100%;
-    height: 100%;
-    max-height: none;
+    max-height: 70vh;
+    /* Match container height to fill space */
+    height: auto;
+    /* Maintain aspect ratio */
 }
 
 /* Fruit Label - CRITICAL: Visible for ALL decade prayers */
@@ -93,6 +118,11 @@
 
 .classic-fruit-container {
     margin-top: var(--spacing-md);
+}
+
+/* Remove fruit margin when card is collapsed */
+.classic-card.collapsed .classic-fruit-container {
+    margin-top: 0;
 }
 
 /* Scripture */
@@ -159,8 +189,19 @@
         padding: var(--spacing-md);
     }
 
+    /* Collapsed card on mobile - even less padding */
+    .classic-card.collapsed {
+        padding: var(--spacing-xs);
+        /* Minimal padding on mobile when text hidden */
+    }
+
     .classic-card-title {
         font-size: 1.25rem;
+    }
+
+    .classic-text {
+        font-size: 1.25rem;
+        /* Match Cinematic mobile size */
     }
 
     .classic-image {

@@ -1,15 +1,12 @@
-import { ResponsiveImage } from './ResponsiveImage';
 import './ClassicMysteryView.css';
 
 interface ClassicMysteryViewProps {
     currentStep: any;
     decadeInfo: any;
     userWantsTextHidden: boolean;
-    showPrayerText: boolean;
     language: 'en' | 'es';
     renderTextWithHighlighting: (text: string, sentenceOffset?: number) => any;
-    beadCount: number;
-    currentBead: number;
+    getSentences: (text: string) => string[];
     spokenIndex: number;
 }
 
@@ -17,11 +14,9 @@ export function ClassicMysteryView({
     currentStep,
     decadeInfo,
     userWantsTextHidden,
-    showPrayerText,
     language,
     renderTextWithHighlighting,
-    beadCount,
-    currentBead,
+    getSentences,
     spokenIndex
 }: ClassicMysteryViewProps) {
     // CRITICAL: Use correct prayer type strings (fixed from original implementation)
@@ -111,7 +106,8 @@ export function ClassicMysteryView({
     if (isReflection) {
         return (
             <div className="classic-container">
-                <div className={`classic-image-container ${userWantsTextHidden ? 'expanded' : 'normal'}`}>
+                {/* Image FIRST - fixed position, always visible */}
+                <div className="classic-image-container normal">
                     {currentStep.imageUrl && (
                         <img
                             src={typeof currentStep.imageUrl === 'string' ? currentStep.imageUrl : currentStep.imageUrl.lg}
@@ -121,32 +117,36 @@ export function ClassicMysteryView({
                     )}
                 </div>
 
-                {!userWantsTextHidden && (
-                    <div className="classic-card">
-                        <h3 className="classic-card-title">{t.reflection}</h3>
-                        <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
+                <div className="classic-card">
+                    {/* Title always visible */}
+                    <h3 className="classic-card-title">{t.reflection}</h3>
 
-                        {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
-                            <div className="classic-meditation-footer">
-                                {/* CRITICAL FIX: Fruit label visible for ALL prayers */}
-                                {decadeInfo.fruit && (
-                                    <div className="classic-fruit-container">
-                                        <h3 className="classic-fruit-label">
-                                            {t.fruit} {decadeInfo.fruit}
-                                        </h3>
-                                    </div>
-                                )}
+                    {/* Hide reflection text AND scripture when text is hidden */}
+                    {!userWantsTextHidden && (
+                        <>
+                            <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
+                        </>
+                    )}
 
-                                {decadeInfo.scripture && (
-                                    <div className="classic-scripture-container">
-                                        <p className="classic-scripture-text">"{decadeInfo.scripture.text}"</p>
-                                        <p className="classic-scripture-ref">{decadeInfo.scripture.reference}</p>
-                                    </div>
-                                )}
+                    {/* Fruit always visible with divider line above */}
+                    {decadeInfo?.fruit && (
+                        <div className="classic-meditation-footer">
+                            <div className="classic-fruit-container">
+                                <h3 className="classic-fruit-label">
+                                    {t.fruit} {decadeInfo.fruit}
+                                </h3>
                             </div>
-                        )}
-                    </div>
-                )}
+                        </div>
+                    )}
+
+                    {/* Scripture after fruit, hidden with text */}
+                    {!userWantsTextHidden && decadeInfo?.scripture && (
+                        <div className="classic-scripture-container">
+                            <p className="classic-scripture-text">"{decadeInfo.scripture.text}"</p>
+                            <p className="classic-scripture-ref">{decadeInfo.scripture.reference}</p>
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }
@@ -156,6 +156,19 @@ export function ClassicMysteryView({
         if (currentStep.imageUrl) {
             return (
                 <div className="classic-container">
+                    <div className="classic-card">
+                        {/* Title always visible */}
+                        <h2 className="classic-card-title">{(currentStep.title || '').toUpperCase()}</h2>
+
+                        {/* Only hide text and divider */}
+                        {!userWantsTextHidden && (
+                            <>
+                                <div className="classic-divider"></div>
+                                <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
+                            </>
+                        )}
+                    </div>
+
                     <div className={`classic-image-container ${userWantsTextHidden ? 'expanded' : 'normal'}`}>
                         <img
                             src={typeof currentStep.imageUrl === 'string' ? currentStep.imageUrl : currentStep.imageUrl.lg}
@@ -163,14 +176,6 @@ export function ClassicMysteryView({
                             className="classic-image"
                         />
                     </div>
-
-                    {!userWantsTextHidden && (
-                        <div className="classic-card">
-                            <h2 className="classic-card-title">{currentStep.title}</h2>
-                            <div className="classic-divider"></div>
-                            <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
-                        </div>
-                    )}
                 </div>
             );
         }
@@ -179,7 +184,7 @@ export function ClassicMysteryView({
         return (
             <div className="classic-container">
                 <div className="classic-card">
-                    <h2 className="classic-card-title">{currentStep.title}</h2>
+                    <h2 className="classic-card-title">{(currentStep.title || '').toUpperCase()}</h2>
                     <div className="classic-divider"></div>
                     <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
                 </div>
@@ -192,6 +197,40 @@ export function ClassicMysteryView({
         if (currentStep.imageUrl) {
             return (
                 <div className="classic-container">
+                    <div className="classic-card">
+                        {/* Title always visible */}
+                        <h2 className="classic-card-title">{(currentStep.title || '').toUpperCase()}</h2>
+
+                        {/* Only hide text and divider */}
+                        {!userWantsTextHidden && (
+                            <>
+                                <div className="classic-divider"></div>
+                                {/* Handle Final Hail Marys with two parts */}
+                                {currentStep.type === 'final_hail_mary_intro' ? (
+                                    (() => {
+                                        const parts = currentStep.text.split('\n\n');
+                                        const part0Sentences = getSentences(parts[0]);
+                                        const sentenceOffset = part0Sentences.length;
+                                        return (
+                                            <>
+                                                <p className="classic-text">
+                                                    {renderTextWithHighlighting(parts[0])}
+                                                </p>
+                                                {parts[1] && (
+                                                    <p className="classic-text mt-4">
+                                                        {renderTextWithHighlighting(parts[1], sentenceOffset)}
+                                                    </p>
+                                                )}
+                                            </>
+                                        );
+                                    })()
+                                ) : (
+                                    <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
+                                )}
+                            </>
+                        )}
+                    </div>
+
                     <div className={`classic-image-container ${userWantsTextHidden ? 'expanded' : 'normal'}`}>
                         <img
                             src={typeof currentStep.imageUrl === 'string' ? currentStep.imageUrl : currentStep.imageUrl.lg}
@@ -199,14 +238,6 @@ export function ClassicMysteryView({
                             className="classic-image"
                         />
                     </div>
-
-                    {!userWantsTextHidden && (
-                        <div className="classic-card">
-                            <h2 className="classic-card-title">{currentStep.title}</h2>
-                            <div className="classic-divider"></div>
-                            <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
-                        </div>
-                    )}
                 </div>
             );
         }
@@ -216,7 +247,28 @@ export function ClassicMysteryView({
                 <div className="classic-card">
                     <h2 className="classic-card-title">{currentStep.title}</h2>
                     <div className="classic-divider"></div>
-                    <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
+                    {/* Handle Final Hail Marys with two parts */}
+                    {currentStep.type === 'final_hail_mary_intro' ? (
+                        (() => {
+                            const parts = currentStep.text.split('\n\n');
+                            const part0Sentences = getSentences(parts[0]);
+                            const sentenceOffset = part0Sentences.length;
+                            return (
+                                <>
+                                    <p className="classic-text">
+                                        {renderTextWithHighlighting(parts[0])}
+                                    </p>
+                                    {parts[1] && (
+                                        <p className="classic-text mt-4">
+                                            {renderTextWithHighlighting(parts[1], sentenceOffset)}
+                                        </p>
+                                    )}
+                                </>
+                            );
+                        })()
+                    ) : (
+                        <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
+                    )}
                 </div>
             </div>
         );
@@ -224,9 +276,11 @@ export function ClassicMysteryView({
 
     // DECADE PRAYERS (Our Father, Hail Mary, Glory Be, etc.)
     if (isDecadePrayer) {
+        const imageUrl = decadeInfo?.imageUrl;
+
         return (
             <div className="classic-container">
-                <div className="classic-card">
+                <div className={`classic-card ${userWantsTextHidden ? 'collapsed' : ''}`}>
                     <h2 className="classic-card-title">{currentStep.title}</h2>
 
                     {/* CRITICAL FIX: Show fruit label for ALL decade prayers */}
@@ -239,7 +293,30 @@ export function ClassicMysteryView({
                     <div className="classic-divider"></div>
 
                     {!userWantsTextHidden && (
-                        <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
+                        <>
+                            {/* Handle Hail Marys with two parts (call and response) */}
+                            {currentStep.type === 'decade_hail_mary' || currentStep.type === 'final_hail_mary_intro' ? (
+                                (() => {
+                                    const parts = currentStep.text.split('\n\n');
+                                    const part0Sentences = getSentences(parts[0]);
+                                    const sentenceOffset = part0Sentences.length;
+                                    return (
+                                        <>
+                                            <p className="classic-text">
+                                                {renderTextWithHighlighting(parts[0])}
+                                            </p>
+                                            {parts[1] && (
+                                                <p className="classic-text mt-4">
+                                                    {renderTextWithHighlighting(parts[1], sentenceOffset)}
+                                                </p>
+                                            )}
+                                        </>
+                                    );
+                                })()
+                            ) : (
+                                <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
+                            )}
+                        </>
                     )}
 
                     {/* Bead counter for Hail Marys - ALWAYS visible */}
@@ -258,6 +335,17 @@ export function ClassicMysteryView({
                         </div>
                     )}
                 </div>
+
+                {/* Image below text for decade prayers */}
+                {imageUrl && (
+                    <div className={`classic-image-container ${userWantsTextHidden ? 'expanded' : 'normal'}`}>
+                        <img
+                            src={typeof imageUrl === 'string' ? imageUrl : imageUrl.lg}
+                            alt={currentStep.title}
+                            className="classic-image"
+                        />
+                    </div>
+                )}
             </div>
         );
     }

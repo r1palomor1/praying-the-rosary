@@ -599,11 +599,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                             currentStep={currentStep}
                             decadeInfo={decadeInfo}
                             userWantsTextHidden={userWantsTextHidden}
-                            showPrayerText={showPrayerText}
                             language={language}
                             renderTextWithHighlighting={renderTextWithHighlighting}
-                            beadCount={beadCount}
-                            currentBead={currentBead}
+                            getSentences={getSentences}
                             spokenIndex={highlightIndex}
                         />
                     </div>

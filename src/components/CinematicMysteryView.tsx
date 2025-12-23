@@ -149,39 +149,41 @@ export function CinematicMysteryView({
                     <main className="cinematic-main">
                         <div className="text-center space-y-6">
                             {/* CRITICAL: Title always visible */}
+                            <h3 className="cinematic-title">{t.reflection}</h3>
+
+                            {/* Text, fruit, and scripture all collapse together when hidden */}
                             <div className="space-y-4 text-center">
-                                <h3 className="cinematic-title">{t.reflection}</h3>
                                 {/* CRITICAL: Only hide text, not title */}
                                 <div className="max-w-2xl mx-auto px-6">
                                     <p className="cinematic-text">
                                         {renderTextWithHighlighting(currentStep.text)}
                                     </p>
                                 </div>
-                            </div>
 
-                            {/* CRITICAL: Fruit and scripture always visible when present */}
-                            {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
-                                <div className="pt-2">
-                                    {decadeInfo.fruit && (
-                                        <div className="cinematic-fruit-label">
-                                            <span>{t.fruit}</span>
-                                            <span>{decadeInfo.fruit.toUpperCase()}</span>
-                                        </div>
-                                    )}
-                                    {decadeInfo.scripture && (
-                                        <div className="max-w-2xl mx-auto px-6">
-                                            <blockquote className="cinematic-scripture">
-                                                <p className="cinematic-scripture-text">
-                                                    "{decadeInfo.scripture.text}"
-                                                </p>
-                                                <footer className="cinematic-scripture-ref">
-                                                    {decadeInfo.scripture.reference}
-                                                </footer>
-                                            </blockquote>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                {/* Fruit and scripture collapse with text */}
+                                {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
+                                    <div className="pt-2">
+                                        {decadeInfo.fruit && (
+                                            <div className="cinematic-fruit-label">
+                                                <span>{t.fruit}</span>
+                                                <span>{decadeInfo.fruit.toUpperCase()}</span>
+                                            </div>
+                                        )}
+                                        {decadeInfo.scripture && (
+                                            <div className="max-w-2xl mx-auto px-6">
+                                                <blockquote className="cinematic-scripture">
+                                                    <p className="cinematic-scripture-text">
+                                                        "{decadeInfo.scripture.text}"
+                                                    </p>
+                                                    <footer className="cinematic-scripture-ref">
+                                                        {decadeInfo.scripture.reference}
+                                                    </footer>
+                                                </blockquote>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </main>
                 </div>
@@ -308,9 +310,30 @@ export function CinematicMysteryView({
 
                             {/* Prayer text - can be hidden */}
                             <div className="max-w-2xl mx-auto px-6">
-                                <p className="cinematic-text">
-                                    {renderTextWithHighlighting(currentStep.text)}
-                                </p>
+                                {/* Handle Hail Marys with two parts (call and response) */}
+                                {currentStep.type === 'decade_hail_mary' ? (
+                                    (() => {
+                                        const parts = currentStep.text.split('\n\n');
+                                        const part0Sentences = getSentences(parts[0]);
+                                        const sentenceOffset = part0Sentences.length;
+                                        return (
+                                            <>
+                                                <p className="cinematic-text">
+                                                    {renderTextWithHighlighting(parts[0])}
+                                                </p>
+                                                {parts[1] && (
+                                                    <p className="cinematic-text mt-4">
+                                                        {renderTextWithHighlighting(parts[1], sentenceOffset)}
+                                                    </p>
+                                                )}
+                                            </>
+                                        );
+                                    })()
+                                ) : (
+                                    <p className="cinematic-text">
+                                        {renderTextWithHighlighting(currentStep.text)}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </main>

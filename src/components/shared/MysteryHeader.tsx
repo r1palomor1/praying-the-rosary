@@ -124,8 +124,8 @@ export function MysteryHeader({
                         )}
                     </button>
 
-                    {/* Book icon - ONLY in cinematic mode, NOT on litany */}
-                    {mysteryLayout === 'cinematic' && currentStepType !== 'litany_of_loreto' && (
+                    {/* Book icon - Show in both modes, NOT on litany */}
+                    {currentStepType !== 'litany_of_loreto' && (
                         <button
                             className="text-visibility-btn-header"
                             onClick={() => {
