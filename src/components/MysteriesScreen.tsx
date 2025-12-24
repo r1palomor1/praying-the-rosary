@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { BottomNav } from './BottomNav';
+import { ConfirmModal } from './ConfirmModal';
 import { loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress } from '../utils/storage';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import type { MysterySetType } from '../types';
@@ -14,6 +15,7 @@ import './MysteriesScreen.css';
 interface MysteriesScreenProps {
     onNavigateHome: () => void;
     onNavigateToPrayers: () => void;
+    onStartPrayer: () => void;
 }
 
 interface MysteryProgress {
@@ -30,15 +32,19 @@ const orderedMysteries = [
     mysterySets.find(m => m.type === 'luminous'),
 ].filter((m): m is NonNullable<typeof m> => Boolean(m));
 
-export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: MysteriesScreenProps) {
+export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers, onStartPrayer }: MysteriesScreenProps) {
     const { language, setCurrentMysterySet } = useApp();
+    const [showClearModal, setShowClearModal] = useState(false);
 
     const translations = {
         en: {
             title: 'Mysteries',
             completed: 'Done',
             clearAll: 'Clear All Progress',
+            clearAllTitle: 'Clear Progress',
             clearAllConfirm: 'Clear all mystery progress? Any completed mysteries will remain counted in your statistics.',
+            confirm: 'Clear',
+            cancel: 'Cancel',
             days: {
                 monday: 'Monday',
                 tuesday: 'Tuesday',
@@ -53,7 +59,10 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
             title: 'Misterios',
             completed: 'Completado',
             clearAll: 'Borrar Todo el Progreso',
+            clearAllTitle: 'Borrar Progreso',
             clearAllConfirm: '¿Borrar todo el progreso de misterios? Los misterios completados permanecerán contados en tus estadísticas.',
+            confirm: 'Borrar',
+            cancel: 'Cancelar',
             days: {
                 monday: 'Lunes',
                 tuesday: 'Martes',
@@ -68,9 +77,16 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
 
     const t = translations[language];
 
-    const handleMysterySelect = (mysteryType: MysterySetType) => {
+    const handleMysteryClick = (mysteryType: MysterySetType) => {
         setCurrentMysterySet(mysteryType);
-        onNavigateHome();
+
+        // If there's saved progress, skip home and start prayer directly (auto-resumes)
+        if (hasValidPrayerProgress(mysteryType)) {
+            onStartPrayer();
+        } else {
+            // No progress, show intro/home page first
+            onNavigateHome();
+        }
     };
 
     const handleClearProgress = (e: React.MouseEvent, mysteryType: MysterySetType, mysteryName: string, isComplete: boolean) => {
@@ -92,13 +108,16 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
     };
 
     const handleClearAllProgress = () => {
-        if (window.confirm(t.clearAllConfirm)) {
-            // Clear all mystery types
-            orderedMysteries.forEach(mysterySet => {
-                clearPrayerProgress(mysterySet.type);
-            });
-            window.location.reload();
-        }
+        setShowClearModal(true);
+    };
+
+    const confirmClearProgress = () => {
+        // Clear all mystery types
+        orderedMysteries.forEach(mysterySet => {
+            clearPrayerProgress(mysterySet.type);
+        });
+        setShowClearModal(false);
+        window.location.reload();
     };
 
     const getDaysText = (days: string[]) => {
@@ -161,7 +180,7 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
                             <div key={mysterySet.type} className="mystery-card-wrapper">
                                 <button
                                     className="mystery-card-btn"
-                                    onClick={() => handleMysterySelect(mysterySet.type)}
+                                    onClick={() => handleMysteryClick(mysterySet.type)}
                                 >
                                     <div className="mystery-card-content">
                                         <h2 className="mystery-card-title">{mysterySet.name[language]}</h2>
@@ -220,6 +239,16 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers }: Mysteri
                     showProgress={false}
                 />
             </div>
+
+            <ConfirmModal
+                isOpen={showClearModal}
+                title={t.clearAllTitle}
+                message={t.clearAllConfirm}
+                confirmText={t.confirm}
+                cancelText={t.cancel}
+                onConfirm={confirmClearProgress}
+                onCancel={() => setShowClearModal(false)}
+            />
         </div>
     );
 }

@@ -211,7 +211,7 @@
 
 .mystery-card-title {
     font-family: var(--font-heading);
-    font-size: 1.875rem !important;
+    font-size: 1.5rem !important;
     font-weight: 700;
     color: var(--home-text-primary);
     margin: 0;

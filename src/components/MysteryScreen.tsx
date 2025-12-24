@@ -78,6 +78,15 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         setShowPrayerText(!userWantsTextHidden);
     }, [userWantsTextHidden]);
 
+    // Save debug opacity values to localStorage
+    useEffect(() => {
+        localStorage.setItem('debug_base_opacity', debugBaseOpacity.toString());
+    }, [debugBaseOpacity]);
+
+    useEffect(() => {
+        localStorage.setItem('debug_secondary_opacity', debugSecondaryOpacity.toString());
+    }, [debugSecondaryOpacity]);
+
     // Sync continuous mode
     useEffect(() => {
         if (isPlaying && !continuousMode) {
@@ -606,8 +615,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             {
                 mysteryLayout === 'cinematic' && userWantsTextHidden && (
                     <style>{`
-                    .cinematic-overlay,
-                    .cinematic-overlay-darker {
+                    .cinematic-container:has(.cinematic-content.text-hidden) .cinematic-overlay,
+                    .cinematic-container:has(.cinematic-content.text-hidden) .cinematic-overlay-darker {
                         background: linear-gradient(to bottom, 
                             rgba(0, 0, 0, ${debugBaseOpacity / 100}) 0%, 
                             rgba(0, 0, 0, ${(debugBaseOpacity - 15) / 100}) 30%, 

@@ -71,7 +71,7 @@
 
 .mysteries-title {
     font-family: var(--font-heading);
-    font-size: 1.5rem;
+    font-size: 1.875rem;
     font-weight: 700;
     color: var(--mys-text-primary);
     margin: 0;
@@ -83,7 +83,7 @@
 /* Main Content */
 .mysteries-main {
     flex: 1;
-    padding: 0 1.5rem 1.5rem;
+    padding: 5px 1.5rem 1.5rem;
     position: relative;
     z-index: 1;
 }
@@ -91,7 +91,7 @@
 .mysteries-grid {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: calc(1.5rem + 5px);
 }
 
 /* Mystery Card Wrapper - Contains button and badge */
@@ -141,7 +141,7 @@
 
 .mystery-card-title {
     font-family: var(--font-heading);
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--mys-text-primary);
     margin: 0;
@@ -280,6 +280,6 @@
     }
 
     .mystery-card-title {
-        font-size: 1rem;
+        font-size: 0.875rem;
     }
 }

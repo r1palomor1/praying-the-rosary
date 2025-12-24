@@ -177,6 +177,7 @@ function AppContent() {
           <MysteriesScreen
             onNavigateHome={handleNavigateToHome}
             onNavigateToPrayers={handleNavigateToPrayers}
+            onStartPrayer={handleStartPrayer}
           />
         )}
         {currentScreen === 'prayers' && (
