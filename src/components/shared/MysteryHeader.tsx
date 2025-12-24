@@ -9,12 +9,11 @@ interface MysteryHeaderProps {
     isAudioPlaying: boolean;
     onSettingsClick: () => void;
     onLayoutToggle: () => void;
-    onHighlighterToggle: () => void;
+    onHighlighterToggle?: () => void;
     highlightingEnabled: boolean;
     isPlaying: boolean;
     language: 'en' | 'es';
-    showToast: (message: string, type: 'success' | 'error' | 'info') => void;
-    userDisabledHighlighting: boolean;
+    showToast: (message: string, type?: 'success' | 'info') => void;
     setUserDisabledHighlighting: (value: boolean) => void;
     setHighlightingEnabled: (value: boolean) => void;
     mysteryName: string;
@@ -74,7 +73,6 @@ export function MysteryHeader({
     isPlaying,
     language,
     showToast,
-    userDisabledHighlighting,
     setUserDisabledHighlighting,
     setHighlightingEnabled,
     mysteryName,

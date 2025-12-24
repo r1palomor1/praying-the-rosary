@@ -4,30 +4,20 @@ import './CinematicMysteryView.css';
 interface CinematicMysteryViewProps {
     currentStep: any;
     decadeInfo: any;
-    userWantsTextHidden: boolean;
     showPrayerText: boolean;
     language: 'en' | 'es';
     renderTextWithHighlighting: (text: string, sentenceOffset?: number) => any;
     getSentences: (text: string) => string[];
-    beadCount: number;
-    currentBead: number;
-    debugBaseOpacity: number;
-    debugSecondaryOpacity: number;
     spokenIndex: number;
 }
 
 export function CinematicMysteryView({
     currentStep,
     decadeInfo,
-    userWantsTextHidden,
     showPrayerText,
     language,
     renderTextWithHighlighting,
     getSentences,
-    beadCount,
-    currentBead,
-    debugBaseOpacity,
-    debugSecondaryOpacity,
     spokenIndex
 }: CinematicMysteryViewProps) {
     // CRITICAL: Use correct prayer type strings (fixed from original)

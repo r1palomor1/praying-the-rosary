@@ -70,7 +70,7 @@ export function ClassicMysteryView({
 
         return (
             <div className="classic-container">
-                <div className="classic-litany-card">
+                <div className="classic-card">
                     <div className="prayer-section litany-container-new">
                         <h2 className="litany-title-new">{(currentStep.title || '').toUpperCase()}</h2>
 

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, Lightbulb } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
 import { SettingsModal } from './SettingsModal';
@@ -49,11 +48,11 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     // DEBUG: Opacity sliders
     const [debugBaseOpacity, setDebugBaseOpacity] = useState(() => {
         const saved = localStorage.getItem('debug_base_opacity');
-        return saved ? parseFloat(saved) : 90;
+        return saved ? parseFloat(saved) : 55;  // Default to 55% for text-hidden state
     });
     const [debugSecondaryOpacity, setDebugSecondaryOpacity] = useState(() => {
         const saved = localStorage.getItem('debug_secondary_opacity');
-        return saved ? parseFloat(saved) : 0;
+        return saved ? parseFloat(saved) : 0;  // Default to 0% for text-hidden state
     });
 
     const [flowEngine] = useState(() => {
@@ -258,43 +257,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         savePrayerProgress(progress);
     }, [currentStep, currentMysterySet, language, flowEngine]);
 
-    const t = language === 'es' ? {
-        back: 'Inicio',
-        step: 'Paso',
-        of: 'de',
-        complete: 'completo',
-        previous: 'Anterior',
-        next: 'Siguiente',
-        finish: 'Finalizar',
-        stopAudio: 'Detener audio',
-        playAudio: 'Reproducir audio',
-        continuousMode: 'Modo Continuo',
-        stopContinuous: 'Detener',
-        reflection: 'Reflexión',
-        mystery: 'Misterio',
-        mysteryOrdinal: 'º',
-        textSize: 'Tamaño de texto',
-        settings: 'Configuración',
-        learnMore: 'Profundizar'
-    } : {
-        back: 'Home',
-        step: 'Step',
-        of: 'of',
-        complete: 'complete',
-        previous: 'Previous',
-        next: 'Next',
-        finish: 'Finish',
-        stopAudio: 'Stop audio',
-        playAudio: 'Play audio',
-        continuousMode: 'Continuous Mode',
-        stopContinuous: 'Stop',
-        reflection: 'Reflection',
-        mystery: 'Mystery',
-        mysteryOrdinal: '',
-        textSize: 'Text Size',
-        settings: 'Settings',
-        learnMore: 'Learn More'
-    };
+
 
     // Get current educational data
     const currentData = language === 'es' ? educationalDataEs : educationalDataEn;
@@ -506,7 +469,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             if (!userDisabledHighlighting) {
                 setHighlightingEnabled(true);
             }
-            wakeLockManager.request().then(wakeLockAcquired => {
+            wakeLockManager.request().then(_wakeLockAcquired => {
                 // Lock acquired or failed
             });
             playSequence(currentStep);
@@ -542,9 +505,9 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         return undefined;
     };
 
-    // Bead counter info
-    const beadCount = currentStep.type === 'decade_hail_mary' && currentStep.hailMaryNumber ? 10 : 0;
-    const currentBead = currentStep.hailMaryNumber || 0;
+    // Bead counter info (currently unused but kept for future use)
+    // const beadCount = currentStep.type === 'decade_hail_mary' && currentStep.hailMaryNumber ? 10 : 0;
+    // const currentBead = currentStep.hailMaryNumber || 0;
 
     return (
         <div className={`mystery-screen-container ${!showPrayerText ? 'prayer-text-hidden' : ''}`}>
@@ -565,7 +528,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 isPlaying={isPlaying}
                 language={language}
                 showToast={showToast}
-                userDisabledHighlighting={userDisabledHighlighting}
                 setUserDisabledHighlighting={setUserDisabledHighlighting}
                 setHighlightingEnabled={setHighlightingEnabled}
                 mysteryName={flowEngine.getMysteryName()}
@@ -582,15 +544,10 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     <CinematicMysteryView
                         currentStep={currentStep}
                         decadeInfo={decadeInfo}
-                        userWantsTextHidden={userWantsTextHidden}
                         showPrayerText={showPrayerText}
                         language={language}
                         renderTextWithHighlighting={renderTextWithHighlighting}
                         getSentences={getSentences}
-                        beadCount={beadCount}
-                        currentBead={currentBead}
-                        debugBaseOpacity={debugBaseOpacity}
-                        debugSecondaryOpacity={debugSecondaryOpacity}
                         spokenIndex={highlightIndex}
                     />
                 ) : (
@@ -649,18 +606,13 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             {
                 mysteryLayout === 'cinematic' && userWantsTextHidden && (
                     <style>{`
-                    .immersive-overlay,
-                    .immersive-overlay-darker {
+                    .cinematic-overlay,
+                    .cinematic-overlay-darker {
                         background: linear-gradient(to bottom, 
-                            rgba(11, 17, 30, ${debugBaseOpacity / 100}) 0%, 
-                            rgba(11, 17, 30, ${(debugBaseOpacity - 15) / 100}) 30%, 
-                            rgba(11, 17, 30, ${(debugBaseOpacity - 40) / 100}) 60%, 
-                            rgba(11, 17, 30, ${(debugBaseOpacity - 60) / 100}) 90%) !important;
-                    }
-                    .immersive-overlay::before,
-                    .immersive-overlay-darker::before {
-                        background: rgba(11, 17, 30, ${debugSecondaryOpacity / 100}) !important;
-                        opacity: 1 !important;
+                            rgba(0, 0, 0, ${debugBaseOpacity / 100}) 0%, 
+                            rgba(0, 0, 0, ${(debugBaseOpacity - 15) / 100}) 30%, 
+                            rgba(0, 0, 0, ${(debugBaseOpacity - 35) / 100}) 60%, 
+                            rgba(0, 0, 0, ${debugSecondaryOpacity / 100}) 90%) !important;
                     }
                 `}</style>
                 )

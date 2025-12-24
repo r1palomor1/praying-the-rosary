@@ -21,6 +21,12 @@
     box-shadow: var(--shadow-md);
 }
 
+/* Remove card background for litany to show row backgrounds */
+.classic-card:has(.litany-container-new) {
+    background: transparent;
+    box-shadow: none;
+}
+
 /* Collapsed card - minimal padding when text is hidden */
 .classic-card.collapsed {
     padding: var(--spacing-sm);
