@@ -119,6 +119,22 @@
             rgba(0, 0, 0, 0.00) 90%) !important;
 }
 
+/* Bottom navigation scrim - ensures nav icons are always visible */
+.cinematic-container::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to top,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(0, 0, 0, 0.3) 50%,
+            rgba(0, 0, 0, 0) 100%);
+    z-index: 99;
+    pointer-events: none;
+}
+
 /* ========================================
    TYPOGRAPHY - EXACT FONT SIZES FROM TESTING
    ======================================== */
