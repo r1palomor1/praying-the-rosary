@@ -2,7 +2,8 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: var(--spacing-sm) 1.5rem;
+    padding: var(--spacing-sm) 21px;
+    /* 1.5rem -> 21px padding side to match other screens */
     background: var(--color-bg-elevated);
     border-top: 1px solid var(--color-border-light);
     position: sticky;

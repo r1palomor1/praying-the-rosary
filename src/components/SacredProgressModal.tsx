@@ -4,7 +4,13 @@ import { useApp } from '../context/AppContext';
 import { getSacredStats, getSacredCompletionsForMonth, hasSacredCompletionOnDate, getMysteryTypeForDate } from '../utils/sacredHistory';
 import './ProgressScreen.css'; // Reusing the same styles as Rosary progress
 
-export function SacredProgressModal() {
+import { X } from 'lucide-react';
+
+interface SacredProgressModalProps {
+    onClose: () => void;
+}
+
+export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
     const { language } = useApp();
     const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -22,7 +28,8 @@ export function SacredProgressModal() {
             bestStreak: 'Best streak',
             thisMonth: 'This month',
             days: 'days',
-            times: 'times'
+            times: 'times',
+            close: 'Close'
         },
         es: {
             title: 'Tu Camino de Oración',
@@ -31,7 +38,8 @@ export function SacredProgressModal() {
             bestStreak: 'Mejor racha',
             thisMonth: 'Este mes',
             days: 'días',
-            times: 'veces'
+            times: 'veces',
+            close: 'Cerrar'
         }
     };
 
@@ -103,7 +111,7 @@ export function SacredProgressModal() {
                             backgroundColor: getMysteryColor(mysteryType),
                             color: getMysteryTextColor(mysteryType),
                             borderRadius: '50%',
-                            width: '32px',
+                            top: '-2px',
                             height: '32px',
                             display: 'flex',
                             alignItems: 'center',
@@ -140,7 +148,7 @@ export function SacredProgressModal() {
             left: 0,
             right: 0,
             bottom: 0,
-            zIndex: 150,
+            zIndex: 1000,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -162,8 +170,24 @@ export function SacredProgressModal() {
             }}>
 
                 {/* Header */}
-                <div className="p-4 border-b border-white/10 flex justify-center items-center bg-[#16213e]">
-                    <h2 className="text-xl font-serif text-[#D4AF37]" style={{ textAlign: 'center' }}>{t.title}</h2>
+                <div className="border-b border-white/10 bg-[#16213e]" style={{ position: 'relative', padding: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <h2 className="text-2xl font-serif text-[#D4AF37] text-center whitespace-nowrap">{t.title}</h2>
+
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-gray-400 hover:text-white transition-colors"
+                        aria-label={t.close}
+                        style={{
+                            position: 'absolute',
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            right: '10px',
+                            top: '-1px'
+                        }}
+                    >
+                        <X size={24} />
+                    </button>
                 </div>
 
                 {/* Content */}

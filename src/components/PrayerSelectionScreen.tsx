@@ -41,26 +41,18 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
     return (
         <div className="selection-container fade-in">
             <div className="selection-header">
-                <h1>{t.title}</h1>
+                <h1 className="hero-title">{t.title}</h1>
                 <button
-                    className="settings-btn-header"
+                    className="icon-btn"
                     onClick={() => setShowSettings(true)}
                     aria-label={t.settings}
                     style={{
                         position: 'absolute',
                         top: '1rem',
-                        right: '1rem',
-                        background: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: '0.5rem',
-                        color: 'var(--color-text-primary)',
-                        transition: 'transform 0.2s ease'
+                        right: '1rem'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                    <SettingsIcon size={24} strokeWidth={2} />
+                    <SettingsIcon size={21} />
                 </button>
             </div>
 

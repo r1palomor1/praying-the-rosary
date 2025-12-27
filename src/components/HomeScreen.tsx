@@ -207,7 +207,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                                     onClick={onNavigateToSelection}
                                     aria-label={t.returnToMenu}
                                 >
-                                    <ArrowLeft size={24} />
+                                    <ArrowLeft size={21} />
                                 </button>
                             )}
                             <button
@@ -215,7 +215,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                                 onClick={handleContinuousStart}
                                 aria-label={isPlaying ? t.stopAudio : t.continuousAudio}
                             >
-                                {isPlaying ? <StopCircle size={24} /> : <Volume2 size={24} />}
+                                {isPlaying ? <StopCircle size={21} /> : <Volume2 size={21} />}
                             </button>
                         </div>
 
@@ -225,14 +225,14 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                                 onClick={() => setShowLearnMore(true)}
                                 aria-label={t.learnMore}
                             >
-                                <Lightbulb size={24} />
+                                <Lightbulb size={21} />
                             </button>
                             <button
                                 className="icon-btn"
                                 onClick={() => setShowSettings(true)}
                                 aria-label={t.settings}
                             >
-                                <SettingsIcon size={24} />
+                                <SettingsIcon size={21} />
                             </button>
                         </div>
                     </div>

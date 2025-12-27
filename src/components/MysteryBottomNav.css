@@ -4,9 +4,10 @@
     justify-content: space-between;
     /* Changed from flex-start to space-between */
     align-items: center;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-sm) 21px;
+    /* var(--spacing-md) replaced with 21px for sides to match home screen */
     background: var(--color-bg-elevated);
-    border-top: 1px solid var(--color-border-light);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
     position: fixed;
     bottom: 0;
     left: 0;
@@ -15,11 +16,12 @@
     z-index: 100;
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    background: transparent;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent);
+    /* Subtle gradient like classic */
 }
 
 [data-theme="dark"] .mystery-bottom-nav {
-    background: transparent;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent);
     border-top-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -41,7 +43,7 @@
     border: none;
     cursor: pointer;
     transition: all var(--transition-base);
-    color: var(--color-text-tertiary);
+    color: rgba(255, 255, 255, 0.9);
     min-width: 48px;
 }
 
@@ -58,8 +60,12 @@
 }
 
 .mystery-nav-btn:hover:not(:disabled) {
-    color: var(--color-primary);
+    color: #FFFFFF;
     transform: translateY(-2px);
+}
+
+.mystery-nav-btn:active:not(:disabled) {
+    color: #FFFFFF;
 }
 
 .mystery-nav-btn:disabled,
@@ -74,7 +80,7 @@
 
 @media (max-width: 480px) {
     .mystery-bottom-nav {
-        padding: var(--spacing-xs) var(--spacing-sm);
+        padding: var(--spacing-xs) 21px;
     }
 
     .mystery-nav-btn {

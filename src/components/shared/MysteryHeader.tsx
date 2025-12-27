@@ -116,9 +116,9 @@ export function MysteryHeader({
                         aria-label={isAudioPlaying ? t.stopContinuous : t.continuousMode}
                     >
                         {isAudioPlaying ? (
-                            <StopCircle size={20} strokeWidth={3} />
+                            <StopCircle size={21} strokeWidth={3} />
                         ) : (
-                            <Volume2 size={20} strokeWidth={3} />
+                            <Volume2 size={21} strokeWidth={3} />
                         )}
                     </button>
 
@@ -139,9 +139,9 @@ export function MysteryHeader({
                             style={{ marginLeft: '12px' }}
                         >
                             {userWantsTextHidden ? (
-                                <BookClosedIcon size={20} />
+                                <BookClosedIcon size={21} />
                             ) : (
-                                <BookOpenIcon size={20} />
+                                <BookOpenIcon size={21} />
                             )}
                         </button>
                     )}
@@ -170,8 +170,8 @@ export function MysteryHeader({
                         disabled={!isPlaying || userWantsTextHidden}
                     >
                         <svg
-                            width="20"
-                            height="20"
+                            width="21"
+                            height="21"
                             viewBox="0 0 36 36"
                             fill="currentColor"
                             className={highlightingEnabled ? "" : "opacity-50"}
@@ -201,7 +201,7 @@ export function MysteryHeader({
                             aria-label={`Switch to ${mysteryLayout === 'classic' ? 'cinematic' : 'classic'} mode`}
                             style={{ marginRight: '12px' }}
                         >
-                            <LayoutModeIcon size={20} />
+                            <LayoutModeIcon size={21} />
                         </button>
                     )}
 
@@ -210,7 +210,7 @@ export function MysteryHeader({
                         onClick={onSettingsClick}
                         aria-label={t.settings}
                     >
-                        <SettingsIcon size={20} strokeWidth={3} />
+                        <SettingsIcon size={21} strokeWidth={3} />
                     </button>
                 </div>
             </div>

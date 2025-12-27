@@ -23,12 +23,23 @@
     backdrop-filter: blur(10px);
 }
 
-.selection-header h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
+/* Main Title - Matching Home Screen */
+.hero-title {
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     margin: 0;
-    color: var(--accent-color);
+    text-align: center;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    padding: 0 0.5rem;
+    color: white;
 }
+
+
 
 .back-button {
     background: none;
@@ -136,19 +147,35 @@
     .selection-card {
         height: 300px;
         width: 300px;
-
-        .selection-card {
-            height: 300px;
-            width: 300px;
-        }
     }
+}
 
-    /* Mobile adjustments to ensure image integrity */
-    @media (max-width: 767px) {
-        .selection-card {
-            background-position: center top;
-            /* Pin to top on mobile to avoid head cropping */
-            /* height: 200px; - Already set in base style, but confirming intention */
-        }
+/* Mobile adjustments to ensure image integrity */
+@media (max-width: 767px) {
+    .selection-card {
+        background-position: center top;
+        /* Pin to top on mobile to avoid head cropping */
     }
+}
+
+/* Header Button - Matching Home Screen */
+.icon-btn {
+    width: 2.5rem;
+    /* 40px */
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: rgba(0, 0, 0, 0.3);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.icon-btn:hover {
+    transform: scale(1.05);
 }

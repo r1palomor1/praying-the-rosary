@@ -35,10 +35,8 @@
     margin-bottom: 0;
     padding-top: 0.625rem;
     /* 10px top */
-    padding-left: 0.75rem;
-    /* 12px left */
-    padding-right: 0.75rem;
-    /* 12px right */
+    padding-left: 21px;
+    padding-right: 21px;
     padding-bottom: 0;
     /* No bottom padding for tighter spacing */
 }

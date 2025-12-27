@@ -7,11 +7,11 @@ import { SacredProgressModal } from './SacredProgressModal';
 import { SacredPrayerFlowEngine } from '../utils/SacredPrayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
 import { wakeLockManager } from '../utils/wakeLock';
-import { ResponsiveImage } from './ResponsiveImage';
+
 import { sanitizeTextForSpeech } from '../utils/textSanitizer';
 import { ClassicMysteryView } from './ClassicMysteryView';
 import { CinematicMysteryView } from './CinematicMysteryView';
-import { MysteryNavigation } from './shared/MysteryNavigation';
+
 
 // Reuse MysteryScreen styles to ensure exact match
 import './MysteryScreen.css';
@@ -416,7 +416,6 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
         return <div className="p-8 text-center text-white">Loading...</div>;
     }
 
-    const { imageUrl } = currentStep;
 
     return (
         <div className={`mystery-screen-container ${!showPrayerText ? 'prayer-text-hidden' : ''}`} ref={contentRef}>
@@ -573,7 +572,7 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
             />
 
             {showProgress && (
-                <SacredProgressModal />
+                <SacredProgressModal onClose={() => setShowProgress(false)} />
             )}
         </div>
     );
