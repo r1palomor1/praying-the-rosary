@@ -9,6 +9,9 @@ import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress, clearPr
 import { wakeLockManager } from '../utils/wakeLock';
 import { ResponsiveImage } from './ResponsiveImage';
 import { sanitizeTextForSpeech } from '../utils/textSanitizer';
+import { ClassicMysteryView } from './ClassicMysteryView';
+import { CinematicMysteryView } from './CinematicMysteryView';
+import { MysteryNavigation } from './shared/MysteryNavigation';
 
 // Reuse MysteryScreen styles to ensure exact match
 import './MysteryScreen.css';
@@ -370,6 +373,11 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
         return text;
     };
 
+    const getSentences = (text: string) => {
+        if (!text) return [];
+        return text.match(/[^.!?:]+([.!?:]+|\s*$)/g) || [text];
+    };
+
     const t = language === 'es' ? {
         back: 'Inicio',
         step: 'Paso',
@@ -500,54 +508,28 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                 />
             </div>
 
-            {/* Main Content */}
+            {/* Main Content - Use shared view components */}
             <div className="mystery-screen-content">
-                {/* Cinematic Mode */}
-                {(mysteryLayout === 'cinematic' && imageUrl) ? (
-                    <div className="immersive-mystery-container">
-                        <div className="immersive-bg">
-                            <ResponsiveImage imageUrl={imageUrl} className="immersive-backdrop-blur" alt="" />
-                            <ResponsiveImage imageUrl={imageUrl} alt={currentStep.title} className="immersive-img mystery-img" loading="lazy" />
-                            <div className="immersive-overlay-darker"></div>
-                        </div>
-
-                        <div className="immersive-content">
-                            <main className="immersive-main flex flex-col h-full">
-                                <div className="text-center space-y-8">
-                                    <h1 className="font-display text-2xl font-bold immersive-mystery-title tracking-wide mb-8">
-                                        {(currentStep.title || '').toUpperCase()}
-                                    </h1>
-                                    <div className="max-w-2xl mx-auto px-6">
-                                        <p className="font-sans text-xl leading-loose text-gray-100 text-center drop-shadow-md">
-                                            {renderTextWithHighlighting(currentStep.text)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </main>
-                        </div>
-                    </div>
+                {mysteryLayout === 'cinematic' ? (
+                    <CinematicMysteryView
+                        currentStep={currentStep}
+                        decadeInfo={null}
+                        showPrayerText={showPrayerText}
+                        language={language}
+                        renderTextWithHighlighting={renderTextWithHighlighting}
+                        getSentences={getSentences}
+                        spokenIndex={highlightIndex}
+                    />
                 ) : (
-                    // Classic Mode (or no image)
-                    <div className="prayer-section">
-                        <div className="mystery-prayer-card">
-                            <h2 className="mystery-title">{currentStep.title}</h2>
-                            <div className="mystery-divider"></div>
-                            <p className="mystery-text">{renderTextWithHighlighting(currentStep.text)}</p>
-                        </div>
-
-                        {/* Footer Image for Classic Mode */}
-                        {imageUrl && (
-                            <div className="mystery-intro" style={{ paddingTop: 'var(--spacing-sm)' }}>
-                                <div className="mystery-content-card">
-                                    <div className="mystery-image-container">
-                                        <div className="mystery-image-wrapper">
-                                            <ResponsiveImage imageUrl={imageUrl} alt={currentStep.title || ''} className="mystery-image-bg" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <ClassicMysteryView
+                        currentStep={currentStep}
+                        decadeInfo={null}
+                        userWantsTextHidden={userWantsTextHidden}
+                        language={language}
+                        renderTextWithHighlighting={renderTextWithHighlighting}
+                        getSentences={getSentences}
+                        spokenIndex={highlightIndex}
+                    />
                 )}
             </div>
 

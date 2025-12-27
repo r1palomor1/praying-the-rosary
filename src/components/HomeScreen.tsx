@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings as SettingsIcon, Volume2, StopCircle, Lightbulb, ArrowLeft } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
@@ -31,6 +31,28 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
     const hasSession = hasActiveSession();
     const mysterySet = mysterySets.find(m => m.type === currentMysterySet);
     const devotion = getTodaysDevotion();
+
+    // Match nav width to content width
+    useEffect(() => {
+        const updateNavWidth = () => {
+            const homeMain = document.querySelector('.home-main') as HTMLElement;
+            const bottomSection = document.querySelector('.bottom-section') as HTMLElement;
+
+            if (homeMain && bottomSection) {
+                const contentWidth = homeMain.offsetWidth;
+                bottomSection.style.maxWidth = `${contentWidth}px`;
+                console.log('Home nav width set to:', contentWidth);
+            }
+        };
+
+        const timer = setTimeout(updateNavWidth, 100);
+        window.addEventListener('resize', updateNavWidth);
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', updateNavWidth);
+        };
+    }, []);
 
     const translations = {
         en: {

@@ -73,10 +73,15 @@
     display: flex;
     justify-content: center;
     margin-bottom: var(--spacing-md);
+    position: relative;
+    /* For layering blur and main image */
+    overflow: hidden;
+    /* Hide blur overflow */
+    border-radius: var(--radius-lg);
 }
 
 .classic-image-container.normal {
-    max-height: 400px;
+    max-height: 600px;
 }
 
 .classic-image-container.expanded {
@@ -86,6 +91,24 @@
     /* Align image to top, not center, to eliminate gap */
     margin-top: 16px;
     /* Match gap when text is visible (var(--spacing-md)) */
+}
+
+/* Blurred background layer - matches card width */
+.classic-image-blur {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) scale(1.1);
+    /* Center and slightly enlarge */
+    width: calc(100% - 48px);
+    /* Match card padding (24px * 2) */
+    max-width: 656px;
+    /* 704px container - 48px padding */
+    height: 100%;
+    object-fit: cover;
+    /* Fill container */
+    filter: blur(20px);
+    z-index: 1;
 }
 
 /* Image - NO 35vh compression! */
@@ -100,6 +123,10 @@
     box-shadow: var(--shadow-md);
     display: block;
     margin: 0 auto;
+    position: relative;
+    /* For z-index */
+    z-index: 2;
+    /* Above blur layer */
 }
 
 .classic-image-container.expanded .classic-image {

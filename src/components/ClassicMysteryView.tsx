@@ -26,7 +26,10 @@ export function ClassicMysteryView({
         'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'].includes(currentStep.type);
     const isReflection = currentStep.type === 'decade_announcement';
     const isLitany = currentStep.type === 'litany_of_loreto';
-    const decadePrayerTypes = ['decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer'];
+    const decadePrayerTypes = [
+        'decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer',
+        'our_father', 'hail_mary', 'glory_be', 'jaculatory' // Sacred Prayers use these types
+    ];
     const isDecadePrayer = decadePrayerTypes.includes(currentStep.type);
 
     const t = language === 'es' ? {
@@ -106,17 +109,6 @@ export function ClassicMysteryView({
     if (isReflection) {
         return (
             <div className="classic-container">
-                {/* Image FIRST - fixed position, always visible */}
-                <div className="classic-image-container normal">
-                    {currentStep.imageUrl && (
-                        <img
-                            src={typeof currentStep.imageUrl === 'string' ? currentStep.imageUrl : currentStep.imageUrl.lg}
-                            alt={currentStep.title}
-                            className="classic-image"
-                        />
-                    )}
-                </div>
-
                 <div className="classic-card">
                     {/* Title always visible */}
                     <h3 className="classic-card-title">{t.reflection}</h3>
@@ -147,6 +139,26 @@ export function ClassicMysteryView({
                         </div>
                     )}
                 </div>
+
+                {/* Image LAST - moved to bottom to match other prayers */}
+                <div className="classic-image-container normal">
+                    {currentStep.imageUrl && (
+                        <>
+                            {/* Blurred background layer */}
+                            <img
+                                src={typeof currentStep.imageUrl === 'string' ? currentStep.imageUrl : currentStep.imageUrl.lg}
+                                alt=""
+                                className="classic-image-blur"
+                            />
+                            {/* Clear main image on top */}
+                            <img
+                                src={typeof currentStep.imageUrl === 'string' ? currentStep.imageUrl : currentStep.imageUrl.lg}
+                                alt={currentStep.title}
+                                className="classic-image"
+                            />
+                        </>
+                    )}
+                </div>
             </div>
         );
     }
@@ -170,6 +182,11 @@ export function ClassicMysteryView({
                     </div>
 
                     <div className={`classic-image-container ${userWantsTextHidden ? 'expanded' : 'normal'}`}>
+                        <img
+                            src={typeof currentStep.imageUrl === 'string' ? currentStep.imageUrl : currentStep.imageUrl.lg}
+                            alt=""
+                            className="classic-image-blur"
+                        />
                         <img
                             src={typeof currentStep.imageUrl === 'string' ? currentStep.imageUrl : currentStep.imageUrl.lg}
                             alt={currentStep.title}
@@ -234,6 +251,11 @@ export function ClassicMysteryView({
                     <div className={`classic-image-container ${userWantsTextHidden ? 'expanded' : 'normal'}`}>
                         <img
                             src={typeof currentStep.imageUrl === 'string' ? currentStep.imageUrl : currentStep.imageUrl.lg}
+                            alt=""
+                            className="classic-image-blur"
+                        />
+                        <img
+                            src={typeof currentStep.imageUrl === 'string' ? currentStep.imageUrl : currentStep.imageUrl.lg}
                             alt={currentStep.title}
                             className="classic-image"
                         />
@@ -276,7 +298,8 @@ export function ClassicMysteryView({
 
     // DECADE PRAYERS (Our Father, Hail Mary, Glory Be, etc.)
     if (isDecadePrayer) {
-        const imageUrl = decadeInfo?.imageUrl;
+        // Check currentStep.imageUrl first (for Sacred Prayers), then decadeInfo.imageUrl (for Rosary)
+        const imageUrl = currentStep.imageUrl || decadeInfo?.imageUrl;
 
         return (
             <div className="classic-container">
@@ -339,6 +362,11 @@ export function ClassicMysteryView({
                 {/* Image below text for decade prayers */}
                 {imageUrl && (
                     <div className={`classic-image-container ${userWantsTextHidden ? 'expanded' : 'normal'}`}>
+                        <img
+                            src={typeof imageUrl === 'string' ? imageUrl : imageUrl.lg}
+                            alt=""
+                            className="classic-image-blur"
+                        />
                         <img
                             src={typeof imageUrl === 'string' ? imageUrl : imageUrl.lg}
                             alt={currentStep.title}

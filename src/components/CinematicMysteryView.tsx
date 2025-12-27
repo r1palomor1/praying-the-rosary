@@ -27,7 +27,10 @@ export function CinematicMysteryView({
         'closing_under_your_protection', 'final_collect', 'sign_of_cross_end'].includes(currentStep.type);
     const isReflection = currentStep.type === 'decade_announcement';
     const isLitany = currentStep.type === 'litany_of_loreto';
-    const decadePrayerTypes = ['decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer'];
+    const decadePrayerTypes = [
+        'decade_our_father', 'decade_hail_mary', 'decade_glory_be', 'decade_jaculatory', 'fatima_prayer',
+        'our_father', 'hail_mary', 'glory_be', 'jaculatory' // Sacred Prayers use these types
+    ];
     const isDecadePrayer = decadePrayerTypes.includes(currentStep.type);
 
     const t = language === 'es' ? {

@@ -87,6 +87,59 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         localStorage.setItem('debug_secondary_opacity', debugSecondaryOpacity.toString());
     }, [debugSecondaryOpacity]);
 
+    // Dynamically match nav width to cinematic image width
+    useEffect(() => {
+        if (mysteryLayout !== 'cinematic') return;
+
+        const updateNavWidth = () => {
+            const cinematicImage = document.querySelector('.cinematic-image') as HTMLImageElement;
+            const bottomSection = document.querySelector('.bottom-section') as HTMLElement;
+
+            if (cinematicImage && bottomSection && cinematicImage.complete) {
+                const containerWidth = cinematicImage.offsetWidth;
+                const containerHeight = cinematicImage.offsetHeight;
+                const naturalWidth = cinematicImage.naturalWidth;
+                const naturalHeight = cinematicImage.naturalHeight;
+
+                if (naturalWidth > 0 && naturalHeight > 0) {
+                    // Calculate actual rendered width with object-fit: contain
+                    const imageRatio = naturalWidth / naturalHeight;
+                    const containerRatio = containerWidth / containerHeight;
+
+                    let actualWidth;
+                    if (imageRatio > containerRatio) {
+                        // Image is wider - width constrained
+                        actualWidth = containerWidth;
+                    } else {
+                        // Image is taller - height constrained
+                        actualWidth = containerHeight * imageRatio;
+                    }
+
+                    bottomSection.style.maxWidth = `${Math.round(actualWidth)}px`;
+                    console.log('Image actual width:', Math.round(actualWidth), '(container:', containerWidth, ')');
+                }
+            }
+        };
+
+        // Delay initial update to ensure image is rendered
+        const timer = setTimeout(updateNavWidth, 100);
+        window.addEventListener('resize', updateNavWidth);
+
+        // Also update when image loads
+        const cinematicImage = document.querySelector('.cinematic-image') as HTMLImageElement;
+        if (cinematicImage) {
+            cinematicImage.addEventListener('load', updateNavWidth);
+        }
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', updateNavWidth);
+            if (cinematicImage) {
+                cinematicImage.removeEventListener('load', updateNavWidth);
+            }
+        };
+    }, [mysteryLayout, currentStep]);
+
     // Sync continuous mode
     useEffect(() => {
         if (isPlaying && !continuousMode) {
@@ -330,7 +383,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             const data = step.litanyData;
             const segments: { text: string; gender: 'female' | 'male'; rate?: number; postPause?: number }[] = [];
             [...data.initial_petitions].forEach((item: any) => {
-                segments.push({ text: item.call, gender: 'female', rate: 1.0, postPause: 300 });
+                segments.push({ text: item.call, gender: 'female', rate: 1.0, postPause: 200 });
                 segments.push({ text: item.response, gender: 'male', rate: 1.0 });
             });
             [...data.trinity_invocations, ...data.mary_invocations, ...data.agnus_dei].forEach((item: any) => {
