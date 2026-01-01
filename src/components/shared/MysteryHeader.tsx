@@ -1,4 +1,5 @@
 import { Volume2, StopCircle, Settings as SettingsIcon } from 'lucide-react';
+import './MysteryHeader.css';
 
 interface MysteryHeaderProps {
     mysteryLayout: 'classic' | 'cinematic';
@@ -29,11 +30,11 @@ const BookOpenIcon = ({ size = 20, className = "" }: { size?: number, className?
 
 const BookClosedIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className={className}>
-        <path style={{ fill: '#B1974D', stroke: '#705F2E', strokeWidth: 3 }} d="M 22,10 77,2 77,27 22,28 z" />
-        <path style={{ fill: '#B1974D', stroke: '#705F2E', strokeWidth: 3 }} d="m 34,20 58,-7 0,76 -58,7 z" />
-        <path style={{ fill: '#5B4335', stroke: '#2E241F', strokeWidth: 3, strokeLinejoin: 'bevel' }} d="M 34,20 34,96 21,98 7,89 7,12 22,10 7,12 21,22 z" />
-        <path style={{ fill: '#D2D2B3' }} d="M 10,13 77,3 c 0,0 -2,5 2,7 4,2 9,2 9,2 l -67,9 z" />
-        <path style={{ fill: 'none', stroke: '#836959', strokeWidth: 3 }} d="m 21,23 0,74" />
+        <path className="book-cover" d="M 22,10 77,2 77,27 22,28 z" />
+        <path className="book-cover" d="m 34,20 58,-7 0,76 -58,7 z" />
+        <path className="book-spine" d="M 34,20 34,96 21,98 7,89 7,12 22,10 7,12 21,22 z" />
+        <path className="book-pages" d="M 10,13 77,3 c 0,0 -2,5 2,7 4,2 9,2 9,2 l -67,9 z" />
+        <path className="book-mark" d="m 21,23 0,74" />
     </svg>
 );
 
@@ -106,10 +107,10 @@ export function MysteryHeader({
     return (
         <div className="mystery-screen-header">
             {/* Top Row: Icons */}
-            <div className="header-top-row" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <div className="header-top-row">
 
                 {/* Left Icon Group */}
-                <div className="header-left-icons" style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="header-left-icons">
                     <button
                         className="continuous-audio-btn-header"
                         onClick={onAudioToggle}
@@ -136,7 +137,6 @@ export function MysteryHeader({
                                 }
                             }}
                             aria-label={userWantsTextHidden ? "Show prayer text" : "Hide prayer text"}
-                            style={{ marginLeft: '12px' }}
                         >
                             {userWantsTextHidden ? (
                                 <BookClosedIcon size={21} />
@@ -148,7 +148,7 @@ export function MysteryHeader({
 
                     {/* Highlighter icon */}
                     <button
-                        className={`text-visibility-btn-header ${highlightingEnabled && !userWantsTextHidden ? 'pulsate-book-icon' : ''}`}
+                        className={`text-visibility-btn-header ${highlightingEnabled && !userWantsTextHidden ? 'pulsate-book-icon' : ''} ${(!highlightingEnabled && isPlaying && !userWantsTextHidden) ? 'highlighting-off' : ''}`}
                         onClick={(e) => {
                             e.currentTarget.blur();
                             if (!isPlaying) return;
@@ -161,12 +161,6 @@ export function MysteryHeader({
                             );
                         }}
                         aria-label={highlightingEnabled ? "Disable highlighting" : "Enable highlighting"}
-                        style={{
-                            marginLeft: '12px',
-                            opacity: isPlaying && !userWantsTextHidden ? 1 : 0.3,
-                            cursor: isPlaying && !userWantsTextHidden ? 'pointer' : 'not-allowed',
-                            color: (!highlightingEnabled && isPlaying && !userWantsTextHidden) ? 'var(--color-text-secondary)' : undefined
-                        }}
                         disabled={!isPlaying || userWantsTextHidden}
                     >
                         <svg
@@ -185,7 +179,7 @@ export function MysteryHeader({
                 </div>
 
                 {/* Right Icon Group */}
-                <div className="header-right-icons" style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="header-right-icons">
                     {/* Layout toggle - hidden on litany */}
                     {currentStepType !== 'litany_of_loreto' && (
                         <button
@@ -199,7 +193,6 @@ export function MysteryHeader({
                                 );
                             }}
                             aria-label={`Switch to ${mysteryLayout === 'classic' ? 'cinematic' : 'classic'} mode`}
-                            style={{ marginRight: '12px' }}
                         >
                             <LayoutModeIcon size={21} />
                         </button>
@@ -216,7 +209,7 @@ export function MysteryHeader({
             </div>
 
             {/* Bottom Row: Text (Centered) */}
-            <div className="mystery-progress" style={{ width: '100%', textAlign: 'center' }}>
+            <div className="mystery-progress">
                 {/* Mystery set name */}
                 <div className="mystery-set-name">{mysteryName}</div>
                 {/* Current decade info */}

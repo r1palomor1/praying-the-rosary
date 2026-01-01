@@ -1,0 +1,51 @@
+/* Book Closed Icon Styles */
+.book-closed-icon-cover {
+    fill: #B1974D;
+    stroke: #705F2E;
+    stroke-width: 3;
+}
+
+.book-closed-icon-pages {
+    fill: #B1974D;
+    stroke: #705F2E;
+    stroke-width: 3;
+}
+
+.book-closed-icon-spine {
+    fill: #5B4335;
+    stroke: #2E241F;
+    stroke-width: 3;
+    stroke-linejoin: bevel;
+}
+
+.book-closed-icon-highlight {
+    fill: #D2D2B3;
+}
+
+.book-closed-icon-binding {
+    fill: none;
+    stroke: #836959;
+    stroke-width: 3;
+}
+
+/* Highlighter Button Styles */
+.highlighter-btn-header {
+    margin-left: 12px;
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.highlighter-btn-header.active {
+    opacity: 1;
+    cursor: pointer;
+}
+
+.highlighter-btn-header.disabled-highlight {
+    color: var(--color-text-secondary);
+}
+
+/* Mystery Progress Container */
+.mystery-progress-centered {
+    width: 100%;
+    text-align: center;
+}

@@ -16,6 +16,7 @@ import { CinematicMysteryView } from './CinematicMysteryView';
 // Reuse MysteryScreen styles to ensure exact match
 import './MysteryScreen.css';
 import './MysteryBottomNav.css';
+import './SacredPrayersScreen.css';
 
 interface SacredPrayersScreenProps {
     onComplete: () => void;
@@ -31,11 +32,11 @@ const BookOpenIcon = ({ size = 20, className = "" }: { size?: number, className?
 
 const BookClosedIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className={className}>
-        <path style={{ fill: '#B1974D', stroke: '#705F2E', strokeWidth: 3 }} d="M 22,10 77,2 77,27 22,28 z" />
-        <path style={{ fill: '#B1974D', stroke: '#705F2E', strokeWidth: 3 }} d="m 34,20 58,-7 0,76 -58,7 z" />
-        <path style={{ fill: '#5B4335', stroke: '#2E241F', strokeWidth: 3, strokeLinejoin: 'bevel' }} d="M 34,20 34,96 21,98 7,89 7,12 22,10 7,12 21,22 z" />
-        <path style={{ fill: '#D2D2B3' }} d="M 10,13 77,3 c 0,0 -2,5 2,7 4,2 9,2 9,2 l -67,9 z" />
-        <path style={{ fill: 'none', stroke: '#836959', strokeWidth: 3 }} d="m 21,23 0,74" />
+        <path className="book-closed-icon-cover" d="M 22,10 77,2 77,27 22,28 z" />
+        <path className="book-closed-icon-pages" d="m 34,20 58,-7 0,76 -58,7 z" />
+        <path className="book-closed-icon-spine" d="M 34,20 34,96 21,98 7,89 7,12 22,10 7,12 21,22 z" />
+        <path className="book-closed-icon-highlight" d="M 10,13 77,3 c 0,0 -2,5 2,7 4,2 9,2 9,2 l -67,9 z" />
+        <path className="book-closed-icon-binding" d="m 21,23 0,74" />
     </svg>
 );
 
@@ -443,7 +444,7 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                         </button>
 
                         <button
-                            className={`text-visibility-btn-header ${highlightingEnabled && !userWantsTextHidden ? 'pulsate-book-icon' : ''}`}
+                            className={`highlighter-btn-header ${isPlaying && !userWantsTextHidden ? 'active' : ''} ${!highlightingEnabled && isPlaying && !userWantsTextHidden ? 'disabled-highlight' : ''} ${highlightingEnabled && !userWantsTextHidden ? 'pulsate-book-icon' : ''}`}
                             onClick={(e) => {
                                 e.currentTarget.blur();
                                 if (!isPlaying) return;
@@ -459,12 +460,6 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                                 );
                             }}
                             aria-label={highlightingEnabled ? "Disable Highlighting" : "Enable Highlighting"}
-                            style={{
-                                marginLeft: '12px',
-                                opacity: isPlaying && !userWantsTextHidden ? 1 : 0.3,
-                                cursor: isPlaying && !userWantsTextHidden ? 'pointer' : 'not-allowed',
-                                color: (!highlightingEnabled && isPlaying && !userWantsTextHidden) ? 'var(--color-text-secondary)' : undefined
-                            }}
                             disabled={!isPlaying || userWantsTextHidden}
                         >
                             <HighlighterIcon size={20} enabled={highlightingEnabled} />
@@ -495,7 +490,7 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                     </div>
                 </div>
 
-                <div className="mystery-progress" style={{ width: '100%', textAlign: 'center' }}>
+                <div className="mystery-progress mystery-progress-centered">
                     <div className="mystery-set-name">Sacred Prayers</div>
                 </div>
             </div>
@@ -503,7 +498,11 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
             <div className="progress-bar-container">
                 <div
                     className="progress-bar-fill"
-                    style={{ '--progress': `${flowEngine.getProgress()}%` } as React.CSSProperties}
+                    ref={(el) => {
+                        if (el) {
+                            el.style.setProperty('--progress', `${flowEngine.getProgress()}%`);
+                        }
+                    }}
                 />
             </div>
 

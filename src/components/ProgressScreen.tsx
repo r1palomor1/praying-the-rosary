@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { getPrayerStats, getCompletionsForMonth, getMysteryForDate } from '../utils/prayerHistory';
+import { getCompletionsForMonth, getMysteryForDate } from '../utils/prayerHistory';
+import { getAvailableYears, getEnhancedYTDStats, isYearEndArchiveView } from '../utils/yearlyHistory';
 import { BottomNav } from './BottomNav';
 import { useNavigationHandler } from '../hooks/useNavigationHandler';
+import { EnhancedStatsCards } from './EnhancedStatsCards';
 import type { MysterySetType } from '../types';
 import './ProgressScreen.css';
 
@@ -17,10 +19,15 @@ interface ProgressScreenProps {
 export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNavigateToPrayers, onStartPrayer }: ProgressScreenProps) {
     const { language } = useApp();
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-    const stats = getPrayerStats();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();
+
+    // Get enhanced YTD stats with MTD breakdown
+    const stats = getEnhancedYTDStats(currentYear, currentMonth, 'rosary');
+    const availableYears = getAvailableYears('rosary');
+    const isArchiveView = isYearEndArchiveView(currentYear, currentMonth);
 
     const completions = getCompletionsForMonth(currentYear, currentMonth);
 
@@ -29,29 +36,37 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
             title: 'Your Prayer Journey',
             streak: 'Day Streak',
             total: 'Total Rosaries',
+            totalYTD: 'Total Rosaries YTD',
             bestStreak: 'Best streak',
-            thisMonth: 'This month',
+            thisMonth: 'This month MTD',
+            yearEndMonth: 'Year-End Total',
             days: 'days',
             mysteriesPrayed: 'Mysteries Prayed',
             joyful: 'Joyful Mysteries',
             sorrowful: 'Sorrowful Mysteries',
             glorious: 'Glorious Mysteries',
             luminous: 'Luminous Mysteries',
-            times: 'times'
+            times: 'times',
+            selectYear: 'Select Year',
+            yearEnd: 'Year-End Stats'
         },
         es: {
             title: 'Tu Camino de Oración',
             streak: 'Días Seguidos',
             total: 'Rosarios Totales',
+            totalYTD: 'Rosarios Totales ATF',
             bestStreak: 'Mejor racha',
-            thisMonth: 'Este mes',
+            thisMonth: 'Este mes MTD',
+            yearEndMonth: 'Total de Fin de Año',
             days: 'días',
             mysteriesPrayed: 'Misterios Rezados',
             joyful: 'Misterios Gozosos',
             sorrowful: 'Misterios Dolorosos',
             glorious: 'Misterios Gloriosos',
             luminous: 'Misterios Luminosos',
-            times: 'veces'
+            times: 'veces',
+            selectYear: 'Seleccionar Año',
+            yearEnd: 'Estadísticas de Fin de Año'
         }
     };
 
@@ -208,34 +223,23 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
             </header>
 
             <main className="progress-main-v2">
-                {/* Stats Cards */}
-                <div className="stats-grid-v2">
-                    {/* Streak Card */}
-                    <div className="stat-card-v2 streak-card-v2">
-                        <div className="stat-card-header">
-                            <span className="stat-emoji">🔥</span>
-                            <div className="stat-values">
-                                <div className="stat-value-v2">{t.streak}: {stats.currentStreak}</div>
-                            </div>
-                        </div>
-                        <p className="stat-subtext">
-                            {t.bestStreak}: {stats.longestStreak} {t.days}
-                        </p>
-                    </div>
-
-                    {/* Total Card with Gradient */}
-                    <div className="stat-card-v2 total-card-v2">
-                        <div className="stat-card-header">
-                            <span className="stat-emoji">🙏</span>
-                            <div className="stat-values">
-                                <div className="stat-value-v2">{t.total}: {stats.totalCompletions}</div>
-                            </div>
-                        </div>
-                        <p className="stat-subtext">
-                            {t.thisMonth}: {thisMonthCount}
-                        </p>
-                    </div>
-                </div>
+                {/* Enhanced Stats Cards */}
+                <EnhancedStatsCards
+                    ytdTotal={stats.totalCompletions}
+                    ytdCurrentStreak={stats.currentStreak}
+                    ytdBestStreak={stats.bestStreak}
+                    ytdProgress={stats.yearProgress}
+                    ytdGoal={stats.daysInYear}
+                    mtdTotal={stats.mtdTotal}
+                    mtdCurrentStreak={stats.mtdCurrentStreak}
+                    mtdBestStreak={stats.mtdBestStreak}
+                    mtdProgress={stats.monthProgress}
+                    mtdGoal={stats.daysInMonth}
+                    yearOverYearPercent={stats.yearOverYearPercent}
+                    year={currentYear}
+                    monthName={monthNames[language][currentMonth]}
+                    language={language}
+                />
 
                 {/* Calendar */}
                 <div className="calendar-section-v2">
@@ -247,9 +251,36 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
                         >
                             <ChevronLeft size={20} />
                         </button>
-                        <h2 className="calendar-month-v2">
-                            {monthNames[language][currentMonth].toUpperCase()} {currentYear}
-                        </h2>
+
+                        <div className="calendar-header-inline">
+                            <h2 className="calendar-month-v2">
+                                {monthNames[language][currentMonth].toUpperCase()}
+                                {isArchiveView && <span className="text-sm opacity-75"> - {t.yearEnd}</span>}
+                            </h2>
+
+                            {/* Inline Year Selector */}
+                            {availableYears.length > 1 && (
+                                <select
+                                    value={selectedYear || currentYear}
+                                    onChange={(e) => {
+                                        const year = parseInt(e.target.value);
+                                        setSelectedYear(year);
+                                        // Default to December for past years, current month for current year
+                                        const today = new Date();
+                                        const targetMonth = year < today.getFullYear() ? 11 : today.getMonth();
+                                        setCurrentDate(new Date(year, targetMonth, 1));
+                                    }}
+                                    className="year-selector-inline"
+                                    aria-label={t.selectYear}
+                                >
+                                    {availableYears.map(year => (
+                                        <option key={year} value={year}>
+                                            {year}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
                         <button
                             className="month-nav-btn-v2"
                             onClick={goToNextMonth}

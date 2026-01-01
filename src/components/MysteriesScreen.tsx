@@ -221,7 +221,7 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers, onStartPr
 
                 {/* Clear All Progress Button */}
                 {(sortedMysteries.some(m => progressData[m.type] !== null)) && (
-                    <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                    <div className="clear-all-container">
                         <button
                             className="btn-clear-all"
                             onClick={handleClearAllProgress}

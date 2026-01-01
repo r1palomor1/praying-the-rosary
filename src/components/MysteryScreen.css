@@ -25,8 +25,8 @@
     top: 0;
     z-index: 100;
     background-color: var(--color-bg-primary);
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--color-border-light);
     display: flex;
     flex-direction: column;
@@ -1487,8 +1487,8 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
     position: sticky;
     bottom: 0;
     background-color: rgba(11, 17, 30, 0.8);
-    backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
     z-index: 20;
     padding: 0.5rem 1rem;
 }

@@ -249,6 +249,12 @@
     box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);
 }
 
+/* Clear All Container */
+.clear-all-container {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
 /* Bottom Section - Fixed Navigation */
 .bottom-section {
     position: fixed;

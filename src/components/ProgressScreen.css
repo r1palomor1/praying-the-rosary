@@ -345,3 +345,59 @@
     width: 100% !important;
     z-index: 1000 !important;
 }
+
+/* Inline Year Selector - Horizontal Layout */
+.calendar-header-inline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    justify-content: center;
+}
+
+.year-selector-inline {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: var(--color-text-tertiary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 70px;
+}
+
+[data-theme="dark"] .year-selector-inline {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.year-selector-inline:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .year-selector-inline:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.year-selector-inline:focus {
+    outline: none;
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+}
+
+.year-selector-inline option {
+    background: white;
+    color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .year-selector-inline option {
+    background: #1F2937;
+    color: white;
+}

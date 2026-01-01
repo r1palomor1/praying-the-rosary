@@ -1,0 +1,58 @@
+.book-cover {
+    fill: #B1974D;
+    stroke: #705F2E;
+    stroke-width: 3px;
+}
+
+.book-spine {
+    fill: #5B4335;
+    stroke: #2E241F;
+    stroke-width: 3px;
+    stroke-linejoin: bevel;
+}
+
+.book-pages {
+    fill: #D2D2B3;
+}
+
+.book-mark {
+    fill: none;
+    stroke: #836959;
+    stroke-width: 3px;
+}
+
+.header-top-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.header-left-icons,
+.header-right-icons {
+    display: flex;
+    align-items: center;
+}
+
+.text-visibility-btn-header {
+    margin-left: 12px;
+}
+
+.text-visibility-btn-header:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.text-visibility-btn-header.highlighting-off {
+    color: var(--color-text-secondary);
+}
+
+.layout-mode-btn-header {
+    margin-right: 12px;
+}
+
+.mystery-progress {
+    width: 100%;
+    text-align: center;
+}

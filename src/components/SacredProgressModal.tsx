@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { getSacredStats, getSacredCompletionsForMonth, hasSacredCompletionOnDate, getMysteryTypeForDate } from '../utils/sacredHistory';
+import { getSacredCompletionsForMonth, hasSacredCompletionOnDate, getMysteryTypeForDate } from '../utils/sacredHistory';
+import { getAvailableYears, getEnhancedYTDStats, isYearEndArchiveView } from '../utils/yearlyHistory';
+import { EnhancedStatsCards } from './EnhancedStatsCards';
 import './ProgressScreen.css'; // Reusing the same styles as Rosary progress
-
-import { X } from 'lucide-react';
+import './SacredProgressModal.css';
 
 interface SacredProgressModalProps {
     onClose: () => void;
@@ -13,10 +14,15 @@ interface SacredProgressModalProps {
 export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
     const { language } = useApp();
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-    const stats = getSacredStats();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();
+
+    // Get enhanced YTD stats with MTD breakdown
+    const stats = getEnhancedYTDStats(currentYear, currentMonth, 'sacred');
+    const availableYears = getAvailableYears('sacred');
+    const isArchiveView = isYearEndArchiveView(currentYear, currentMonth);
 
     const completions = getSacredCompletionsForMonth(currentYear, currentMonth);
 
@@ -25,21 +31,33 @@ export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
             title: 'Your Prayer Journey',
             streak: 'Day Streak',
             total: 'Total Completed',
+            totalYTD: 'Total Completed YTD',
             bestStreak: 'Best streak',
-            thisMonth: 'This month',
+            thisMonth: 'This month MTD',
+            yearEndMonth: 'Year-End Total',
             days: 'days',
             times: 'times',
-            close: 'Close'
+            close: 'Close',
+            previousMonth: 'Previous month',
+            nextMonth: 'Next month',
+            selectYear: 'Select Year',
+            yearEnd: 'Year-End Stats'
         },
         es: {
             title: 'Tu Camino de Oración',
             streak: 'Días Seguidos',
             total: 'Total Completado',
+            totalYTD: 'Total Completado ATF',
             bestStreak: 'Mejor racha',
-            thisMonth: 'Este mes',
+            thisMonth: 'Este mes MTD',
+            yearEndMonth: 'Total de Fin de Año',
             days: 'días',
             times: 'veces',
-            close: 'Cerrar'
+            close: 'Cerrar',
+            previousMonth: 'Mes anterior',
+            nextMonth: 'Mes siguiente',
+            selectYear: 'Seleccionar Año',
+            yearEnd: 'Estadísticas de Fin de Año'
         }
     };
 
@@ -53,26 +71,6 @@ export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
     const dayNames = {
         en: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
         es: ['D', 'L', 'M', 'M', 'J', 'V', 'S']
-    };
-
-    const getMysteryColor = (mysteryType: string): string => {
-        const colors: Record<string, string> = {
-            joyful: '#D4AF37',    // Gold
-            sorrowful: '#4C6EF5', // Deep Blue
-            glorious: '#E5E7EB',  // Silver/White
-            luminous: '#FCD34D'   // Soft Yellow
-        };
-        return colors[mysteryType] || '#D4AF37';
-    };
-
-    const getMysteryTextColor = (mysteryType: string): string => {
-        const textColors: Record<string, string> = {
-            joyful: 'white',
-            sorrowful: 'white',
-            glorious: '#1F2937',
-            luminous: '#1F2937'
-        };
-        return textColors[mysteryType] || 'white';
     };
 
     const renderCalendar = () => {
@@ -106,19 +104,8 @@ export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
                     className={`calendar-day-v2 ${showTodayHighlight ? 'today' : ''}`}
                 >
                     <span
-                        className={`${isCompleted ? '' : 'day-number-v2'} ${showTodayHighlight ? 'today-number' : ''}`}
-                        style={isCompleted && mysteryType ? {
-                            backgroundColor: getMysteryColor(mysteryType),
-                            color: getMysteryTextColor(mysteryType),
-                            borderRadius: '50%',
-                            top: '-2px',
-                            height: '32px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: '600',
-                            fontSize: 'var(--font-size-sm)'
-                        } : undefined}
+                        className={`${isCompleted ? 'sacred-day-badge' : 'day-number-v2'} ${showTodayHighlight ? 'today-number' : ''}`}
+                        data-mystery-type={isCompleted && mysteryType ? mysteryType : undefined}
                     >
                         {day}
                     </span>
@@ -142,49 +129,17 @@ export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
     };
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(0, 0, 0, 0.8)',
-            backdropFilter: 'blur(4px)',
-            padding: '16px'
-        }}>
-            <div style={{
-                background: '#1a1a2e',
-                borderRadius: '16px',
-                width: '100%',
-                maxWidth: '512px',
-                overflow: 'hidden',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                display: 'flex',
-                flexDirection: 'column',
-                maxHeight: '90vh'
-            }}>
+        <div className="sacred-modal-overlay">
+            <div className="sacred-modal-container">
 
                 {/* Header */}
-                <div className="border-b border-white/10 bg-[#16213e]" style={{ position: 'relative', padding: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="border-b border-white/10 bg-[#16213e] sacred-modal-header">
                     <h2 className="text-2xl font-serif text-[#D4AF37] text-center whitespace-nowrap">{t.title}</h2>
 
                     <button
                         onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-white transition-colors"
+                        className="p-2 text-gray-400 hover:text-white transition-colors sacred-modal-close-btn"
                         aria-label={t.close}
-                        style={{
-                            position: 'absolute',
-                            background: 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            right: '10px',
-                            top: '-1px'
-                        }}
                     >
                         <X size={24} />
                     </button>
@@ -193,40 +148,61 @@ export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
                 {/* Content */}
                 <div className="overflow-y-auto p-4 space-y-6 custom-scrollbar">
 
-                    {/* Stats Grid */}
-                    <div className="stats-grid-v2">
-                        <div className="stat-card-v2 streak-card-v2">
-                            <div className="stat-card-header">
-                                <span className="stat-emoji">🔥</span>
-                                <div className="stat-values">
-                                    <div className="stat-value-v2">{t.streak}: {stats.currentStreak}</div>
-                                </div>
-                            </div>
-                            <p className="stat-subtext">
-                                {t.bestStreak}: {stats.longestStreak} {t.days}
-                            </p>
-                        </div>
-                        <div className="stat-card-v2 total-card-v2">
-                            <div className="stat-card-header">
-                                <span className="stat-emoji">✨</span>
-                                <div className="stat-values">
-                                    <div className="stat-value-v2">{t.total}: {stats.totalCompletions}</div>
-                                </div>
-                            </div>
-                            <p className="stat-subtext">
-                                {t.thisMonth}: {completions.length}
-                            </p>
-                        </div>
-                    </div>
+                    {/* Enhanced Stats Cards */}
+                    <EnhancedStatsCards
+                        ytdTotal={stats.totalCompletions}
+                        ytdCurrentStreak={stats.currentStreak}
+                        ytdBestStreak={stats.bestStreak}
+                        ytdProgress={stats.yearProgress}
+                        ytdGoal={stats.daysInYear}
+                        mtdTotal={stats.mtdTotal}
+                        mtdCurrentStreak={stats.mtdCurrentStreak}
+                        mtdBestStreak={stats.mtdBestStreak}
+                        mtdProgress={stats.monthProgress}
+                        mtdGoal={stats.daysInMonth}
+                        yearOverYearPercent={stats.yearOverYearPercent}
+                        year={currentYear}
+                        monthName={monthNames[language][currentMonth]}
+                        language={language}
+                        prayerType="prayers"
+                    />
 
                     {/* Calendar */}
                     <div className="calendar-section-v2">
                         <div className="calendar-header-v2">
-                            <button className="month-nav-btn-v2" onClick={goToPreviousMonth}><ChevronLeft size={20} /></button>
-                            <h2 className="calendar-month-v2">
-                                {monthNames[language][currentMonth].toUpperCase()} {currentYear}
-                            </h2>
-                            <button className="month-nav-btn-v2" onClick={goToNextMonth} disabled={!canGoNext()}><ChevronRight size={20} /></button>
+                            <button className="month-nav-btn-v2" onClick={goToPreviousMonth} aria-label={t.previousMonth}><ChevronLeft size={20} /></button>
+
+                            <div className="calendar-header-inline">
+                                <h2 className="calendar-month-v2">
+                                    {monthNames[language][currentMonth].toUpperCase()}
+                                    {isArchiveView && <span className="text-sm opacity-75"> - {t.yearEnd}</span>}
+                                </h2>
+
+                                {/* Inline Year Selector */}
+                                {availableYears.length > 1 && (
+                                    <select
+                                        value={selectedYear || currentYear}
+                                        onChange={(e) => {
+                                            const year = parseInt(e.target.value);
+                                            setSelectedYear(year);
+                                            // Default to December for past years, current month for current year
+                                            const today = new Date();
+                                            const targetMonth = year < today.getFullYear() ? 11 : today.getMonth();
+                                            setCurrentDate(new Date(year, targetMonth, 1));
+                                        }}
+                                        className="year-selector-inline"
+                                        aria-label={t.selectYear}
+                                    >
+                                        {availableYears.map(year => (
+                                            <option key={year} value={year}>
+                                                {year}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
+
+                            <button className="month-nav-btn-v2" onClick={goToNextMonth} disabled={!canGoNext()} aria-label={t.nextMonth}><ChevronRight size={20} /></button>
                         </div>
                         <div className="calendar-grid-v2">
                             {dayNames[language].map((day, i) => (
