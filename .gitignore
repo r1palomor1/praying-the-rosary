@@ -25,3 +25,6 @@ dist-ssr
 
 # Large TTS model files (downloaded at runtime)
 public/sherpa/
+
+# Auto-generated version info
+public/version.json
