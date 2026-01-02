@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { getSacredCompletionsForMonth, hasSacredCompletionOnDate, getMysteryTypeForDate } from '../utils/sacredHistory';
+import { hasSacredCompletionOnDate, getMysteryTypeForDate } from '../utils/sacredHistory';
 import { getAvailableYears, getEnhancedYTDStats, isYearEndArchiveView } from '../utils/yearlyHistory';
 import { EnhancedStatsCards } from './EnhancedStatsCards';
 import './ProgressScreen.css'; // Reusing the same styles as Rosary progress
@@ -23,8 +23,6 @@ export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
     const stats = getEnhancedYTDStats(currentYear, currentMonth, 'sacred');
     const availableYears = getAvailableYears('sacred');
     const isArchiveView = isYearEndArchiveView(currentYear, currentMonth);
-
-    const completions = getSacredCompletionsForMonth(currentYear, currentMonth);
 
     const translations = {
         en: {

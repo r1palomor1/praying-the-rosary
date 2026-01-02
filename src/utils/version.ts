@@ -18,7 +18,7 @@ export async function getVersionInfo(): Promise<VersionInfo> {
         if (!response.ok) {
             throw new Error('Version file not found');
         }
-        cachedVersion = await response.json();
+        cachedVersion = await response.json() as VersionInfo;
         return cachedVersion;
     } catch (error) {
         // Fallback for local development

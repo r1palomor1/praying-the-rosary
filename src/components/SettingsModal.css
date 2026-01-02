@@ -250,6 +250,7 @@
     margin: 0;
     font-size: 1rem;
 }
+
 .btn-clear:hover {
     background-color: rgba(239, 68, 68, 0.1);
     border-color: #ef4444;
@@ -269,7 +270,65 @@
 }
 
 @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.8; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Version Info Footer */
+.settings-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .settings-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.version-info-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .version-info-button {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.version-info-button:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #8B5CF6;
+}
+
+.version-text {
+    font-weight: 500;
+}
+
+.version-icon {
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.version-info-button:hover .version-icon {
+    opacity: 1;
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { getCompletionsForMonth, getMysteryForDate } from '../utils/prayerHistory';
+import { getMysteryForDate } from '../utils/prayerHistory';
 import { getAvailableYears, getEnhancedYTDStats, isYearEndArchiveView } from '../utils/yearlyHistory';
 import { BottomNav } from './BottomNav';
 import { useNavigationHandler } from '../hooks/useNavigationHandler';
@@ -28,8 +28,6 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
     const stats = getEnhancedYTDStats(currentYear, currentMonth, 'rosary');
     const availableYears = getAvailableYears('rosary');
     const isArchiveView = isYearEndArchiveView(currentYear, currentMonth);
-
-    const completions = getCompletionsForMonth(currentYear, currentMonth);
 
     const translations = {
         en: {
@@ -197,9 +195,6 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
         const today = new Date();
         return currentYear < today.getFullYear() || (currentYear === today.getFullYear() && currentMonth < today.getMonth());
     };
-
-    // Calculate this month's completions
-    const thisMonthCount = completions.length;
 
     // Navigation handler for BottomNav
     const handleTabChange = useNavigationHandler({

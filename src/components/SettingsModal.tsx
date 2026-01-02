@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { Moon, Sun, Languages, Trash2, Gauge, Type } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Moon, Sun, Languages, Trash2, Gauge, Type, Info } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../utils/storage';
+import { getVersionInfo, formatDate, type VersionInfo } from '../utils/version';
+import { VersionModal } from './VersionModal';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
@@ -14,6 +16,13 @@ interface SettingsModalProps {
 export function SettingsModal({ isOpen, onClose, onResetProgress, currentMysteryName: _currentMysteryName }: SettingsModalProps) {
     const { language, setLanguage, theme, toggleTheme, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
     const [showConfirmClear, setShowConfirmClear] = useState(false);
+    const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
+    const [showVersionModal, setShowVersionModal] = useState(false);
+
+    // Fetch version info on mount
+    useEffect(() => {
+        getVersionInfo().then(setVersionInfo);
+    }, []);
 
 
 
@@ -76,7 +85,8 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             textSize: 'Text Size',
             normal: 'Normal',
             large: 'Large',
-            extraLarge: 'Extra Large'
+            extraLarge: 'Extra Large',
+            lastUpdated: 'Last updated'
         },
         es: {
             title: 'CONFIGURACIÓN',
@@ -93,7 +103,8 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             textSize: 'Tamaño de Texto',
             normal: 'Normal',
             large: 'Grande',
-            extraLarge: 'Extra Grande'
+            extraLarge: 'Extra Grande',
+            lastUpdated: 'Última actualización'
         }
     };
 
@@ -232,7 +243,32 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                         </div>
                     </div>
                 </main>
+
+                {/* Version Info Footer */}
+                {versionInfo && (
+                    <footer className="settings-footer">
+                        <button
+                            className="version-info-button"
+                            onClick={() => setShowVersionModal(true)}
+                            aria-label="View version information"
+                        >
+                            <span className="version-text">
+                                {t.lastUpdated}: {formatDate(versionInfo.date, language)}
+                            </span>
+                            <Info size={16} className="version-icon" />
+                        </button>
+                    </footer>
+                )}
             </div>
+
+            {/* Version Modal */}
+            {showVersionModal && versionInfo && (
+                <VersionModal
+                    versionInfo={versionInfo}
+                    onClose={() => setShowVersionModal(false)}
+                    language={language}
+                />
+            )}
         </div>
     );
 }

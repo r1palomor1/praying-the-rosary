@@ -5,9 +5,13 @@
  * This runs during the build process (Vercel deployment)
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync } from 'child_process';
+import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 function getGitInfo() {
     try {
@@ -36,14 +40,14 @@ function getGitInfo() {
 }
 
 const versionInfo = getGitInfo();
-const outputPath = path.join(__dirname, '../public/version.json');
+const outputPath = join(__dirname, '../public/version.json');
 
 // Ensure public directory exists
-const publicDir = path.dirname(outputPath);
-if (!fs.existsSync(publicDir)) {
-    fs.mkdirSync(publicDir, { recursive: true });
+const publicDir = dirname(outputPath);
+if (!existsSync(publicDir)) {
+    mkdirSync(publicDir, { recursive: true });
 }
 
-fs.writeFileSync(outputPath, JSON.stringify(versionInfo, null, 2));
+writeFileSync(outputPath, JSON.stringify(versionInfo, null, 2));
 
 console.log('✅ Version info generated:', versionInfo);
