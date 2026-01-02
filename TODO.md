@@ -77,6 +77,26 @@ git push
 
 ## 🎯 Priority Items for Next Session
 
+### 🐛 Enhanced Progress Tab Issues (Jan 1, 2026)
+- [ ] **Current Month Text Overflow**
+  - Month name overflowing off screen on mobile
+  - Need to adjust responsive layout or font size
+  
+- [ ] **MTD Goal Date Display Bug**
+  - Shows "by January 1" instead of "by January 31"
+  - Should show last day of month, not first day
+  - Location: EnhancedStatsCards.tsx target label
+  
+- [ ] **Sacred Prayers Modal Scroll Issue**
+  - Sacred Prayers progress modal doesn't scroll
+  - Rosary progress screen scrolls correctly
+  - Need to check CSS overflow settings
+  
+- [ ] **Goal Progress Calculation Error**
+  - Shows 100% progress on January 1st
+  - Should show 0% or low percentage on first day
+  - Check yearProgress calculation in yearlyHistory.ts
+
 ### 🚨 CRITICAL: Reconstruct Lost Refactor Work (Dec 21, 2024)
 - [ ] **Rebuild Classic/Cinematic Layout Separation**
   - **Reference Documents:**
