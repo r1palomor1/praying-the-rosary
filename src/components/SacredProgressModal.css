@@ -96,6 +96,7 @@
 .sacred-day-badge {
     border-radius: 50%;
     top: -2px;
+    width: 32px;
     height: 32px;
     display: flex;
     align-items: center;

@@ -85,17 +85,19 @@ export function getCompletionsUpToMonth(year: number, month: number, type: 'rosa
 }
 
 /**
- * Calculate streak up to a specific date
+ * Calculate streak up to a specific date, limited to a specific year
  */
-export function calculateStreakUpToDate(endDate: Date, type: 'rosary' | 'sacred'): number {
+export function calculateStreakUpToDate(endDate: Date, type: 'rosary' | 'sacred', year?: number): number {
     const history = type === 'rosary' ? getPrayerHistory() : getSacredPrayerHistory();
     if (history.length === 0) return 0;
 
     const endDateStr = getLocalDateString(endDate);
+    const yearToUse = year ?? endDate.getFullYear();
+    const yearStart = `${yearToUse}-01-01`;
 
-    // Get all dates up to and including endDate
+    // Get all dates up to and including endDate, but only within the specified year
     const relevantDates = [...new Set(history.map(c => c.date))]
-        .filter(date => date <= endDateStr)
+        .filter(date => date >= yearStart && date <= endDateStr)
         .sort()
         .reverse();
 
@@ -114,6 +116,11 @@ export function calculateStreakUpToDate(endDate: Date, type: 'rosary' | 'sacred'
 
     for (const date of relevantDates) {
         const checkDate = getLocalDateString(currentDate);
+
+        // Stop if we go before the year start
+        if (checkDate < yearStart) {
+            break;
+        }
 
         if (date === checkDate) {
             streak++;
@@ -179,7 +186,7 @@ export function getYTDStats(year: number, month: number, type: 'rosary' | 'sacre
 
     const stats: YTDStats = {
         totalCompletions: completions.length,
-        currentStreak: calculateStreakUpToDate(streakEndDate, type),
+        currentStreak: calculateStreakUpToDate(streakEndDate, type, year),
         bestStreak: calculateBestStreakInRange(startDate, streakEndDate, type)
     };
 

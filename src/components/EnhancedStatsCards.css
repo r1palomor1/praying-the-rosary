@@ -327,6 +327,39 @@
 }
 
 /* Responsive Adjustments */
+/* Tablet adjustments (641px to 1024px) */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .stat-card {
+        padding: 1.25rem 0.75rem;
+    }
+
+    .card-title {
+        font-size: 0.5625rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+    }
+
+    .progress-label,
+    .progress-remaining {
+        font-size: 0.6875rem;
+    }
+
+    .streak-box {
+        padding: 0.625rem 0.5rem;
+    }
+
+    .streak-label {
+        font-size: 0.5625rem;
+    }
+
+    .streak-value {
+        font-size: 1.125rem;
+    }
+}
+
+/* Mobile adjustments */
 @media (max-width: 768px) {
     .stat-card {
         padding: 1.25rem 1rem;
