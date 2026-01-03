@@ -1,5 +1,6 @@
 import { getPrayerHistory, type PrayerCompletion } from './prayerHistory';
 import { getSacredPrayerHistory, type SacredPrayerCompletion } from './sacredHistory';
+import { getRosaryStartDate, getSacredStartDate, calculateYTDGoal, calculateMTDGoal, calculateDayOfYearFromStart } from './progressSettings';
 
 /**
  * Year-to-Date stats for a specific month/year
@@ -169,12 +170,17 @@ export function getYTDStats(year: number, month: number, type: 'rosary' | 'sacre
     const startDate = new Date(year, 0, 1); // January 1st
     const endDate = new Date(year, month + 1, 0); // Last day of the month
 
+    // For current month, use today's date for streak calculation
+    const today = new Date();
+    const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+    const streakEndDate = isCurrentMonth ? today : endDate;
+
     const completions = getCompletionsUpToMonth(year, month, type);
 
     const stats: YTDStats = {
         totalCompletions: completions.length,
-        currentStreak: calculateStreakUpToDate(endDate, type),
-        bestStreak: calculateBestStreakInRange(startDate, endDate, type)
+        currentStreak: calculateStreakUpToDate(streakEndDate, type),
+        bestStreak: calculateBestStreakInRange(startDate, streakEndDate, type)
     };
 
     // Add mystery breakdown for Rosary
@@ -231,16 +237,17 @@ export function calculateMTDCurrentStreak(year: number, month: number, type: 'ro
     const history = type === 'rosary' ? getPrayerHistory() : getSacredPrayerHistory();
     if (history.length === 0) return 0;
 
-    const monthStart = new Date(year, month, 1);
-    const monthEnd = new Date(year, month + 1, 0);
     const today = new Date();
-    const endDate = monthEnd < today ? monthEnd : today;
+    const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+
+    // For current month, use today; for past months, use last day of month
+    const endDay = isCurrentMonth ? today.getDate() : getDaysInMonth(year, month);
 
     // Get dates only within this month
     const monthDates = [...new Set(history.map(c => c.date))]
         .filter(date => {
-            const d = new Date(date);
-            return d >= monthStart && d <= endDate;
+            const [y, m] = date.split('-').map(Number);
+            return y === year && m === month + 1;
         })
         .sort()
         .reverse();
@@ -248,22 +255,17 @@ export function calculateMTDCurrentStreak(year: number, month: number, type: 'ro
     if (monthDates.length === 0) return 0;
 
     let streak = 0;
-    const currentDate = new Date(endDate);
-    const todayStr = getLocalDateString(currentDate);
-    const hasCompletedToday = monthDates.includes(todayStr);
-
-    if (!hasCompletedToday) {
-        currentDate.setDate(currentDate.getDate() - 1);
-    }
+    let checkDay = endDay;
+    const yearStr = String(year);
+    const monthStr = String(month + 1).padStart(2, '0');
 
     for (const date of monthDates) {
-        const checkDate = getLocalDateString(currentDate);
+        const checkDate = `${yearStr}-${monthStr}-${String(checkDay).padStart(2, '0')}`;
 
         if (date === checkDate) {
             streak++;
-            currentDate.setDate(currentDate.getDate() - 1);
-            // Stop if we go before the month start
-            if (currentDate < monthStart) break;
+            checkDay--;
+            if (checkDay < 1) break;
         } else {
             break;
         }
@@ -280,14 +282,11 @@ export function calculateMTDBestStreak(year: number, month: number, type: 'rosar
     const history = type === 'rosary' ? getPrayerHistory() : getSacredPrayerHistory();
     if (history.length === 0) return 0;
 
-    const monthStart = new Date(year, month, 1);
-    const monthEnd = new Date(year, month + 1, 0);
-
     // Get unique dates within this month
     const uniqueDates = [...new Set(history.map(c => c.date))]
         .filter(date => {
-            const d = new Date(date);
-            return d >= monthStart && d <= monthEnd;
+            const [y, m] = date.split('-').map(Number);
+            return y === year && m === month + 1;
         })
         .sort();
 
@@ -297,8 +296,8 @@ export function calculateMTDBestStreak(year: number, month: number, type: 'rosar
     let currentStreak = 1;
 
     for (let i = 1; i < uniqueDates.length; i++) {
-        const prevDate = new Date(uniqueDates[i - 1]);
-        const currDate = new Date(uniqueDates[i]);
+        const prevDate = new Date(uniqueDates[i - 1] + 'T00:00:00');
+        const currDate = new Date(uniqueDates[i] + 'T00:00:00');
 
         const dayDiff = Math.floor((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -384,6 +383,15 @@ export function getEnhancedYTDStats(year: number, month: number, type: 'rosary' 
     const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
     const daysInMonth = getDaysInMonth(year, month);
     const currentDayOfMonth = isCurrentMonth ? today.getDate() : daysInMonth;
+    const daysInYear = getDaysInYear(year);
+
+    // Get start date for this prayer type
+    const startDateStr = type === 'rosary' ? getRosaryStartDate() : getSacredStartDate();
+
+    // Calculate adjusted goals based on start date
+    const ytdGoalAdjusted = calculateYTDGoal(year, startDateStr, daysInYear);
+    const mtdGoalAdjusted = calculateMTDGoal(year, month, startDateStr, daysInMonth);
+    const dayOfYearAdjusted = calculateDayOfYearFromStart(year, month, startDateStr, getDayOfYear(new Date(year, month, currentDayOfMonth)));
 
     return {
         ...baseStats,
@@ -391,10 +399,12 @@ export function getEnhancedYTDStats(year: number, month: number, type: 'rosary' 
         mtdCurrentStreak: calculateMTDCurrentStreak(year, month, type),
         mtdBestStreak: calculateMTDBestStreak(year, month, type),
         yearOverYearPercent: getYearOverYearComparison(year, month, type),
-        daysInYear: getDaysInYear(year),
-        daysInMonth: daysInMonth,
-        dayOfYear: getDayOfYear(new Date(year, month, currentDayOfMonth)),
-        yearProgress: Math.round((baseStats.totalCompletions / getDayOfYear(new Date(year, month, currentDayOfMonth))) * 100),
-        monthProgress: Math.round((monthCompletions / currentDayOfMonth) * 100)
+        daysInYear: ytdGoalAdjusted, // Use adjusted goal instead of full year
+        daysInMonth: mtdGoalAdjusted, // Use adjusted goal instead of full month
+        dayOfYear: dayOfYearAdjusted, // Use adjusted day count
+        // Fix: Use total days in year (365/366) not elapsed days
+        yearProgress: ytdGoalAdjusted > 0 ? Math.round((baseStats.totalCompletions / ytdGoalAdjusted) * 100) : 0,
+        // Fix: Use total days in month (28-31) not elapsed days
+        monthProgress: mtdGoalAdjusted > 0 ? Math.round((monthCompletions / mtdGoalAdjusted) * 100) : 0
     };
 }

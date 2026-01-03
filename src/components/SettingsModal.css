@@ -332,3 +332,101 @@
 .version-info-button:hover .version-icon {
     opacity: 1;
 }
+
+/* Progress Tracking Section */
+.date-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.date-input {
+    flex: 1;
+    padding: 0.625rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .date-input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+.btn-clear-date {
+    padding: 0.625rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-clear-date:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+}
+
+.btn-clear-date:active {
+    transform: scale(0.98);
+}
+
+.setting-help-text {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(139, 92, 246, 0.1);
+    border-left: 3px solid #8B5CF6;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+[data-theme="dark"] .setting-help-text {
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.btn-apply-dates {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    color: white;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.3);
+}
+
+.btn-apply-dates:hover {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    box-shadow: 0 6px 8px -1px rgba(139, 92, 246, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-apply-dates:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px -1px rgba(139, 92, 246, 0.3);
+}

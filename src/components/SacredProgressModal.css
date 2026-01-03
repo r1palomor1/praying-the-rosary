@@ -20,13 +20,20 @@
     background: #1a1a2e;
     border-radius: 16px;
     width: 100%;
-    max-width: 512px;
+    max-width: 600px;
+    /* Increased from 512px to match Rosary screen */
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
     max-height: 90vh;
+}
+
+@media (max-width: 640px) {
+    .sacred-modal-container {
+        max-width: calc(100vw - 2rem);
+    }
 }
 
 /* Modal Header */
@@ -46,6 +53,43 @@
     cursor: pointer;
     right: 10px;
     top: -1px;
+}
+
+/* Modal Content - Scrollable Area */
+.sacred-modal-container>div:last-child {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure stats cards fit within modal */
+.sacred-modal-container .enhanced-stats-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.sacred-modal-container .stats-grid {
+    gap: 0.75rem;
+}
+
+.sacred-modal-container .stat-card {
+    min-width: 0;
+    flex: 1;
+}
+
+/* Override Tailwind padding for better fit */
+.sacred-modal-container>div:last-child {
+    padding: 1rem 0.75rem !important;
+}
+
+@media (max-width: 640px) {
+    .sacred-modal-container>div:last-child {
+        padding: 0.75rem 0.5rem !important;
+    }
 }
 
 /* Completed Day Badge Styles */
@@ -120,4 +164,25 @@
 .year-selector-compact option {
     background: #1a1a2e;
     color: white;
+}
+
+/* Responsive fixes for mobile - prevent overflow */
+@media (max-width: 640px) {
+    .sacred-modal-container .calendar-month-v2 {
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sacred-modal-container .calendar-header-inline {
+        gap: 8px;
+    }
+
+    .sacred-modal-container .year-selector-inline {
+        min-width: 60px;
+        font-size: 12px;
+        padding: 3px 8px;
+    }
 }

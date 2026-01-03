@@ -69,6 +69,9 @@ export function EnhancedStatsCards({
     const showYoY = yearOverYearPercent !== null;
     const yoyPositive = yearOverYearPercent && yearOverYearPercent > 0;
 
+    // Get abbreviated month name (first 3 letters)
+    const monthAbbr = monthName.substring(0, 3);
+
     return (
         <div className="enhanced-stats-container">
             {/* Background Icon */}
@@ -90,7 +93,7 @@ export function EnhancedStatsCards({
                                     <line x1="3" y1="10" x2="21" y2="10" />
                                 </svg>
                             </div>
-                            <h4 className="card-title">{t.ytd} ({year})</h4>
+                            <h4 className="card-title">{t.ytd} ( {monthAbbr} {year} )</h4>
                         </div>
 
                         {/* Main Number */}
@@ -149,7 +152,7 @@ export function EnhancedStatsCards({
                                     <line x1="3" y1="10" x2="21" y2="10" />
                                 </svg>
                             </div>
-                            <h4 className="card-title">{t.mtd} ({monthName.toUpperCase()})</h4>
+                            <h4 className="card-title">{t.mtd} ( {monthAbbr} {year} )</h4>
                         </div>
 
                         {/* Main Number */}
@@ -166,7 +169,7 @@ export function EnhancedStatsCards({
                             <div className="progress-bar">
                                 <div className="progress-fill mtd-fill" style={{ width: `${Math.min(mtdProgress, 100)}%` }}></div>
                             </div>
-                            <p className="progress-target">{t.target}: {mtdGoal} {t.rosariesBy} {monthName} {new Date(year, 0, 1).getDate()}</p>
+                            <p className="progress-target">{t.target}: {mtdGoal} {t.rosariesBy} {monthAbbr} {mtdGoal}</p>
                         </div>
 
                         {/* Streak Stats */}

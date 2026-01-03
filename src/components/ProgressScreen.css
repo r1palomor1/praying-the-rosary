@@ -173,6 +173,26 @@
     color: var(--color-text-secondary);
     letter-spacing: var(--letter-spacing-wider);
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+    .calendar-month-v2 {
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+    }
+
+    .calendar-header-inline {
+        gap: 8px;
+    }
+
+    .year-selector-inline {
+        min-width: 60px;
+        font-size: 12px;
+        padding: 3px 8px;
+    }
 }
 
 .month-nav-btn-v2 {

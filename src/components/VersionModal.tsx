@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import type { VersionInfo } from '../utils/version';
+import { formatDate, formatDateTime } from '../utils/version';
 import './VersionModal.css';
 
 interface VersionModalProps {
@@ -30,17 +31,6 @@ export function VersionModal({ versionInfo, onClose, language }: VersionModalPro
         }
     }[language];
 
-    const formatDateTime = (isoString: string) => {
-        const date = new Date(isoString);
-        return date.toLocaleString(language === 'es' ? 'es-ES' : 'en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
     return (
         <div className="version-modal-overlay" onClick={onClose}>
             <div className="version-modal-container" onClick={(e) => e.stopPropagation()}>
@@ -66,7 +56,7 @@ export function VersionModal({ versionInfo, onClose, language }: VersionModalPro
 
                         <div className="version-info-item">
                             <span className="version-info-label">{t.commitDate}:</span>
-                            <span className="version-info-value">{versionInfo.date}</span>
+                            <span className="version-info-value">{formatDate(versionInfo.date)}</span>
                         </div>
 
                         <div className="version-info-item">
@@ -84,7 +74,7 @@ export function VersionModal({ versionInfo, onClose, language }: VersionModalPro
                         <div className="version-info-item">
                             <span className="version-info-label">{t.lastUpdated}:</span>
                             <span className="version-info-value version-timestamp">
-                                {formatDateTime(versionInfo.timestamp)}
+                                {formatDateTime(versionInfo.timestamp, language)}
                             </span>
                         </div>
                     </div>

@@ -34,20 +34,35 @@ export async function getVersionInfo(): Promise<VersionInfo> {
     }
 }
 
-export function formatDate(dateString: string, language: 'en' | 'es' = 'en'): string {
+export function formatDate(dateString: string): string {
     const date = new Date(dateString);
 
-    if (language === 'es') {
-        return date.toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        });
-    }
+    // Use MM/DD/YYYY format for both languages
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
 
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
+    return `${month}/${day}/${year}`;
+}
+
+/**
+ * Format date with time (e.g., "01/02/2026, 2:24 PM")
+ */
+export function formatDateTime(isoString: string, language: 'en' | 'es' = 'en'): string {
+    const date = new Date(isoString);
+
+    // Date part: MM/DD/YYYY
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    const datePart = `${month}/${day}/${year}`;
+
+    // Time part: h:mm AM/PM
+    const timePart = date.toLocaleString(language === 'es' ? 'es-ES' : 'en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
     });
+
+    return `${datePart}, ${timePart}`;
 }

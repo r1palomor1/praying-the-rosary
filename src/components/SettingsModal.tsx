@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Languages, Trash2, Gauge, Type, Info } from 'lucide-react';
+import { Moon, Sun, Languages, Trash2, Gauge, Type, Info, Calendar } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../utils/storage';
-import { getVersionInfo, formatDate, type VersionInfo } from '../utils/version';
+import { getVersionInfo, formatDateTime, type VersionInfo } from '../utils/version';
+import { getRosaryStartDate, setRosaryStartDate, getSacredStartDate, setSacredStartDate } from '../utils/progressSettings';
 import { VersionModal } from './VersionModal';
 import './SettingsModal.css';
 
@@ -18,10 +19,14 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
     const [showConfirmClear, setShowConfirmClear] = useState(false);
     const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
     const [showVersionModal, setShowVersionModal] = useState(false);
+    const [rosaryStartDate, setRosaryStartDateState] = useState<string>('');
+    const [sacredStartDate, setSacredStartDateState] = useState<string>('');
 
-    // Fetch version info on mount
+    // Fetch version info and start dates on mount
     useEffect(() => {
         getVersionInfo().then(setVersionInfo);
+        setRosaryStartDateState(getRosaryStartDate() || '');
+        setSacredStartDateState(getSacredStartDate() || '');
     }, []);
 
 
@@ -69,6 +74,29 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
         window.location.href = '/';
     };
 
+    const handleRosaryStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setRosaryStartDateState(value);
+        setRosaryStartDate(value || null);
+
+        // Auto-sync Sacred date to match Rosary date (user can override)
+        if (value && !sacredStartDate) {
+            setSacredStartDateState(value);
+            setSacredStartDate(value);
+        }
+    };
+
+    const handleSacredStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSacredStartDateState(value);
+        setSacredStartDate(value || null);
+    };
+
+    const handleApplyDates = () => {
+        // Reload to recalculate stats with new dates
+        window.location.reload();
+    };
+
     const translations = {
         en: {
             title: 'SETTINGS',
@@ -86,7 +114,13 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             normal: 'Normal',
             large: 'Large',
             extraLarge: 'Extra Large',
-            lastUpdated: 'Last updated'
+            lastUpdated: 'Last updated',
+            progressTracking: 'Progress Tracking',
+            rosaryStartDate: 'Rosary Start Date',
+            sacredStartDate: 'Sacred Prayers Start Date',
+            startDateHelp: 'Set your start dates, then click Apply to recalculate goals. Change anytime for what-if scenarios.',
+            clear: 'Clear',
+            apply: 'Apply Changes'
         },
         es: {
             title: 'CONFIGURACIÓN',
@@ -104,7 +138,13 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             normal: 'Normal',
             large: 'Grande',
             extraLarge: 'Extra Grande',
-            lastUpdated: 'Última actualización'
+            lastUpdated: 'Última actualización',
+            progressTracking: 'Seguimiento de Progreso',
+            rosaryStartDate: 'Fecha de Inicio del Rosario',
+            sacredStartDate: 'Fecha de Inicio de Oraciones Sagradas',
+            startDateHelp: 'Establece tus fechas de inicio, luego haz clic en Aplicar para recalcular metas. Cambia en cualquier momento para escenarios hipotéticos.',
+            clear: 'Borrar',
+            apply: 'Aplicar Cambios'
         }
     };
 
@@ -163,6 +203,79 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                         </div>
 
 
+                    </div>
+
+                    {/* Progress Tracking Section */}
+                    <div className="settings-card">
+                        <h2 className="card-title">{t.progressTracking}</h2>
+
+                        <div className="setting-group">
+                            <div className="setting-header">
+                                <Calendar size={20} />
+                                <h3>{t.rosaryStartDate}</h3>
+                            </div>
+                            <div className="date-input-group">
+                                <input
+                                    type="date"
+                                    value={rosaryStartDate}
+                                    onChange={handleRosaryStartDateChange}
+                                    className="date-input"
+                                    max={new Date().toISOString().split('T')[0]}
+                                    aria-label={t.rosaryStartDate}
+                                />
+                                {rosaryStartDate && (
+                                    <button
+                                        onClick={() => {
+                                            setRosaryStartDateState('');
+                                            setRosaryStartDate(null);
+                                        }}
+                                        className="btn-clear-date"
+                                    >
+                                        {t.clear}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="setting-group">
+                            <div className="setting-header">
+                                <Calendar size={20} />
+                                <h3>{t.sacredStartDate}</h3>
+                            </div>
+                            <div className="date-input-group">
+                                <input
+                                    type="date"
+                                    value={sacredStartDate}
+                                    onChange={handleSacredStartDateChange}
+                                    className="date-input"
+                                    max={new Date().toISOString().split('T')[0]}
+                                    aria-label={t.sacredStartDate}
+                                />
+                                {sacredStartDate && (
+                                    <button
+                                        onClick={() => {
+                                            setSacredStartDateState('');
+                                            setSacredStartDate(null);
+                                        }}
+                                        className="btn-clear-date"
+                                    >
+                                        {t.clear}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        <p className="setting-help-text">
+                            ℹ️ {t.startDateHelp}
+                        </p>
+
+                        {/* Apply Button */}
+                        <button
+                            onClick={handleApplyDates}
+                            className="btn-apply-dates"
+                        >
+                            {t.apply}
+                        </button>
                     </div>
 
                     {/* Display Section */}
@@ -253,7 +366,7 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                             aria-label="View version information"
                         >
                             <span className="version-text">
-                                {t.lastUpdated}: {formatDate(versionInfo.date, language)}
+                                {t.lastUpdated}: {formatDateTime(versionInfo.timestamp, language)}
                             </span>
                             <Info size={16} className="version-icon" />
                         </button>
