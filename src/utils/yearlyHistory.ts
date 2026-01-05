@@ -266,6 +266,16 @@ export function calculateMTDCurrentStreak(year: number, month: number, type: 'ro
     const yearStr = String(year);
     const monthStr = String(month + 1).padStart(2, '0');
 
+    // Check if today (endDay) has a completion
+    const todayDate = `${yearStr}-${monthStr}-${String(endDay).padStart(2, '0')}`;
+    const hasTodayCompletion = monthDates.includes(todayDate);
+
+    // If today doesn't have a completion yet, start from yesterday
+    if (isCurrentMonth && !hasTodayCompletion) {
+        checkDay--;
+        if (checkDay < 1) return 0; // No days to check
+    }
+
     for (const date of monthDates) {
         const checkDate = `${yearStr}-${monthStr}-${String(checkDay).padStart(2, '0')}`;
 

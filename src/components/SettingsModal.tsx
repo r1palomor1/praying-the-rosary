@@ -21,6 +21,7 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
     const [showVersionModal, setShowVersionModal] = useState(false);
     const [rosaryStartDate, setRosaryStartDateState] = useState<string>('');
     const [sacredStartDate, setSacredStartDateState] = useState<string>('');
+    const [showProgressInfo, setShowProgressInfo] = useState(false);
 
     // Fetch version info and start dates on mount
     useEffect(() => {
@@ -97,6 +98,42 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
         window.location.reload();
     };
 
+    // Preset handlers
+    const setToday = () => {
+        const today = new Date().toISOString().split('T')[0];
+        setRosaryStartDateState(today);
+        setSacredStartDateState(today);
+        setRosaryStartDate(today);
+        setSacredStartDate(today);
+    };
+
+    const setFirstOfMonth = () => {
+        const now = new Date();
+        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+            .toISOString().split('T')[0];
+        setRosaryStartDateState(firstOfMonth);
+        setSacredStartDateState(firstOfMonth);
+        setRosaryStartDate(firstOfMonth);
+        setSacredStartDate(firstOfMonth);
+    };
+
+    const setFirstOfYear = () => {
+        const year = new Date().getFullYear();
+        const firstOfYear = `${year}-01-01`;
+        setRosaryStartDateState(firstOfYear);
+        setSacredStartDateState(firstOfYear);
+        setRosaryStartDate(firstOfYear);
+        setSacredStartDate(firstOfYear);
+    };
+
+    const resetToFullYear = () => {
+        setRosaryStartDateState('');
+        setSacredStartDateState('');
+        setRosaryStartDate(null);
+        setSacredStartDate(null);
+        window.location.reload();
+    };
+
     const translations = {
         en: {
             title: 'SETTINGS',
@@ -119,6 +156,12 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             rosaryStartDate: 'Rosary Start Date',
             sacredStartDate: 'Sacred Prayers Start Date',
             startDateHelp: 'Set your start dates, then click Apply to recalculate goals. Change anytime for what-if scenarios.',
+            startDateTooltip: 'Started praying mid-year? No problem! Your goals will adjust so you\'re never "behind". Try different dates to see what-if scenarios.',
+            quickPresets: 'Quick Presets:',
+            today: 'Today',
+            thisMonth: 'This Month',
+            thisYear: 'This Year',
+            clearCustomDates: 'Clear Custom Start Dates',
             clear: 'Clear',
             apply: 'Apply Changes'
         },
@@ -132,7 +175,7 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             speed: 'Velocidad',
             light: 'Claro',
             dark: 'Oscuro',
-            clearProgress: 'Borrar Progreso',
+            clearProgress: 'Borrar Progreso de Oración',
             close: 'CERRAR',
             textSize: 'Tamaño de Texto',
             normal: 'Normal',
@@ -143,6 +186,12 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             rosaryStartDate: 'Fecha de Inicio del Rosario',
             sacredStartDate: 'Fecha de Inicio de Oraciones Sagradas',
             startDateHelp: 'Establece tus fechas de inicio, luego haz clic en Aplicar para recalcular metas. Cambia en cualquier momento para escenarios hipotéticos.',
+            startDateTooltip: '¿Empezaste a rezar a mitad de año? ¡No hay problema! Tus metas se ajustarán para que nunca estés "atrasado". Prueba diferentes fechas para ver escenarios hipotéticos.',
+            quickPresets: 'Atajos Rápidos:',
+            today: 'Hoy',
+            thisMonth: 'Este Mes',
+            thisYear: 'Este Año',
+            clearCustomDates: 'Borrar Fechas de Inicio Personalizadas',
             clear: 'Borrar',
             apply: 'Aplicar Cambios'
         }
@@ -207,7 +256,42 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
 
                     {/* Progress Tracking Section */}
                     <div className="settings-card">
-                        <h2 className="card-title">{t.progressTracking}</h2>
+                        <div className="card-title-with-info">
+                            <h2 className="card-title">{t.progressTracking}</h2>
+                            <button
+                                className="info-icon-btn"
+                                onClick={() => setShowProgressInfo(!showProgressInfo)}
+                                aria-label="Information about progress tracking"
+                            >
+                                <Info size={18} />
+                            </button>
+                        </div>
+
+                        {/* Collapsible Info */}
+                        {showProgressInfo && (
+                            <div className="feature-info-box">
+                                <div className="info-content">
+                                    <p className="info-text">{t.startDateTooltip}</p>
+                                    <p className="info-example">
+                                        {language === 'en'
+                                            ? "Example: Started on March 1st? Your yearly goal becomes 306 days (Mar-Dec) instead of 365 days. You'll never feel \"behind\"!"
+                                            : "Ejemplo: ¿Empezaste el 1 de marzo? Tu meta anual se convierte en 306 días (Mar-Dic) en lugar de 365 días. ¡Nunca te sentirás \"atrasado\"!"}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Quick Presets */}
+                        <div className="date-presets">
+                            <p className="preset-label">{t.quickPresets}</p>
+                            <div className="preset-buttons">
+                                <button onClick={setToday} className="btn-preset">{t.today}</button>
+                                <button onClick={setFirstOfMonth} className="btn-preset">{t.thisMonth}</button>
+                                <button onClick={setFirstOfYear} className="btn-preset">{t.thisYear}</button>
+                            </div>
+                        </div>
+
+                        <p className="preset-divider">Or set custom dates:</p>
 
                         <div className="setting-group">
                             <div className="setting-header">
@@ -276,6 +360,16 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                         >
                             {t.apply}
                         </button>
+
+                        {/* Clear Custom Start Dates Button */}
+                        {(rosaryStartDate || sacredStartDate) && (
+                            <button
+                                onClick={resetToFullYear}
+                                className="btn-reset-year"
+                            >
+                                {t.clearCustomDates}
+                            </button>
+                        )}
                     </div>
 
                     {/* Display Section */}

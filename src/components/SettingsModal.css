@@ -430,3 +430,166 @@
     transform: translateY(0);
     box-shadow: 0 2px 4px -1px rgba(139, 92, 246, 0.3);
 }
+
+/* Date Presets */
+.date-presets {
+    margin-bottom: 1.5rem;
+}
+
+.preset-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 0.5rem 0;
+}
+
+.preset-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-preset {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: rgba(139, 92, 246, 0.1);
+    color: #A78BFA;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-preset:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.5);
+    color: #C4B5FD;
+    transform: translateY(-1px);
+}
+
+.btn-preset:active {
+    transform: translateY(0);
+}
+
+/* Card Title with Info Icon */
+.card-title-with-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.card-title-with-info .card-title {
+    margin: 0;
+    /* Remove default margin from h2 */
+}
+
+.info-icon-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    /* Prevent icon from shrinking */
+}
+
+.info-icon-btn:hover {
+    color: #A78BFA;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.info-icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* Feature Info Box (Collapsible) */
+.feature-info-box {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.info-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.info-content {
+    flex: 1;
+}
+
+.info-text {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.5;
+}
+
+.info-example {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    padding-left: 1rem;
+    border-left: 2px solid rgba(139, 92, 246, 0.4);
+    font-style: italic;
+}
+
+/* Date Presets */
+.preset-divider {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    margin: 1rem 0;
+    font-style: italic;
+}
+
+/* Reset to Full Year Button */
+.btn-reset-year {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.625rem 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.1);
+    color: #FCA5A5;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-reset-year:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #FEE2E2;
+    transform: translateY(-1px);
+}
+
+.btn-reset-year:active {
+    transform: translateY(0);
+}

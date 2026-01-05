@@ -100,6 +100,8 @@ function AppContent() {
 
     // Not complete - proceed to prayer screen with continuous mode
     setStartWithContinuous(true);
+    // Save to localStorage so it persists across sessions
+    localStorage.setItem('continuous_mode_active', 'true');
     setCurrentScreen('prayer');
   };
 
@@ -107,17 +109,26 @@ function AppContent() {
     completeSession();
     // Don't clear prayer progress - keep it saved at completion step
     // so we can detect it's complete when user presses Pray again
-    setAutoPlayCompletion(startWithContinuous); // Auto-play if coming from continuous mode
+
+    // Check if continuous mode was active (either in current session or from localStorage)
+    const wasContinuousMode = startWithContinuous || localStorage.getItem('continuous_mode_active') === 'true';
+    setAutoPlayCompletion(wasContinuousMode);
+
+    // Clear the continuous mode flag now that prayer is complete
+    localStorage.removeItem('continuous_mode_active');
+
     setCurrentScreen('complete');
   };
 
   const handleBackToHome = () => {
     clearSession();
+    localStorage.removeItem('continuous_mode_active'); // Clear continuous mode flag
     setCurrentScreen('home');
   };
 
   const handleRestart = () => {
     clearSession();
+    localStorage.removeItem('continuous_mode_active'); // Clear continuous mode flag
     setCurrentScreen('home');
   };
 
