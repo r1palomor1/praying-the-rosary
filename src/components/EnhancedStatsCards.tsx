@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Flame } from 'lucide-react';
+import { TrendingUp, TrendingDown, Flame, Calendar } from 'lucide-react';
 import './EnhancedStatsCards.css';
 
 interface EnhancedStatsCardsProps {
@@ -16,18 +16,16 @@ interface EnhancedStatsCardsProps {
     year: number;
     monthName: string;
     language: 'en' | 'es';
-    prayerType?: 'rosaries' | 'prayers'; // Default to 'rosaries'
+    prayerType?: 'rosaries' | 'prayers';
 }
 
 export function EnhancedStatsCards({
     ytdTotal,
-    ytdCurrentStreak,
     ytdBestStreak,
     ytdProgress,
     ytdGoal,
     mtdTotal,
     mtdCurrentStreak,
-    mtdBestStreak,
     mtdProgress,
     mtdGoal,
     yearOverYearPercent,
@@ -41,150 +39,146 @@ export function EnhancedStatsCards({
         en: {
             ytd: 'YEAR TO DATE',
             mtd: 'CURRENT MONTH',
-            yearlyGoal: 'Yearly Goal Progress',
-            monthlyGoal: 'Monthly Goal Progress',
+            total: prayerType === 'rosaries' ? 'Total Rosaries' : 'Total Prayers',
+            monthly: prayerType === 'rosaries' ? 'Monthly Rosaries' : 'Monthly Prayers',
+            longestStreak: 'Longest Streak',
+            activeStreak: 'Active Streak',
+            annualGoal: 'Annual Goal',
+            monthlyGoal: 'Monthly Goal',
             target: 'Target',
             rosariesBy: prayerType === 'rosaries' ? 'Rosaries by' : 'Prayers by',
-            vsPreviousYear: 'vs previous year',
-            bestStreak: 'BEST STREAK',
-            currentStreak: 'CURRENT STREAK',
-            days: 'days',
-            daysLeft: 'days left'
+            vsPreviousYear: 'vs. Last Year',
+            days: 'Days',
+            daysLeft: 'Days Left',
+            keepGoing: 'Keep it going!',
+            bestIn: 'Best in'
         },
         es: {
             ytd: 'AÑO HASTA LA FECHA',
             mtd: 'MES ACTUAL',
-            yearlyGoal: 'Progreso de Meta Anual',
-            monthlyGoal: 'Progreso de Meta Mensual',
+            total: prayerType === 'rosaries' ? 'Rosarios Totales' : 'Oraciones Totales',
+            monthly: prayerType === 'rosaries' ? 'Rosarios Mensuales' : 'Oraciones Mensuales',
+            longestStreak: 'Racha Más Larga',
+            activeStreak: 'Racha Activa',
+            annualGoal: 'Meta Anual',
+            monthlyGoal: 'Meta Mensual',
             target: 'Meta',
             rosariesBy: prayerType === 'rosaries' ? 'Rosarios para' : 'Oraciones para',
-            vsPreviousYear: 'vs año anterior',
-            bestStreak: 'MEJOR RACHA',
-            currentStreak: 'RACHA ACTUAL',
-            days: 'días',
-            daysLeft: 'días restantes'
+            vsPreviousYear: 'vs. Año Pasado',
+            days: 'Días',
+            daysLeft: 'Días Restantes',
+            keepGoing: '¡Sigue así!',
+            bestIn: 'Mejor en'
         }
     }[language];
 
     const showYoY = yearOverYearPercent !== null;
     const yoyPositive = yearOverYearPercent && yearOverYearPercent > 0;
-
-    // Get abbreviated month name (first 3 letters)
     const monthAbbr = monthName.substring(0, 3);
+    const lastDayOfMonth = new Date(year, new Date().getMonth() + 1, 0).getDate();
+
+    // Calculate previous year values
+    const ytdLastYear = showYoY ? Math.round(ytdTotal / (1 + yearOverYearPercent / 100)) : 0;
+    const mtdLastYear = showYoY ? Math.round(mtdTotal / (1 + yearOverYearPercent / 100)) : 0;
 
     return (
-        <div className="enhanced-stats-container">
-            {/* Background Icon */}
-            <div className="stats-bg-icon">
-                🙏
-            </div>
+        <div className="enhanced-stats-container-v2">
+            {/* YTD Section */}
+            <div className="stats-section ytd-section">
+                <div className="section-header">
+                    <Calendar size={18} />
+                    <h3>{t.ytd}</h3>
+                </div>
 
-            <div className="stats-grid">
-                {/* YTD Card */}
-                <div className="stat-card ytd-card">
-                    <div className="card-content">
-                        {/* Header */}
-                        <div className="card-header">
-                            <div className="header-icon">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                    <line x1="16" y1="2" x2="16" y2="6" />
-                                    <line x1="8" y1="2" x2="8" y2="6" />
-                                    <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
+                <div className="stats-row">
+                    {/* Total */}
+                    <div className="stat-col">
+                        <span className="stat-label">{t.total}</span>
+                        <div className="stat-value-group">
+                            <span className="stat-value">{ytdTotal}</span>
+                            <div className={`yoy-badge ${yoyPositive ? 'positive' : 'negative'}`}>
+                                {yoyPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                <span>{yoyPositive ? '+' : ''}{yearOverYearPercent || 0}%</span>
                             </div>
-                            <h4 className="card-title">{t.ytd} ( {monthAbbr} {year} )</h4>
                         </div>
+                        <span className="stat-sublabel">{t.vsPreviousYear} ({ytdLastYear})</span>
+                    </div>
 
-                        {/* Main Number */}
-                        <div className="main-stat">
-                            <span className="stat-number ytd-number">{ytdTotal}</span>
-                            {showYoY && (
-                                <div className="yoy-badge">
-                                    {yoyPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                    <span>{yoyPositive ? '+' : ''}{yearOverYearPercent}%</span>
-                                </div>
-                            )}
+                    {/* Longest Streak */}
+                    <div className="stat-col divider-left">
+                        <span className="stat-label">{t.longestStreak}</span>
+                        <div className="stat-value-group">
+                            <span className="stat-value">{ytdBestStreak}</span>
+                            <span className="stat-unit">{t.days}</span>
                         </div>
-                        {showYoY && (
-                            <p className="yoy-label">{t.vsPreviousYear}</p>
-                        )}
+                        <span className="stat-sublabel">{t.bestIn} {monthAbbr}</span>
+                    </div>
 
-                        {/* Progress Bar */}
-                        <div className="progress-section">
-                            <div className="progress-header">
-                                <span className="progress-label">{t.yearlyGoal}: {ytdProgress}%</span>
-                                <span className="progress-remaining">{ytdGoal - ytdTotal} {t.daysLeft}</span>
-                            </div>
-                            <div className="progress-bar">
-                                <div className="progress-fill ytd-fill" style={{ width: `${Math.min(ytdProgress, 100)}%` }}></div>
-                            </div>
-                            <p className="progress-target">{t.target}: {ytdGoal} {t.rosariesBy} Dec 31</p>
+                    {/* Annual Goal */}
+                    <div className="stat-col divider-left">
+                        <div className="goal-header-inline">
+                            <span className="stat-label">{t.annualGoal}</span>
+                            <span className="goal-percent">{ytdProgress}%</span>
                         </div>
-
-                        {/* Streak Stats */}
-                        <div className="streak-grid">
-                            <div className="streak-box">
-                                <p className="streak-label">{t.bestStreak}</p>
-                                <p className="streak-value">{ytdBestStreak}</p>
-                            </div>
-                            <div className="streak-box">
-                                <p className="streak-label">{t.currentStreak}</p>
-                                <div className="streak-value-with-icon">
-                                    <p className="streak-value">{ytdCurrentStreak}</p>
-                                    {ytdCurrentStreak > 0 && <Flame size={16} className="flame-icon" />}
-                                </div>
-                            </div>
+                        <div className="progress-bar">
+                            <div className="progress-fill ytd-fill" style={{ width: `${Math.min(ytdProgress, 100)}%` }}></div>
+                        </div>
+                        <div className="goal-details-stacked">
+                            <span>{t.daysLeft}: {ytdGoal - ytdTotal}</span>
+                            <span>{t.target}: {ytdGoal} {t.rosariesBy} Dec 31</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* MTD Card */}
-                <div className="stat-card mtd-card">
-                    <div className="card-content">
-                        {/* Header */}
-                        <div className="card-header">
-                            <div className="header-icon">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                    <line x1="16" y1="2" x2="16" y2="6" />
-                                    <line x1="8" y1="2" x2="8" y2="6" />
-                                    <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
+            {/* MTD Section */}
+            <div className="stats-section mtd-section">
+                <div className="section-header">
+                    <Calendar size={18} />
+                    <h3>{t.mtd}</h3>
+                </div>
+
+                <div className="stats-row">
+                    {/* Total */}
+                    <div className="stat-col">
+                        <span className="stat-label">{t.monthly}</span>
+                        <div className="stat-value-group">
+                            <span className="stat-value">{mtdTotal}</span>
+                            <div className={`yoy-badge ${yoyPositive ? 'positive' : 'negative'}`}>
+                                {yoyPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                <span>{yoyPositive ? '+' : ''}{yearOverYearPercent || 0}%</span>
                             </div>
-                            <h4 className="card-title">{t.mtd} ( {monthAbbr} {year} )</h4>
                         </div>
+                        <span className="stat-sublabel">{t.vsPreviousYear} ({mtdLastYear})</span>
+                    </div>
 
-                        {/* Main Number */}
-                        <div className="main-stat">
-                            <span className="stat-number mtd-number">{mtdTotal}</span>
+                    {/* Active Streak */}
+                    <div className="stat-col divider-left">
+                        <span className="stat-label">{t.activeStreak}</span>
+                        <div className="stat-value-group">
+                            <span className="stat-value">{mtdCurrentStreak}</span>
+                            <span className="stat-unit">{t.days}</span>
                         </div>
+                        {mtdCurrentStreak > 0 && (
+                            <div className="streak-encouragement">
+                                <Flame size={14} className="flame-icon" />
+                                <span>{t.keepGoing}</span>
+                            </div>
+                        )}
+                    </div>
 
-                        {/* Progress Bar */}
-                        <div className="progress-section">
-                            <div className="progress-header">
-                                <span className="progress-label">{t.monthlyGoal}: {mtdProgress}%</span>
-                                <span className="progress-remaining">{mtdGoal - mtdTotal} {t.daysLeft}</span>
-                            </div>
-                            <div className="progress-bar">
-                                <div className="progress-fill mtd-fill" style={{ width: `${Math.min(mtdProgress, 100)}%` }}></div>
-                            </div>
-                            <p className="progress-target">{t.target}: {mtdGoal} {t.rosariesBy} {monthAbbr} {mtdGoal}</p>
+                    {/* Monthly Goal */}
+                    <div className="stat-col divider-left">
+                        <div className="goal-header-inline">
+                            <span className="stat-label">{t.monthlyGoal}</span>
+                            <span className="goal-percent">{mtdProgress}%</span>
                         </div>
-
-                        {/* Streak Stats */}
-                        <div className="streak-grid">
-                            <div className="streak-box">
-                                <p className="streak-label">{t.bestStreak}</p>
-                                <p className="streak-value">{mtdBestStreak}</p>
-                            </div>
-                            <div className="streak-box">
-                                <p className="streak-label">{t.currentStreak}</p>
-                                <div className="streak-value-with-icon">
-                                    <p className="streak-value">{mtdCurrentStreak}</p>
-                                    {mtdCurrentStreak > 0 && <Flame size={16} className="flame-icon" />}
-                                </div>
-                            </div>
+                        <div className="progress-bar">
+                            <div className="progress-fill mtd-fill" style={{ width: `${Math.min(mtdProgress, 100)}%` }}></div>
+                        </div>
+                        <div className="goal-details-stacked">
+                            <span>{t.daysLeft}: {mtdGoal - mtdTotal}</span>
+                            <span>{t.target}: {mtdGoal} {t.rosariesBy} {monthAbbr} {lastDayOfMonth}</span>
                         </div>
                     </div>
                 </div>
