@@ -77,25 +77,74 @@ git push
 
 ## 🎯 Priority Items for Next Session
 
-### 🐛 Enhanced Progress Tab Issues (Jan 1, 2026)
-- [ ] **Current Month Text Overflow**
-  - Month name overflowing off screen on mobile
-  - Need to adjust responsive layout or font size
+### 🐛 Enhanced Progress Tab Issues (Jan 1-2, 2026) ✅ COMPLETED
+- [x] **Current Month Text Overflow** ✅
+  - Fixed month name overflowing on mobile
+  - Added responsive font sizes and ellipsis
+  - Tablet breakpoint (641px-1024px) with reduced sizes
   
-- [ ] **MTD Goal Date Display Bug**
-  - Shows "by January 1" instead of "by January 31"
-  - Should show last day of month, not first day
-  - Location: EnhancedStatsCards.tsx target label
+- [x] **MTD Goal Date Display Bug** ✅
+  - Fixed "by January 1" → "by January 31"
+  - Now shows correct last day of month
+  - Location: EnhancedStatsCards.tsx line 169
   
-- [ ] **Sacred Prayers Modal Scroll Issue**
-  - Sacred Prayers progress modal doesn't scroll
-  - Rosary progress screen scrolls correctly
-  - Need to check CSS overflow settings
+- [x] **Sacred Prayers Modal Scroll Issue** ✅
+  - Added overflow-y: auto to modal content
+  - Sacred modal now scrolls properly
+  - Matches Rosary progress behavior
   
-- [ ] **Goal Progress Calculation Error**
-  - Shows 100% progress on January 1st
-  - Should show 0% or low percentage on first day
-  - Check yearProgress calculation in yearlyHistory.ts
+- [x] **Sacred Modal Layout Issues** ✅
+  - Increased modal width from 512px to 600px
+  - Fixed calendar badges to be circular (added width: 32px)
+  - Fixed card overlap and text wrapping
+  - Added responsive padding adjustments
+  
+- [x] **Goal Progress Calculation Errors** ✅
+  - Fixed Year Progress: Now divides by 365/366 instead of elapsed days
+  - Fixed Month Progress: Now divides by 28-31 instead of current day
+  - YTD Current Streak: Only counts within current year (not crossing into previous year)
+  - MTD Streaks: Fixed timezone issues with string comparison
+  - Day Counting: Jan 3 to Dec 31 = 363 days (was 364)
+
+### 🎯 Custom Start Date Tracking (Jan 2, 2026) ✅ COMPLETED
+- [x] **Progress Settings System**
+  - Created progressSettings.ts utility
+  - Stores Rosary and Sacred Prayers start dates separately
+  - Calculates adjusted YTD/MTD goals based on start date
+  - No penalty for starting mid-year!
+  
+- [x] **Settings UI**
+  - Added "Progress Tracking" section to Settings
+  - Date inputs for both prayer types
+  - Auto-sync: Rosary date auto-fills Sacred date
+  - Apply button: Set both dates before recalculating
+  - Clear buttons to reset individual dates
+  - Bilingual help text (EN/ES)
+  
+- [x] **Goal Calculations**
+  - YTD Goal: Days from start date to Dec 31
+  - MTD Goal: Days from start date to end of month
+  - Progress %: Completions / Adjusted Goal
+  - What-if scenarios: Change dates anytime
+  
+- [x] **Date Formatting Consistency**
+  - All dates now use MM/DD/YYYY format
+  - Settings footer shows date AND time
+  - Version modal uses consistent formatting
+  - Abbreviated month names: "Jan 2026" instead of "January"
+
+### 📱 Responsive Layout Fixes (Jan 2, 2026) ✅ COMPLETED
+- [x] **Tablet Breakpoint (641px-1024px)**
+  - Fixed Rosary progress overflow on tablet
+  - Reduced card padding from 1.5rem to 0.75rem horizontal
+  - Smaller fonts for titles, numbers, and labels
+  - Tighter streak box spacing
+  
+- [x] **Mobile Optimizations**
+  - Month name responsive sizing
+  - Year selector compact on mobile
+  - Sacred modal matches Rosary screen
+  - All cards stack properly on small screens
 
 ### 🚨 CRITICAL: Reconstruct Lost Refactor Work (Dec 21, 2024)
 - [ ] **Rebuild Classic/Cinematic Layout Separation**
