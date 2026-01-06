@@ -7,11 +7,13 @@ interface EnhancedStatsCardsProps {
     ytdBestStreak: number;
     ytdProgress: number;
     ytdGoal: number;
+    ytdLastYear: number;
     mtdTotal: number;
     mtdCurrentStreak: number;
     mtdBestStreak: number;
     mtdProgress: number;
     mtdGoal: number;
+    mtdLastYear: number;
     yearOverYearPercent: number | null;
     year: number;
     monthName: string;
@@ -24,10 +26,12 @@ export function EnhancedStatsCards({
     ytdBestStreak,
     ytdProgress,
     ytdGoal,
+    ytdLastYear,
     mtdTotal,
     mtdCurrentStreak,
     mtdProgress,
     mtdGoal,
+    mtdLastYear,
     yearOverYearPercent,
     year,
     monthName,
@@ -72,14 +76,14 @@ export function EnhancedStatsCards({
         }
     }[language];
 
-    const showYoY = yearOverYearPercent !== null;
+
     const yoyPositive = yearOverYearPercent && yearOverYearPercent > 0;
     const monthAbbr = monthName.substring(0, 3);
     const lastDayOfMonth = new Date(year, new Date().getMonth() + 1, 0).getDate();
 
-    // Calculate previous year values
-    const ytdLastYear = showYoY ? Math.round(ytdTotal / (1 + yearOverYearPercent / 100)) : 0;
-    const mtdLastYear = showYoY ? Math.round(mtdTotal / (1 + yearOverYearPercent / 100)) : 0;
+    // Calculate total days for targets (based on full year/month)
+    const totalDaysInYear = 365; // Could be 366 for leap years
+    const totalDaysInMonth = lastDayOfMonth;
 
     return (
         <div className="enhanced-stats-container-v2">
@@ -111,7 +115,6 @@ export function EnhancedStatsCards({
                             <span className="stat-value">{ytdBestStreak}</span>
                             <span className="stat-unit">{t.days}</span>
                         </div>
-                        <span className="stat-sublabel">{t.bestIn} {monthAbbr}</span>
                     </div>
 
                     {/* Annual Goal */}
@@ -125,7 +128,7 @@ export function EnhancedStatsCards({
                         </div>
                         <div className="goal-details-stacked">
                             <span>{t.daysLeft}: {ytdGoal - ytdTotal}</span>
-                            <span>{t.target}: {ytdGoal} {t.rosariesBy} Dec 31</span>
+                            <span>{t.target}: {totalDaysInYear} days by Dec 31</span>
                         </div>
                     </div>
                 </div>
@@ -178,7 +181,7 @@ export function EnhancedStatsCards({
                         </div>
                         <div className="goal-details-stacked">
                             <span>{t.daysLeft}: {mtdGoal - mtdTotal}</span>
-                            <span>{t.target}: {mtdGoal} {t.rosariesBy} {monthAbbr} {lastDayOfMonth}</span>
+                            <span>{t.target}: {totalDaysInMonth} days by {monthAbbr} {lastDayOfMonth}</span>
                         </div>
                     </div>
                 </div>

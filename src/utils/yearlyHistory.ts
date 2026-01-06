@@ -337,7 +337,7 @@ export function getYearOverYearComparison(year: number, month: number, type: 'ro
     const currentYearCompletions = getCompletionsUpToMonth(year, month, type).length;
     const previousYearCompletions = getCompletionsUpToMonth(year - 1, month, type).length;
 
-    if (previousYearCompletions === 0) return null;
+    if (previousYearCompletions === 0) return 100; // Show 100% growth when starting from 0
 
     const percentChange = ((currentYearCompletions - previousYearCompletions) / previousYearCompletions) * 100;
     return Math.round(percentChange);
@@ -382,6 +382,8 @@ export interface EnhancedYTDStats extends YTDStats {
     mtdCurrentStreak: number;
     mtdBestStreak: number;
     yearOverYearPercent: number | null;
+    ytdLastYear: number;
+    mtdLastYear: number;
     daysInYear: number;
     daysInMonth: number;
     dayOfYear: number;
@@ -410,12 +412,21 @@ export function getEnhancedYTDStats(year: number, month: number, type: 'rosary' 
     const mtdGoalAdjusted = calculateMTDGoal(year, month, startDateStr, daysInMonth);
     const dayOfYearAdjusted = calculateDayOfYearFromStart(year, month, startDateStr, getDayOfYear(new Date(year, month, currentDayOfMonth)));
 
+    // Calculate last year's actual values
+    const ytdLastYear = getCompletionsUpToMonth(year - 1, month, type).length;
+    const mtdLastYear = getCompletionsForYear(year - 1, type).filter(c => {
+        const [, m] = c.date.split('-').map(Number);
+        return m === month + 1;
+    }).length;
+
     return {
         ...baseStats,
         mtdTotal: monthCompletions,
         mtdCurrentStreak: calculateMTDCurrentStreak(year, month, type),
         mtdBestStreak: calculateMTDBestStreak(year, month, type),
         yearOverYearPercent: getYearOverYearComparison(year, month, type),
+        ytdLastYear,
+        mtdLastYear,
         daysInYear: ytdGoalAdjusted, // Use adjusted goal instead of full year
         daysInMonth: mtdGoalAdjusted, // Use adjusted goal instead of full month
         dayOfYear: dayOfYearAdjusted, // Use adjusted day count

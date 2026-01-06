@@ -132,7 +132,12 @@ export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
 
                 {/* Header */}
                 <div className="border-b border-white/10 bg-[#16213e] sacred-modal-header">
-                    <h2 className="text-2xl font-serif text-[#D4AF37] text-center whitespace-nowrap">{t.title}</h2>
+                    <div style={{ textAlign: 'center', width: '100%' }}>
+                        <h2 className="text-2xl font-serif text-[#D4AF37] whitespace-nowrap">{t.title}</h2>
+                        <p className="progress-date" style={{ marginTop: '0.5rem' }}>
+                            {monthNames[language][currentMonth]} {currentDate.getDate()}, {currentYear}
+                        </p>
+                    </div>
 
                     <button
                         onClick={onClose}
@@ -144,7 +149,7 @@ export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
                 </div>
 
                 {/* Content */}
-                <div className="overflow-y-auto p-4 space-y-6 custom-scrollbar">
+                <div className="overflow-y-auto p-3 space-y-4 custom-scrollbar">
 
                     {/* Enhanced Stats Cards */}
                     <EnhancedStatsCards
@@ -153,11 +158,13 @@ export function SacredProgressModal({ onClose }: SacredProgressModalProps) {
                         ytdBestStreak={stats.bestStreak}
                         ytdProgress={stats.yearProgress}
                         ytdGoal={stats.daysInYear}
+                        ytdLastYear={stats.ytdLastYear}
                         mtdTotal={stats.mtdTotal}
                         mtdCurrentStreak={stats.mtdCurrentStreak}
                         mtdBestStreak={stats.mtdBestStreak}
                         mtdProgress={stats.monthProgress}
                         mtdGoal={stats.daysInMonth}
+                        mtdLastYear={stats.mtdLastYear}
                         yearOverYearPercent={stats.yearOverYearPercent}
                         year={currentYear}
                         monthName={monthNames[language][currentMonth]}

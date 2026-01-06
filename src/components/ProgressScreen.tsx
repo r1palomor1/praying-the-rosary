@@ -215,6 +215,9 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
         <div className="progress-container-v2">
             <header className="progress-header-v2">
                 <h1 className="progress-title-v2">{t.title}</h1>
+                <p className="progress-date">
+                    {monthNames[language][currentMonth]} {currentDate.getDate()}, {currentYear}
+                </p>
             </header>
 
             <main className="progress-main-v2">
@@ -225,11 +228,13 @@ export function ProgressScreen({ onNavigateHome, onNavigateToMysteries, onNaviga
                     ytdBestStreak={stats.bestStreak}
                     ytdProgress={stats.yearProgress}
                     ytdGoal={stats.daysInYear}
+                    ytdLastYear={stats.ytdLastYear}
                     mtdTotal={stats.mtdTotal}
                     mtdCurrentStreak={stats.mtdCurrentStreak}
                     mtdBestStreak={stats.mtdBestStreak}
                     mtdProgress={stats.monthProgress}
                     mtdGoal={stats.daysInMonth}
+                    mtdLastYear={stats.mtdLastYear}
                     yearOverYearPercent={stats.yearOverYearPercent}
                     year={currentYear}
                     monthName={monthNames[language][currentMonth]}

@@ -13,13 +13,13 @@
 
 /* Header */
 .progress-header-v2 {
-    padding: var(--spacing-xl) 1.5rem var(--spacing-md);
+    padding: var(--spacing-xl) 1.5rem var(--spacing-sm);
     background: var(--color-bg-primary);
 }
 
 .progress-title-v2 {
     font-family: var(--font-heading);
-    font-size: var(--font-size-3xl);
+    font-size: calc(var(--font-size-3xl) - 3px);
     font-weight: 700;
     color: #4A2C40;
     margin: 0;
@@ -31,13 +31,26 @@
     color: #E8D4E5;
 }
 
+.progress-date {
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(74, 44, 64, 0.6);
+    margin: 0.5rem 0 0 0;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+[data-theme="dark"] .progress-date {
+    color: rgba(232, 212, 229, 0.6);
+}
+
 /* Main Content */
 .progress-main-v2 {
     flex: 1;
     padding: 0 1.5rem var(--spacing-lg);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xl);
+    gap: var(--spacing-md);
 }
 
 /* Stats Grid */
