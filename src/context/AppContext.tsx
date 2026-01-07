@@ -111,7 +111,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const settings = loadSettings() || getDefaultSettings();
         setLanguageState(settings.language);
-        setTheme(settings.theme);
+        // Force dark theme - light mode is disabled
+        setTheme('dark');
         setAudioEnabled(settings.audioEnabled);
         setVolumeState(settings.volume);
         if (settings.speechRate) setSpeechRateState(settings.speechRate);
@@ -119,8 +120,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (settings.mysteryLayout) setMysteryLayout(settings.mysteryLayout);
 
         // Apply theme to document
-        // Apply theme and font size to document
-        document.documentElement.setAttribute('data-theme', settings.theme);
+        // Apply theme and font size to document - always dark
+        document.documentElement.setAttribute('data-theme', 'dark');
         document.documentElement.setAttribute('data-font-size', settings.fontSize || 'normal');
 
         // Helper for session validation
@@ -207,11 +208,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setLanguageState(lang);
     };
 
-    // Theme toggle
+    // Theme toggle - DISABLED: App is dark mode only
     const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-        document.documentElement.setAttribute('data-theme', newTheme);
+        // Do nothing - dark mode only
+        // Force dark theme
+        setTheme('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
     };
 
     // Volume setter

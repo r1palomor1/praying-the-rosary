@@ -5,7 +5,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { LanguageSelector } from './components/LanguageSelector';
-import { loadPrayerProgress, hasValidPrayerProgress } from './utils/storage';
+import { loadPrayerProgress, hasValidPrayerProgress, savePrayerProgress } from './utils/storage';
 import { PrayerFlowEngine } from './utils/prayerFlowEngine';
 import { cleanupPrayerHistory } from './utils/cleanupHistory';
 
@@ -120,6 +120,23 @@ function AppContent() {
     setCurrentScreen('complete');
   };
 
+  const handleCompleteFromPrayersTab = () => {
+    // Save prayer progress at final step so Mysteries tab shows completion
+    const flowEngine = new PrayerFlowEngine(currentMysterySet, language);
+    const totalSteps = flowEngine.getTotalSteps();
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    savePrayerProgress({
+      mysteryType: currentMysterySet,
+      currentStepIndex: totalSteps - 1, // Last step
+      date: today,
+      language: language
+    });
+
+    // Then complete the session and navigate
+    handleCompletePrayer();
+  };
+
   const handleBackToHome = () => {
     clearSession();
     localStorage.removeItem('continuous_mode_active'); // Clear continuous mode flag
@@ -196,6 +213,7 @@ function AppContent() {
             onNavigateHome={handleNavigateToHome}
             onNavigateToMysteries={handleNavigateToMysteries}
             onStartPrayer={handleStartPrayer}
+            onNavigateToCompletion={handleCompleteFromPrayersTab}
           />
         )}
         {currentScreen === 'progress' && (

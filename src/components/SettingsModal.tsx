@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Languages, Trash2, Gauge, Type, Info, Calendar } from 'lucide-react';
+import { Languages, Trash2, Gauge, Type, Info, Calendar } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../utils/storage';
 import { getVersionInfo, formatDateTime, type VersionInfo } from '../utils/version';
@@ -15,7 +15,7 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose, onResetProgress, currentMysteryName: _currentMysteryName }: SettingsModalProps) {
-    const { language, setLanguage, theme, toggleTheme, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
+    const { language, setLanguage, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
     const [showConfirmClear, setShowConfirmClear] = useState(false);
     const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
     const [showVersionModal, setShowVersionModal] = useState(false);
@@ -376,6 +376,7 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                     <div className="settings-card">
                         <h2 className="card-title">{t.display}</h2>
 
+                        {/* Theme toggle - HIDDEN: Dark mode only
                         <div className="setting-group">
                             <div className="setting-header">
                                 {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
@@ -396,6 +397,7 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                                 </button>
                             </div>
                         </div>
+                        */}
 
                         <div className="setting-group">
                             <div className="setting-header">

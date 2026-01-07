@@ -162,13 +162,15 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             // No progress - Play home page audio FIRST, then navigate
             startNewSession(currentMysterySet);
 
-            // Build complete audio: Mystery Name + "Daily Devotion" + Devotion Title + Devotion Text
+            // Build complete audio: Mystery Name + Days + "Daily Devotion" + Devotion Title + Devotion Text
             const mysteryName = mysterySet ? mysterySet.name[language] : '';
+            const daysText = getDaysText(); // e.g., "Monday & Saturday"
+            const forDays = t.forDays; // "For" in English, "Para" in Spanish
             const dailyDevotionLabel = t.dailyDevotion;
             const devotionTitle = devotion.title[language];
             const devotionText = devotion.fullText[language];
 
-            const completeAudioText = `${mysteryName}. ${dailyDevotionLabel}. ${devotionTitle}. ${devotionText}`;
+            const completeAudioText = `${mysteryName}. ${forDays} ${daysText}. ${dailyDevotionLabel}. ${devotionTitle}. ${devotionText}`;
 
             // Play audio and wait for completion before navigating
             playAudio(completeAudioText, () => {
