@@ -138,22 +138,23 @@ export function CinematicMysteryView({
                     <div className="cinematic-overlay-darker"></div>
                 </div>
 
-                <div className={`cinematic-content ${!showPrayerText ? 'text-hidden' : ''}`}>
+                {/* CRITICAL: Reflection content always visible - no text-hidden class */}
+                <div className="cinematic-content">
                     <main className="cinematic-main">
                         <div className="text-center space-y-6">
                             {/* CRITICAL: Title always visible */}
                             <h3 className="cinematic-title">{t.reflection}</h3>
 
-                            {/* Text, fruit, and scripture all collapse together when hidden */}
+                            {/* Reflection text, fruit, and scripture always visible (exception to text toggle) */}
                             <div className="space-y-4 text-center">
-                                {/* CRITICAL: Only hide text, not title */}
+                                {/* Reflection text always visible */}
                                 <div className="max-w-2xl mx-auto px-6">
                                     <p className="cinematic-text">
                                         {renderTextWithHighlighting(currentStep.text)}
                                     </p>
                                 </div>
 
-                                {/* Fruit and scripture collapse with text */}
+                                {/* Fruit and scripture always visible */}
                                 {decadeInfo && (decadeInfo.fruit || decadeInfo.scripture) && (
                                     <div className="pt-2">
                                         {decadeInfo.fruit && (

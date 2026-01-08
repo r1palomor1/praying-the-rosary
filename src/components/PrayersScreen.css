@@ -59,6 +59,12 @@
     letter-spacing: var(--letter-spacing-tight);
 }
 
+.prayer-divider {
+    height: 1px;
+    background: rgba(212, 175, 55, 0.3);
+    margin: var(--spacing-sm) 0;
+}
+
 .prayer-text {
     font-size: 1.125rem;
     /* Desktop: 18px (slightly smaller than Apostle's Creed 24px) */
@@ -93,7 +99,7 @@
 
 .mystery-title {
     font-family: var(--font-heading);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-base) !important;
     font-weight: 600;
     color: var(--color-text-primary);
     margin: 0;
@@ -277,6 +283,19 @@
     .bottom-nav-fixed-container {
         max-width: 700px;
     }
+}
+
+/* Litany Styling for Prayers Tab */
+.litany-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.litany-line {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
 }
 
 /* Desktop Nav Width */

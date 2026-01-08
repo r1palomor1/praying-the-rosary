@@ -25,7 +25,7 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
                 sequence: 'Rosary Prayers',
                 closing: 'Closing Prayers'
             },
-            hailMaryWithCount: 'Hail Mary (Pray 10 times)',
+            hailMaryWithCount: 'Hail Mary ( Pray 10 times )',
             mysteries: {
                 joyful: 'The Joyful Mysteries',
                 luminous: 'The Luminous Mysteries',
@@ -43,7 +43,7 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
                 sequence: 'Oraciones del Rosario',
                 closing: 'Oraciones Finales'
             },
-            hailMaryWithCount: 'Ave María (Reza 10 veces)',
+            hailMaryWithCount: 'Ave María ( Reza 10 veces )',
             mysteries: {
                 joyful: 'Misterios Gozosos',
                 luminous: 'Misterios Luminosos',
@@ -80,21 +80,45 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
 
     const isAlreadyCompleted = checkIfCompletedToday();
 
+    const renderLitanyText = (text: string) => {
+        const lines = text.split('\n');
+
+        return (
+            <div className="litany-content">
+                {lines.map((line, i) => (
+                    <div key={i} className="litany-line">
+                        {line}
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
     const renderPrayerSection = (title: string, prayerList: Record<string, any>) => (
         <div className="prayers-section">
             <h2 className="prayers-section-title">{title}</h2>
-            {Object.values(prayerList).map((prayer: any, index) => (
-                <div key={index} className="prayer-card">
-                    <h3 className="prayer-name">{prayer.name[language]}</h3>
-                    <p className="prayer-text">{prayer.text[language]}</p>
-                </div>
-            ))}
+            {Object.values(prayerList).map((prayer: any, index) => {
+                const isLitany = prayer.name.en === 'Litany of the Blessed Virgin Mary';
+
+                return (
+                    <div key={index} className="prayer-card">
+                        <h3 className="prayer-name">{prayer.name[language]}</h3>
+                        <div className="prayer-divider"></div>
+                        {isLitany ? (
+                            renderLitanyText(prayer.text[language])
+                        ) : (
+                            <p className="prayer-text">{prayer.text[language]}</p>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 
     const renderMysteriesCard = () => (
         <div className="prayer-card">
             <h3 className="prayer-name">{t.mysteries[currentMysterySet]}</h3>
+            <div className="prayer-divider"></div>
             <div className="mysteries-list">
                 {mysteries.map((mystery: any) => (
                     <div key={mystery.number} className="mystery-item">
@@ -133,6 +157,7 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
                     {/* Our Father */}
                     <div className="prayer-card">
                         <h3 className="prayer-name">{prayers.sequence.ourFather.name[language]}</h3>
+                        <div className="prayer-divider"></div>
                         <p className="prayer-text">{prayers.sequence.ourFather.text[language]}</p>
                     </div>
                 </div>
@@ -145,18 +170,21 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
                     {/* Hail Mary with count */}
                     <div className="prayer-card">
                         <h3 className="prayer-name">{t.hailMaryWithCount}</h3>
+                        <div className="prayer-divider"></div>
                         <p className="prayer-text">{prayers.sequence.hailMary.text[language]}</p>
                     </div>
 
                     {/* Glory Be */}
                     <div className="prayer-card">
                         <h3 className="prayer-name">{prayers.sequence.gloryBe.name[language]}</h3>
+                        <div className="prayer-divider"></div>
                         <p className="prayer-text">{prayers.sequence.gloryBe.text[language]}</p>
                     </div>
 
                     {/* O My Jesus */}
                     <div className="prayer-card">
                         <h3 className="prayer-name">{prayers.sequence.oMyJesus.name[language]}</h3>
+                        <div className="prayer-divider"></div>
                         <p className="prayer-text">{prayers.sequence.oMyJesus.text[language]}</p>
                     </div>
                 </div>

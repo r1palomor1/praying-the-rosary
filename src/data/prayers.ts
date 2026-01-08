@@ -63,8 +63,8 @@ export const prayers: {
         },
         oMyJesus: {
             name: {
-                en: 'O My Jesus (Fatima Prayer)',
-                es: 'Oh Jesús Mío (Oración de Fátima)'
+                en: 'O My Jesus ( Fatima Prayer )',
+                es: 'Oh Jesús Mío ( Oración de Fátima )'
             },
             text: {
                 en: 'O my Jesus, forgive us our sins, save us from the fires of hell, and lead all souls to Heaven, especially those in most need of Thy mercy. Amen.',

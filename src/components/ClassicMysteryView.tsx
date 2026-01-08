@@ -113,12 +113,8 @@ export function ClassicMysteryView({
                     {/* Title always visible */}
                     <h3 className="classic-card-title">{t.reflection}</h3>
 
-                    {/* Hide reflection text AND scripture when text is hidden */}
-                    {!userWantsTextHidden && (
-                        <>
-                            <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
-                        </>
-                    )}
+                    {/* Reflection text always visible (exception to text toggle) */}
+                    <p className="classic-text">{renderTextWithHighlighting(currentStep.text)}</p>
 
                     {/* Fruit always visible with divider line above */}
                     {decadeInfo?.fruit && (
@@ -131,8 +127,8 @@ export function ClassicMysteryView({
                         </div>
                     )}
 
-                    {/* Scripture after fruit, hidden with text */}
-                    {!userWantsTextHidden && decadeInfo?.scripture && (
+                    {/* Scripture always visible (exception to text toggle) */}
+                    {decadeInfo?.scripture && (
                         <div className="classic-scripture-container">
                             <p className="classic-scripture-text">"{decadeInfo.scripture.text}"</p>
                             <p className="classic-scripture-ref">{decadeInfo.scripture.reference}</p>

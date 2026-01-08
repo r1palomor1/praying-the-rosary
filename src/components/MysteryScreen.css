@@ -1709,8 +1709,6 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 .prayer-text-hidden .prayer-text-main,
 .prayer-text-hidden .mystery-prayer-card p,
 .prayer-text-hidden .intro-prayer-card p,
-.prayer-text-hidden .reflection-section,
-.prayer-text-hidden .reflection-text,
 .prayer-text-hidden .immersive-content p {
     opacity: 0 !important;
     transition: opacity 1s ease;
