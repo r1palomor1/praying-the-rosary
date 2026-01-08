@@ -82,16 +82,29 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
 
     const renderLitanyText = (text: string) => {
         const lines = text.split('\n');
+        const elements: React.ReactElement[] = [];
+        let lastWasEmpty = false;
 
-        return (
-            <div className="litany-content">
-                {lines.map((line, i) => (
+        lines.forEach((line, i) => {
+            // If line is empty
+            if (line.trim() === '') {
+                // Only render divider if the last line wasn't also empty
+                if (!lastWasEmpty) {
+                    elements.push(<div key={i} className="litany-divider"></div>);
+                }
+                lastWasEmpty = true;
+            } else {
+                // Render the text line
+                elements.push(
                     <div key={i} className="litany-line">
                         {line}
                     </div>
-                ))}
-            </div>
-        );
+                );
+                lastWasEmpty = false;
+            }
+        });
+
+        return <div className="litany-content">{elements}</div>;
     };
 
     const renderPrayerSection = (title: string, prayerList: Record<string, any>) => (

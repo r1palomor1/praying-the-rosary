@@ -90,15 +90,22 @@ export const prayers: {
             },
             text: {
                 en: `Lord, have mercy.
+Lord, have mercy.
+Christ, have mercy.
 Christ, have mercy.
 Lord, have mercy.
+Lord, have mercy.
+Christ, hear us.
 Christ, hear us.
 Christ, graciously hear us.
+Christ, graciously hear us.
+
 
 God, the Father of Heaven, have mercy on us.
 God, the Son, Redeemer of the world, have mercy on us.
 God, the Holy Spirit, have mercy on us.
 Holy Trinity, one God, have mercy on us.
+
 
 Holy Mary, pray for us.
 Holy Mother of God, pray for us.
@@ -154,6 +161,7 @@ Queen of the most holy Rosary, pray for us.
 Queen of the Family, pray for us.
 Queen of Peace, pray for us.
 
+
 Lamb of God, who takes away the sins of the world,
 spare us, O Lord.
 Lamb of God, who takes away the sins of the world,
@@ -161,21 +169,29 @@ graciously hear us, O Lord.
 Lamb of God, who takes away the sins of the world,
 have mercy on us.
 
+
 Pray for us, O Holy Mother of God.
 That we may be made worthy of the promises of Christ.
 
 Let us pray.
 Grant, we beseech You, O Lord God, that we, Your servants, may enjoy perpetual health of mind and body, and by the glorious intercession of the Blessed Mary, ever Virgin, be delivered from present sorrow and attain eternal joy. Through Christ our Lord. Amen.`,
                 es: `Señor, ten piedad.
+Señor, ten piedad.
+Cristo, ten piedad.
 Cristo, ten piedad.
 Señor, ten piedad.
+Señor, ten piedad.
+Cristo, óyenos.
 Cristo, óyenos.
 Cristo, escúchanos.
+Cristo, escúchanos.
+
 
 Dios, Padre celestial, ten piedad de nosotros.
 Dios, Hijo, Redentor del mundo, ten piedad de nosotros.
 Dios, Espíritu Santo, ten piedad de nosotros.
 Santísima Trinidad, un solo Dios, ten piedad de nosotros.
+
 
 Santa María, ruega por nosotros.
 Santa Madre de Dios, ruega por nosotros.
@@ -231,12 +247,14 @@ Reina del Santísimo Rosario, ruega por nosotros.
 Reina de la familia, ruega por nosotros.
 Reina de la Paz, ruega por nosotros.
 
+
 Cordero de Dios, que quitas el pecado del mundo,
 Perdónanos, Señor.
 Cordero de Dios, que quitas el pecado del mundo,
 Escúchanos, Señor.
 Cordero de Dios, que quitas el pecado del mundo,
 Ten misericordia de nosotros.
+
 
 Ruega por nosotros, Santa Madre de Dios.
 Para que seamos dignos de alcanzar las promesas de Jesucristo.

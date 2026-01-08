@@ -298,6 +298,12 @@
     color: var(--color-text-secondary);
 }
 
+.litany-divider {
+    height: 1px;
+    background: rgba(212, 175, 55, 0.3);
+    margin: var(--spacing-md) 0;
+}
+
 /* Desktop Nav Width */
 @media (min-width: 1025px) {
     .bottom-nav-fixed-container {
