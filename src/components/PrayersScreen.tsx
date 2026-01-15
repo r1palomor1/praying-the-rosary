@@ -85,6 +85,9 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
         const elements: React.ReactElement[] = [];
         let lastWasEmpty = false;
 
+        // Define phrases to highlight
+        const highlightPhrases = ['pray for us', 'ruega por nosotros'];
+
         lines.forEach((line, i) => {
             // If line is empty
             if (line.trim() === '') {
@@ -94,10 +97,27 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
                 }
                 lastWasEmpty = true;
             } else {
-                // Render the text line
+                // Check if line starts with a leading space (indicating it's an indented response)
+                const isResponse = line.startsWith(' ');
+
+                let content: React.ReactNode = line.trim();
+
+                // If it's NOT already an indented response, check for internal highlighting
+                if (!isResponse) {
+                    const phrase = highlightPhrases.find(p => line.toLowerCase().includes(p));
+                    if (phrase) {
+                        const parts = line.split(new RegExp(`(${phrase})`, 'gi'));
+                        content = parts.map((part, index) =>
+                            part.toLowerCase() === phrase ?
+                                <span key={index} style={{ color: '#FBBF24', fontStyle: 'italic' }}>{part}</span> :
+                                part
+                        );
+                    }
+                }
+
                 elements.push(
-                    <div key={i} className="litany-line">
-                        {line}
+                    <div key={i} className={`litany-line ${isResponse ? 'litany-response-indent' : ''}`}>
+                        {content}
                     </div>
                 );
                 lastWasEmpty = false;

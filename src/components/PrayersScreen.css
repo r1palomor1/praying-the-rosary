@@ -298,6 +298,14 @@
     color: var(--color-text-secondary);
 }
 
+
+.litany-response-indent {
+    padding-left: var(--spacing-lg);
+    color: #FBBF24;
+    /* Amber Gold to match Litany page */
+    font-style: italic;
+}
+
 .litany-divider {
     height: 1px;
     background: rgba(212, 175, 55, 0.3);
