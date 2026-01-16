@@ -55,14 +55,46 @@ export default async function handler(request) {
         const readings = [];
 
         // Extract Liturgical Day Title
+        // Usually the first substantial h2 in the content area
         let dayTitle = '';
         $('h2').each((i, el) => {
             const t = $(el).text().trim();
-            // Simple filter to skip menu items
-            if (!t.includes('Menu') && !t.includes('Navigation') && !t.includes('Get the Daily') && !t.includes('Dive into') && !dayTitle) {
+            const lower = t.toLowerCase();
+            // Stricter filtering
+            if (!lower.includes('menu') &&
+                !lower.includes('navigation') &&
+                !lower.includes('daily readings') &&
+                !lower.includes('dive into') &&
+                !lower.includes('search') &&
+                !dayTitle) {
                 dayTitle = t;
             }
         });
+
+        // Helper to clean text and preserve formatting
+        const cleanText = ($element) => {
+            const clone = $element.clone();
+
+            // Replace breaks with newlines
+            clone.find('br').replaceWith('\n');
+            clone.find('p').each((i, el) => {
+                $(el).replaceWith($(el).text() + '\n\n');
+            });
+
+            // Get text and normalize whitespace
+            // 1. Replace multiple spaces/tabs with single space (but keep newlines)
+            // 2. Fix weird spacing around punctuation if needed
+            let text = clone.text().trim();
+
+            // Normalize non-newline whitespace
+            text = text.replace(/[ \t\u00A0]+/g, ' ');
+
+            // Ensure proper line breaks
+            return text.split('\n')
+                .map(line => line.trim())
+                .filter(line => line) // Remove completely empty lines? Maybe leave one for spacing
+                .join('\n');
+        };
 
         // Extract Lectionary
         let lectionary = '';
@@ -91,7 +123,7 @@ export default async function handler(request) {
 
                     const contentBody = parent.next('.content-body');
                     if (contentBody.length > 0) {
-                        text = contentBody.text().trim();
+                        text = cleanText(contentBody);
                     }
                 }
                 else {
@@ -109,7 +141,9 @@ export default async function handler(request) {
                     if (current.text().trim() === citation) current = current.next();
 
                     while (current.length > 0 && current.prop('tagName') !== 'H3' && !current.hasClass('content-header')) {
-                        const t = current.text().trim();
+                        // Use cleanText on individual chunks if they are blocks, or just text()
+                        // Since we are iterating siblings, they are likely p or div
+                        const t = cleanText(current);
                         if (t) content.push(t);
                         current = current.next();
                     }
