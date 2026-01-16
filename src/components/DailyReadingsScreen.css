@@ -89,7 +89,7 @@
 }
 
 .reading-text {
-    font-size: 1.1rem;
+    font-size: 1.32rem;
     line-height: 1.7;
 }
 
@@ -195,7 +195,7 @@
 }
 
 .lectionary-text {
-    font-size: 0.95rem;
+    font-size: 1.14rem;
     color: rgba(255, 255, 255, 0.6);
     font-style: italic;
     margin: 0;
@@ -284,7 +284,7 @@
 }
 
 .reading-citation {
-    font-size: 1.0rem;
+    font-size: 1.2rem;
     color: rgba(255, 255, 255, 0.9);
     margin: 0;
     font-style: italic;

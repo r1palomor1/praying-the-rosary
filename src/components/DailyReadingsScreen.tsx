@@ -203,7 +203,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                     aria-label={isPlaying ? "Stop All" : "Play All"}
                                 >
                                     {isPlaying ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-                                    <span>{isPlaying ? (language === 'es' ? 'Detener' : 'Stop') : (language === 'es' ? 'Reproducir Todo' : 'Play All')}</span>
+                                    <span>{language === 'es' ? 'Todo' : 'All'}</span>
                                 </button>
                             )}
                         </div>

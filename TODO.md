@@ -970,3 +970,7 @@ User
 
 ---
 **Last Updated:** December 23, 2025
+
+
+## Daily Readings Enhancements
+- [ ] Refine Daily Readings text formatting: Improve whitespace/newlines for Responsorial Psalm and Alleluia (ensure 'R.' and verses are visually distinct).
