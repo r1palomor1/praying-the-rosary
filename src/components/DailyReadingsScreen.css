@@ -205,7 +205,7 @@
 .lectionary-row {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 1.5rem;
     margin-top: 0.75rem;
 }
