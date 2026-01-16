@@ -24,20 +24,20 @@ export default async function handler(request) {
         if (lang === 'es') {
             targetUrl = `https://bible.usccb.org/es/bible/lecturas/${dateParam}.cfm`;
             sectionsConfig = [
-                { title: 'Primera Lectura', selector: 'h3:contains("Primera Lectura"), h3:contains("Lectura I")' },
-                { title: 'Segunda Lectura', selector: 'h3:contains("Segunda Lectura"), h3:contains("Lectura II")' },
+                { title: 'Primera Lectura', selector: 'h3:contains("Primera Lectura"), h3:contains("Lectura I"), h3:contains("Lectura 1")' },
+                { title: 'Segunda Lectura', selector: 'h3:contains("Segunda Lectura"), h3:contains("Lectura II"), h3:contains("Lectura 2")' },
                 { title: 'Salmo Responsorial', selector: 'h3:contains("Salmo Responsorial"), h3:contains("Salmo")' },
+                { title: 'Aclamación antes del Evangelio', selector: 'h3:contains("Aclamación"), h3:contains("Aleluya")' },
                 { title: 'Evangelio', selector: 'h3:contains("Evangelio")' },
-                { title: 'Aclamación antes del Evangelio', selector: 'h3:contains("Aclamación"), h3:contains("Aleluya")' }
             ];
         } else {
             targetUrl = `https://bible.usccb.org/bible/readings/${dateParam}.cfm`;
             sectionsConfig = [
-                { title: 'Reading I', selector: 'h3:contains("Reading I")' },
-                { title: 'Reading II', selector: 'h3:contains("Reading II")' },
+                { title: 'Reading I', selector: 'h3:contains("Reading I"), h3:contains("Reading 1")' },
+                { title: 'Reading II', selector: 'h3:contains("Reading II"), h3:contains("Reading 2")' },
                 { title: 'Responsorial Psalm', selector: 'h3:contains("Responsorial Psalm")' },
+                { title: 'Alleluia', selector: 'h3:contains("Alleluia")' },
                 { title: 'Gospel', selector: 'h3:contains("Gospel")' },
-                { title: 'Alleluia', selector: 'h3:contains("Alleluia")' }
             ];
         }
 
@@ -54,50 +54,73 @@ export default async function handler(request) {
         const $ = cheerio.load(html);
         const readings = [];
 
+        // Extract Liturgical Day Title
+        let dayTitle = '';
+        $('h2').each((i, el) => {
+            const t = $(el).text().trim();
+            // Simple filter to skip menu items
+            if (!t.includes('Menu') && !t.includes('Navigation') && !t.includes('Get the Daily') && !t.includes('Dive into') && !dayTitle) {
+                dayTitle = t;
+            }
+        });
+
+        // Extract Lectionary
+        let lectionary = '';
+        const lectionaryNode = $('*:contains("Lectionary:")').last();
+        if (lectionaryNode.length > 0) {
+            lectionary = lectionaryNode.text().trim();
+        }
+
         sectionsConfig.forEach(section => {
             const header = $(section.selector).first();
             if (header.length > 0) {
-                // Get the scripture reference
                 let citation = '';
-                // Check immediate next, or inside header
-                const nextElement = header.next();
-                if (nextElement.find('a').length > 0) {
-                    citation = nextElement.find('a').first().text().trim();
-                } else if (header.find('a').length > 0) {
-                    citation = header.find('a').first().text().trim();
-                } else {
-                    // Sometimes in Spanish it might be formatted differently, check standard locations
-                    const potentialCitation = header.next().text().trim();
-                    if (potentialCitation.length < 50 && /\d/.test(potentialCitation)) {
-                        citation = potentialCitation;
+                let text = '';
+                const parent = header.parent();
+
+                // Check for modern USCCB structure: .content-header + .content-body siblings
+                if (parent.hasClass('content-header')) {
+                    const link = parent.find('a').first();
+                    if (link.length > 0) {
+                        citation = link.text().trim();
+                    } else {
+                        // Fallback: Try to remove the title from the header text to find citation
+                        const fullHeaderText = parent.text().trim();
+                        citation = fullHeaderText.replace(header.text().trim(), '').trim();
+                    }
+
+                    const contentBody = parent.next('.content-body');
+                    if (contentBody.length > 0) {
+                        text = contentBody.text().trim();
                     }
                 }
-
-                // Collect text until the next h3 or end of container
-                let content = [];
-                let current = header.next();
-
-                // Skip the citation line if we just grabbed it/it seems to be the citation block
-                if ((current.find('a').length > 0 && current.text().trim() === citation) ||
-                    current.text().trim() === citation) {
-                    current = current.next();
-                }
-
-                while (current.length > 0 && current.prop('tagName') !== 'H3' && !current.hasClass('content-header')) {
-                    const text = current.text().trim();
-                    if (text) {
-                        content.push(text);
+                else {
+                    // Fallback for older/flat structure
+                    const nextElement = header.next();
+                    if (nextElement.find('a').length > 0) {
+                        citation = nextElement.find('a').first().text().trim();
+                    } else if (header.find('a').length > 0) {
+                        citation = header.find('a').first().text().trim();
                     }
-                    current = current.next();
+
+                    let content = [];
+                    let current = header.next();
+
+                    if (current.text().trim() === citation) current = current.next();
+
+                    while (current.length > 0 && current.prop('tagName') !== 'H3' && !current.hasClass('content-header')) {
+                        const t = current.text().trim();
+                        if (t) content.push(t);
+                        current = current.next();
+                    }
+                    text = content.join('\n\n');
                 }
 
-                // If content is empty but header exists, might be different structure. 
-                // But for now, we push what we found.
-                if (content.length > 0) {
+                if (text) {
                     readings.push({
                         title: section.title,
                         citation: citation,
-                        text: content.join('\n\n')
+                        text: text
                     });
                 }
             }
@@ -114,6 +137,8 @@ export default async function handler(request) {
         return new Response(JSON.stringify({
             date: dateParam,
             source: targetUrl,
+            title: dayTitle,
+            lectionary: lectionary,
             readings
         }), {
             status: 200,

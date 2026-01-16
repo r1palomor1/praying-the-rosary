@@ -14,6 +14,8 @@ interface Reading {
 interface DailyReadingsData {
     date: string;
     source: string;
+    title?: string;
+    lectionary?: string;
     readings: Reading[];
 }
 
@@ -142,6 +144,13 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 {loading && <div className="loading-spinner">Loading...</div>}
 
                 {error && <div className="error-message">{error}</div>}
+
+                {!loading && !error && (
+                    <div className="liturgical-info">
+                        {data?.title && <h2 className="liturgical-day">{data.title}</h2>}
+                        {data?.lectionary && <p className="lectionary-text">{data.lectionary}</p>}
+                    </div>
+                )}
 
                 {!loading && !error && data?.readings.map((reading, index) => (
                     <div key={index} className="reading-card">
