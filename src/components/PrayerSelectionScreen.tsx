@@ -92,7 +92,18 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
             {/* Version Indicator */}
             {appVersion && (
                 <div className="version-indicator">
-                    Updated: {new Date(appVersion.timestamp).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    Updated: {(() => {
+                        const d = new Date(appVersion.timestamp);
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const year = d.getFullYear().toString().slice(-2);
+                        let hours = d.getHours();
+                        const ampm = hours >= 12 ? 'PM' : 'AM';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12; // the hour '0' should be '12'
+                        const minutes = d.getMinutes().toString().padStart(2, '0');
+                        return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
+                    })()}
                 </div>
             )}
         </div>
