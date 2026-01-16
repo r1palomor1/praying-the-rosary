@@ -28,7 +28,7 @@ export default async function handler(request) {
                 { title: 'Segunda Lectura', selector: 'h3:contains("Segunda Lectura"), h3:contains("Lectura II"), h3:contains("Lectura 2")' },
                 { title: 'Salmo Responsorial', selector: 'h3:contains("Salmo Responsorial"), h3:contains("Salmo")' },
                 { title: 'Aclamación antes del Evangelio', selector: 'h3:contains("Aclamación"), h3:contains("Aleluya")' },
-                { title: 'Evangelio', selector: 'h3:contains("Evangelio")' },
+                { title: 'Evangelio', selector: 'h3:contains("Evangelio"):not(:contains("Aclamación"))' },
             ];
         } else {
             targetUrl = `https://bible.usccb.org/bible/readings/${dateParam}.cfm`;
