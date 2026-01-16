@@ -74,6 +74,18 @@
     cursor: not-allowed;
 }
 
+/* New Audio Button - Centerpiece */
+.nav-btn-audio {
+    margin: 0 var(--spacing-md);
+    /* Extra breathing room on top of gap */
+}
+
+.nav-btn-audio:hover:not(:disabled) {
+    transform: scale(1.2) translateY(-2px);
+    color: #FFD700;
+    /* Gold highlight on hover */
+}
+
 .mystery-header-spacer {
     width: 48px;
 }
@@ -88,7 +100,13 @@
     }
 
     .mystery-nav-center {
-        gap: var(--spacing-xl);
+        gap: var(--spacing-md);
+        /* Redux gap from xl to md to save space */
+    }
+
+    .nav-btn-audio {
+        margin: 0 var(--spacing-xs);
+        /* Tighter margin on mobile */
     }
 
     .mystery-nav-label {

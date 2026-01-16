@@ -1,13 +1,15 @@
-import { ChevronLeft, ChevronRight, Lightbulb } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lightbulb, Play, Square } from 'lucide-react';
 
 interface MysteryNavigationProps {
     onHome: () => void;
     onPrevious: () => void;
     onNext: () => void;
     onLearnMore: () => void;
+    onToggleAudio: () => void;
     isFirstStep: boolean;
     isLastStep: boolean;
     hasEducationalContent: boolean;
+    isPlaying: boolean;
     language: 'en' | 'es';
 }
 
@@ -16,9 +18,11 @@ export function MysteryNavigation({
     onPrevious,
     onNext,
     onLearnMore,
+    onToggleAudio,
     isFirstStep,
     isLastStep,
     hasEducationalContent,
+    isPlaying,
     language
 }: MysteryNavigationProps) {
     const t = language === 'es' ? {
@@ -26,13 +30,17 @@ export function MysteryNavigation({
         previous: 'Anterior',
         next: 'Siguiente',
         finish: 'Finalizar',
-        learnMore: 'Profundizar'
+        learnMore: 'Profundizar',
+        play: 'Reproducir',
+        stop: 'Detener'
     } : {
         back: 'Home',
         previous: 'Previous',
         next: 'Next',
         finish: 'Finish',
-        learnMore: 'Learn More'
+        learnMore: 'Learn More',
+        play: 'Play',
+        stop: 'Stop'
     };
 
     return (
@@ -58,6 +66,21 @@ export function MysteryNavigation({
                     >
                         <ChevronLeft size={24} strokeWidth={3} />
                         <span className="mystery-nav-label">{t.previous}</span>
+                    </button>
+
+                    {/* NEW: Center Audio Control with extra spacing */}
+                    <button
+                        className="mystery-nav-btn nav-btn-audio"
+                        onClick={onToggleAudio}
+                        aria-label={isPlaying ? t.stop : t.play}
+                        title={isPlaying ? t.stop : t.play}
+                    >
+                        {isPlaying ? (
+                            <Square size={24} fill="currentColor" strokeWidth={0} />
+                        ) : (
+                            <Play size={24} strokeWidth={2.5} className="ml-0.5" />
+                        )}
+                        <span className="mystery-nav-label">{isPlaying ? t.stop : t.play}</span>
                     </button>
 
                     <button

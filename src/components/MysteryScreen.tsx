@@ -633,9 +633,11 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 onPrevious={handlePrevious}
                 onNext={handleNext}
                 onLearnMore={() => setShowLearnMore(true)}
+                onToggleAudio={handleToggleContinuous}
                 isFirstStep={flowEngine.isFirstStep()}
                 isLastStep={flowEngine.isLastStep()}
                 hasEducationalContent={hasEducationalContent}
+                isPlaying={continuousMode || isPlaying}
                 language={language}
             />
 

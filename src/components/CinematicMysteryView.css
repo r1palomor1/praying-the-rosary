@@ -219,8 +219,8 @@
 
 .cinematic-container .bead-counter {
     position: absolute;
-    bottom: 20%;
-    /* Desktop: 20% from bottom */
+    bottom: 30%;
+    /* Desktop: 30% from bottom (Matching mobile/tablet height) */
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
