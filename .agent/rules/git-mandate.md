@@ -11,7 +11,8 @@ The agent must NEVER use `&&` to combine Git commands. They must be run as separ
 
 
 ## Mandatory Workflow
-1. `git add .`
-2. `git commit -m "..."`
-3. `git push` unless told otherwise.
+1. `npm run build` (to update version info)
+2. `git add .`
+3. `git commit -m "..."`
+4. `git push` unless told otherwise.
 
