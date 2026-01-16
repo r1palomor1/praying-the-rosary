@@ -8,10 +8,11 @@ import './PrayerSelectionScreen.css';
 interface PrayerSelectionScreenProps {
     onSelectRosary: () => void;
     onSelectSacredPrayers: () => void;
+    onSelectDailyReadings: () => void;
     onResetProgress?: () => void;
 }
 
-export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, onResetProgress }: PrayerSelectionScreenProps) {
+export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, onSelectDailyReadings, onResetProgress }: PrayerSelectionScreenProps) {
     const { language } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
@@ -25,6 +26,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
             title: 'Choose Prayer',
             sacredPrayers: 'Sacred Prayers',
             rosary: 'The Rosary',
+            dailyReadings: 'Daily Readings',
             back: 'Back',
             settings: 'Settings'
         },
@@ -32,6 +34,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
             title: 'Elegir Oración',
             sacredPrayers: 'Oraciones Sagradas',
             rosary: 'El Rosario',
+            dailyReadings: 'Lecturas Diarias',
             back: 'Volver',
             settings: 'Configuración'
         }
@@ -80,6 +83,18 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                         className="prayer-selection-img"
                     />
                     <span className="prayer-selection-label">{t.rosary}</span>
+                </button>
+
+                <button
+                    onClick={onSelectDailyReadings}
+                    className="prayer-selection-btn"
+                >
+                    <img
+                        src="/images/intro-prayers.jpg"
+                        alt="Daily Readings"
+                        className="prayer-selection-img readings-img-filter"
+                    />
+                    <span className="prayer-selection-label">{t.dailyReadings}</span>
                 </button>
             </div>
 

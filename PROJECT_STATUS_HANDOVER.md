@@ -1,8 +1,44 @@
 # Project Status Handover
-**Date:** January 5, 2026
+**Date:** January 15, 2026
 **Current State:** Stable / Production Ready
 
-## Recent Accomplishments (January 2-5, 2026)
+## Recent Accomplishments (January 15, 2026)
+
+### 1. **Litany & Prayer Text Refinements** 📖
+   - **Structure:** Refactored litany display to be clean and structurally accurate.
+   - **Dividers:** Added smart gold line dividers between litany sections.
+   - **Formatting:** 
+     - Split Call/Response lines for Kyries and Invocations.
+     - Indented responses with proper italic styling.
+     - "Pray for us" phrases highlighted in gold within single-line layout.
+   - **Correction:** Added missing duplicate lines to match traditional prayer text.
+   - **Files Modified:**
+     - `src/components/PrayersScreen.tsx` (Logic)
+     - `src/components/PrayersScreen.css` (Styles)
+     - `src/data/prayers.ts` (Data structure)
+
+### 2. **Audio Controls & Navigation** ⏯️
+   - **New Control:** Added dedicated Play/Stop button to bottom navigation bar.
+   - **UX:** Centered between Pre/Next buttons with desktop/mobile optimization.
+   - **Visuals:** 
+     - Updated icon from Pause to Stop (Square) to reflect behavior.
+     - Consistent 24px icon sizing.
+     - Removed distracting hover effects.
+   - **Files Modified:**
+     - `src/components/shared/MysteryNavigation.tsx`
+     - `src/components/MysteryScreen.tsx`
+     - `src/components/MysteryBottomNav.css`
+     - `src/components/ClassicMysteryView.css` (Bead counter adjustments)
+
+### 3. **Version Verification & Layout** 🛠️
+   - **Version Indicator:** Added "Updated: MM/DD/YY HH:MM AM/PM" to Home Screen bottom-left.
+   - **Bead Counter:** Adjusted vertical position (30%) for better visibility on Fold devices.
+   - **Files Modified:**
+     - `src/components/PrayerSelectionScreen.tsx`
+     - `src/components/PrayerSelectionScreen.css`
+     - `src/components/CinematicMysteryView.css`
+
+## Previous Accomplishments (January 2-5, 2026)
 
 ### 1. **Custom Start Date Tracking System** 🎯
    - **New Feature:** Users can set when they started praying (no penalty for mid-year start!)
@@ -66,44 +102,22 @@
 
 ## Current Status
 *   **Git:** All changes committed and pushed to `main`
-    *   **Commits:**
-        - "feat: Custom start dates, progress fixes, and UI polish" (683892b)
-        - "fix: YTD streak year boundary and responsive layout fixes" (5c96798)
+*   **Latest Commit:** "feat: polish version indicator format"
 *   **Deployment:** Auto-deployed to Vercel
 *   **Build Status:** ✅ Clean build, no errors
-*   **Testing:** All features tested across desktop, tablet, and mobile
-
-## Key Files Modified
-*   `src/utils/progressSettings.ts` (NEW)
-*   `src/utils/yearlyHistory.ts`
-*   `src/utils/version.ts`
-*   `src/components/EnhancedStatsCards.tsx`
-*   `src/components/EnhancedStatsCards.css`
-*   `src/components/SacredProgressModal.tsx`
-*   `src/components/SacredProgressModal.css`
-*   `src/components/ProgressScreen.css`
-*   `src/components/SettingsModal.tsx`
-*   `src/components/SettingsModal.css`
-*   `src/components/VersionModal.tsx`
+*   **Testing:** 
+    - Litany formats verified.
+    - Audio control spacing verified on Desktop/Mobile.
+    - Version indicator verified.
 
 ## Next Steps for New Agent
-1.  **Monitor User Feedback:** Check for any issues with new start date feature
+1.  **Monitor User Feedback:** Check for any issues with new audio controls.
 2.  **Potential Enhancements:**
-    - Consider adding a "Reset to Full Year" quick button
-    - Add tooltips explaining start date feature
-    - Consider preset options (e.g., "Started this month", "Started this year")
-3.  **Future Features:** See TODO.md for planned features (AI integration, liturgical calendar, etc.)
+    - Consider adding transitions or animations for the Litany text interaction.
+    - Further optimize bead counter for varied aspect ratios if needed.
+3.  **Future Features:** See TODO.md for planned features regarding On-Device TTS.
 
 ## Technical Notes
+- **Version Tracking:** The version indicator relies on `scripts/generate-version.js` running before build. It creates a `public/version.json` file.
 - **Start Date Storage:** Uses localStorage (`rosary_start_date`, `sacred_start_date`)
-- **Date Parsing:** All dates parsed as local (YYYY-MM-DD) to avoid timezone issues
-- **Goal Calculation:** Dynamic based on start date, falls back to full year if no start date set
-- **Backward Compatible:** Existing users without start dates see full year goals (no breaking changes)
-
-## Known Issues
-- None currently identified
-
-## Performance
-- No performance impact from new features
-- All calculations done client-side
-- No additional API calls or network requests
+- **Date Formatting:** We are now enforcing a strict `MM/DD/YY` structure for versioning to aid developer verification.

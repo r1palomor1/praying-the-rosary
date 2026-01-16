@@ -17,18 +17,18 @@ const CompletionScreen = lazy(() => import('./components/CompletionScreen'));
 const PrayersScreen = lazy(() => import('./components/PrayersScreen'));
 const ProgressScreen = lazy(() => import('./components/ProgressScreen'));
 const PrayerSelectionScreen = lazy(() => import('./components/PrayerSelectionScreen'));
-// Placeholder for SacredPrayersScreen until we create it - using MysteryScreen temporarily if needed or just null
-// We will create it shortly, but defining the lazy load now
 const SacredPrayersScreen = lazy(() => import('./components/SacredPrayersScreen'));
 const SacredCompletionScreen = lazy(() => import('./components/SacredCompletionScreen'));
+const DailyReadingsScreen = lazy(() => import('./components/DailyReadingsScreen'));
 
 import './styles/index.css';
 
-type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete' | 'progress' | 'prayer-selection' | 'sacred-prayers' | 'sacred-complete';
+type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete' | 'progress' | 'prayer-selection' | 'sacred-prayers' | 'sacred-complete' | 'daily-readings';
 
 function AppContent() {
   const { language, clearSession, completeSession, currentMysterySet } = useApp();
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
+
   const [hasSelectedLanguage, setHasSelectedLanguage] = useState(false);
   const [startWithContinuous, setStartWithContinuous] = useState(false);
   const [autoPlayCompletion, setAutoPlayCompletion] = useState(false);
@@ -238,6 +238,7 @@ function AppContent() {
           <PrayerSelectionScreen
             onSelectRosary={handleSelectRosary}
             onSelectSacredPrayers={handleSelectSacredPrayers}
+            onSelectDailyReadings={() => setCurrentScreen('daily-readings')}
             onResetProgress={handleResetProgress}
           />
         )}
@@ -245,6 +246,11 @@ function AppContent() {
           <SacredPrayersScreen
             onComplete={handleCompleteSacredPrayers}
             onBack={handleBackToSelection}
+          />
+        )}
+        {currentScreen === 'daily-readings' && (
+          <DailyReadingsScreen
+            onBack={() => setCurrentScreen('prayer-selection')}
           />
         )}
         {currentScreen === 'sacred-complete' && (
