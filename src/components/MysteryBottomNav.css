@@ -80,11 +80,7 @@
     /* Extra breathing room on top of gap */
 }
 
-.nav-btn-audio:hover:not(:disabled) {
-    transform: scale(1.2) translateY(-2px);
-    color: #FFD700;
-    /* Gold highlight on hover */
-}
+
 
 .mystery-header-spacer {
     width: 48px;

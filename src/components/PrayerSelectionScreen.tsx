@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
+import { getVersionInfo, type VersionInfo } from '../utils/version';
 import './PrayerSelectionScreen.css';
 
 interface PrayerSelectionScreenProps {
@@ -13,6 +14,11 @@ interface PrayerSelectionScreenProps {
 export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, onResetProgress }: PrayerSelectionScreenProps) {
     const { language } = useApp();
     const [showSettings, setShowSettings] = useState(false);
+    const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
+
+    useEffect(() => {
+        getVersionInfo().then(setAppVersion).catch(console.error);
+    }, []);
 
     const t = {
         en: {
@@ -82,6 +88,13 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                 onClose={() => setShowSettings(false)}
                 onResetProgress={handleReset}
             />
+
+            {/* Version Indicator */}
+            {appVersion && (
+                <div className="version-indicator">
+                    Updated: {new Date(appVersion.timestamp).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </div>
+            )}
         </div>
     );
 }
