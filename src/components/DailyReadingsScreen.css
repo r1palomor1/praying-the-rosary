@@ -88,34 +88,6 @@
     scroll-behavior: smooth;
 }
 
-.reading-card {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.reading-title {
-    color: #FBBF24;
-    /* Amber-400 */
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    font-family: var(--font-heading);
-    font-size: 1.4rem;
-    border-bottom: 1px solid rgba(251, 191, 36, 0.2);
-    padding-bottom: 0.5rem;
-}
-
-.reading-citation {
-    font-size: 1.0rem;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 1.25rem;
-    font-style: italic;
-    font-weight: 500;
-}
-
 .reading-text {
     font-size: 1.1rem;
     line-height: 1.7;
@@ -227,4 +199,130 @@
     color: rgba(255, 255, 255, 0.6);
     font-style: italic;
     margin: 0;
+}
+
+/* Lectionary Row with Play All Button */
+.lectionary-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 0.75rem;
+}
+
+.play-all-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    border-radius: 24px;
+    color: #60A5FA;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+.play-all-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.play-all-btn.playing {
+    background: rgba(220, 38, 38, 0.2);
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #F87171;
+}
+
+.play-all-btn.playing:hover {
+    background: rgba(220, 38, 38, 0.3);
+    border-color: rgba(220, 38, 38, 0.6);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+/* Reading Card Updates */
+.reading-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.reading-card:hover {
+    border-color: rgba(251, 191, 36, 0.3);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(251, 191, 36, 0.1);
+    transform: translateY(-2px);
+}
+
+.reading-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.reading-title-section {
+    flex: 1;
+}
+
+.reading-title {
+    color: #FBBF24;
+    margin: 0 0 0.5rem 0;
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.reading-citation {
+    font-size: 1.0rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    font-style: italic;
+    font-weight: 500;
+}
+
+.reading-play-btn {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    color: #60A5FA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+.reading-play-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.6);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.reading-play-btn.playing {
+    background: rgba(220, 38, 38, 0.2);
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #F87171;
+}
+
+.reading-play-btn.playing:hover {
+    background: rgba(220, 38, 38, 0.3);
+    border-color: rgba(220, 38, 38, 0.6);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }

@@ -26,6 +26,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [currentlyPlayingIndex, setCurrentlyPlayingIndex] = useState<number | null>(null);
     const [showSettings, setShowSettings] = useState(false);
 
     // Format date as MMDDYY for the API
@@ -41,6 +42,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         if (isPlaying || ttsManager.isSpeaking()) {
             ttsManager.stop();
             setIsPlaying(false);
+            setCurrentlyPlayingIndex(null);
         }
 
         setLoading(true);
@@ -80,10 +82,12 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         setCurrentDate(newDate);
     };
 
-    const handleToggleAudio = async () => {
+    // Play All - plays all readings sequentially
+    const handlePlayAll = async () => {
         if (isPlaying) {
             ttsManager.stop();
             setIsPlaying(false);
+            setCurrentlyPlayingIndex(null);
         } else {
             if (!data?.readings) return;
 
@@ -94,14 +98,56 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             ]).filter(s => s.text);
 
             setIsPlaying(true);
+            setCurrentlyPlayingIndex(0); // Start with first reading
             await ttsManager.setLanguage(language);
-            ttsManager.setOnEnd(() => setIsPlaying(false));
+
+            ttsManager.setOnEnd(() => {
+                setIsPlaying(false);
+                setCurrentlyPlayingIndex(null);
+            });
 
             try {
                 await ttsManager.speakSegments(segments);
             } catch (e) {
                 console.error("Audio error", e);
                 setIsPlaying(false);
+                setCurrentlyPlayingIndex(null);
+            }
+        }
+    };
+
+    // Play individual reading
+    const handlePlayReading = async (index: number) => {
+        if (isPlaying && currentlyPlayingIndex === index) {
+            // Stop if clicking the currently playing reading
+            ttsManager.stop();
+            setIsPlaying(false);
+            setCurrentlyPlayingIndex(null);
+        } else {
+            if (!data?.readings[index]) return;
+
+            const reading = data.readings[index];
+            const segments = [
+                { text: reading.title, gender: 'female' as const, postPause: 800 },
+                { text: reading.citation || '', gender: 'female' as const, postPause: 800 },
+                { text: reading.text, gender: 'female' as const, postPause: 1500 }
+            ].filter(s => s.text);
+
+            setIsPlaying(true);
+            setCurrentlyPlayingIndex(index);
+            await ttsManager.setLanguage(language);
+
+            ttsManager.setOnEnd(() => {
+                setIsPlaying(false);
+                setCurrentlyPlayingIndex(null);
+            });
+
+            try {
+                await ttsManager.speakSegments(segments);
+            } catch (e) {
+                console.error("Audio error", e);
+                setIsPlaying(false);
+                setCurrentlyPlayingIndex(null);
             }
         }
     };
@@ -148,14 +194,37 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 {!loading && !error && (
                     <div className="liturgical-info">
                         {data?.title && <h2 className="liturgical-day">{data.title}</h2>}
-                        {data?.lectionary && <p className="lectionary-text">{data.lectionary}</p>}
+                        <div className="lectionary-row">
+                            {data?.lectionary && <p className="lectionary-text">{data.lectionary}</p>}
+                            {data?.readings && data.readings.length > 0 && (
+                                <button
+                                    className={`play-all-btn ${isPlaying ? 'playing' : ''}`}
+                                    onClick={handlePlayAll}
+                                    aria-label={isPlaying ? "Stop All" : "Play All"}
+                                >
+                                    {isPlaying ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+                                    <span>{isPlaying ? (language === 'es' ? 'Detener' : 'Stop') : (language === 'es' ? 'Reproducir Todo' : 'Play All')}</span>
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
 
                 {!loading && !error && data?.readings.map((reading, index) => (
                     <div key={index} className="reading-card">
-                        <h3 className="reading-title">{reading.title}</h3>
-                        {reading.citation && <div className="reading-citation">{reading.citation}</div>}
+                        <div className="reading-header">
+                            <div className="reading-title-section">
+                                <h3 className="reading-title">{reading.title}</h3>
+                                {reading.citation && <div className="reading-citation">{reading.citation}</div>}
+                            </div>
+                            <button
+                                className={`reading-play-btn ${isPlaying && currentlyPlayingIndex === index ? 'playing' : ''}`}
+                                onClick={() => handlePlayReading(index)}
+                                aria-label={isPlaying && currentlyPlayingIndex === index ? "Stop" : "Play"}
+                            >
+                                {isPlaying && currentlyPlayingIndex === index ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+                            </button>
+                        </div>
                         <div className="reading-text">
                             {reading.text.split('\n\n').map((para, i) => (
                                 <p key={i}>{para}</p>
@@ -174,18 +243,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 )}
             </div>
 
-            {/* Audio Control Floating Button */}
-            {!loading && !error && data?.readings && data.readings.length > 0 && (
-                <div className="audio-fab-container">
-                    <button
-                        className={`audio-fab-btn ${isPlaying ? 'playing' : ''}`}
-                        onClick={handleToggleAudio}
-                        aria-label={isPlaying ? "Stop Audio" : "Play Audio"}
-                    >
-                        {isPlaying ? <Square size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
-                    </button>
-                </div>
-            )}
+
 
             <SettingsModal
                 isOpen={showSettings}
