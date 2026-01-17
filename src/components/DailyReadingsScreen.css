@@ -29,21 +29,14 @@
 
 .page-title {
     font-family: var(--font-heading);
-    font-size: 2.25rem !important;
+    font-size: 1.5rem;
     font-weight: 700;
     color: white;
-    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
     margin: 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     text-align: center;
-}
-
-[data-font-size="large"] .page-title {
-    font-size: 2rem !important;
-}
-
-[data-font-size="xl"] .page-title {
-    font-size: 1.8rem !important;
 }
 
 .date-controls-wrapper {
@@ -102,12 +95,6 @@
 
 .reading-text p {
     margin-bottom: 1.2rem;
-}
-
-/* Style <strong> tags (e.g., Psalm responses) with amber/gold like litany responses */
-.reading-text strong {
-    color: #FBBF24;
-    font-weight: 600;
 }
 
 .loading-spinner {

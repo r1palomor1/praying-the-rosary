@@ -71,20 +71,13 @@
 
 .mysteries-title {
     font-family: var(--font-heading);
-    font-size: 2.25rem !important;
+    font-size: 1.875rem;
     font-weight: 700;
     color: var(--mys-text-primary);
     margin: 0;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     transition: color 0.3s ease;
-}
-
-[data-font-size="large"] .mysteries-title {
-    font-size: 2rem !important;
-}
-
-[data-font-size="xl"] .mysteries-title {
-    font-size: 1.8rem !important;
 }
 
 /* Main Content */

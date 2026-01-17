@@ -20,19 +20,11 @@
 
 .prayers-title {
     font-family: var(--font-heading);
-    font-size: 2.25rem !important;
+    font-size: var(--font-size-2xl);
     font-weight: 700;
     color: var(--color-text-primary);
     margin: 0;
-    letter-spacing: 0.05em;
-}
-
-[data-font-size="large"] .prayers-title {
-    font-size: 2rem !important;
-}
-
-[data-font-size="xl"] .prayers-title {
-    font-size: 1.8rem !important;
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 /* Main Content */

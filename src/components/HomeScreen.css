@@ -157,7 +157,7 @@
 /* Title */
 .hero-title {
     font-family: var(--font-heading);
-    font-size: 2.25rem !important;
+    font-size: 2.25rem;
     font-weight: 700;
     letter-spacing: 0.05em;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -171,12 +171,12 @@
 }
 
 [data-font-size="large"] .hero-title {
-    font-size: 2rem !important;
+    font-size: 2rem;
     /* Can be slightly larger now that it has full width */
 }
 
 [data-font-size="xl"] .hero-title {
-    font-size: 1.8rem !important;
+    font-size: 1.8rem;
 }
 
 
