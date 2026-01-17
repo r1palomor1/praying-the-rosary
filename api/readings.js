@@ -24,20 +24,20 @@ export default async function handler(request) {
         if (lang === 'es') {
             targetUrl = `https://bible.usccb.org/es/bible/lecturas/${dateParam}.cfm`;
             sectionsConfig = [
-                { title: 'Primera Lectura', selector: 'h3:contains("Primera Lectura"), h3:contains("Lectura I"), h3:contains("Lectura 1")' },
-                { title: 'Segunda Lectura', selector: 'h3:contains("Segunda Lectura"), h3:contains("Lectura II"), h3:contains("Lectura 2")' },
-                { title: 'Salmo Responsorial', selector: 'h3:contains("Salmo Responsorial"), h3:contains("Salmo")' },
-                { title: 'Aclamación antes del Evangelio', selector: 'h3:contains("Aclamación"), h3:contains("Aleluya")' },
-                { title: 'Evangelio', selector: 'h3:contains("Evangelio"):not(:contains("Aclamación"))' },
+                { title: 'Primera Lectura', selector: 'h3:contains("Primera lectura"), h3:contains("Primera Lectura"), h3:contains("Lectura I"), h3:contains("Lectura 1")' },
+                { title: 'Segunda Lectura', selector: 'h3:contains("Segunda lectura"), h3:contains("Segunda Lectura"), h3:contains("Lectura II"), h3:contains("Lectura 2")' },
+                { title: 'Salmo Responsorial', selector: 'h3:contains("Salmo responsorial"), h3:contains("Salmo Responsorial"), h3:contains("Salmo")' },
+                { title: 'Aclamación antes del Evangelio', selector: 'h3:contains("Aclamación antes del Evangelio"), h3:contains("Aclamación antes del evangelio"), h3:contains("Aclamación"), h3:contains("Aleluya")' },
+                { title: 'Evangelio', selector: 'h3:contains("Evangelio"):not(:contains("Aclamación")), h3:contains("evangelio"):not(:contains("Aclamación"))' },
             ];
         } else {
             targetUrl = `https://bible.usccb.org/bible/readings/${dateParam}.cfm`;
             sectionsConfig = [
-                { title: 'Reading I', selector: 'h3:contains("Reading I"), h3:contains("Reading 1")' },
-                { title: 'Reading II', selector: 'h3:contains("Reading II"), h3:contains("Reading 2")' },
-                { title: 'Responsorial Psalm', selector: 'h3:contains("Responsorial Psalm")' },
-                { title: 'Alleluia', selector: 'h3:contains("Alleluia")' },
-                { title: 'Gospel', selector: 'h3:contains("Gospel")' },
+                { title: 'Reading I', selector: 'h3:contains("Reading I"), h3:contains("Reading 1"), h3:contains("reading I"), h3:contains("reading 1")' },
+                { title: 'Reading II', selector: 'h3:contains("Reading II"), h3:contains("Reading 2"), h3:contains("reading II"), h3:contains("reading 2")' },
+                { title: 'Responsorial Psalm', selector: 'h3:contains("Responsorial Psalm"), h3:contains("responsorial psalm"), h3:contains("Responsorial psalm")' },
+                { title: 'Alleluia', selector: 'h3:contains("Alleluia"), h3:contains("alleluia")' },
+                { title: 'Gospel', selector: 'h3:contains("Gospel"), h3:contains("gospel")' },
             ];
         }
 
@@ -112,13 +112,20 @@ export default async function handler(request) {
 
                 // Check for modern USCCB structure: .content-header + .content-body siblings
                 if (parent.hasClass('content-header')) {
-                    const link = parent.find('a').first();
-                    if (link.length > 0) {
-                        citation = link.text().trim();
+                    // Try to find citation in .address div first
+                    const addressDiv = parent.find('.address').first();
+                    if (addressDiv.length > 0) {
+                        citation = addressDiv.text().trim();
                     } else {
-                        // Fallback: Try to remove the title from the header text to find citation
-                        const fullHeaderText = parent.text().trim();
-                        citation = fullHeaderText.replace(header.text().trim(), '').trim();
+                        // Fallback: Try to find link
+                        const link = parent.find('a').first();
+                        if (link.length > 0) {
+                            citation = link.text().trim();
+                        } else {
+                            // Last fallback: Try to remove the title from the header text to find citation
+                            const fullHeaderText = parent.text().trim();
+                            citation = fullHeaderText.replace(header.text().trim(), '').trim();
+                        }
                     }
 
                     const contentBody = parent.next('.content-body');
