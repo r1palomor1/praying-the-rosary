@@ -187,7 +187,12 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             </div>
 
             <div className="readings-content">
-                {loading && <div className="loading-spinner">Loading...</div>}
+                {loading && (
+                    <div className="readings-loading-container">
+                        <div className="loading-spinner"></div>
+                        <div className="loading-text">Loading...</div>
+                    </div>
+                )}
 
                 {error && <div className="error-message">{error}</div>}
 

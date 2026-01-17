@@ -97,11 +97,19 @@
     margin-bottom: 1.2rem;
 }
 
-.loading-spinner {
-    text-align: center;
+.readings-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     padding: 3rem;
+    gap: 1rem;
+}
+
+.loading-text {
     font-style: italic;
     opacity: 0.7;
+    color: var(--color-text-secondary);
 }
 
 .error-message {
