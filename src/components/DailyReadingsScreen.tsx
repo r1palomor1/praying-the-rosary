@@ -89,20 +89,28 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             const parser = new DOMParser();
             const doc = parser.parseFromString(text, 'text/html');
 
-            // Find the "Words of the Popes" section
-            const headers = doc.querySelectorAll('h2');
+            // Find the section with class "section--evidence" containing the papal words
+            const sections = doc.querySelectorAll('section.section--evidence');
             let reflectionText = '';
 
-            for (const header of headers) {
-                const headerText = header.textContent?.trim() || '';
-                if (headerText.includes('words of the Popes') || headerText.includes('palabras de los Papas')) {
-                    // Get the next paragraph(s) after this header
-                    let nextElement = header.nextElementSibling;
-                    while (nextElement && nextElement.tagName === 'P') {
-                        reflectionText += nextElement.textContent + '\n\n';
-                        nextElement = nextElement.nextElementSibling;
+            for (const section of sections) {
+                const header = section.querySelector('h2');
+                if (header) {
+                    const headerText = header.textContent?.trim() || '';
+                    if (headerText.includes('words of the Popes') || headerText.includes('palabras de los Papas')) {
+                        // Get all paragraphs in the section__content div
+                        const contentDiv = section.querySelector('.section__content');
+                        if (contentDiv) {
+                            const paragraphs = contentDiv.querySelectorAll('p');
+                            paragraphs.forEach(p => {
+                                const text = p.textContent?.trim();
+                                if (text && text !== '\u00a0') { // Skip empty paragraphs
+                                    reflectionText += text + '\n\n';
+                                }
+                            });
+                            break;
+                        }
                     }
-                    break;
                 }
             }
 
@@ -160,7 +168,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         return title;
     };
 
-    // Parse reading text and highlight responses (text inside <strong> tags)
+    // Parse reading text and highlight responses (text inside <strong> tags or starting with R. / R/)
     const renderReadingText = (text: string) => {
         return text.split('\n\n').map((para, paraIndex) => {
             // Check if paragraph contains <strong> tags (response text)
@@ -196,7 +204,19 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 return <p key={paraIndex}>{parts}</p>;
             }
 
-            // No strong tags - render as plain text (strip any HTML)
+            // Check for R. or R/ at start of line (responsorial psalm responses)
+            const responseMatch = para.match(/^(R[.\/]\s*(?:R[.\/]\s*)?)(.*)/s);
+            if (responseMatch) {
+                const prefix = responseMatch[1];
+                const responseText = responseMatch[2];
+                return (
+                    <p key={paraIndex}>
+                        {prefix}<span className="response-highlight">{responseText}</span>
+                    </p>
+                );
+            }
+
+            // No strong tags or R. - render as plain text (strip any HTML)
             return <p key={paraIndex}>{para.replace(/<[^>]+>/g, '')}</p>;
         });
     };
@@ -400,6 +420,22 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                         <a href={data?.source} target="_blank" rel="noreferrer" className="external-link">
                             View on USCCB Website
                         </a>
+                    </div>
+                )}
+
+                {/* Source Attribution */}
+                {!loading && !error && data && (
+                    <div className="sources-attribution">
+                        <p>
+                            {language === 'es' ? 'Fuentes' : 'Sources'}:{' '}
+                            <a href="https://bible.usccb.org/" target="_blank" rel="noopener noreferrer">
+                                {language === 'es' ? 'Lecturas Diarias' : 'Daily Readings'}
+                            </a>
+                            {' • '}
+                            <a href="https://www.vaticannews.va/" target="_blank" rel="noopener noreferrer">
+                                {language === 'es' ? 'Palabras de los Papas' : 'Words of the Popes'}
+                            </a>
+                        </p>
                     </div>
                 )}
             </div>
