@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { Settings as SettingsIcon, ChevronRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { getVersionInfo, type VersionInfo } from '../utils/version';
@@ -25,16 +25,22 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
         en: {
             title: 'Choose Prayer',
             sacredPrayers: 'Sacred Prayers',
+            sacredPrayersSubtitle: 'Communion with the Most High',
             rosary: 'The Rosary',
+            rosarySubtitle: 'Mysteries of faith and hope',
             dailyReadings: 'Daily Readings',
+            dailyReadingsSubtitle: 'The living word of God',
             back: 'Back',
             settings: 'Settings'
         },
         es: {
             title: 'Elegir Oración',
             sacredPrayers: 'Oraciones Sagradas',
+            sacredPrayersSubtitle: 'Comunión con el Altísimo',
             rosary: 'El Rosario',
+            rosarySubtitle: 'Misterios de fe y esperanza',
             dailyReadings: 'Lecturas Diarias',
+            dailyReadingsSubtitle: 'La palabra viva de Dios',
             back: 'Volver',
             settings: 'Configuración'
         }
@@ -49,54 +55,78 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
 
     return (
         <div className="selection-container fade-in">
-            <div className="selection-header">
-                <h1 className="hero-title">{t.title}</h1>
-                <button
-                    className="icon-btn settings-btn"
-                    onClick={() => setShowSettings(true)}
-                    aria-label={t.settings}
-                >
-                    <SettingsIcon size={21} />
-                </button>
-            </div>
+            <header className="selection-header">
+                <div className="header-divider"></div>
+                <div className="header-row">
+                    <div className="header-spacer"></div>
+                    <h1 className="selection-title">{t.title}</h1>
+                    <button
+                        className="header-btn"
+                        onClick={() => setShowSettings(true)}
+                        aria-label={t.settings}
+                    >
+                        <SettingsIcon size={20} />
+                    </button>
+                </div>
+            </header>
 
-            <div className="prayer-options-container">
-                <button
-                    onClick={onSelectSacredPrayers}
-                    className="prayer-selection-btn"
-                >
-                    <img
-                        src="/images/sacred-prayers-bg.jpg"
-                        alt="Sacred Prayers"
-                        className="prayer-selection-img"
-                    />
-                    <span className="prayer-selection-label">{t.sacredPrayers}</span>
-                </button>
-
-                <button
-                    onClick={onSelectRosary}
-                    className="prayer-selection-btn"
-                >
-                    <img
-                        src="/images/rosary-bg.jpg"
-                        alt="The Rosary"
-                        className="prayer-selection-img"
-                    />
-                    <span className="prayer-selection-label">{t.rosary}</span>
+            <main className="selection-main">
+                {/* Sacred Prayers Card */}
+                <button onClick={onSelectSacredPrayers} className="prayer-card">
+                    <div className="card-image-container">
+                        <div className="card-image">
+                            <img src="/sacred_prayers_icon.png" alt={t.sacredPrayers} />
+                        </div>
+                    </div>
+                    <div className="card-content">
+                        <h2 className="card-title">{t.sacredPrayers.toUpperCase()}</h2>
+                        <p className="card-subtitle">{t.sacredPrayersSubtitle}</p>
+                    </div>
+                    <ChevronRight className="card-chevron" size={24} />
                 </button>
 
-                <button
-                    onClick={onSelectDailyReadings}
-                    className="prayer-selection-btn"
-                >
-                    <img
-                        src="/images/intro-prayers.jpg"
-                        alt="Daily Readings"
-                        className="prayer-selection-img readings-img-filter"
-                    />
-                    <span className="prayer-selection-label">{t.dailyReadings}</span>
+                {/* Divider */}
+                <div className="decorative-divider">
+                    <div className="divider-line divider-line-left"></div>
+                    <span className="material-symbols-outlined divider-icon">church</span>
+                    <div className="divider-line divider-line-right"></div>
+                </div>
+
+                {/* Rosary Card */}
+                <button onClick={onSelectRosary} className="prayer-card">
+                    <div className="card-image-container">
+                        <div className="card-image">
+                            <img src="/rosary_icon.png" alt={t.rosary} />
+                        </div>
+                    </div>
+                    <div className="card-content">
+                        <h2 className="card-title">{t.rosary.toUpperCase()}</h2>
+                        <p className="card-subtitle">{t.rosarySubtitle}</p>
+                    </div>
+                    <ChevronRight className="card-chevron" size={24} />
                 </button>
-            </div>
+
+                {/* Divider */}
+                <div className="decorative-divider">
+                    <div className="divider-line divider-line-left"></div>
+                    <span className="material-symbols-outlined divider-icon">church</span>
+                    <div className="divider-line divider-line-right"></div>
+                </div>
+
+                {/* Daily Readings Card */}
+                <button onClick={onSelectDailyReadings} className="prayer-card">
+                    <div className="card-image-container">
+                        <div className="card-image">
+                            <img src="/daily_readings_icon.png" alt={t.dailyReadings} />
+                        </div>
+                    </div>
+                    <div className="card-content">
+                        <h2 className="card-title">{t.dailyReadings.toUpperCase()}</h2>
+                        <p className="card-subtitle">{t.dailyReadingsSubtitle}</p>
+                    </div>
+                    <ChevronRight className="card-chevron" size={24} />
+                </button>
+            </main>
 
             <SettingsModal
                 isOpen={showSettings}
@@ -115,7 +145,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                         let hours = d.getHours();
                         const ampm = hours >= 12 ? 'PM' : 'AM';
                         hours = hours % 12;
-                        hours = hours ? hours : 12; // the hour '0' should be '12'
+                        hours = hours ? hours : 12;
                         const minutes = d.getMinutes().toString().padStart(2, '0');
                         return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
                     })()}

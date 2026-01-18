@@ -91,11 +91,19 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         } else {
             if (!data?.readings) return;
 
-            const segments = data.readings.flatMap(reading => [
-                { text: reading.title, gender: 'female' as const, postPause: 800 },
-                { text: reading.citation || '', gender: 'female' as const, postPause: 800 },
-                { text: reading.text, gender: 'female' as const, postPause: 1500 }
-            ]).filter(s => s.text);
+            // Build segments starting with title and lectionary
+            const segments = [
+                // Add liturgical day title if available
+                ...(data.title ? [{ text: data.title, gender: 'female' as const, postPause: 1000 }] : []),
+                // Add lectionary info if available
+                ...(data.lectionary ? [{ text: data.lectionary, gender: 'female' as const, postPause: 1200 }] : []),
+                // Then add all readings
+                ...data.readings.flatMap(reading => [
+                    { text: reading.title, gender: 'female' as const, postPause: 800 },
+                    { text: reading.citation || '', gender: 'female' as const, postPause: 800 },
+                    { text: reading.text, gender: 'female' as const, postPause: 1500 }
+                ])
+            ].filter(s => s.text);
 
             setIsPlaying(true);
             setCurrentlyPlayingIndex(0); // Start with first reading

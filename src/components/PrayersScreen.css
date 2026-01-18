@@ -38,11 +38,16 @@
 
 /* Prayer Card */
 .prayer-card {
+    display: block;
     background: var(--color-bg-elevated);
     border-radius: var(--radius-xl);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-md);
     transition: all var(--transition-base);
+}
+
+.prayer-card:not(:last-child) {
+    margin-bottom: var(--spacing-lg);
 }
 
 .prayer-card:hover {
@@ -60,9 +65,30 @@
 }
 
 .prayer-divider {
-    height: 1px;
-    background: rgba(212, 175, 55, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: var(--spacing-sm) 0;
+    opacity: 0.6;
+}
+
+.prayer-divider-line {
+    height: 1px;
+    flex: 1;
+}
+
+.prayer-divider-line-left {
+    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.6));
+}
+
+.prayer-divider-line-right {
+    background: linear-gradient(to left, transparent, rgba(212, 175, 55, 0.6));
+}
+
+.prayer-divider-icon {
+    color: #D4AF37;
+    font-size: 1.125rem;
+    padding: 0 0.75rem;
 }
 
 .prayer-text {
@@ -117,7 +143,6 @@
 .completion-section {
     margin-top: var(--spacing-xl);
     padding-top: var(--spacing-lg);
-    border-top: 2px solid var(--color-border);
 }
 
 .completion-card {
@@ -307,9 +332,11 @@
 }
 
 .litany-divider {
-    height: 1px;
-    background: rgba(212, 175, 55, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: var(--spacing-md) 0;
+    opacity: 0.6;
 }
 
 /* Desktop Nav Width */

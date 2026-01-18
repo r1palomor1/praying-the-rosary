@@ -93,7 +93,13 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
             if (line.trim() === '') {
                 // Only render divider if the last line wasn't also empty
                 if (!lastWasEmpty) {
-                    elements.push(<div key={i} className="litany-divider"></div>);
+                    elements.push(
+                        <div key={i} className="litany-divider">
+                            <div className="prayer-divider-line prayer-divider-line-left"></div>
+                            <span className="material-symbols-outlined prayer-divider-icon">church</span>
+                            <div className="prayer-divider-line prayer-divider-line-right"></div>
+                        </div>
+                    );
                 }
                 lastWasEmpty = true;
             } else {
@@ -136,7 +142,11 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
                 return (
                     <div key={index} className="prayer-card">
                         <h3 className="prayer-name">{prayer.name[language]}</h3>
-                        <div className="prayer-divider"></div>
+                        <div className="prayer-divider">
+                            <div className="prayer-divider-line prayer-divider-line-left"></div>
+                            <span className="material-symbols-outlined prayer-divider-icon">church</span>
+                            <div className="prayer-divider-line prayer-divider-line-right"></div>
+                        </div>
                         {isLitany ? (
                             renderLitanyText(prayer.text[language])
                         ) : (
@@ -151,7 +161,11 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
     const renderMysteriesCard = () => (
         <div className="prayer-card">
             <h3 className="prayer-name">{t.mysteries[currentMysterySet]}</h3>
-            <div className="prayer-divider"></div>
+            <div className="prayer-divider">
+                <div className="prayer-divider-line prayer-divider-line-left"></div>
+                <span className="material-symbols-outlined prayer-divider-icon">church</span>
+                <div className="prayer-divider-line prayer-divider-line-right"></div>
+            </div>
             <div className="mysteries-list">
                 {mysteries.map((mystery: any) => (
                     <div key={mystery.number} className="mystery-item">
@@ -190,7 +204,11 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
                     {/* Our Father */}
                     <div className="prayer-card">
                         <h3 className="prayer-name">{prayers.sequence.ourFather.name[language]}</h3>
-                        <div className="prayer-divider"></div>
+                        <div className="prayer-divider">
+                            <div className="prayer-divider-line prayer-divider-line-left"></div>
+                            <span className="material-symbols-outlined prayer-divider-icon">church</span>
+                            <div className="prayer-divider-line prayer-divider-line-right"></div>
+                        </div>
                         <p className="prayer-text">{prayers.sequence.ourFather.text[language]}</p>
                     </div>
                 </div>
@@ -203,21 +221,33 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
                     {/* Hail Mary with count */}
                     <div className="prayer-card">
                         <h3 className="prayer-name">{t.hailMaryWithCount}</h3>
-                        <div className="prayer-divider"></div>
+                        <div className="prayer-divider">
+                            <div className="prayer-divider-line prayer-divider-line-left"></div>
+                            <span className="material-symbols-outlined prayer-divider-icon">church</span>
+                            <div className="prayer-divider-line prayer-divider-line-right"></div>
+                        </div>
                         <p className="prayer-text">{prayers.sequence.hailMary.text[language]}</p>
                     </div>
 
                     {/* Glory Be */}
                     <div className="prayer-card">
                         <h3 className="prayer-name">{prayers.sequence.gloryBe.name[language]}</h3>
-                        <div className="prayer-divider"></div>
+                        <div className="prayer-divider">
+                            <div className="prayer-divider-line prayer-divider-line-left"></div>
+                            <span className="material-symbols-outlined prayer-divider-icon">church</span>
+                            <div className="prayer-divider-line prayer-divider-line-right"></div>
+                        </div>
                         <p className="prayer-text">{prayers.sequence.gloryBe.text[language]}</p>
                     </div>
 
                     {/* O My Jesus */}
                     <div className="prayer-card">
                         <h3 className="prayer-name">{prayers.sequence.oMyJesus.name[language]}</h3>
-                        <div className="prayer-divider"></div>
+                        <div className="prayer-divider">
+                            <div className="prayer-divider-line prayer-divider-line-left"></div>
+                            <span className="material-symbols-outlined prayer-divider-icon">church</span>
+                            <div className="prayer-divider-line prayer-divider-line-right"></div>
+                        </div>
                         <p className="prayer-text">{prayers.sequence.oMyJesus.text[language]}</p>
                     </div>
                 </div>
@@ -229,6 +259,11 @@ export function PrayersScreen({ onNavigateHome, onNavigateToMysteries, onStartPr
                 {/* Completion Section */}
                 {onNavigateToCompletion && (
                     <div className="completion-section">
+                        <div className="prayer-divider">
+                            <div className="prayer-divider-line prayer-divider-line-left"></div>
+                            <span className="material-symbols-outlined prayer-divider-icon">church</span>
+                            <div className="prayer-divider-line prayer-divider-line-right"></div>
+                        </div>
                         <div className="completion-card">
                             {isAlreadyCompleted ? (
                                 <button

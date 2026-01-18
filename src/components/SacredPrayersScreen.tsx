@@ -344,7 +344,17 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
     };
 
     const handleBackWithReset = () => {
-        onBack();
+        // If on first page, go back to Prayer Selection
+        if (flowEngine.isFirstStep()) {
+            onBack();
+        } else {
+            // If on sub-prayer, go back to first page (Sacred Prayers menu)
+            setContinuousMode(false);
+            continuousModeRef.current = false;
+            stopAudio();
+            flowEngine.jumpToStep(0);
+            setCurrentStep(flowEngine.getCurrentStep());
+        }
     };
 
     const handleReset = () => {
@@ -425,8 +435,10 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
             <div className="mystery-screen-header">
                 <div className="mystery-header-row">
 
+
                     {/* Left Icons */}
                     <div className="mystery-header-icons-left">
+
                         <button
                             className="continuous-audio-btn-header"
                             onClick={handleToggleContinuous}
@@ -534,9 +546,18 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
             {/* Footer Navigation */}
             <div className="bottom-section">
                 <div className="mystery-bottom-nav">
-                    <button className="mystery-nav-btn" onClick={handleBackWithReset}>
-                        <span className="material-icons">home</span>
-                        <span className="mystery-nav-label">{t.back}</span>
+                    <button
+                        className="mystery-nav-btn"
+                        onClick={handleBackWithReset}
+                    >
+                        {flowEngine.isFirstStep() ? (
+                            <ChevronLeft size={24} strokeWidth={3} />
+                        ) : (
+                            <span className="material-icons">home</span>
+                        )}
+                        <span className="mystery-nav-label">
+                            {flowEngine.isFirstStep() ? (language === 'es' ? 'Volver' : 'Back') : t.back}
+                        </span>
                     </button>
 
                     <div className="mystery-nav-center">
