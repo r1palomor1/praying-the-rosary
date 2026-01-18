@@ -71,16 +71,16 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
             </header>
 
             <main className="selection-main">
-                {/* Sacred Prayers Card */}
-                <button onClick={onSelectSacredPrayers} className="prayer-card">
+                {/* Daily Readings Card */}
+                <button onClick={onSelectDailyReadings} className="prayer-card">
                     <div className="card-image-container">
                         <div className="card-image">
-                            <img src="/sacred_prayers_icon.png" alt={t.sacredPrayers} />
+                            <img src="/daily_readings_icon.png" alt={t.dailyReadings} />
                         </div>
                     </div>
                     <div className="card-content">
-                        <h2 className="card-title">{t.sacredPrayers.toUpperCase()}</h2>
-                        <p className="card-subtitle">{t.sacredPrayersSubtitle}</p>
+                        <h2 className="card-title">{t.dailyReadings.toUpperCase()}</h2>
+                        <p className="card-subtitle">{t.dailyReadingsSubtitle}</p>
                     </div>
                     <ChevronRight className="card-chevron" size={24} />
                 </button>
@@ -113,16 +113,16 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                     <div className="divider-line divider-line-right"></div>
                 </div>
 
-                {/* Daily Readings Card */}
-                <button onClick={onSelectDailyReadings} className="prayer-card">
+                {/* Sacred Prayers Card */}
+                <button onClick={onSelectSacredPrayers} className="prayer-card">
                     <div className="card-image-container">
                         <div className="card-image">
-                            <img src="/daily_readings_icon.png" alt={t.dailyReadings} />
+                            <img src="/sacred_prayers_icon.png" alt={t.sacredPrayers} />
                         </div>
                     </div>
                     <div className="card-content">
-                        <h2 className="card-title">{t.dailyReadings.toUpperCase()}</h2>
-                        <p className="card-subtitle">{t.dailyReadingsSubtitle}</p>
+                        <h2 className="card-title">{t.sacredPrayers.toUpperCase()}</h2>
+                        <p className="card-subtitle">{t.sacredPrayersSubtitle}</p>
                     </div>
                     <ChevronRight className="card-chevron" size={24} />
                 </button>
@@ -137,7 +137,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
             {/* Version Indicator */}
             {appVersion && (
                 <div className="version-indicator">
-                    Updated: {(() => {
+                    App updated: {(() => {
                         const d = new Date(appVersion.timestamp);
                         const month = (d.getMonth() + 1).toString().padStart(2, '0');
                         const day = d.getDate().toString().padStart(2, '0');

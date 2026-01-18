@@ -82,6 +82,43 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         setCurrentDate(newDate);
     };
 
+    // Normalize reading titles: convert "Reading I" -> "First Reading", "Reading II" -> "Second Reading"
+    const normalizeReadingTitle = (title: string): string => {
+        const romanToOrdinal: Record<string, string> = {
+            'I': language === 'es' ? 'Primera Lectura' : 'First Reading',
+            'II': language === 'es' ? 'Segunda Lectura' : 'Second Reading',
+            'III': language === 'es' ? 'Tercera Lectura' : 'Third Reading'
+        };
+
+        // Match "Reading I", "Reading II", etc.
+        const match = title.match(/Reading\s+([IVX]+)/i);
+        if (match && romanToOrdinal[match[1]]) {
+            return romanToOrdinal[match[1]];
+        }
+
+        return title;
+    };
+
+    // Parse reading text and highlight responses (R. xxx or R. R. xxx)
+    const renderReadingText = (text: string) => {
+        return text.split('\n\n').map((para, paraIndex) => {
+            // Check if paragraph starts with R. or R. R.
+            const responseMatch = para.match(/^(R\.|R\.\s*R\.)\s*(.+)$/s);
+
+            if (responseMatch) {
+                const prefix = responseMatch[1];
+                const responseText = responseMatch[2];
+                return (
+                    <p key={paraIndex}>
+                        {prefix} <span className="response-highlight">{responseText}</span>
+                    </p>
+                );
+            }
+
+            return <p key={paraIndex}>{para}</p>;
+        });
+    };
+
     // Play All - plays all readings sequentially
     const handlePlayAll = async () => {
         if (isPlaying) {
@@ -91,16 +128,13 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         } else {
             if (!data?.readings) return;
 
-            // Build segments starting with title and lectionary
+            // Build segments with only titles and text (no lectionary or citations)
             const segments = [
                 // Add liturgical day title if available
                 ...(data.title ? [{ text: data.title, gender: 'female' as const, postPause: 1000 }] : []),
-                // Add lectionary info if available
-                ...(data.lectionary ? [{ text: data.lectionary, gender: 'female' as const, postPause: 1200 }] : []),
-                // Then add all readings
+                // Add all readings (title and text only, skip citations)
                 ...data.readings.flatMap(reading => [
-                    { text: reading.title, gender: 'female' as const, postPause: 800 },
-                    { text: reading.citation || '', gender: 'female' as const, postPause: 800 },
+                    { text: normalizeReadingTitle(reading.title), gender: 'female' as const, postPause: 800 },
                     { text: reading.text, gender: 'female' as const, postPause: 1500 }
                 ])
             ].filter(s => s.text);
@@ -227,7 +261,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     <div key={index} className="reading-card">
                         <div className="reading-header">
                             <div className="reading-title-section">
-                                <h3 className="reading-title">{reading.title}</h3>
+                                <h3 className="reading-title">{normalizeReadingTitle(reading.title)}</h3>
                                 {reading.citation && <div className="reading-citation">{reading.citation}</div>}
                             </div>
                             <button
@@ -239,9 +273,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                             </button>
                         </div>
                         <div className="reading-text">
-                            {reading.text.split('\n\n').map((para, i) => (
-                                <p key={i}>{para}</p>
-                            ))}
+                            {renderReadingText(reading.text)}
                         </div>
                     </div>
                 ))}

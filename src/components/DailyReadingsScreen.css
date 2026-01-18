@@ -97,6 +97,11 @@
     margin-bottom: 1.2rem;
 }
 
+.reading-text .response-highlight {
+    color: #FBBF24;
+    font-style: italic;
+}
+
 .readings-loading-container {
     display: flex;
     flex-direction: column;
