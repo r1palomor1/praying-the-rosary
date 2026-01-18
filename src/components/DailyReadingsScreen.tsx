@@ -99,24 +99,61 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         return title;
     };
 
-    // Parse reading text and highlight responses (R. xxx or R. R. xxx)
+    // Parse reading text and highlight responses (text inside <strong> tags)
     const renderReadingText = (text: string) => {
         return text.split('\n\n').map((para, paraIndex) => {
-            // Check if paragraph starts with R. or R. R.
-            const responseMatch = para.match(/^(R\.|R\.\s*R\.)\s*(.+)$/s);
+            // Check if paragraph contains <strong> tags (response text)
+            if (para.includes('<strong>')) {
+                // Parse HTML and highlight strong content
+                const parts: React.ReactNode[] = [];
+                let lastIndex = 0;
+                const strongRegex = /<strong>(.*?)<\/strong>/g;
+                let match;
 
-            if (responseMatch) {
-                const prefix = responseMatch[1];
-                const responseText = responseMatch[2];
-                return (
-                    <p key={paraIndex}>
-                        {prefix} <span className="response-highlight">{responseText}</span>
-                    </p>
-                );
+                while ((match = strongRegex.exec(para)) !== null) {
+                    // Add text before <strong>
+                    if (match.index > lastIndex) {
+                        const beforeText = para.substring(lastIndex, match.index);
+                        // Remove HTML tags from plain text
+                        parts.push(beforeText.replace(/<[^>]+>/g, ''));
+                    }
+                    // Add highlighted response text
+                    parts.push(
+                        <span key={match.index} className="response-highlight">
+                            {match[1]}
+                        </span>
+                    );
+                    lastIndex = match.index + match[0].length;
+                }
+
+                // Add remaining text after last <strong>
+                if (lastIndex < para.length) {
+                    const afterText = para.substring(lastIndex);
+                    parts.push(afterText.replace(/<[^>]+>/g, ''));
+                }
+
+                return <p key={paraIndex}>{parts}</p>;
             }
 
-            return <p key={paraIndex}>{para}</p>;
+            // No strong tags - render as plain text (strip any HTML)
+            return <p key={paraIndex}>{para.replace(/<[^>]+>/g, '')}</p>;
         });
+    };
+
+    // Remove scripture citations from text for audio (lines that look like "Isaiah 40:1-5, 9-11")
+    const stripCitations = (text: string): string => {
+        return text
+            .split('\n')
+            .filter(line => {
+                const trimmed = line.trim();
+                // Skip lines that look like scripture references (book name followed by numbers/colons)
+                if (/^[A-Z][a-z]+(\s+[A-Z][a-z]+)*\s+\d+[:;\d\s,\-–—]+$/.test(trimmed)) {
+                    return false;
+                }
+                return true;
+            })
+            .join('\n')
+            .trim();
     };
 
     // Play All - plays all readings sequentially
@@ -135,7 +172,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 // Add all readings (title and text only, skip citations)
                 ...data.readings.flatMap(reading => [
                     { text: normalizeReadingTitle(reading.title), gender: 'female' as const, postPause: 800 },
-                    { text: reading.text, gender: 'female' as const, postPause: 1500 }
+                    { text: stripCitations(reading.text), gender: 'female' as const, postPause: 1500 }
                 ])
             ].filter(s => s.text);
 
@@ -170,9 +207,8 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
             const reading = data.readings[index];
             const segments = [
-                { text: reading.title, gender: 'female' as const, postPause: 800 },
-                { text: reading.citation || '', gender: 'female' as const, postPause: 800 },
-                { text: reading.text, gender: 'female' as const, postPause: 1500 }
+                { text: normalizeReadingTitle(reading.title), gender: 'female' as const, postPause: 800 },
+                { text: stripCitations(reading.text), gender: 'female' as const, postPause: 1500 }
             ].filter(s => s.text);
 
             setIsPlaying(true);
