@@ -102,6 +102,26 @@
     font-style: italic;
 }
 
+/* Reflection Card */
+.reflection-card {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(212, 175, 55, 0.02) 100%);
+    border-left: 3px solid var(--primary-gold);
+}
+
+.reflection-subtitle {
+    font-size: 0.9rem;
+    color: var(--primary-gold);
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+.language-note {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 300;
+    font-style: normal;
+}
+
 .readings-loading-container {
     display: flex;
     flex-direction: column;

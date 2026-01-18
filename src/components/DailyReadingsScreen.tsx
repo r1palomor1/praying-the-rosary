@@ -19,10 +19,17 @@ interface DailyReadingsData {
     readings: Reading[];
 }
 
+interface DailyReflection {
+    title: string;
+    content: string;
+    date: string;
+}
+
 export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) {
     const { language } = useApp();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [data, setData] = useState<DailyReadingsData | null>(null);
+    const [reflection, setReflection] = useState<DailyReflection | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -61,10 +68,64 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         }
     };
 
+    const fetchReflection = async (date: Date) => {
+        try {
+            // Format date for Vatican News URL (YYYY/MM/DD)
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+
+            // Use Vatican News based on language
+            const baseUrl = language === 'es'
+                ? 'https://www.vaticannews.va/es/evangelio-de-hoy'
+                : 'https://www.vaticannews.va/en/word-of-the-day';
+
+            const url = `${baseUrl}/${year}/${month}/${day}.html`;
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to fetch reflection');
+
+            const text = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+
+            // Find the "Words of the Popes" section
+            const headers = doc.querySelectorAll('h2');
+            let reflectionText = '';
+
+            for (const header of headers) {
+                const headerText = header.textContent?.trim() || '';
+                if (headerText.includes('words of the Popes') || headerText.includes('palabras de los Papas')) {
+                    // Get the next paragraph(s) after this header
+                    let nextElement = header.nextElementSibling;
+                    while (nextElement && nextElement.tagName === 'P') {
+                        reflectionText += nextElement.textContent + '\n\n';
+                        nextElement = nextElement.nextElementSibling;
+                    }
+                    break;
+                }
+            }
+
+            if (reflectionText) {
+                setReflection({
+                    title: language === 'es' ? 'Las Palabras de los Papas' : 'The Words of the Popes',
+                    content: reflectionText.trim(),
+                    date: `${month}/${day}/${year}`
+                });
+            } else {
+                setReflection(null);
+            }
+        } catch (err) {
+            console.error('Failed to fetch reflection:', err);
+            setReflection(null);
+        }
+    };
+
     useEffect(() => {
         // Debounce slightly to avoid rapid clicks spamming API
         const timer = setTimeout(() => {
             fetchReadings(currentDate);
+            fetchReflection(currentDate);
         }, 300);
         return () => clearTimeout(timer);
     }, [currentDate, language]);
@@ -313,6 +374,25 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                         </div>
                     </div>
                 ))}
+
+                {/* Daily Reflection */}
+                {!loading && !error && reflection && (
+                    <div className="reading-card reflection-card">
+                        <div className="reading-header">
+                            <div className="reading-title-section">
+                                <h3 className="reading-title">
+                                    {language === 'es' ? 'Reflexión Diaria' : 'Daily Reflection'}
+                                </h3>
+                                {reflection.title && <div className="reflection-subtitle">{reflection.title}</div>}
+                            </div>
+                        </div>
+                        <div className="reading-text">
+                            {reflection.content.split('\n\n').map((para, i) => (
+                                <p key={i}>{para.replace(/<[^>]+>/g, '')}</p>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {!loading && !error && data?.readings.length === 0 && (
                     <div className="empty-state">
