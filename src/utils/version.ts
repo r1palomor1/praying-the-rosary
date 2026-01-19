@@ -35,9 +35,15 @@ export async function getVersionInfo(): Promise<VersionInfo> {
 }
 
 export function formatDate(dateString: string): string {
-    const date = new Date(dateString);
+    // Avoid timezone issues by splitting the YYYY-MM-DD string directly
+    // new Date("YYYY-MM-DD") parses as UTC, which shifts to previous day in Western timezones
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = dateString.split('-');
+        return `${month}/${day}/${year}`;
+    }
 
-    // Use MM/DD/YYYY format for both languages
+    // Fallback for other formats
+    const date = new Date(dateString);
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const year = date.getFullYear();

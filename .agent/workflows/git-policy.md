@@ -7,12 +7,18 @@ description: Policy regarding Git operations
 **STRICT RULE:**
 The agent must **NEVER** push code to the remote repository (`git push`) without explicit, written permission from the user in the current turn.
 
-**Workflow:**
-1.  Stage changes: `git add .`
-2.  Commit changes: `git commit -m "message"`
-3.  **STOP.**
-4.  Ask user: "Changes committed. Ready to push?"
-5.  **ONLY** if user says "Yes" or "Push", then run `git push`.
+**Workflow (Version Accuracy Protocol):**
+To ensure the `Settings Info Panel` displays the correct Commit Date and Hash:
+1.  **Stage & Commit FIRST:**
+    *   `git add .`
+    *   `git commit -m "message"`
+    *   *(Reasoning: The build script reads the `git log` to generate version.json. If we build before committing, it captures the OLD version.)*
+2.  **Validation Build (Optional but Recommended):**
+    *   `npm run build`
+    *   *(Reasoning: Verifies the build passes. If it fails, fix and amend commit.)*
+3.  **Push:**
+    *   `git push`
+    *   *(Trigger deployment)*
 
 # ⛔ DESTRUCTIVE COMMANDS POLICY (STRICT)
 

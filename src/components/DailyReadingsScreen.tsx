@@ -290,8 +290,8 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
             // Build segments with only titles and text
             const segments = [
-                // Add day title only if USCCB (Vatican doesn't have the calendar title usually)
-                ...(readingSource === 'usccb' && data?.title ? [{ text: data.title, gender: 'female' as const, postPause: 1000 }] : []),
+                // Add day title for both sources (Liturgical day is universal-ish)
+                ...(data?.title ? [{ text: data.title, gender: 'female' as const, postPause: 1000 }] : []),
 
                 ...readingsToPlay.flatMap(reading => [
                     { text: normalizeReadingTitle(reading.title), gender: 'female' as const, postPause: 800 },
