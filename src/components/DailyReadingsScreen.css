@@ -140,6 +140,19 @@
     color: rgba(212, 175, 55, 0.9);
 }
 
+.vatican-section-header {
+    margin-top: 3rem;
+    padding: 1rem 0;
+    border-top: 2px solid rgba(251, 191, 36, 0.3);
+}
+
+.vatican-section-header h2 {
+    font-size: 1.2rem;
+    color: #FBBF24;
+    text-align: center;
+    font-weight: 600;
+}
+
 .readings-loading-container {
     display: flex;
     flex-direction: column;
@@ -250,6 +263,12 @@
     color: rgba(255, 255, 255, 0.6);
     font-style: italic;
     margin: 0;
+}
+
+.lectionary-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
 }
 
 /* Lectionary Row with Play All Button */

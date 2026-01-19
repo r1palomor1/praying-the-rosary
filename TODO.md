@@ -75,6 +75,52 @@ git push
 - Litany text remains fully visible and readable
 - Code preserved (unreachable) for future reference if better TTS APIs emerge
 
+## 🐛 Daily Readings Issues (Jan 18, 2026)
+
+### Critical Issues
+- [ ] **Version Date Showing Wrong Date**
+  - Settings shows commit date as Jan 17 instead of Jan 18
+  - Hash is correct (2d5906b), timestamp is correct, but date field is Jan 17
+  - Git commit date is correct locally (2026-01-18)
+  - Root cause: Unknown - possibly timezone issue or git commit metadata problem
+  - Attempted fixes:
+    - Explicitly call generate-version.js in build script ✅
+    - Created new empty commit to force fresh date ✅
+    - Both fixes deployed, issue persists
+  - Status: Low priority - cosmetic issue only, all other version info correct
+  - Workaround: Use "Last Updated" timestamp instead of commit date
+
+- [ ] **Lectionary Label Not Centered**
+  - Changed to space-between layout
+  - Added .lectionary-text class with text-align: center
+  - Status: Need to verify on device
+
+- [ ] **Responsorial Psalm Over-Highlighting**
+  - R/ and R. responses highlighting entire text instead of just response portion
+  - Current logic checks for <strong> tags first, then falls back to R/ regex
+  - Issue: API may not have <strong> tags, so R/ regex matches full line
+  - Regex: `^(R[.\/]\s*(?:R[.\/]\s*)?)(.*)` correctly captures prefix and rest
+  - Status: Working as designed when <strong> tags absent - need to verify API response format
+
+- [ ] **Words of the Pope Card Not Showing**
+  - Implemented Vatican News integration
+  - Using section.section--evidence selector
+  - Added debug logging to track fetch progress
+  - **ROOT CAUSE FOUND:** CORS blocking or HTML structure mismatch
+  - Vatican News content IS available (verified via server-side fetch)
+  - Client-side fetch from app likely blocked by CORS policy
+  - **SOLUTION:** Create Vercel serverless proxy function to fetch content server-side
+  - Status: Ready to implement - needs proxy API route
+  - Priority: HIGH
+
+### Debug Tool Needed
+- [ ] **Add On-Device Debug Panel**
+  - Display console logs in app UI
+  - Copy button to extract logs
+  - Toggle visibility (hidden by default)
+  - Shows: Reflection fetch status, API errors, timing info
+  - Priority: HIGH (needed to diagnose papal reflection issue)
+
 ## 🎯 Priority Items for Next Session
 
 ### 🐛 Enhanced Progress Tab Issues (Jan 1-2, 2026) ✅ COMPLETED

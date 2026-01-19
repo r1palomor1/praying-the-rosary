@@ -185,7 +185,8 @@ export default async function handler(request) {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': 's-maxage=3600, stale-while-revalidate'
+                'Cache-Control': 's-maxage=3600, stale-while-revalidate',
+                'Access-Control-Allow-Origin': '*'
             }
         });
 

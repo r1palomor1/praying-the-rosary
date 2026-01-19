@@ -20,6 +20,7 @@ const PrayerSelectionScreen = lazy(() => import('./components/PrayerSelectionScr
 const SacredPrayersScreen = lazy(() => import('./components/SacredPrayersScreen'));
 const SacredCompletionScreen = lazy(() => import('./components/SacredCompletionScreen'));
 const DailyReadingsScreen = lazy(() => import('./components/DailyReadingsScreen'));
+import { DebugPanel } from './components/DebugPanel';
 
 import './styles/index.css';
 
@@ -270,6 +271,7 @@ function App() {
     <AppProvider>
       <ToastProvider>
         <AppContent />
+        <DebugPanel />
       </ToastProvider>
     </AppProvider>
   );

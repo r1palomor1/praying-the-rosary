@@ -29,12 +29,16 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const { language } = useApp();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [data, setData] = useState<DailyReadingsData | null>(null);
+    const [vaticanData, setVaticanData] = useState<{ readings: Reading[], reflection: DailyReflection | null } | null>(null);
     const [reflection, setReflection] = useState<DailyReflection | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentlyPlayingIndex, setCurrentlyPlayingIndex] = useState<number | null>(null);
     const [showSettings, setShowSettings] = useState(false);
+
+    // Use production API in dev mode for browser testing
+    const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
     // Format date as MMDDYY for the API
     const formatDateParam = (date: Date) => {
@@ -54,88 +58,53 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
         setLoading(true);
         setError(null);
+
         try {
+            // Fetch USCCB readings
             const dateStr = formatDateParam(date);
-            const response = await fetch(`/api/readings?date=${dateStr}&lang=${language}`);
-            if (!response.ok) throw new Error('Failed to fetch readings');
-            const result = await response.json();
-            setData(result);
+            const usccbResponse = await fetch(`${API_BASE}/api/readings?date=${dateStr}&lang=${language}`);
+
+            if (usccbResponse.ok) {
+                const usccbData = await usccbResponse.json();
+                setData(usccbData);
+            } else {
+                setData(null);
+            }
+
+            // Fetch Vatican readings + reflection
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const vaticanDate = `${year}-${month}-${day}`;
+
+            console.log('[Vatican API] Fetching:', vaticanDate, 'lang:', language);
+            const vaticanResponse = await fetch(`${API_BASE}/api/vatican-reflection?date=${vaticanDate}&lang=${language}`);
+
+            if (vaticanResponse.ok) {
+                const vatican = await vaticanResponse.json();
+                console.log('[Vatican API] Success:', vatican);
+                setVaticanData(vatican);
+                setReflection(vatican.reflection);
+            } else {
+                console.log('[Vatican API] Failed');
+                setVaticanData(null);
+                setReflection(null);
+            }
+
         } catch (err) {
-            console.error(err);
+            console.error('[Readings] Error:', err);
             setError('Unable to load readings. Please check your connection.');
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchReflection = async (date: Date) => {
-        try {
-            // Format date for Vatican News URL (YYYY/MM/DD)
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
 
-            // Use Vatican News based on language
-            const baseUrl = language === 'es'
-                ? 'https://www.vaticannews.va/es/evangelio-de-hoy'
-                : 'https://www.vaticannews.va/en/word-of-the-day';
-
-            const url = `${baseUrl}/${year}/${month}/${day}.html`;
-
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Failed to fetch reflection');
-
-            const text = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'text/html');
-
-            // Find the section with class "section--evidence" containing the papal words
-            const sections = doc.querySelectorAll('section.section--evidence');
-            let reflectionText = '';
-
-            for (const section of sections) {
-                const header = section.querySelector('h2');
-                if (header) {
-                    const headerText = header.textContent?.trim() || '';
-                    if (headerText.includes('words of the Popes') || headerText.includes('palabras de los Papas')) {
-                        // Get all paragraphs in the section__content div
-                        const contentDiv = section.querySelector('.section__content');
-                        if (contentDiv) {
-                            const paragraphs = contentDiv.querySelectorAll('p');
-                            paragraphs.forEach(p => {
-                                const text = p.textContent?.trim();
-                                if (text && text !== '\u00a0') { // Skip empty paragraphs
-                                    reflectionText += text + '\n\n';
-                                }
-                            });
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (reflectionText) {
-                console.log('[Reflection] Found reflection text:', reflectionText.substring(0, 100) + '...');
-                setReflection({
-                    title: language === 'es' ? 'Las Palabras de los Papas' : 'The Words of the Popes',
-                    content: reflectionText.trim(),
-                    date: `${month}/${day}/${year}`
-                });
-            } else {
-                console.log('[Reflection] No reflection text found for date:', `${year}/${month}/${day}`);
-                setReflection(null);
-            }
-        } catch (err) {
-            console.error('[Reflection] Failed to fetch reflection:', err);
-            setReflection(null);
-        }
-    };
 
     useEffect(() => {
         // Debounce slightly to avoid rapid clicks spamming API
         const timer = setTimeout(() => {
             fetchReadings(currentDate);
-            fetchReflection(currentDate);
         }, 300);
         return () => clearTimeout(timer);
     }, [currentDate, language]);
@@ -361,7 +330,9 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     <div className="liturgical-info">
                         {data?.title && <h2 className="liturgical-day">{data.title}</h2>}
                         <div className="lectionary-row">
-                            {data?.lectionary && <p className="lectionary-text">{data.lectionary}</p>}
+                            <div className="lectionary-center">
+                                {data?.lectionary && <p className="lectionary-text">{data.lectionary}</p>}
+                            </div>
                             {data?.readings && data.readings.length > 0 && (
                                 <button
                                     className={`play-all-btn ${isPlaying ? 'playing' : ''}`}
@@ -414,6 +385,27 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                             ))}
                         </div>
                     </div>
+                )}
+
+                {/* Vatican Readings (for comparison) */}
+                {!loading && !error && vaticanData?.readings && vaticanData.readings.length > 0 && (
+                    <>
+                        <div className="vatican-section-header">
+                            <h2>{language === 'es' ? 'Lecturas de Vatican News' : 'Vatican News Readings'}</h2>
+                        </div>
+                        {vaticanData.readings.map((reading, index) => (
+                            <div key={`vatican-${index}`} className="reading-card">
+                                <div className="reading-header">
+                                    <div className="reading-title-section">
+                                        <h3 className="reading-title">{reading.title}</h3>
+                                    </div>
+                                </div>
+                                <div className="reading-text">
+                                    {renderReadingText(reading.text)}
+                                </div>
+                            </div>
+                        ))}
+                    </>
                 )}
 
                 {!loading && !error && data?.readings.length === 0 && (
