@@ -83,6 +83,11 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             if (vaticanResponse.ok) {
                 const vatican = await vaticanResponse.json();
                 console.log('[Vatican API] Success:', vatican);
+                console.log('[Vatican API] Readings count:', vatican.readings?.length);
+                console.log('[Vatican API] Reflection:', vatican.reflection ? 'Found' : 'None');
+                if (vatican.debug) {
+                    console.log('[Vatican API] Debug Structure:', JSON.stringify(vatican.debug, null, 2));
+                }
                 setVaticanData(vatican);
                 setReflection(vatican.reflection);
             } else {

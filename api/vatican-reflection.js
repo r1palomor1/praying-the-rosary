@@ -44,25 +44,43 @@ export default async function handler(request) {
             reflection: null
         };
 
-        // Find all h2 headers in the page
+        // Debug: Collect all H2s and their context
+        const debugStructure = [];
+
         $('h2').each((i, h2) => {
             const $h2 = $(h2);
             const title = $h2.text().trim();
+            debugStructure.push({
+                title: title,
+                parent: $h2.parent().prop('tagName'),
+                nextSibling: $h2.next().prop('tagName'),
+                parentClasses: $h2.parent().attr('class'),
+                numSiblings: $h2.parent().children().length
+            });
 
-            // Check if this is a reading header
+            // Parsing Logic
             if (title.includes('Reading of the day') || title.includes('Lectura del Día') ||
                 title.includes('Gospel of the day') || title.includes('Evangelio del Día') ||
                 title.includes('Psalm') || title.includes('Salmo')) {
 
-                // Get content after this h2
+                // Try siblings first
                 let content = '';
-                let $next = $h2.next();
+                let $current = $h2.next();
 
-                while ($next.length && !$next.is('h2')) {
-                    if ($next.is('p')) {
-                        content += $next.html() + '\n\n';
+                // Strategy 1: Direct siblings
+                while ($current.length && !$current.is('h2')) {
+                    if ($current.is('p')) {
+                        content += $current.html() + '\n\n';
+                    } else if ($current.is('div') || $current.is('section')) {
+                        // Strategy 2: Nested Content - sometimes content is wrapped in a div/section
+                        const nestedP = $current.find('p');
+                        if (nestedP.length) {
+                            nestedP.each((j, p) => {
+                                content += $(p).html() + '\n\n';
+                            });
+                        }
                     }
-                    $next = $next.next();
+                    $current = $current.next();
                 }
 
                 if (content.trim()) {
@@ -84,6 +102,10 @@ export default async function handler(request) {
                         if (text && text !== '\u00a0') {
                             content += text + '\n\n';
                         }
+                    } else if ($next.is('div')) {
+                        // Check inside div
+                        const text = $next.find('p').text().trim();
+                        if (text) content += text + '\n\n';
                     }
                     $next = $next.next();
                 }
@@ -96,6 +118,11 @@ export default async function handler(request) {
                 }
             }
         });
+
+        // Attach debug info if empty
+        if (result.readings.length === 0) {
+            result.debug = debugStructure;
+        }
 
         return new Response(JSON.stringify(result), {
             status: 200,

@@ -265,27 +265,22 @@
     margin: 0;
 }
 
-.lectionary-center {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-}
-
 /* Lectionary Row with Play All Button */
 .lectionary-row {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
+    justify-content: center;
     margin-top: 0.75rem;
+    min-height: 44px;
+    /* Ensure height for button */
 }
 
-.lectionary-text {
-    flex: 1;
-    text-align: center;
-}
+
 
 .play-all-btn {
+    position: absolute;
+    right: 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
