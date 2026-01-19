@@ -115,16 +115,18 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             }
 
             if (reflectionText) {
+                console.log('[Reflection] Found reflection text:', reflectionText.substring(0, 100) + '...');
                 setReflection({
                     title: language === 'es' ? 'Las Palabras de los Papas' : 'The Words of the Popes',
                     content: reflectionText.trim(),
                     date: `${month}/${day}/${year}`
                 });
             } else {
+                console.log('[Reflection] No reflection text found for date:', `${year}/${month}/${day}`);
                 setReflection(null);
             }
         } catch (err) {
-            console.error('Failed to fetch reflection:', err);
+            console.error('[Reflection] Failed to fetch reflection:', err);
             setReflection(null);
         }
     };
