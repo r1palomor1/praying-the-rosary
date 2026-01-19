@@ -63,16 +63,29 @@ export default async function handler(request) {
                 title.includes('Gospel of the day') || title.includes('Evangelio del Día') ||
                 title.includes('Psalm') || title.includes('Salmo')) {
 
-                // Try siblings first
                 let content = '';
-                let $current = $h2.next();
 
-                // Strategy 1: Direct siblings
-                while ($current.length && !$current.is('h2')) {
+                // Case 1: H2 is direct sibling of content (old parser)
+                let $startNode = $h2;
+
+                // Case 2: H2 is wrapped in .section__head (Debug log confirms this!)
+                if ($h2.parent().hasClass('section__head')) {
+                    $startNode = $h2.parent(); // Move pointer to parent DIV
+                }
+
+                let $current = $startNode.next();
+
+                // Look for content in next siblings
+                while ($current.length) {
+                    // Stop if we hit another header container
+                    if ($current.is('h2') || $current.find('h2').length > 0 || $current.hasClass('section__head')) {
+                        break;
+                    }
+
                     if ($current.is('p')) {
                         content += $current.html() + '\n\n';
-                    } else if ($current.is('div') || $current.is('section')) {
-                        // Strategy 2: Nested Content - sometimes content is wrapped in a div/section
+                    } else if ($current.hasClass('section__content') || $current.is('div')) {
+                        // Content is inside a wrapper
                         const nestedP = $current.find('p');
                         if (nestedP.length) {
                             nestedP.each((j, p) => {
@@ -94,18 +107,33 @@ export default async function handler(request) {
             // Check for papal reflection
             if (title.includes('words of the Popes') || title.includes('palabras de los Papas')) {
                 let content = '';
-                let $next = $h2.next();
 
-                while ($next.length && !$next.is('h2')) {
+                // Handle nested header
+                let $startNode = $h2;
+                if ($h2.parent().hasClass('section__head')) {
+                    $startNode = $h2.parent();
+                }
+
+                let $next = $startNode.next();
+
+                while ($next.length) {
+                    // Stop if hitting another header
+                    if ($next.is('h2') || $next.find('h2').length > 0 || $next.hasClass('section__head')) break;
+
                     if ($next.is('p')) {
                         const text = $next.text().trim();
                         if (text && text !== '\u00a0') {
                             content += text + '\n\n';
                         }
-                    } else if ($next.is('div')) {
+                    } else if ($next.is('div') || $next.hasClass('section__content')) {
                         // Check inside div
-                        const text = $next.find('p').text().trim();
-                        if (text) content += text + '\n\n';
+                        const nestedP = $next.find('p');
+                        if (nestedP.length) {
+                            nestedP.each((j, p) => {
+                                const text = $(p).text().trim();
+                                if (text && text !== '\u00a0') content += text + '\n\n';
+                            });
+                        }
                     }
                     $next = $next.next();
                 }
