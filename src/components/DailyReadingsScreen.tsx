@@ -147,6 +147,13 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     // Parse reading text and highlight responses (text inside <strong> tags or starting with R. / R/)
     const renderReadingText = (text: string) => {
         return text.split('\n\n').map((para, paraIndex) => {
+            if (para.includes('R.') || para.includes('R/')) {
+                console.log('[Text Render] Checking R.:', para.substring(0, 50));
+            }
+            if (para.includes('<strong>')) {
+                console.log('[Text Render] Found strong:', para.substring(0, 50));
+            }
+
             // Check if paragraph contains <strong> tags (response text)
             if (para.includes('<strong>')) {
                 // Parse HTML and highlight strong content
@@ -410,6 +417,21 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                 </div>
                             </div>
                         ))}
+
+                        {/* Duplicate Reflection for Vatican Section */}
+                        {reflection && (
+                            <div className="reading-card reflection-card">
+                                <div className="card-header">
+                                    <h3 className="card-title">{reflection.title}</h3>
+                                    <span className="card-date">{reflection.date}</span>
+                                </div>
+                                <div className="card-content">
+                                    {reflection.content.split('\n\n').map((para, i) => (
+                                        <p key={i}>{para.replace(/<[^>]+>/g, '')}</p>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </>
                 )}
 
