@@ -297,6 +297,29 @@
     backdrop-filter: blur(10px);
 }
 
+.source-select {
+    position: absolute;
+    left: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(31, 41, 55, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 2rem 0.5rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+}
+
+.source-select:focus {
+    outline: none;
+    border-color: #FBBF24;
+}
+
 .play-all-btn:hover {
     background: rgba(59, 130, 246, 0.3);
     border-color: rgba(59, 130, 246, 0.6);

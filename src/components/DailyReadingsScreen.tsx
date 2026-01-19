@@ -31,10 +31,11 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const [data, setData] = useState<DailyReadingsData | null>(null);
     const [vaticanData, setVaticanData] = useState<{ readings: Reading[], reflection: DailyReflection | null } | null>(null);
     const [reflection, setReflection] = useState<DailyReflection | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [currentlyPlayingIndex, setCurrentlyPlayingIndex] = useState<number | null>(null);
+    const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
+    const [readingSource, setReadingSource] = useState<'usccb' | 'vatican'>('vatican');
     const [showSettings, setShowSettings] = useState(false);
 
     // Use production API in dev mode for browser testing
@@ -53,7 +54,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         if (isPlaying || ttsManager.isSpeaking()) {
             ttsManager.stop();
             setIsPlaying(false);
-            setCurrentlyPlayingIndex(null);
+            setCurrentlyPlayingId(null);
         }
 
         setLoading(true);
@@ -187,37 +188,92 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 return <p key={paraIndex}>{parts}</p>;
             }
 
-            // Check for R. or R/ at start of line (responsorial psalm responses)
-            const responseMatch = para.match(/^(R[.\/]\s*(?:R[.\/]\s*)?)(.*)/s);
-            if (responseMatch) {
-                const prefix = responseMatch[1];
-                const responseText = responseMatch[2];
-                return (
-                    <p key={paraIndex}>
-                        {prefix}<span className="response-highlight">{responseText}</span>
-                    </p>
-                );
-            }
+            // Fallback for "R." removed - only highlight if explicit <strong> tags exist
+            // to avoid highlighting entire paragraphs incorrectly.
 
-            // No strong tags or R. - render as plain text (strip any HTML)
-            return <p key={paraIndex}>{para.replace(/<[^>]+>/g, '')}</p>;
+            // No strong tags - render as plain text (strip any HTML and entities)
+            return <p key={paraIndex}>{para.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}</p>;
         });
     };
 
-    // Remove scripture citations from text for audio (lines that look like "Isaiah 40:1-5, 9-11")
-    const stripCitations = (text: string): string => {
+    // Normalize text for speech (fix punctuation pronunciation)
+    const normalizeForSpeech = (text: string): string => {
         return text
+            // Replace hyphens in number ranges (1-5 -> 1 to 5)
+            .replace(/(\d+)\s*[-–—]\s*(\d+)/g, '$1 to $2')
+            // Replace colons in time/verse with pause
+            .replace(/(\d+):(\d+)/g, '$1 $2')
+            // Replace commas between numbers (European/Spanish notation: Mk 2, 18)
+            .replace(/(\d+),\s*(\d+)/g, '$1 $2')
+            // Replace semicolons with commas for better pausing
+            .replace(/;/g, ',')
+            // Remove parentheses and brackets but keep content
+            .replace(/[()\[\]]/g, '')
+            // Normalize smart quotes to nothing
+            .replace(/['""'']/g, '')
+            // Replace other standalone hyphens with pauses
+            .replace(/\s[-–—]\s/g, ', ')
+            // Clean up multiple spaces
+            .replace(/\s+/g, ' ')
+            .replace(/&nbsp;?/g, ' ')  // Replace &nbsp with or without semicolon
+            .replace(/\u00A0/g, ' ')   // Replace literal non-breaking space char
+            .replace(/<[^>]+>/g, '');
+    };
+
+    // Remove scripture citations from text for audio (lines that look like "Isaiah 40:1-5, 9-11" or "1 Corintios 13:4")
+    const stripCitations = (text: string): string => {
+        const cleaned = text
             .split('\n')
             .filter(line => {
-                const trimmed = line.trim();
+                // Aggressively clean line: remove HTML tags, replace nbsp, then trim
+                const trimmed = line.replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ').trim();
+
                 // Skip lines that look like scripture references (book name followed by numbers/colons)
-                if (/^[A-Z][a-z]+(\s+[A-Z][a-z]+)*\s+\d+[:;\d\s,\-–—]+$/.test(trimmed)) {
+                // Updated to handle:
+                // 1. Optional leading number (1 Kings, 2 Cor) -> ^(\d\s+)?
+                // 2. Accented characters in book names -> [A-Za-z\u00C0-\u00FF]
+                if (/^(\d\s+)?[A-Z\u00C0-\u00FF][a-z\u00C0-\u00FF]+(\s+[A-Z\u00C0-\u00FF][a-z\u00C0-\u00FF]+)*\s+\d+[:;\d\s,\-–—]+$/.test(trimmed)) {
                     return false;
                 }
                 return true;
             })
             .join('\n')
             .trim();
+
+        return normalizeForSpeech(cleaned);
+    };
+
+    // Play arbitrary content (Vatican, Reflection, etc)
+    const handlePlayContent = async (id: string, title: string, text: string) => {
+        if (isPlaying && currentlyPlayingId === id) {
+            ttsManager.stop();
+            setIsPlaying(false);
+            setCurrentlyPlayingId(null);
+        } else {
+            const cleanText = stripCitations(text.replace(/<[^>]+>/g, ''));
+            console.log('[TTS Debug] Speaking Text:', cleanText);
+            const segments = [
+                { text: title, gender: 'female' as const, postPause: 800 },
+                { text: cleanText, gender: 'female' as const, postPause: 0 }
+            ];
+
+            setIsPlaying(true);
+            setCurrentlyPlayingId(id);
+            await ttsManager.setLanguage(language);
+
+            ttsManager.setOnEnd(() => {
+                setIsPlaying(false);
+                setCurrentlyPlayingId(null);
+            });
+
+            try {
+                await ttsManager.speakSegments(segments);
+            } catch (e) {
+                console.error("Audio error", e);
+                setIsPlaying(false);
+                setCurrentlyPlayingId(null);
+            }
+        }
     };
 
     // Play All - plays all readings sequentially
@@ -225,28 +281,36 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         if (isPlaying) {
             ttsManager.stop();
             setIsPlaying(false);
-            setCurrentlyPlayingIndex(null);
+            setCurrentlyPlayingId(null);
         } else {
-            if (!data?.readings) return;
+            // Determine which readings to play based on source
+            const readingsToPlay = readingSource === 'usccb' ? data?.readings : vaticanData?.readings;
 
-            // Build segments with only titles and text (no lectionary or citations)
+            if (!readingsToPlay || readingsToPlay.length === 0) return;
+
+            // Build segments with only titles and text
             const segments = [
-                // Add liturgical day title if available
-                ...(data.title ? [{ text: data.title, gender: 'female' as const, postPause: 1000 }] : []),
-                // Add all readings (title and text only, skip citations)
-                ...data.readings.flatMap(reading => [
+                // Add day title only if USCCB (Vatican doesn't have the calendar title usually)
+                ...(readingSource === 'usccb' && data?.title ? [{ text: data.title, gender: 'female' as const, postPause: 1000 }] : []),
+
+                ...readingsToPlay.flatMap(reading => [
                     { text: normalizeReadingTitle(reading.title), gender: 'female' as const, postPause: 800 },
                     { text: stripCitations(reading.text), gender: 'female' as const, postPause: 1500 }
-                ])
+                ]),
+                // Always add reflection if available
+                ...(reflection ? [
+                    { text: reflection.title, gender: 'female' as const, postPause: 800 },
+                    { text: reflection.content.replace(/<[^>]+>/g, ''), gender: 'female' as const, postPause: 0 }
+                ] : [])
             ].filter(s => s.text);
 
             setIsPlaying(true);
-            setCurrentlyPlayingIndex(0); // Start with first reading
+            setCurrentlyPlayingId('all');
             await ttsManager.setLanguage(language);
 
             ttsManager.setOnEnd(() => {
                 setIsPlaying(false);
-                setCurrentlyPlayingIndex(null);
+                setCurrentlyPlayingId(null);
             });
 
             try {
@@ -254,45 +318,13 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             } catch (e) {
                 console.error("Audio error", e);
                 setIsPlaying(false);
-                setCurrentlyPlayingIndex(null);
+                setCurrentlyPlayingId(null);
             }
         }
     };
 
     // Play individual reading
-    const handlePlayReading = async (index: number) => {
-        if (isPlaying && currentlyPlayingIndex === index) {
-            // Stop if clicking the currently playing reading
-            ttsManager.stop();
-            setIsPlaying(false);
-            setCurrentlyPlayingIndex(null);
-        } else {
-            if (!data?.readings[index]) return;
 
-            const reading = data.readings[index];
-            const segments = [
-                { text: normalizeReadingTitle(reading.title), gender: 'female' as const, postPause: 800 },
-                { text: stripCitations(reading.text), gender: 'female' as const, postPause: 1500 }
-            ].filter(s => s.text);
-
-            setIsPlaying(true);
-            setCurrentlyPlayingIndex(index);
-            await ttsManager.setLanguage(language);
-
-            ttsManager.setOnEnd(() => {
-                setIsPlaying(false);
-                setCurrentlyPlayingIndex(null);
-            });
-
-            try {
-                await ttsManager.speakSegments(segments);
-            } catch (e) {
-                console.error("Audio error", e);
-                setIsPlaying(false);
-                setCurrentlyPlayingIndex(null);
-            }
-        }
-    };
 
     return (
         <div className="readings-container fade-in">
@@ -345,7 +377,15 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                             <div className="lectionary-center">
                                 {data?.lectionary && <p className="lectionary-text">{data.lectionary}</p>}
                             </div>
-                            {data?.readings && data.readings.length > 0 && (
+                            <select
+                                className="source-select"
+                                value={readingSource}
+                                onChange={(e) => setReadingSource(e.target.value as 'usccb' | 'vatican')}
+                            >
+                                <option value="vatican">VATICAN</option>
+                                <option value="usccb">USCCB</option>
+                            </select>
+                            {(readingSource === 'usccb' ? data?.readings : vaticanData?.readings) && (readingSource === 'usccb' ? data!.readings.length > 0 : vaticanData!.readings.length > 0) && (
                                 <button
                                     className={`play-all-btn ${isPlaying ? 'playing' : ''}`}
                                     onClick={handlePlayAll}
@@ -359,7 +399,8 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     </div>
                 )}
 
-                {!loading && !error && data?.readings.map((reading, index) => (
+                {/* USCCB Readings */}
+                {!loading && !error && readingSource === 'usccb' && data?.readings.map((reading, index) => (
                     <div key={index} className="reading-card">
                         <div className="reading-header">
                             <div className="reading-title-section">
@@ -367,11 +408,11 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                 {reading.citation && <div className="reading-citation">{reading.citation}</div>}
                             </div>
                             <button
-                                className={`reading-play-btn ${isPlaying && currentlyPlayingIndex === index ? 'playing' : ''}`}
-                                onClick={() => handlePlayReading(index)}
-                                aria-label={isPlaying && currentlyPlayingIndex === index ? "Stop" : "Play"}
+                                className={`reading-play-btn ${isPlaying && currentlyPlayingId === `usccb-${index}` ? 'playing' : ''}`}
+                                onClick={() => handlePlayContent(`usccb-${index}`, normalizeReadingTitle(reading.title), reading.text)}
+                                aria-label={isPlaying && currentlyPlayingId === `usccb-${index}` ? "Stop" : "Play"}
                             >
-                                {isPlaying && currentlyPlayingIndex === index ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+                                {isPlaying && currentlyPlayingId === `usccb-${index}` ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
                             </button>
                         </div>
                         <div className="reading-text">
@@ -380,16 +421,43 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     </div>
                 ))}
 
-                {/* Daily Reflection */}
+                {/* Vatican Readings */}
+                {!loading && !error && readingSource === 'vatican' && vaticanData?.readings.map((reading, index) => (
+                    <div key={`vatican-${index}`} className="reading-card">
+                        <div className="reading-header">
+                            <div className="reading-title-section">
+                                <h3 className="reading-title">{reading.title}</h3>
+                            </div>
+                            <button
+                                className={`reading-play-btn ${isPlaying && currentlyPlayingId === `vatican-${index}` ? 'playing' : ''}`}
+                                onClick={() => handlePlayContent(`vatican-${index}`, reading.title, reading.text)}
+                                aria-label={isPlaying && currentlyPlayingId === `vatican-${index}` ? "Stop" : "Play"}
+                            >
+                                {isPlaying && currentlyPlayingId === `vatican-${index}` ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+                            </button>
+                        </div>
+                        <div className="reading-text">
+                            {renderReadingText(reading.text)}
+                        </div>
+                    </div>
+                ))}
+
+                {/* Common Reflection (Bottom for both) */}
                 {!loading && !error && reflection && (
                     <div className="reading-card reflection-card">
                         <div className="reading-header">
                             <div className="reading-title-section">
                                 <h3 className="reading-title">
-                                    {language === 'es' ? 'Reflexión Diaria' : 'Daily Reflection'}
+                                    {reflection.title}
                                 </h3>
-                                {reflection.title && <div className="reflection-subtitle">{reflection.title}</div>}
                             </div>
+                            <button
+                                className={`reading-play-btn ${isPlaying && currentlyPlayingId === 'reflection' ? 'playing' : ''}`}
+                                onClick={() => handlePlayContent('reflection', reflection.title, reflection.content)}
+                                aria-label={isPlaying && currentlyPlayingId === 'reflection' ? "Stop" : "Play"}
+                            >
+                                {isPlaying && currentlyPlayingId === 'reflection' ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+                            </button>
                         </div>
                         <div className="reading-text">
                             {reflection.content.split('\n\n').map((para, i) => (
@@ -397,42 +465,6 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                             ))}
                         </div>
                     </div>
-                )}
-
-                {/* Vatican Readings (for comparison) */}
-                {!loading && !error && vaticanData?.readings && vaticanData.readings.length > 0 && (
-                    <>
-                        <div className="vatican-section-header">
-                            <h2>{language === 'es' ? 'Lecturas de Vatican News' : 'Vatican News Readings'}</h2>
-                        </div>
-                        {vaticanData.readings.map((reading, index) => (
-                            <div key={`vatican-${index}`} className="reading-card">
-                                <div className="reading-header">
-                                    <div className="reading-title-section">
-                                        <h3 className="reading-title">{reading.title}</h3>
-                                    </div>
-                                </div>
-                                <div className="reading-text">
-                                    {renderReadingText(reading.text)}
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Duplicate Reflection for Vatican Section */}
-                        {reflection && (
-                            <div className="reading-card reflection-card">
-                                <div className="card-header">
-                                    <h3 className="card-title">{reflection.title}</h3>
-                                    <span className="card-date">{reflection.date}</span>
-                                </div>
-                                <div className="card-content">
-                                    {reflection.content.split('\n\n').map((para, i) => (
-                                        <p key={i}>{para.replace(/<[^>]+>/g, '')}</p>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </>
                 )}
 
                 {!loading && !error && data?.readings.length === 0 && (
