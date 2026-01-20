@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { getVersionInfo, type VersionInfo } from '../utils/version';
 import { LiturgicalCard } from './LiturgicalCard';
-import { fetchLiturgicalDay, getLiturgicalColorHex, type LiturgicalDay } from '../utils/liturgicalCalendar'; // Import fetcher
+import { fetchLiturgicalDay, type LiturgicalDay } from '../utils/liturgicalCalendar'; // Import fetcher
 import './PrayerSelectionScreen.css';
 
 interface PrayerSelectionScreenProps {
@@ -18,7 +18,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
     const { language } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
-    const [headerColor, setHeaderColor] = useState<string | null>(null);
+
 
     // New State for Blocking Load
     const [liturgicalData, setLiturgicalData] = useState<LiturgicalDay | null>(null);
@@ -36,10 +36,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                 setAppVersion(version);
                 setLiturgicalData(liturgy);
 
-                // Set initial header color if needed (though card handles its own now, parents title uses static white)
-                if (liturgy && liturgy.celebrations.length > 0) {
-                    setHeaderColor(getLiturgicalColorHex(liturgy.celebrations[0].colour));
-                }
+
             } catch (e) {
                 console.error("Failed to load screen data", e);
             } finally {
