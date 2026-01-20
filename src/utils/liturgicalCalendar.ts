@@ -15,11 +15,11 @@ export interface LiturgicalDay {
     weekday: string;
 }
 
-export const getLiturgicalColorHex = (colorName: string): string => {
+export const getLiturgicalColorHex = (_colorName: string): string => {
     return '#10B981';
 };
 
-export const getSeasonName = (season: string): string => {
+export const getSeasonName = (_season: string): string => {
     return 'Ordinary Time';
 };
 
