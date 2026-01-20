@@ -1,114 +1,71 @@
-.liturgical-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 1rem 1.25rem;
-    margin-bottom: 0;
-    /* Let parent gap handle spacing */
+.liturgical-container {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    align-items: center;
     width: 100%;
     max-width: 600px;
     align-self: center;
-}
-
-.liturgical-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: rgba(255, 255, 255, 0.6);
-    padding: 0 0.25rem;
-}
-
-.liturgical-season {
-    font-family: 'Cinzel', serif;
-    /* Changed to Serif */
-    font-weight: 700;
-    /* Increased to Bold */
-    border: 1px solid;
-    padding: 0.45rem 1.4rem;
-    /* Slightly Increased */
-    border-radius: 99px;
-    font-size: 0.65rem;
-    /* Slightly Increased */
-    line-height: 1.2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: 0.05em;
-    box-sizing: border-box;
-    white-space: nowrap;
-    /* Prevent wrapping */
-}
-
-.liturgical-date {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border: 1px solid;
-    padding: 0.45rem 1.4rem;
-    /* Slightly Increased */
-    border-radius: 99px;
-    font-family: 'Cinzel', serif;
-    /* Changed to Serif */
-    font-size: 0.65rem;
-    /* Slightly Increased */
-    font-weight: 700;
-    /* Increased to Bold */
-    line-height: 1.2;
-    letter-spacing: 0.05em;
-    box-sizing: border-box;
-    white-space: nowrap;
-}
-
-.liturgical-celebration {
-    padding: 0.7rem 1.25rem;
-    /* Reduced vertical padding by 30% */
-    border-radius: 12px;
-    border: 1px solid;
-    /* Color comes from inline style */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    gap: 0.1rem;
+    /* Tightened gap */
+    margin-bottom: 0;
     text-align: center;
-    transition: transform 0.2s ease;
-    gap: 0.25rem;
 }
 
-.liturgical-celebration:hover {
-    transform: translateY(-1px);
-}
-
-.celebration-title {
+.liturgical-season-large {
     font-family: 'Cinzel', serif;
-    font-weight: 600;
-    font-size: 1.2rem;
-    line-height: 1.3;
-}
-
-.celebration-rank {
-    font-size: 0.7rem;
-    text-transform: uppercase;
+    font-size: 1.5rem;
+    font-weight: 400;
     letter-spacing: 0.1em;
-    opacity: 0.9;
-    margin-top: 0.25rem;
+    text-transform: uppercase;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    padding: 0 1rem;
 }
 
-/* Mobile Adjustments */
+.liturgical-date-simple {
+    font-family: 'Cinzel', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: 0.3rem;
+    /* Reduced from 0.5rem to tighten gap */
+    letter-spacing: 0.05em;
+}
+
+.liturgical-feast-name {
+    font-family: 'Cinzel', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    padding: 0 1rem;
+    line-height: 1.4;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    max-width: 90%;
+}
+
+.church-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0 2rem;
+    opacity: 0.7;
+}
+
+.divider-line {
+    height: 1px;
+    flex: 1;
+}
+
+.divider-icon {
+    font-size: 1rem;
+    padding: 0 0.5rem;
+}
+
 @media (max-width: 480px) {
-    .celebration-title {
-        font-size: 1.1rem;
+    .liturgical-season-large {
+        font-size: 1.25rem;
     }
 
-    .liturgical-card {
-        padding: 0.85rem 1rem;
-        margin-bottom: 1.5rem;
+    .liturgical-feast-name {
+        font-size: 1rem;
     }
 }

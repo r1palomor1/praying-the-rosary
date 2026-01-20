@@ -109,11 +109,14 @@ git push
   - **Status:** Deployed and working
 
 ### Liturgical Integration
-- [x] **Liturgical Calendar Integration** ✅ COMPLETED (Jan 19, 2026)
+- [x] **Liturgical Calendar Integration** ✅ COMPLETED (Jan 19-20, 2026)
   - **Strategy:** Backend-only implementation (Zero-Config Client)
   - **Logic:** Used `romcal` library in Vercel Serverless Function (`api/liturgy.js`)
   - **Frontend:** Light card component fetches JSON from proxy
-  - **Outcome:** Reliable, consistent color/feast data without 3rd party API flakiness
+  - **Styling:**
+    - Premium glass morphism
+    - Dynamic header coloring (match liturgical color)
+    - Responsive typesetting (Cinzel font)
   - **Status:** Deployed and working
 
 ### Debug Tool Needed
@@ -156,15 +159,7 @@ git push
   - Day Counting: Jan 3 to Dec 31 = 363 days (was 364)
 
 ### 🎯 Custom Start Date Tracking (Jan 2, 2026) ✅ COMPLETED
-- [x] **Integrate Liturgical Calendar**
-    - [x] Create/Update `LiturgicalCard.tsx`
-    - [x] Fetch data from *Romcal* backend
-    - [x] Display: Season, Date, Primary Celebration Name, Color
-    - [x] Styling: Premium, glassy, cohesive with Rosary app
-    - [x] Fix Text Clipping in badges
-    - [x] Dynamic Coloring of Header Elements
-- [x] **Add Read/Audio Toggle** for Daily Readings (Integrated in `DailyReadingsScreen`)
-- [x] **Responsorial Psalm** logic (Hidden if missing) -> *Done mostly, Logic exists.*
+
 - [x] **Progress Settings System**
   - Created progressSettings.ts utility
   - Stores Rosary and Sacred Prayers start dates separately

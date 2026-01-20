@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, ChevronRight } from 'lucide-react';
+import { Settings as SettingsIcon, ChevronRight, Loader2 } from 'lucide-react'; // Added Loader2
 import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { getVersionInfo, type VersionInfo } from '../utils/version';
 import { LiturgicalCard } from './LiturgicalCard';
+import { fetchLiturgicalDay, getLiturgicalColorHex, type LiturgicalDay } from '../utils/liturgicalCalendar'; // Import fetcher
 import './PrayerSelectionScreen.css';
 
 interface PrayerSelectionScreenProps {
@@ -19,8 +20,34 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
     const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
     const [headerColor, setHeaderColor] = useState<string | null>(null);
 
+    // New State for Blocking Load
+    const [liturgicalData, setLiturgicalData] = useState<LiturgicalDay | null>(null);
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
-        getVersionInfo().then(setAppVersion).catch(console.error);
+        const initScreen = async () => {
+            try {
+                // Parallel fetch for speed
+                const [version, liturgy] = await Promise.all([
+                    getVersionInfo(),
+                    fetchLiturgicalDay()
+                ]);
+
+                setAppVersion(version);
+                setLiturgicalData(liturgy);
+
+                // Set initial header color if needed (though card handles its own now, parents title uses static white)
+                if (liturgy && liturgy.celebrations.length > 0) {
+                    setHeaderColor(getLiturgicalColorHex(liturgy.celebrations[0].colour));
+                }
+            } catch (e) {
+                console.error("Failed to load screen data", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initScreen();
     }, []);
 
     const t = {
@@ -55,40 +82,57 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
         setShowSettings(false);
     };
 
+    // BLOCKING LOAD - Show nothing or simple spinner until data is ready
+    if (loading) {
+        return (
+            <div className="selection-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <Loader2 className="animate-spin" size={48} color="#D4AF37" />
+            </div>
+        );
+    }
+
+    // Safety fallback if fetch failed completely
+    if (!liturgicalData) return null;
+
     return (
-        <div className="selection-container fade-in">
-            <header className="selection-header">
-                <div className="header-divider"></div>
-                <div className="header-row">
-                    <div className="header-spacer"></div>
-                    <h1
-                        className="selection-title"
-                        style={headerColor ? {
-                            background: 'none',
-                            WebkitTextFillColor: headerColor,
-                            color: headerColor,
-                            textShadow: `0 0 20px ${headerColor}50`
-                        } : {}}
-                    >
-                        {t.title}
-                    </h1>
-                    <button
-                        className="header-btn"
-                        onClick={() => setShowSettings(true)}
-                        aria-label={t.settings}
-                        style={{ color: 'rgba(255, 255, 255, 0.9)' }}
-                    >
-                        <SettingsIcon size={20} />
-                    </button>
-                </div>
-            </header>
+        <div className="selection-container fade-in" style={{ position: 'relative' }}>
+            {/* Minimal Header for Settings Icon Only */}
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10 }}>
+                <button
+                    className="header-btn"
+                    onClick={() => setShowSettings(true)}
+                    aria-label={t.settings}
+                    style={{
+                        color: 'rgba(255, 255, 255, 0.9)',
+                    }}
+                >
+                    <SettingsIcon size={21} strokeWidth={3} />
+                </button>
+            </div>
 
-            <main className="selection-main">
-                {/* Liturgical Day Card */}
-                <LiturgicalCard onColorChange={setHeaderColor} />
+            <main className="selection-main" style={{ paddingTop: 0 }}>
+                {/* 1. Liturgical Status (Top) - Pass Data Directly */}
+                <LiturgicalCard dayData={liturgicalData} />
 
-                {/* Divider after Liturgical Card */}
-                <div className="decorative-divider" style={{ opacity: 0.6 }}>
+                {/* 2. Action Header (Title) */}
+                <h1
+                    className="selection-title"
+                    style={{
+                        margin: '0.75rem 0 -0.4rem', // Negative margin matches gap to 0.6rem
+                        fontSize: '1.5rem',
+                        letterSpacing: '0.15em',
+                        color: '#E5E7EB', // Action header is neutral/white
+                        textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+                        fontWeight: 300, // Removed boldness
+                        textAlign: 'center',
+                        width: '100%'
+                    }}
+                >
+                    {t.title.toUpperCase()}
+                </h1>
+
+                {/* 3. Helper Divider (Below Title) - Reduced spacing */}
+                <div className="decorative-divider" style={{ opacity: 0.6, marginBottom: '0.75rem' }}>
                     <div className="divider-line divider-line-left"></div>
                     <span className="material-symbols-outlined divider-icon">church</span>
                     <div className="divider-line divider-line-right"></div>
@@ -108,7 +152,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                     <ChevronRight className="card-chevron" size={24} />
                 </button>
 
-                {/* Divider */}
+                {/* Divider (Between Readings & Rosary) */}
                 <div className="decorative-divider">
                     <div className="divider-line divider-line-left"></div>
                     <span className="material-symbols-outlined divider-icon">church</span>
@@ -129,7 +173,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                     <ChevronRight className="card-chevron" size={24} />
                 </button>
 
-                {/* Divider */}
+                {/* Divider (Between Rosary & Sacred Prayers) */}
                 <div className="decorative-divider">
                     <div className="divider-line divider-line-left"></div>
                     <span className="material-symbols-outlined divider-icon">church</span>
