@@ -21,7 +21,11 @@ export const fetchLiturgicalDay = async (): Promise<LiturgicalDay | null> => {
     try {
         console.log('Fetching liturgical data from:', API_URL);
         const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`Status ${response.status}`);
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error('Liturgical API Error Body:', errText);
+            throw new Error(`Status ${response.status}`);
+        }
 
         const data = await response.json();
         console.log('Liturgical Data:', data);
