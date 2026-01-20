@@ -26,6 +26,10 @@ export default async function handler(request, response) {
         response.status(200).json(data);
     } catch (error) {
         console.error('Calendar Proxy Error:', error);
-        response.status(500).json({ error: 'Failed to fetch liturgical data' });
+        response.status(500).json({
+            error: 'Failed to fetch liturgical data',
+            details: error.message,
+            stack: error.stack
+        });
     }
 }
