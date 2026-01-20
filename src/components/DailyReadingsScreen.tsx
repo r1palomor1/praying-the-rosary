@@ -381,6 +381,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                 className="source-select"
                                 value={readingSource}
                                 onChange={(e) => setReadingSource(e.target.value as 'usccb' | 'vatican')}
+                                aria-label={language === 'es' ? 'Fuente de lectura' : 'Reading Source'}
                             >
                                 <option value="vatican">VATICAN</option>
                                 <option value="usccb">USCCB</option>

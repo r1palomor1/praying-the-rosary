@@ -3,6 +3,7 @@ import { Settings as SettingsIcon, ChevronRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { getVersionInfo, type VersionInfo } from '../utils/version';
+import { LiturgicalCard } from './LiturgicalCard';
 import './PrayerSelectionScreen.css';
 
 interface PrayerSelectionScreenProps {
@@ -71,6 +72,9 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
             </header>
 
             <main className="selection-main">
+                {/* Liturgical Day Card */}
+                <LiturgicalCard />
+
                 {/* Daily Readings Card */}
                 <button onClick={onSelectDailyReadings} className="prayer-card">
                     <div className="card-image-container">

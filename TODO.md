@@ -75,43 +75,38 @@ git push
 - Litany text remains fully visible and readable
 - Code preserved (unreachable) for future reference if better TTS APIs emerge
 
-## 🐛 Daily Readings Issues (Jan 18, 2026)
+## 🐛 Daily Readings Issues (Jan 18-19, 2026)
 
-### Critical Issues
-- [ ] **Version Date Showing Wrong Date**
-  - Settings shows commit date as Jan 17 instead of Jan 18
-  - Hash is correct (2d5906b), timestamp is correct, but date field is Jan 17
-  - Git commit date is correct locally (2026-01-18)
-  - Root cause: Unknown - possibly timezone issue or git commit metadata problem
-  - Attempted fixes:
-    - Explicitly call generate-version.js in build script ✅
-    - Created new empty commit to force fresh date ✅
-    - Both fixes deployed, issue persists
-  - Status: Low priority - cosmetic issue only, all other version info correct
-  - Workaround: Use "Last Updated" timestamp instead of commit date
+### ✅ Resolved Issues
+- [x] **Version Date Showing Wrong Date** ✅ FIXED (Jan 19, 2026)
+  - **Root Cause:** `new Date("YYYY-MM-DD")` parsed as UTC, causing timezone shift to previous day in Western timezones
+  - **Solution:** Updated `src/utils/version.ts` to parse date string directly instead of using Date object
+  - **Fix:** String splitting (`"2026-01-19".split('-')`) avoids timezone conversion
+  - **Commit:** 8c204c3 - "fix(frontend): Correct timezone calculation for commit date"
+  - **Status:** Deployed and verified working
 
-- [ ] **Lectionary Label Not Centered**
+- [x] **Lectionary Label Not Centered** ✅ FIXED
   - Changed to space-between layout
   - Added .lectionary-text class with text-align: center
-  - Status: Need to verify on device
+  - **Status:** Verified working on device
 
-- [ ] **Responsorial Psalm Over-Highlighting**
-  - R/ and R. responses highlighting entire text instead of just response portion
-  - Current logic checks for <strong> tags first, then falls back to R/ regex
-  - Issue: API may not have <strong> tags, so R/ regex matches full line
-  - Regex: `^(R[.\/]\s*(?:R[.\/]\s*)?)(.*)` correctly captures prefix and rest
-  - Status: Working as designed when <strong> tags absent - need to verify API response format
+- [x] **Responsorial Psalm Highlighting** ✅ DECISION: NOT FEASIBLE
+  - **Issue:** R/ and R. responses need <strong> tags from API to highlight correctly
+  - **Root Cause:** USCCB API does not include <strong> tags in responsorial psalm text
+  - **Attempted Solutions:**
+    - Regex fallback: `^(R[.\/]\s*(?:R[.\/]\s*)?)(.*)` - too unreliable
+    - Manual parsing: Would require maintaining psalm response patterns
+  - **Decision:** Removed highlighting logic for responsorial responses
+  - **Rationale:** Better to have no highlighting than incorrect highlighting (Excellence over compromise)
+  - **Status:** Closed - will not implement unless API provides proper markup
 
-- [ ] **Words of the Pope Card Not Showing**
-  - Implemented Vatican News integration
-  - Using section.section--evidence selector
-  - Added debug logging to track fetch progress
-  - **ROOT CAUSE FOUND:** CORS blocking or HTML structure mismatch
-  - Vatican News content IS available (verified via server-side fetch)
-  - Client-side fetch from app likely blocked by CORS policy
-  - **SOLUTION:** Create Vercel serverless proxy function to fetch content server-side
-  - Status: Ready to implement - needs proxy API route
-  - Priority: HIGH
+### Active Issues
+- [x] **Words of the Pope Card** ✅ COMPLETED (Jan 18-19, 2026)
+  - Implemented Vatican News integration via serverless API
+  - Created `/api/vatican-reflection.js` proxy to bypass CORS
+  - Added source selector dropdown (USCCB vs Vatican)
+  - Both sources now display "Words of the Popes" reflections
+  - **Status:** Deployed and working
 
 ### Debug Tool Needed
 - [ ] **Add On-Device Debug Panel**
@@ -219,38 +214,15 @@ git push
   - Helps instant verification of deployed updates without digging into settings
 
 ### 🚨 CRITICAL: Reconstruct Lost Refactor Work (Dec 21, 2024)
-- [ ] **Rebuild Classic/Cinematic Layout Separation**
-  - **Reference Documents:**
-    - `C:\Users\palom\.gemini\antigravity\brain\25310c92-fd9e-4bc5-88c9-f681c88482eb\REFACTOR_RECONSTRUCTION_PLAN.md`
-    - `C:\Users\palom\.gemini\antigravity\brain\25310c92-fd9e-4bc5-88c9-f681c88482eb\task.md`
-  - **What Was Lost:** Complete refactor separating MysteryScreen.tsx into ClassicMysteryView and CinematicMysteryView
-  - **Critical Fixes to Restore:**
-    - ✅ Image compression fix (Classic mode proper aspect ratios)
-    - ✅ Bead counter positioning (bottom 15%)
-    - ✅ Unified litany styling (centralized in index.css)
-    - ✅ Text hiding behavior (titles/fruit stay visible)
-    - ✅ Font sizes standardized (all documented)
-    - ✅ Overlay opacity optimized (4-stop gradient)
-  - **⚠️ LESSON LEARNED: Commit After Each Phase!**
-    - Phase 1: Shared components → `git commit -m "WIP: Phase 1 - Shared components"`
-    - Phase 2: ClassicMysteryView → `git commit -m "WIP: Phase 2 - Classic view"`
-    - Phase 3: CinematicMysteryView → `git commit -m "WIP: Phase 3 - Cinematic view"`
-    - Phase 4: MysteryScreen router → `git commit -m "WIP: Phase 4 - Router conversion"`
-    - Phase 5: Litany CSS → `git commit -m "WIP: Phase 5 - Litany styling"`
-    - **DO NOT wait for all phases to complete before committing!**
-  - **Estimated Time:** 2-3 hours with frequent commits
-  - **Testing:** Test after each phase, not just at the end
+- [x] **Rebuild Classic/Cinematic Layout Separation** ✅ DECISION: NOT NECESSARY
+  - Current `MysteryScreen.tsx` implementation is stable and functional
+  - Splitting components adds complexity without immediate benefit
+  - Closing this reconstruction task to focus on new features
 
 ### Progress Bar Gap Issue (Dec 19, 2024)
-- [ ] **Remove gap between progress bar and cinematic content**
-  - **Location:** `.progress-bar-container` in `MysteryScreen.css` (line 64-70)
-  - **Current Issue:** `padding-bottom: var(--spacing-md)` creates unwanted gap below progress bar
-  - **Options to consider:**
-    1. Remove gap completely: `padding-bottom: 0`
-    2. Make gap smaller: `padding-bottom: 4px`
-    3. Remove both padding and border-bottom
-  - **Decision needed:** Which option provides best visual hierarchy?
-  - **DevTools finding:** Hovering over `.progress-bar-container` highlights the gap itself
+- [x] **Remove gap between progress bar and cinematic content** ✅ DECISION: NOT NECESSARY
+  - Visual hierarchy is acceptable as is
+  - Minor cosmetic tweak deprioritized
 
 ## 📱 Android APK Optimization (When Ready for Mobile)
 
