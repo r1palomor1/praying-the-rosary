@@ -108,6 +108,14 @@ git push
   - Both sources now display "Words of the Popes" reflections
   - **Status:** Deployed and working
 
+### Liturgical Integration
+- [x] **Liturgical Calendar Integration** ✅ COMPLETED (Jan 19, 2026)
+  - **Strategy:** Backend-only implementation (Zero-Config Client)
+  - **Logic:** Used `romcal` library in Vercel Serverless Function (`api/liturgy.js`)
+  - **Frontend:** Light card component fetches JSON from proxy
+  - **Outcome:** Reliable, consistent color/feast data without 3rd party API flakiness
+  - **Status:** Deployed and working
+
 ### Debug Tool Needed
 - [ ] **Add On-Device Debug Panel**
   - Display console logs in app UI
@@ -148,6 +156,15 @@ git push
   - Day Counting: Jan 3 to Dec 31 = 363 days (was 364)
 
 ### 🎯 Custom Start Date Tracking (Jan 2, 2026) ✅ COMPLETED
+- [x] **Integrate Liturgical Calendar**
+    - [x] Create/Update `LiturgicalCard.tsx`
+    - [x] Fetch data from *Romcal* backend
+    - [x] Display: Season, Date, Primary Celebration Name, Color
+    - [x] Styling: Premium, glassy, cohesive with Rosary app
+    - [x] Fix Text Clipping in badges
+    - [x] Dynamic Coloring of Header Elements
+- [x] **Add Read/Audio Toggle** for Daily Readings (Integrated in `DailyReadingsScreen`)
+- [x] **Responsorial Psalm** logic (Hidden if missing) -> *Done mostly, Logic exists.*
 - [x] **Progress Settings System**
   - Created progressSettings.ts utility
   - Stores Rosary and Sacred Prayers start dates separately
@@ -475,13 +492,6 @@ Current Web Speech API doesn't provide real-time feedback on what's being read, 
 - [ ] Accessibility improvements (screen reader announcements)
 
 ## 🚫 Blocked / Deferred Features
-
-### Catholic Calendar API Integration (Jan 19, 2026)
-- **Status:** BLOCKED / NOT FEASIBLE
-- **Attempt 1 (API Proxy):** `calapi.inadiutorium.cz` blocked Vercel IP ranges (500 Fetch Error). Unreliable upstream.
-- **Attempt 2 (Romcal v1.3):** Old library crashed modern Vite bundler (`moment-recur` undefined).
-- **Attempt 3 (Romcal v3):** Requires TypeScript gymnastics and config changes too risky for stability.
-- **Decision:** Do not implement until a modern, stable, zero-config API or library exists.
 
 ### Phase 6: AI-Powered Rosary Education (Future Enhancement)
 - [ ] **AI Chatbot for Mystery Explanations**

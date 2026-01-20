@@ -1,18 +1,17 @@
 .liturgical-card {
     background: rgba(255, 255, 255, 0.05);
-    /* Glass hint */
-    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0;
+    /* Let parent gap handle spacing */
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     width: 100%;
     max-width: 600px;
-    /* Match other cards */
     align-self: center;
 }
 
@@ -20,57 +19,96 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: rgba(255, 255, 255, 0.6);
+    padding: 0 0.25rem;
 }
 
 .liturgical-season {
-    font-weight: 600;
+    font-family: 'Cinzel', serif;
+    /* Changed to Serif */
+    font-weight: 700;
+    /* Increased to Bold */
+    border: 1px solid;
+    padding: 0.45rem 1.4rem;
+    /* Slightly Increased */
+    border-radius: 99px;
+    font-size: 0.65rem;
+    /* Slightly Increased */
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.05em;
+    box-sizing: border-box;
+    white-space: nowrap;
+    /* Prevent wrapping */
 }
 
 .liturgical-date {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid;
+    padding: 0.45rem 1.4rem;
+    /* Slightly Increased */
+    border-radius: 99px;
+    font-family: 'Cinzel', serif;
+    /* Changed to Serif */
+    font-size: 0.65rem;
+    /* Slightly Increased */
+    font-weight: 700;
+    /* Increased to Bold */
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+    box-sizing: border-box;
+    white-space: nowrap;
 }
 
 .liturgical-celebration {
-    padding: 0.75rem 1rem;
+    padding: 0.7rem 1.25rem;
+    /* Reduced vertical padding by 30% */
     border-radius: 12px;
+    border: 1px solid;
+    /* Color comes from inline style */
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    align-items: center;
     text-align: center;
     transition: transform 0.2s ease;
+    gap: 0.25rem;
 }
 
-.liturgical-celebration:active {
-    transform: scale(0.98);
+.liturgical-celebration:hover {
+    transform: translateY(-1px);
 }
 
 .celebration-title {
-    font-weight: 700;
-    font-size: 1.1rem;
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 1.2rem;
     line-height: 1.3;
 }
 
 .celebration-rank {
-    font-size: 0.75rem;
-    opacity: 0.9;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
+    opacity: 0.9;
+    margin-top: 0.25rem;
 }
 
 /* Mobile Adjustments */
 @media (max-width: 480px) {
     .celebration-title {
-        font-size: 1rem;
+        font-size: 1.1rem;
     }
 
     .liturgical-card {
-        margin-bottom: 1rem;
-        padding: 0.75rem;
+        padding: 0.85rem 1rem;
+        margin-bottom: 1.5rem;
     }
 }

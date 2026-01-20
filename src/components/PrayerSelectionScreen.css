@@ -14,7 +14,8 @@
 
 /* Header */
 .selection-header {
-    padding: 1.5rem 1.5rem 2.5rem;
+    padding: 1.5rem 1.5rem 0.5rem;
+    /* Reduced bottom padding */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -33,7 +34,8 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: 2.5rem;
+    margin-bottom: 0.25rem;
+    /* Drastically reduced from 1rem */
 }
 
 .header-btn {
@@ -73,10 +75,11 @@
 /* Main Content - Stacked List */
 .selection-main {
     flex: 1;
-    padding: 0 1.5rem 8rem;
+    padding: 0 1.5rem 6rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
+    /* Reduced from 1.5rem */
 }
 
 /* Glass Card */

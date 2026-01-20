@@ -1,10 +1,13 @@
 
 import { useEffect, useState } from 'react';
 import { fetchLiturgicalDay, getLiturgicalColorHex, getSeasonName, type LiturgicalDay } from '../utils/liturgicalCalendar';
-import { Calendar } from 'lucide-react';
 import './LiturgicalCard.css';
 
-export function LiturgicalCard() {
+interface LiturgicalCardProps {
+    onColorChange?: (color: string) => void;
+}
+
+export function LiturgicalCard({ onColorChange }: LiturgicalCardProps) {
     const [dayData, setDayData] = useState<LiturgicalDay | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -13,44 +16,89 @@ export function LiturgicalCard() {
             const data = await fetchLiturgicalDay();
             setDayData(data);
             setLoading(false);
+            if (data && data.celebrations.length > 0) {
+                const color = getLiturgicalColorHex(data.celebrations[0].colour);
+                onColorChange?.(color);
+            }
         };
         loadData();
-    }, []);
+    }, [onColorChange]);
 
-    if (loading || !dayData) return null; // Don't show anything if loading or failed (clean UI)
+    if (loading || !dayData) return null;
 
     const primaryCelebration = dayData.celebrations[0];
     const colorHex = getLiturgicalColorHex(primaryCelebration.colour);
 
-    // Determine text color based on background luminance (rough heuristic)
-    const isLightColor = ['white', 'gold', 'yellow'].includes(primaryCelebration.colour.toLowerCase());
-    const textColor = isLightColor ? '#1F2937' : 'white'; // gray-800 or white
-
     return (
-        <div className="liturgical-card">
-            <div className="liturgical-header">
-                <div className="liturgical-season">
-                    {getSeasonName(dayData.season)}
-                </div>
-                <div className="liturgical-date">
-                    <Calendar size={14} className="liturgical-icon" />
-                    {new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
-                </div>
+        <>
+            <div className="decorative-divider" style={{ marginBottom: '0.25rem', marginTop: '-0.75rem', opacity: 0.8 }}>
+                <div
+                    className="divider-line divider-line-left"
+                    style={{ background: `linear-gradient(to right, transparent, ${colorHex})` }}
+                ></div>
+                <span
+                    className="material-symbols-outlined divider-icon"
+                    style={{ color: colorHex }}
+                >
+                    church
+                </span>
+                <div
+                    className="divider-line divider-line-right"
+                    style={{ background: `linear-gradient(to left, transparent, ${colorHex})` }}
+                ></div>
             </div>
 
-            <div
-                className="liturgical-celebration"
-                style={{
-                    backgroundColor: colorHex,
-                    color: textColor,
-                    boxShadow: `0 4px 12px ${colorHex}40` // colored glow
-                }}
-            >
-                <span className="celebration-title">{primaryCelebration.title}</span>
-                {primaryCelebration.rank !== 'ferial' && (
-                    <span className="celebration-rank">{primaryCelebration.rank}</span>
-                )}
+            <div className="liturgical-card">
+                <div className="liturgical-header">
+                    <div
+                        className="liturgical-season"
+                        style={{
+                            color: colorHex,
+                            borderColor: `${colorHex}50`,
+                            backgroundColor: `${colorHex}10`
+                        }}
+                    >
+                        {getSeasonName(dayData.season)}
+                    </div>
+                    <div
+                        className="liturgical-date"
+                        style={{
+                            color: colorHex,
+                            borderColor: `${colorHex}50`,
+                            backgroundColor: `${colorHex}10`
+                        }}
+                    >
+                        {new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+                    </div>
+                </div>
+
+                <div
+                    className="liturgical-celebration"
+                    style={{
+                        borderColor: `${colorHex}50`,
+                        backgroundColor: `${colorHex}10`, // Very subtle tint
+                        color: '#f3f4f6', // Keep text readable (white-ish)
+                        boxShadow: `0 0 15px -5px ${colorHex}30` // Glow
+                    }}
+                >
+                    <div className="celebration-content">
+                        <span
+                            className="celebration-title"
+                            style={{
+                                textShadow: `0 0 15px ${colorHex}50`,
+                                color: colorHex
+                            }}
+                        >
+                            {primaryCelebration.title}
+                        </span>
+                        {primaryCelebration.rank !== 'ferial' && (
+                            <span className="celebration-rank" style={{ color: colorHex }}>
+                                {primaryCelebration.rank}
+                            </span>
+                        )}
+                    </div>
+                </div>
             </div>
-        </div>
+        </>
     );
 }

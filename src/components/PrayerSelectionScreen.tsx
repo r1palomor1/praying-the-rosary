@@ -17,6 +17,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
     const { language } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
+    const [headerColor, setHeaderColor] = useState<string | null>(null);
 
     useEffect(() => {
         getVersionInfo().then(setAppVersion).catch(console.error);
@@ -60,11 +61,22 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                 <div className="header-divider"></div>
                 <div className="header-row">
                     <div className="header-spacer"></div>
-                    <h1 className="selection-title">{t.title}</h1>
+                    <h1
+                        className="selection-title"
+                        style={headerColor ? {
+                            background: 'none',
+                            WebkitTextFillColor: headerColor,
+                            color: headerColor,
+                            textShadow: `0 0 20px ${headerColor}50`
+                        } : {}}
+                    >
+                        {t.title}
+                    </h1>
                     <button
                         className="header-btn"
                         onClick={() => setShowSettings(true)}
                         aria-label={t.settings}
+                        style={{ color: 'rgba(255, 255, 255, 0.9)' }}
                     >
                         <SettingsIcon size={20} />
                     </button>
@@ -73,7 +85,14 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
 
             <main className="selection-main">
                 {/* Liturgical Day Card */}
-                <LiturgicalCard />
+                <LiturgicalCard onColorChange={setHeaderColor} />
+
+                {/* Divider after Liturgical Card */}
+                <div className="decorative-divider" style={{ opacity: 0.6 }}>
+                    <div className="divider-line divider-line-left"></div>
+                    <span className="material-symbols-outlined divider-icon">church</span>
+                    <div className="divider-line divider-line-right"></div>
+                </div>
 
                 {/* Daily Readings Card */}
                 <button onClick={onSelectDailyReadings} className="prayer-card">
