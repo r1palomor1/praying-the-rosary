@@ -1,5 +1,5 @@
 
-// Emergency Stub to prevent Romcal crash
+// Interface matching our API response
 export interface LiturgicalCelebration {
     title: string;
     colour: string;
@@ -15,15 +15,43 @@ export interface LiturgicalDay {
     weekday: string;
 }
 
-export const getLiturgicalColorHex = (_colorName: string): string => {
-    return '#10B981';
+// Map Romcal colors to our specific hex values
+export const getLiturgicalColorHex = (colorName: string): string => {
+    const lower = colorName ? colorName.toLowerCase() : 'green';
+    if (lower.includes('green')) return '#10B981'; // emerald-500
+    if (lower.includes('violet') || lower.includes('purple')) return '#8B5CF6'; // violet-500
+    if (lower.includes('white')) return '#F3F4F6'; // gray-100
+    if (lower.includes('red')) return '#EF4444'; // red-500
+    if (lower.includes('rose') || lower.includes('pink')) return '#EC4899'; // pink-500
+    if (lower.includes('black')) return '#6B7280'; // gray-500
+    if (lower.includes('gold')) return '#F59E0B'; // amber-500
+    return '#10B981'; // default
 };
 
-export const getSeasonName = (_season: string): string => {
-    return 'Ordinary Time';
+export const getSeasonName = (season: string): string => {
+    // Transform 'ordinary' -> 'Ordinary Time', 'advent' -> 'Advent'
+    if (!season) return 'Ordinary Time';
+    return season.charAt(0).toUpperCase() + season.slice(1).replace(/([A-Z])/g, ' $1').trim();
 };
+
+const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
+const API_URL = `${API_BASE}/api/liturgy`;
 
 export const fetchLiturgicalDay = async (): Promise<LiturgicalDay | null> => {
-    console.warn('Liturgical Calendar disabled due to library incompatibility');
-    return null;
+    try {
+        console.log('Fetching liturgical data from proxy:', API_URL);
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error('Liturgical API Error:', errText);
+            throw new Error(`Status ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data as LiturgicalDay;
+    } catch (error) {
+        console.error('Liturgical Calendar Fetch Error:', error);
+        return null;
+    }
 };
