@@ -37,10 +37,16 @@ export const getSeasonName = (season: string): string => {
 const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 const API_URL = `${API_BASE}/api/liturgy`;
 
-export const fetchLiturgicalDay = async (): Promise<LiturgicalDay | null> => {
+export const fetchLiturgicalDay = async (date?: Date): Promise<LiturgicalDay | null> => {
     try {
-        console.log('Fetching liturgical data from proxy:', API_URL);
-        const response = await fetch(API_URL);
+        let url = API_URL;
+        if (date) {
+            const dateStr = date.toISOString().split('T')[0];
+            url += `?date=${dateStr}`;
+        }
+
+        console.log('Fetching liturgical data from proxy:', url);
+        const response = await fetch(url);
 
         if (!response.ok) {
             const errText = await response.text();
