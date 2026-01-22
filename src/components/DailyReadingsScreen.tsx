@@ -65,7 +65,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
         try {
             // Fetch Liturgical Color for this specific date
-            fetchLiturgicalDay(date).then(liturgy => {
+            fetchLiturgicalDay(date, language).then(liturgy => {
                 if (liturgy && liturgy.celebrations && liturgy.celebrations.length > 0) {
                     setLiturgicalColor(getLiturgicalColorHex(liturgy.celebrations[0].colour));
                 } else {

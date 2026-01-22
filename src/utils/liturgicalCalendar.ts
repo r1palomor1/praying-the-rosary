@@ -28,21 +28,40 @@ export const getLiturgicalColorHex = (colorName: string): string => {
     return '#10B981'; // default
 };
 
-export const getSeasonName = (season: string): string => {
-    // Transform 'ordinary' -> 'Ordinary Time', 'advent' -> 'Advent'
-    if (!season) return 'Ordinary Time';
+export const getSeasonName = (season: string, language: string = 'en'): string => {
+    if (!season) return language === 'es' ? 'Tiempo Ordinario' : 'Ordinary Time';
+
+    // Handle specific Spanish translations
+    if (language === 'es') {
+        const lower = season.toLowerCase();
+        if (lower.includes('ordinary')) return 'Tiempo Ordinario';
+        if (lower.includes('advent')) return 'Adviento';
+        if (lower.includes('christmas')) return 'Navidad';
+        if (lower.includes('lent')) return 'Cuaresma';
+        if (lower.includes('easter')) return 'Pascua';
+    }
+
+    // Default English formatting
     return season.charAt(0).toUpperCase() + season.slice(1).replace(/([A-Z])/g, ' $1').trim();
 };
 
 const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 const API_URL = `${API_BASE}/api/liturgy`;
 
-export const fetchLiturgicalDay = async (date?: Date): Promise<LiturgicalDay | null> => {
+export const fetchLiturgicalDay = async (date?: Date, language: string = 'en'): Promise<LiturgicalDay | null> => {
     try {
         let url = API_URL;
+        const params = new URLSearchParams();
+
         if (date) {
             const dateStr = date.toISOString().split('T')[0];
-            url += `?date=${dateStr}`;
+            params.append('date', dateStr);
+        }
+
+        params.append('locale', language);
+
+        if (params.toString()) {
+            url += `?${params.toString()}`;
         }
 
         console.log('Fetching liturgical data from proxy:', url);

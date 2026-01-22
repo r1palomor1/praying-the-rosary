@@ -931,3 +931,27 @@ User
 
 ## Daily Readings Enhancements
 - [ ] Refine Daily Readings text formatting: Improve whitespace/newlines for Responsorial Psalm and Alleluia (ensure 'R.' and verses are visually distinct).
+
+##  Current Status / Hand-off (Jan 21, 2026)
+
+### Liturgical Calendar State
+- **Library:** omcal v1.3 (Stable Downgrade)
+- **Reason:** v3 Alpha caused server crashes on Vercel.
+- **Current Issue:** Green/Red Color Logic.
+  - omcal v1.3 returns multiple events for a day (e.g., [Green Ordinary Time, Red St Agnes]).
+  - Current pi/liturgy.js blindly picks the first event.
+  - **Fix Needed:** Implement sorting in pi/liturgy.js to prioritize Red/White events over Green.
+
+### Daily Readings
+- **Status:** Functional.
+- **Theme:** Title color changes based on API response.
+- **Note:** If API returns Green (due to sorting issue above), title will be Green.
+
+### Recent Safe Changes (Preserved)
+- Increased Liturgical Card Feast Name size.
+- Fixed Spanish Translation for 'Ordinary Time' in frontend.
+- Fixed Date Formatting (locale-aware).
+
+### Next Steps for Developer
+1. Modify pi/liturgy.js to sort events by rank/color.
+2. Ensure equest.query.date is respected in pi/liturgy.js.

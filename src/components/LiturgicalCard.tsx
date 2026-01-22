@@ -1,4 +1,5 @@
 
+import { useApp } from '../context/AppContext';
 import { getLiturgicalColorHex, getSeasonName, type LiturgicalDay } from '../utils/liturgicalCalendar';
 import './LiturgicalCard.css';
 
@@ -7,6 +8,7 @@ interface LiturgicalCardProps {
 }
 
 export function LiturgicalCard({ dayData }: LiturgicalCardProps) {
+    const { language } = useApp();
     // No internal state or fetching. Pure presentation.
 
     // Safety check (though parent ensures data exists)
@@ -19,7 +21,7 @@ export function LiturgicalCard({ dayData }: LiturgicalCardProps) {
         <div className="liturgical-container">
             {/* Season Name */}
             <div className="liturgical-season-large" style={{ color: colorHex }}>
-                {getSeasonName(dayData.season)}
+                {getSeasonName(dayData.season, language)}
             </div>
 
             {/* Top Divider */}
@@ -42,7 +44,7 @@ export function LiturgicalCard({ dayData }: LiturgicalCardProps) {
 
             {/* Date */}
             <div className="liturgical-date-simple">
-                {new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+                {new Date(dayData.date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'long', day: 'numeric' })}
             </div>
 
             {/* Feast Name */}
