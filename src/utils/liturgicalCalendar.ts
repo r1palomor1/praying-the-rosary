@@ -18,13 +18,13 @@ export interface LiturgicalDay {
 // Map Romcal colors to our specific hex values
 export const getLiturgicalColorHex = (colorName: string): string => {
     const lower = colorName ? colorName.toLowerCase() : 'green';
-    if (lower.includes('green')) return '#10B981'; // emerald-500
-    if (lower.includes('violet') || lower.includes('purple')) return '#8B5CF6'; // violet-500
-    if (lower.includes('white')) return '#F3F4F6'; // gray-100
-    if (lower.includes('red')) return '#EF4444'; // red-500
-    if (lower.includes('rose') || lower.includes('pink')) return '#EC4899'; // pink-500
-    if (lower.includes('black')) return '#6B7280'; // gray-500
-    if (lower.includes('gold')) return '#F59E0B'; // amber-500
+    if (lower.includes('green') || lower.includes('verde')) return '#10B981'; // emerald-500
+    if (lower.includes('violet') || lower.includes('purple') || lower.includes('morado') || lower.includes('violeta')) return '#8B5CF6'; // violet-500
+    if (lower.includes('white') || lower.includes('blanco')) return '#F3F4F6'; // gray-100
+    if (lower.includes('red') || lower.includes('rojo')) return '#EF4444'; // red-500
+    if (lower.includes('rose') || lower.includes('pink') || lower.includes('rosa')) return '#EC4899'; // pink-500
+    if (lower.includes('black') || lower.includes('negro')) return '#6B7280'; // gray-500
+    if (lower.includes('gold') || lower.includes('oro') || lower.includes('dorado')) return '#F59E0B'; // amber-500
     return '#10B981'; // default
 };
 

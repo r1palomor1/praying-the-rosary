@@ -40,6 +40,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const [readingSource, setReadingSource] = useState<'usccb' | 'vatican'>('vatican');
     const [showSettings, setShowSettings] = useState(false);
     const [liturgicalColor, setLiturgicalColor] = useState('#10B981'); // Default green
+    const [liturgicalData, setLiturgicalData] = useState<any>(null); // Store full liturgical data for rank info
 
     // Use production API in dev mode for browser testing
     const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
@@ -68,8 +69,10 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             fetchLiturgicalDay(date, language).then(liturgy => {
                 if (liturgy && liturgy.celebrations && liturgy.celebrations.length > 0) {
                     setLiturgicalColor(getLiturgicalColorHex(liturgy.celebrations[0].colour));
+                    setLiturgicalData(liturgy); // Store full data for rank info
                 } else {
                     setLiturgicalColor('#10B981');
+                    setLiturgicalData(null);
                 }
             }).catch(e => console.log('Color fetch minor error', e));
 
@@ -304,7 +307,22 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                 className="liturgical-day"
                                 style={{ color: liturgicalColor, textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
                             >
-                                {data.title}
+                                {(() => {
+                                    // Check if title already has rank prefix
+                                    const hasRankPrefix = /^(Solemnity|Feast|Memorial|Optional Memorial) of/i.test(data.title);
+
+                                    // If no rank prefix and we have liturgical data with rank, add it
+                                    if (!hasRankPrefix && liturgicalData?.celebrations?.[0]?.rank) {
+                                        const rank = liturgicalData.celebrations[0].rank;
+                                        const rankLabel = rank === 'SOLEMNITY' ? (language === 'es' ? 'Solemnidad de' : 'Solemnity of') :
+                                            rank === 'FEAST' ? (language === 'es' ? 'Fiesta de' : 'Feast of') :
+                                                rank === 'MEMORIAL' ? (language === 'es' ? 'Memoria de' : 'Memorial of') : '';
+
+                                        return rankLabel ? `${rankLabel} ${data.title}` : data.title;
+                                    }
+
+                                    return data.title;
+                                })()}
                             </h2>
                         )}
                         <div className="lectionary-row">
