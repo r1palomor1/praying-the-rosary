@@ -15,13 +15,26 @@ export default async function handler(request, response) {
 
     try {
         // Parse query parameters
-        const queryDate = request.query.date ? new Date(request.query.date + 'T12:00:00') : new Date();
+        const dateParam = request.query.date;
         const locale = request.query.locale || 'en';
 
-        const year = queryDate.getFullYear();
-        const month = String(queryDate.getMonth() + 1).padStart(2, '0'); // 1-indexed, zero-padded
-        const day = String(queryDate.getDate()).padStart(2, '0');
-        const isoDate = `${year}-${month}-${day}`;
+        let year, month, day, isoDate;
+
+        if (dateParam) {
+            // Parse date string directly to avoid timezone issues
+            const parts = dateParam.split('-');
+            year = parseInt(parts[0]);
+            month = parts[1]; // Keep as string with zero-padding
+            day = parts[2];   // Keep as string with zero-padding
+            isoDate = dateParam;
+        } else {
+            // Use current date
+            const now = new Date();
+            year = now.getFullYear();
+            month = String(now.getMonth() + 1).padStart(2, '0');
+            day = String(now.getDate()).padStart(2, '0');
+            isoDate = `${year}-${month}-${day}`;
+        }
 
         console.log(`[Liturgy API v3] Fetching for ${isoDate}, locale: ${locale}`);
 
