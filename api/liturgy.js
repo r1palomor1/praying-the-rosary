@@ -55,7 +55,7 @@ export default async function handler(request, response) {
                 date: isoDate,
                 season: locale === 'es' ? 'Tiempo Ordinario' : 'Ordinary Time',
                 season_week: 1,
-                weekday: queryDate.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { weekday: 'long' }),
+                weekday: locale === 'es' ? 'Lunes' : 'Monday',
                 celebrations: [{
                     title: locale === 'es' ? 'Ferial' : 'Ferial',
                     colour: 'green',
@@ -73,7 +73,8 @@ export default async function handler(request, response) {
             date: isoDate,
             season: primaryDay.seasons?.[0] || (locale === 'es' ? 'Tiempo Ordinario' : 'Ordinary Time'),
             season_week: primaryDay.calendar?.weekOfSeason || 1,
-            weekday: queryDate.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { weekday: 'long' }),
+            weekday: primaryDay.calendar?.dayOfWeek !== undefined ?
+                ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][primaryDay.calendar.dayOfWeek] : 'Monday',
             celebrations: todaysLiturgicalDays.map(day => ({
                 title: day.name || (locale === 'es' ? 'Ferial' : 'Ferial'),
                 colour: (day.colors?.[0] || 'GREEN').toLowerCase(),
