@@ -1,0 +1,115 @@
+[
+  {
+    "id": "agnes_of_rome_virgin",
+    "date": "2026-01-21",
+    "dateDef": {
+      "month": 1,
+      "date": 21
+    },
+    "dateExceptions": [],
+    "alternativeTransferDateDefs": [],
+    "precedence": "GENERAL_MEMORIAL_10",
+    "rank": "MEMORIAL",
+    "allowSimilarRankItems": false,
+    "isHolyDayOfObligation": false,
+    "isOptional": false,
+    "i18nDef": [
+      "names:agnes_of_rome_virgin"
+    ],
+    "seasons": [
+      "ORDINARY_TIME"
+    ],
+    "periods": [
+      "EARLY_ORDINARY_TIME"
+    ],
+    "colors": [
+      "RED"
+    ],
+    "commonsDef": [
+      "VirginMartyrs",
+      "Virgins"
+    ],
+    "martyrology": [],
+    "titles": [],
+    "calendar": {
+      "weekOfSeason": 2,
+      "dayOfSeason": 10,
+      "dayOfWeek": 3,
+      "nthDayOfWeekInMonth": 3,
+      "startOfSeason": "2026-01-12",
+      "endOfSeason": "2026-11-28",
+      "startOfLiturgicalYear": "2025-11-30",
+      "endOfLiturgicalYear": "2026-11-28",
+      "seasons": [
+        "ORDINARY_TIME"
+      ]
+    },
+    "cycles": {
+      "properCycle": "PROPER_OF_SAINTS",
+      "sundayCycle": "YEAR_A",
+      "weekdayCycle": "YEAR_2",
+      "psalterWeek": "WEEK_2"
+    },
+    "fromCalendarId": "$",
+    "fromExtendedCalendars": [],
+    "weekday": {
+      "id": "ordinary_time_2_wednesday",
+      "date": "2026-01-21",
+      "dateDef": {
+        "dateFn": "dateOfOrdinaryTime",
+        "dateArgs": [
+          3,
+          2
+        ],
+        "yearOffset": 0
+      },
+      "dateExceptions": [],
+      "alternativeTransferDateDefs": [],
+      "precedence": "WEEKDAY_13",
+      "rank": "WEEKDAY",
+      "allowSimilarRankItems": false,
+      "isHolyDayOfObligation": false,
+      "isOptional": false,
+      "i18nDef": [
+        "seasons:ordinary_time.weekday",
+        {
+          "week": 2,
+          "dow": 3
+        }
+      ],
+      "seasons": [
+        "ORDINARY_TIME"
+      ],
+      "periods": [
+        "EARLY_ORDINARY_TIME"
+      ],
+      "colors": [
+        "GREEN"
+      ],
+      "commonsDef": [],
+      "martyrology": [],
+      "titles": [],
+      "calendar": {
+        "weekOfSeason": 2,
+        "dayOfSeason": 10,
+        "dayOfWeek": 3,
+        "nthDayOfWeekInMonth": 3,
+        "startOfSeason": "2026-01-12",
+        "endOfSeason": "2026-11-28",
+        "startOfLiturgicalYear": "2025-11-30",
+        "endOfLiturgicalYear": "2026-11-28",
+        "seasons": [
+          "ORDINARY_TIME"
+        ]
+      },
+      "cycles": {
+        "properCycle": "PROPER_OF_TIME",
+        "sundayCycle": "YEAR_A",
+        "weekdayCycle": "YEAR_2",
+        "psalterWeek": "WEEK_2"
+      },
+      "fromCalendarId": "ProperOfTime",
+      "fromExtendedCalendars": []
+    }
+  }
+]

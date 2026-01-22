@@ -71,13 +71,12 @@ export default async function handler(request, response) {
         // Map to our interface
         const mappedData = {
             date: isoDate,
-            season: primaryDay.seasons?.[0] || (locale === 'es' ? 'Tiempo Ordinario' : 'Ordinary Time'),
+            season: primaryDay.seasonNames?.[0] || primaryDay.seasons?.[0] || (locale === 'es' ? 'Tiempo Ordinario' : 'Ordinary Time'),
             season_week: primaryDay.calendar?.weekOfSeason || 1,
-            weekday: primaryDay.calendar?.dayOfWeek !== undefined ?
-                ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][primaryDay.calendar.dayOfWeek] : 'Monday',
+            weekday: primaryDay.weekday?.name || (locale === 'es' ? 'Lunes' : 'Monday'),
             celebrations: todaysLiturgicalDays.map(day => ({
                 title: day.name || (locale === 'es' ? 'Ferial' : 'Ferial'),
-                colour: (day.colors?.[0] || 'GREEN').toLowerCase(),
+                colour: (day.colorNames?.[0] || day.colors?.[0] || 'green').toLowerCase(),
                 rank: day.rank || 'ferial',
                 rank_num: day.precedence || 1
             }))

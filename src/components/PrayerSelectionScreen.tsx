@@ -30,7 +30,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                 // Parallel fetch for speed
                 const [version, liturgy] = await Promise.all([
                     getVersionInfo(),
-                    fetchLiturgicalDay(undefined, language)
+                    fetchLiturgicalDay(new Date(), language)
                 ]);
 
                 setAppVersion(version);
