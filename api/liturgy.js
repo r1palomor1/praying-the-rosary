@@ -1,6 +1,6 @@
 import { Romcal } from 'romcal';
-import GeneralRoman_En from '@romcal/calendar.general-roman/esm/en.js';
-import GeneralRoman_Es from '@romcal/calendar.general-roman/esm/es.js';
+import { GeneralRoman_En } from '@romcal/calendar.general-roman/esm/en.js';
+import { GeneralRoman_Es } from '@romcal/calendar.general-roman/esm/es.js';
 
 export default async function handler(request, response) {
     // Set CORS headers
