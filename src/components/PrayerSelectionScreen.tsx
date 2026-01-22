@@ -45,7 +45,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
         };
 
         initScreen();
-    }, []);
+    }, [language]);
 
     const t = {
         en: {
