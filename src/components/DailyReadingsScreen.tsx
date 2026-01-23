@@ -183,7 +183,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
         } else {
-            const cleanText = text.replace(/<[^>]+>/g, '');
+            const cleanText = text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
             const segments = [
                 { text: title, gender: 'female' as const, postPause: 800 },
                 { text: cleanText, gender: 'female' as const, postPause: 0 }
@@ -222,11 +222,11 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 ...(data?.title ? [{ text: data.title, gender: 'female' as const, postPause: 1000 }] : []),
                 ...readingsToPlay.flatMap(reading => [
                     { text: normalizeReadingTitle(reading.title), gender: 'female' as const, postPause: 800 },
-                    { text: reading.text.replace(/<[^>]+>/g, ''), gender: 'female' as const, postPause: 1500 }
+                    { text: reading.text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>'), gender: 'female' as const, postPause: 1500 }
                 ]),
                 ...(reflection ? [
                     { text: reflection.title, gender: 'female' as const, postPause: 800 },
-                    { text: reflection.content.replace(/<[^>]+>/g, ''), gender: 'female' as const, postPause: 0 }
+                    { text: reflection.content.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>'), gender: 'female' as const, postPause: 0 }
                 ] : [])
             ].filter(s => s.text);
 
