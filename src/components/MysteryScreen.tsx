@@ -197,6 +197,13 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
     });
 
+    // Litany-specific highlighting: track which invocation row is being spoken
+    const [spokenIndex, setSpokenIndex] = useState(-1);
+    // Litany progressive reveal: track which rows have been revealed
+    const [revealedRows, setRevealedRows] = useState<number[]>([]);
+    // Litany resume: track last played row to resume from that position
+    const lastLitanyRowRef = useRef<number>(-1);
+
     const getSentences = (text: string) => {
         if (!text) return [];
         return text.match(/[^.!?:]+([.!?:]+|\s*$)/g) || [text];
@@ -224,6 +231,20 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     // Reset highlight when step changes
     useEffect(() => {
         setHighlightIndex(-1);
+        setSpokenIndex(-1);
+        lastLitanyRowRef.current = -1; // Reset resume position on step change
+        
+        // If litany step loads without audio, show all rows immediately
+        if (currentStep.type === 'litany_of_loreto' && !isPlaying && currentStep.litanyData) {
+            const data = currentStep.litanyData;
+            const totalRows = data.initial_petitions.length + 
+                            data.trinity_invocations.length + 
+                            data.mary_invocations.length + 
+                            data.agnus_dei.length;
+            setRevealedRows(Array.from({ length: totalRows }, (_, i) => i));
+        } else {
+            setRevealedRows([]);
+        }
     }, [currentStep]);
 
     // Save highlighting preference
@@ -235,11 +256,20 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     useEffect(() => {
         if (!isPlaying) {
             setHighlightIndex(-1);
+            setSpokenIndex(-1);
             return;
         }
 
-        const isLitany = currentStep.type === 'litany_of_loreto';
-        if (isLitany) return; // No highlighting for litanies
+        // When audio starts on litany, reveal all rows up to resume position
+        if (currentStep.type === 'litany_of_loreto') {
+            // If resuming from a saved position, pre-reveal all prior rows
+            if (lastLitanyRowRef.current >= 0) {
+                setRevealedRows(Array.from({ length: lastLitanyRowRef.current }, (_, i) => i));
+            } else {
+                setRevealedRows([]);
+            }
+            return;
+        }
 
         const text = currentStep.text || '';
         const sanitizedText = sanitizeTextForSpeech(text);
@@ -356,6 +386,21 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     const currentEducationalData = getCurrentEducationalContent();
     const hasEducationalContent = !!currentEducationalData;
 
+    // Scroll window to show active row as it fades in
+    const scrollToActiveRow = (rowIndex: number) => {
+        setTimeout(() => {
+            const rows = document.querySelectorAll('.litany-row-new');
+            const targetRow = rows[rowIndex] as HTMLElement;
+            
+            if (targetRow) {
+                targetRow.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }, 100);
+    };
+
     const getAudioSegments = (step: any): { text: string; gender: 'female' | 'male' }[] => {
         const createSegments = (call: string, response: string) => [
             { text: call, gender: 'female' as const },
@@ -381,15 +426,41 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
         if (step.type === 'litany_of_loreto' && step.litanyData) {
             const data = step.litanyData;
-            const segments: { text: string; gender: 'female' | 'male'; rate?: number; postPause?: number }[] = [];
+            const segments: { text: string; gender: 'female' | 'male'; rate?: number; postPause?: number; onStart?: () => void }[] = [];
+            let rowIndex = 0;
+            
+            // Determine where to start (resume from last position or start fresh)
+            const startFromRow = lastLitanyRowRef.current >= 0 ? lastLitanyRowRef.current : 0;
+
+            // Helper to add segments for a row if it should be included
+            const addRowSegments = (item: any, currentRow: number, isInitialPetition: boolean = false) => {
+                if (currentRow < startFromRow) return; // Skip already played rows
+                
+                segments.push({ 
+                    text: item.call, 
+                    gender: 'female', 
+                    rate: 1.0, 
+                    postPause: isInitialPetition ? 200 : undefined,
+                    onStart: () => {
+                        setRevealedRows(prev => [...prev, currentRow]);
+                        setSpokenIndex(currentRow);
+                        lastLitanyRowRef.current = currentRow; // Track for resume
+                        scrollToActiveRow(currentRow);
+                    }
+                });
+                segments.push({ text: item.response, gender: 'male', rate: 1.0 });
+            };
+
+            // Initial petitions
             [...data.initial_petitions].forEach((item: any) => {
-                segments.push({ text: item.call, gender: 'female', rate: 1.0, postPause: 200 });
-                segments.push({ text: item.response, gender: 'male', rate: 1.0 });
+                addRowSegments(item, rowIndex++, true);
             });
+
+            // Trinity, Mary, and Agnus Dei
             [...data.trinity_invocations, ...data.mary_invocations, ...data.agnus_dei].forEach((item: any) => {
-                segments.push({ text: item.call, gender: 'female', rate: 1.0 });
-                segments.push({ text: item.response, gender: 'male', rate: 1.0 });
+                addRowSegments(item, rowIndex++);
             });
+            
             return segments;
         }
 
@@ -610,7 +681,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         language={language}
                         renderTextWithHighlighting={renderTextWithHighlighting}
                         getSentences={getSentences}
-                        spokenIndex={highlightIndex}
+                        spokenIndex={spokenIndex}
+                        revealedRows={revealedRows}
                     />
                 ) : (
                     <div className="mystery-screen-content" ref={contentRef}>
@@ -621,7 +693,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                             language={language}
                             renderTextWithHighlighting={renderTextWithHighlighting}
                             getSentences={getSentences}
-                            spokenIndex={highlightIndex}
+                            spokenIndex={spokenIndex}
+                            revealedRows={revealedRows}
                         />
                     </div>
                 )}

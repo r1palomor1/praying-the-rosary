@@ -529,6 +529,7 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                         renderTextWithHighlighting={renderTextWithHighlighting}
                         getSentences={getSentences}
                         spokenIndex={highlightIndex}
+                        revealedRows={[]}
                     />
                 ) : (
                     <ClassicMysteryView
@@ -539,6 +540,7 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                         renderTextWithHighlighting={renderTextWithHighlighting}
                         getSentences={getSentences}
                         spokenIndex={highlightIndex}
+                        revealedRows={[]}
                     />
                 )}
             </div>

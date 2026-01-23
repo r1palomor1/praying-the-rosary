@@ -1779,15 +1779,36 @@ body:has(.immersive-mystery-container) .mystery-screen-header {
 }
 
 /* Litany Row Highlighting */
+.litany-row-new {
+    transition: all 0.3s ease, transform 0.2s ease;
+}
+
+.litany-row-fade-in {
+    animation: litanyFadeIn 0.5s ease-out;
+}
+
+@keyframes litanyFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .litany-row-active {
     border-left: 4px solid #FFD700 !important;
-    background-color: rgba(255, 215, 0, 0.1) !important;
-    transition: all 0.3s ease;
+    background-color: rgba(255, 215, 0, 0.2) !important;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 [data-theme="dark"] .litany-row-active {
     border-left: 4px solid #FFD700 !important;
-    background-color: rgba(255, 215, 0, 0.15) !important;
+    background-color: rgba(255, 215, 0, 0.25) !important;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
 }
 
 /* Light Mode Classic Tweaks for Warm Paper Background */

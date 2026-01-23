@@ -6,6 +6,7 @@ interface TTSSegment {
     gender: 'female' | 'male';
     rate?: number;
     postPause?: number;
+    onStart?: () => void;
 }
 
 class UnifiedTTSManager {
@@ -113,6 +114,13 @@ class UnifiedTTSManager {
             if (voice) {
                 utterance.voice = voice;
             }
+
+            utterance.onstart = () => {
+                // Call segment-specific onStart callback if provided
+                if (this.playbackId === playbackId && segment.onStart) {
+                    segment.onStart();
+                }
+            };
 
             utterance.onboundary = (event) => {
                 if (this.playbackId === playbackId && this.onBoundaryCallback) {

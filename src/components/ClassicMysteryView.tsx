@@ -8,6 +8,7 @@ interface ClassicMysteryViewProps {
     renderTextWithHighlighting: (text: string, sentenceOffset?: number) => any;
     getSentences: (text: string) => string[];
     spokenIndex: number;
+    revealedRows: number[];
 }
 
 export function ClassicMysteryView({
@@ -17,7 +18,8 @@ export function ClassicMysteryView({
     language,
     renderTextWithHighlighting,
     getSentences,
-    spokenIndex
+    spokenIndex,
+    revealedRows
 }: ClassicMysteryViewProps) {
     // CRITICAL: Use correct prayer type strings (fixed from original implementation)
     const isIntroPrayer = ['sign_of_cross_start', 'opening_invocation', 'act_of_contrition',
@@ -44,30 +46,36 @@ export function ClassicMysteryView({
         prayForUs: 'Pray for us'
     };
 
-    // LITANY - Restored original format from commit b58f671
+    // LITANY - Progressive reveal with fade-in
     if (isLitany && currentStep.litanyData) {
         const data = currentStep.litanyData;
 
         // Helper to render a row with alternating background (full call and response)
-        const renderRow = (call: string, response: string, index: number, globalIndex: number) => (
-            <div
-                key={`${index}-${globalIndex}`}
-                className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''} ${spokenIndex === globalIndex ? 'litany-row-active' : ''}`}
-            >
-                <div className="litany-call-new">{call}</div>
-                <div className="litany-response-new">{response}</div>
-            </div>
-        );
+        const renderRow = (call: string, response: string, index: number, globalIndex: number) => {
+            if (!revealedRows.includes(globalIndex)) return null;
+            return (
+                <div
+                    key={`${index}-${globalIndex}`}
+                    className={`litany-row-new litany-row-fade-in ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''} ${spokenIndex === globalIndex ? 'litany-row-active' : ''}`}
+                >
+                    <div className="litany-call-new">{call}</div>
+                    <div className="litany-response-new">{response}</div>
+                </div>
+            );
+        };
 
         // Helper to render call-only row (for Mary invocations after the first)
-        const renderCallOnly = (call: string, index: number, globalIndex: number) => (
-            <div
-                key={`${index}-${globalIndex}`}
-                className={`litany-row-new ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''} ${spokenIndex === globalIndex ? 'litany-row-active' : ''}`}
-            >
-                <div className="litany-call-new">{call}</div>
-            </div>
-        );
+        const renderCallOnly = (call: string, index: number, globalIndex: number) => {
+            if (!revealedRows.includes(globalIndex)) return null;
+            return (
+                <div
+                    key={`${index}-${globalIndex}`}
+                    className={`litany-row-new litany-row-fade-in ${globalIndex % 2 === 0 ? 'litany-row-highlight' : ''} ${spokenIndex === globalIndex ? 'litany-row-active' : ''}`}
+                >
+                    <div className="litany-call-new">{call}</div>
+                </div>
+            );
+        };
 
         let globalCount = 0;
 
@@ -82,10 +90,12 @@ export function ClassicMysteryView({
 
                             {data.trinity_invocations.map((item: any, i: number) => renderRow(item.call, item.response, i, globalCount++))}
 
-                            {/* Instruction reminder before Mary invocations */}
-                            <div className="litany-reminder">
-                                ({t.repeatResponse} <span className="litany-reminder-highlight">{t.prayForUs}</span>)
-                            </div>
+                            {/* Instruction reminder before Mary invocations - only show when we reach this section */}
+                            {revealedRows.some(row => row >= 9) && (
+                                <div className="litany-reminder">
+                                    ({t.repeatResponse} <span className="litany-reminder-highlight">{t.prayForUs}</span>)
+                                </div>
+                            )}
 
                             {/* Mary Invocations - Show first one fully, then only calls */}
                             {data.mary_invocations.map((item: any, i: number) => {
