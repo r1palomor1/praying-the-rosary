@@ -53,7 +53,102 @@ export const getSeasonName = (season: string, language: string = 'en'): string =
 const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 const API_URL = `${API_BASE}/api/liturgy`;
 
-export const fetchLiturgicalDay = async (date?: Date, language: string = 'en'): Promise<LiturgicalDay | null> => {
+// Calculate Easter Sunday using Meeus/Jones/Butcher algorithm
+function calculateEaster(year: number): Date {
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
+}
+
+// Generate fallback liturgical data based on date-aware logic
+export function getFallbackLiturgicalData(date: Date, language: string): LiturgicalDay {
+    const year = date.getFullYear();
+    const month = date.getMonth(); // 0-indexed
+    const day = date.getDate();
+    
+    const easter = calculateEaster(year);
+    const ashWednesday = new Date(easter);
+    ashWednesday.setDate(easter.getDate() - 46);
+    const pentecost = new Date(easter);
+    pentecost.setDate(easter.getDate() + 49);
+    
+    const dateStr = date.toISOString().split('T')[0];
+    const dayOfWeek = date.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { weekday: 'long' });
+    
+    let season = 'ordinary_time';
+    let colour = 'green';
+    let title = '';
+    
+    // Advent: December 1-24
+    if (month === 11 && day >= 1 && day <= 24) {
+        season = 'advent';
+        colour = 'violet';
+        title = language === 'es' 
+            ? `${dayOfWeek} de la Tercera Semana de Adviento`
+            : `${dayOfWeek} of the Third Week of Advent`;
+    }
+    // Christmas: December 25 - January 6
+    else if ((month === 11 && day >= 25) || (month === 0 && day <= 6)) {
+        season = 'christmas';
+        colour = 'white';
+        title = language === 'es'
+            ? `${dayOfWeek} de la Octava de Navidad`
+            : `${dayOfWeek} within the Octave of Christmas`;
+    }
+    // Lent: Ash Wednesday to Holy Saturday
+    else if (date >= ashWednesday && date < easter) {
+        season = 'lent';
+        colour = 'violet';
+        const weekNum = Math.floor((date.getTime() - ashWednesday.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+        title = language === 'es'
+            ? `${dayOfWeek} de la ${weekNum}ª Semana de Cuaresma`
+            : `${dayOfWeek} of the ${weekNum}${weekNum === 1 ? 'st' : weekNum === 2 ? 'nd' : weekNum === 3 ? 'rd' : 'th'} Week of Lent`;
+    }
+    // Easter: Easter Sunday to Pentecost
+    else if (date >= easter && date <= pentecost) {
+        season = 'easter';
+        colour = 'white';
+        const weekNum = Math.floor((date.getTime() - easter.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+        title = language === 'es'
+            ? `${dayOfWeek} de la ${weekNum}ª Semana de Pascua`
+            : `${dayOfWeek} of the ${weekNum}${weekNum === 1 ? 'st' : weekNum === 2 ? 'nd' : weekNum === 3 ? 'rd' : 'th'} Week of Easter`;
+    }
+    // Ordinary Time
+    else {
+        season = 'ordinary_time';
+        colour = 'green';
+        title = language === 'es'
+            ? `${dayOfWeek} de la Tercera Semana del Tiempo Ordinario`
+            : `${dayOfWeek} of the Third Week in Ordinary Time`;
+    }
+    
+    return {
+        date: dateStr,
+        season: season,
+        season_week: 3,
+        weekday: dayOfWeek,
+        celebrations: [{
+            title: title,
+            colour: colour,
+            rank: 'WEEKDAY',
+            rank_num: 13
+        }]
+    };
+}
+
+export const fetchLiturgicalDay = async (date?: Date, language: string = 'en'): Promise<LiturgicalDay> => {
     try {
         let url = API_URL;
         const params = new URLSearchParams();
@@ -82,6 +177,7 @@ export const fetchLiturgicalDay = async (date?: Date, language: string = 'en'): 
         return data as LiturgicalDay;
     } catch (error) {
         console.error('Liturgical Calendar Fetch Error:', error);
-        return null;
+        const fallbackDate = date || new Date();
+        return getFallbackLiturgicalData(fallbackDate, language);
     }
 };

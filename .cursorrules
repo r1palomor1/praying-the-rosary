@@ -1,0 +1,408 @@
+# ATG Praying the Rosary - AI Assistant Rules
+
+## 🚨 Critical Safety Protocol
+
+**NEVER run destructive git commands without explicit user permission:**
+- `git checkout .`
+- `git reset --hard`
+- `git clean -fd`
+
+**Lesson Learned (Dec 21, 2024):** Lost 3+ hours of work from uncommitted changes.
+
+**Rule:** When switching agents or hitting quota limits, USER manually commits:
+```bash
+git add .
+git commit -m "WIP: [describe current state]"
+git push
+```
+
+## 🛑 OPERATIONAL DIRECTIVE: ROOT CAUSE ANALYSIS ONLY
+
+**CORE MANDATE:**
+You are prohibited from providing "potential fixes," "generic patches," or "hypothesis testing." Your sole function is to identify the mathematical or logical Root Cause of the issue based *strictly* on the provided context.
+
+**STRICT NEGATIVE CONSTRAINTS (DO NOT):**
+1.  **NO ASSUMPTIONS:** Do not infer missing variables, functions, or dependencies. If the context is incomplete, stop and request the specific missing data.
+2.  **NO "TRY THIS" LOGIC:** Do not suggest a fix unless you can mathematically or logically prove it resolves the specific error chain. Banned phrases: "Try changing," "Ensure that," "Maybe," "It is likely."
+3.  **NO SYMPTOM PATCHING:** Do not suppress errors (e.g., adding null checks, try-catch blocks) without explaining *why* the data was null or the error occurred upstream.
+4.  **NO GENERIC ADVICE:** Do not provide best practices or style guides unless they are the direct cause of the failure.
+
+**REQUIRED WORKFLOW:**
+Before generating any code or solution, you must perform a **Deterministic Trace**:
+1.  **Identify the State:** List the exact state of variables at the moment of failure based *only* on logs/code provided.
+2.  **Trace the Path:** Walk backward from the error line. Quote the exact code lines that lead to the invalid state.
+3.  **Isolate the Origin:** Pinpoint the exact logic gap or state mutation that caused the deviation.
+4.  **Validate:** If you cannot pinpoint the origin with 100% certainty, declare "Insufficient Context" and list exactly what file or variable value you need to see.
+
+**OUTPUT FORMAT:**
+-   **Root Cause:** [Technical explanation of the origin]
+-   **Proof:** [Trace of the execution path]
+-   **Solution:** [The specific modification to the origin logic—NOT the symptom]
+
+**ZERO VERBOSITY:**
+- **NEVER** narrate thought processes ("I will now...", "Checking...", "I suspect...").
+- **NEVER** explain the "Plan" unless explicitly asked.
+- **NEVER** show code syntax/diffs unless explicitly asked.
+- **OUTPUT ONLY:** The final result (e.g., "Fix Applied: V117.2") OR a clarifying question.
+
+**ATOMIC UPDATES ONLY:**
+- Do not touch code unless the specific fix is identified.
+- Verify variables exist before using them.
+
+**NO GIT REVERTS/CHECKOUTS:**
+- Request approval first. Use `replace_string_in_file` to undo changes.
+
+**PENALTY FOR VIOLATION:** IMMEDIATE STOP.
+
+## 🎯 Systematic Problem-Solving Protocol
+
+**CORE PRINCIPLES:**
+- **BE PROACTIVE, NOT REACTIVE:** Analyze the entire system before applying fixes. Don't patch symptoms.
+- **BE SYSTEMATIC, NOT LAZY:** Trace the full execution path. Don't guess or apply generic solutions.
+- **AVOID REDUNDANCY:** If a solution failed once, don't repeat it. Analyze *why* it failed.
+- **LEGACY CODE AWARENESS:** Don't waste time fixing deprecated/unused code. Verify the code path is active before investing effort.
+
+**FAILURE RECOVERY PROTOCOL:**
+
+**After 3 Failed Attempts:**
+1. **STOP and REFOCUS**
+2. **Declare:** "3 attempts failed. Refocusing on root cause."
+3. **Ask yourself:**
+   - Am I fixing the actual problem or a symptom?
+   - Is this code path even being executed?
+   - What am I missing from the context?
+4. **Request missing context** if needed (logs, variable states, execution traces)
+
+**After 5 Failed Attempts:**
+1. **STOP IMMEDIATELY**
+2. **Ask user:** "5 attempts failed. The current approach is not working. Options:
+   - **Pivot:** Refactor the failing component/module entirely
+   - **Context:** I need [specific files/logs/data] to proceed
+   - **Defer:** Mark as known issue and move to higher-priority work"
+3. **DO NOT** continue attempting the same approach
+
+**Prohibited Behaviors:**
+- ❌ Repeating the same fix with minor variations
+- ❌ Adding debug logs without analyzing existing evidence
+- ❌ Suggesting "let's try X" without explaining why previous attempts failed
+- ❌ Touching code that isn't executed in the current failure path
+
+## 🚫 Git Push Policy
+
+**STRICT RULE:**
+The agent must **NEVER** push code to the remote repository (`git push`) without explicit, written permission from the user in the current turn.
+
+**Workflow (Version Accuracy Protocol):**
+To ensure the `Settings Info Panel` displays the correct Commit Date and Hash:
+1.  **Stage & Commit FIRST:**
+    *   `git add .`
+    *   `git commit -m "message"`
+    *   *(Reasoning: The build script reads the `git log` to generate version.json. If we build before committing, it captures the OLD version.)*
+2.  **Validation Build (Optional but Recommended):**
+    *   `npm run build`
+    *   *(Reasoning: Verifies the build passes. If it fails, fix and amend commit.)*
+3.  **Push:**
+    *   `git push`
+    *   *(Trigger deployment)*
+
+## ⛔ Destructive Commands Policy (STRICT)
+
+**Atomic Rule:**
+The agent must **NEVER** run destructive Git commands that erase work without **EXPLICIT, INFORMED USER CONSENT**.
+
+**Prohibited from Auto-Running:**
+*   `git reset --hard`
+*   `git clean -fd`
+*   `git checkout .` (wipes working directory)
+*   `git push --force`
+
+**Protocol if Reset is Required:**
+1.  **Explain Impact:** "Running this command will PERMANENTLY DELETE all uncommitted work. Are you sure?"
+2.  **Verify Backup:** "Have you committed your recent work?"
+3.  **Wait for Confirmation:** Do not proceed until the user explicitly types "YES, RESET".
+
+## Project Overview
+
+**Stack:**
+- React 19 + TypeScript + Vite
+- Capacitor 7 (Android hybrid app)
+- Web Speech API (TTS - browser native)
+- Context API for state management
+- PWA enabled
+
+**Build Commands:**
+- `npm run dev` - Development server
+- `npm run build` - Production build (auto-generates version.json)
+- `npm run preview` - Preview production build
+
+## Code Style & Conventions
+
+### TypeScript
+- Use strict mode (no `any` types without justification)
+- Export types from `src/types.ts` or component files
+- Prefer interfaces over types for object shapes
+- Add JSDoc comments for complex utility functions
+
+### File Organization
+- Components: PascalCase (e.g., `MysteryScreen.tsx`)
+- Utilities: camelCase (e.g., `prayerFlowEngine.ts`)
+- Keep files under 400 lines when possible
+- Co-locate CSS with components (`Component.tsx` + `Component.css`)
+
+### Naming Conventions
+- Functions: camelCase (`handleStartPrayer`, `loadPrayerProgress`)
+- Components: PascalCase (`MysteryScreen`, `BeadCounter`)
+- Constants: UPPER_SNAKE_CASE for true constants
+- Context providers: `useApp()`, `useToast()`
+
+### React Patterns
+- Use functional components with hooks
+- Lazy load screen components for code splitting
+- Prefer `useState` + Context over prop drilling
+- Add `useEffect` cleanup for timers/listeners
+- Error boundaries for feature isolation
+
+## Bilingual Support Requirements
+
+**CRITICAL:** All user-facing text must support English AND Spanish
+
+### Always Test Both Languages:
+1. English (`language: 'en'`)
+2. Spanish (`language: 'es'`)
+
+### Translation Locations:
+- Prayer texts: `src/data/prayerData.ts`
+- UI labels: Component-level translation objects
+- Mystery names: `src/data/mysteries.ts`
+- Educational content: `src/data/*-educational-content.json`
+
+### Language-Specific Considerations:
+- Ordinal formatting: "1st Mystery" vs "1º Misterio"
+- Date formats: Both use MM/DD/YYYY
+- TTS voices: Different voices per language
+- Speech rates may differ across languages
+
+## Audio & TTS Rules
+
+### Text-to-Speech (Web Speech API)
+- Never assume TTS timing is reliable
+- Add error handling for voice loading failures
+- Spanish voices load differently than English
+- Test pause/resume functionality after changes
+- Check continuous mode (auto-advance) behavior
+
+### Audio Highlighting
+- Sentence-based synchronization only
+- Last sentence stays highlighted until step changes
+- **Litany highlighting is DISABLED** (timing unreliable - don't re-enable)
+- Test both light mode (yellow background) and dark mode (gold text)
+
+### Audio State Management
+- Use `ttsManager.ts` for all TTS operations
+- Clean up listeners in `useEffect` returns
+- Store audio preferences in localStorage
+- Check `audioEnabled` flag before playing
+
+## Theme & Responsiveness
+
+### Always Test Both Themes:
+1. Dark mode (default)
+2. Light mode
+
+### Color Conventions:
+- Dark mode highlights: Gold (#FFD700, #FBBF24)
+- Light mode highlights: Amber-700 (#B45309) for readability
+- Avoid pure white text in light mode
+- Maintain WCAG AA contrast ratios
+
+### Responsive Breakpoints:
+- Mobile: < 640px
+- Tablet: 641px - 1024px
+- Desktop: > 1024px
+- Special: Samsung Fold considerations (bead counter position)
+
+### Test Devices:
+- Mobile portrait/landscape
+- Tablet layouts
+- Desktop wide screens
+- Fold devices (if modifying bead counter)
+
+## Progress & Storage
+
+### LocalStorage Keys (NEVER change without migration):
+- `rosary_settings` - App settings
+- `rosary_session` - Current session state
+- `rosary_prayer_progress` - Prayer progress by date
+- `rosary_start_date` - Custom YTD start date
+- `sacred_start_date` - Sacred prayers start date
+- `sacred_prayer_history` - Sacred prayers completion log
+- `last_active_mystery` - Last selected mystery
+- `last_active_date` - Date of last mystery selection
+- `continuous_mode_active` - Continuous mode flag
+
+### Date Handling:
+- Always use ISO format: `YYYY-MM-DD` for storage
+- Display format: `MM/DD/YYYY`
+- **CRITICAL:** Use string parsing for dates to avoid timezone issues
+  - ❌ Bad: `new Date("2026-01-23")` (UTC conversion!)
+  - ✅ Good: Split string directly or parse components
+- See `src/utils/version.ts` for correct patterns
+
+### Progress Calculations:
+- YTD Goal: Days from start date to Dec 31
+- MTD Goal: Days from start date to end of month
+- Year Progress: Completions / 365 (or 366)
+- Month Progress: Completions / Total days in month
+- Streaks only count within current period
+
+## Catholic Liturgical Accuracy
+
+**NEVER modify prayer texts without verification:**
+- Prayers are traditional Catholic texts
+- Litany of Loreto has exact call/response structure
+- Mystery reflections are theologically accurate
+- Respect Sacred Scripture citations
+
+### When Modifying Prayer Content:
+1. Verify against Catholic sources
+2. Maintain bilingual parity
+3. Preserve traditional formatting
+4. Update both `prayerData.ts` and related components
+
+### Liturgical Calendar Integration:
+- Uses `romcal` library for feast days
+- Daily readings from USCCB API
+- Today's mystery follows traditional schedule:
+  - Monday/Saturday: Joyful
+  - Tuesday/Friday: Sorrowful
+  - Wednesday/Sunday: Glorious
+  - Thursday: Luminous
+
+## Testing Requirements
+
+### Before Marking Work Complete:
+- [ ] Test in both English and Spanish
+- [ ] Verify dark mode and light mode
+- [ ] Check mobile and desktop layouts
+- [ ] Test audio playback (if modified)
+- [ ] Verify progress persistence
+- [ ] Check localStorage isn't corrupted
+- [ ] Build succeeds: `npm run build`
+- [ ] No TypeScript errors
+- [ ] No console errors in browser
+
+### Audio Feature Checklist:
+- [ ] Play/pause works
+- [ ] Stop button clears state
+- [ ] Highlighting syncs with audio (if applicable)
+- [ ] Continuous mode auto-advances
+- [ ] Spanish TTS voice loads correctly
+- [ ] Volume/rate settings apply
+
+### Progress Feature Checklist:
+- [ ] YTD/MTD calculations correct
+- [ ] Streaks don't cross year boundaries
+- [ ] Custom start dates work
+- [ ] Today's mystery shows completion
+- [ ] History doesn't contaminate between Rosary/Sacred
+
+## Excellence Standards
+
+**Core Philosophy:** "Excellence over compromise"
+
+### Feature Quality Rules:
+1. **No feature is better than a broken feature**
+   - Disable unreliable features rather than ship them
+   - Example: Litany highlighting disabled due to TTS timing issues
+
+2. **Test cross-language before enabling**
+   - If it only works in English, it's broken
+
+3. **Accessibility is non-negotiable**
+   - Maintain ARIA labels
+   - Keyboard navigation must work
+   - Screen reader compatibility
+
+4. **Performance matters**
+   - Lazy load screens
+   - Optimize images (use ResponsiveImage component)
+   - No unnecessary re-renders
+
+## Documentation
+
+### When to Update .md Files:
+- Architectural changes → Update `PROJECT_STATUS_HANDOVER.md`
+- New features → Add to `TODO.md` (completed section)
+- Bug fixes → Document in relevant `*_FIX.md` file
+- Breaking changes → Update `README.md`
+
+### Commit Message Format:
+```
+<type>(<scope>): <description>
+
+Types: feat, fix, refactor, docs, style, test, perf
+Scope: frontend, audio, progress, prayers, ui
+```
+
+Examples:
+- `feat(audio): Add stop button to mystery navigation`
+- `fix(progress): Correct timezone handling for version date`
+- `refactor(prayers): Extract litany formatting logic`
+
+## Common Pitfalls to Avoid
+
+1. **Don't assume TTS timing is reliable** - Time-based sync fails across voices/languages
+2. **Don't use `new Date("YYYY-MM-DD")` directly** - Causes timezone conversion bugs
+3. **Don't modify prayer texts casually** - Liturgical accuracy is critical
+4. **Don't skip bilingual testing** - Spanish users matter
+5. **Don't remove localStorage keys** - Users lose progress
+6. **Don't ship console.logs to production** - Clean up debug statements
+7. **Don't break responsive layouts** - Test mobile/tablet/desktop
+8. **Don't ignore TypeScript errors** - Fix them properly
+
+## File-Specific Notes
+
+### `src/utils/prayerFlowEngine.ts`
+- Core prayer sequencing logic
+- Handles step navigation and progress
+- Supports dynamic language switching
+- Total steps: ~156 per rosary
+
+### `src/utils/ttsManager.ts`
+- Web Speech API wrapper
+- Handles voice selection per language
+- Manages pause/resume state
+- Event-based highlighting coordination
+
+### `src/utils/storage.ts`
+- All localStorage operations
+- Progress persistence
+- Settings management
+- Session state
+
+### `src/context/AppContext.tsx`
+- Global app state
+- Settings (language, theme, audio, etc.)
+- Session management (current mystery, bead count)
+- Audio playback coordination
+
+## Questions Before Starting Work
+
+When assigned a task, consider:
+1. Does this affect both languages?
+2. Does this change prayer text or flow?
+3. Will this impact audio/TTS behavior?
+4. Does this modify localStorage structure?
+5. Is this breaking existing user progress?
+6. Do both themes still look good?
+7. Does this work on mobile AND desktop?
+
+## Final Reminder
+
+**Commit early, commit often, especially before:**
+- Switching to a different agent
+- Making major refactors
+- Ending your session
+- User requests to hand off work
+
+When in doubt, ask the user before making destructive changes.

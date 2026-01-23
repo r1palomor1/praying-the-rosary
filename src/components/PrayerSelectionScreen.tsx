@@ -20,7 +20,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
     const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
 
 
-    // New State for Blocking Load
+    // Liturgical data guaranteed non-null via fallback
     const [liturgicalData, setLiturgicalData] = useState<LiturgicalDay | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -88,9 +88,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
         );
     }
 
-    // Safety fallback if fetch failed completely
-    if (!liturgicalData) return null;
-
+    // liturgicalData is guaranteed non-null due to fallback logic
     return (
         <div className="selection-container fade-in" style={{ position: 'relative' }}>
             {/* Minimal Header for Settings Icon Only */}
@@ -109,7 +107,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
 
             <main className="selection-main" style={{ paddingTop: 0 }}>
                 {/* 1. Liturgical Status (Top) - Pass Data Directly */}
-                <LiturgicalCard dayData={liturgicalData} />
+                {liturgicalData && <LiturgicalCard dayData={liturgicalData} />}
 
                 {/* 2. Action Header (Title) */}
                 <h1

@@ -65,17 +65,10 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         setError(null);
 
         try {
-            // Fetch Liturgical Color for this specific date
-            fetchLiturgicalDay(date, language).then(liturgy => {
-                if (liturgy && liturgy.celebrations && liturgy.celebrations.length > 0) {
-                    setLiturgicalColor(getLiturgicalColorHex(liturgy.celebrations[0].colour));
-                    setLiturgicalData(liturgy); // Store full data for rank info
-                } else {
-                    setLiturgicalColor('#10B981');
-                    setLiturgicalData(null);
-                }
-            }).catch(e => console.log('Color fetch minor error', e));
-
+            // Fetch Liturgical Color for this specific date (guaranteed non-null with fallback)
+            const liturgy = await fetchLiturgicalDay(date, language);
+            setLiturgicalColor(getLiturgicalColorHex(liturgy.celebrations[0].colour));
+            setLiturgicalData(liturgy);
 
             // Fetch USCCB readings
             const dateStr = formatDateParam(date);

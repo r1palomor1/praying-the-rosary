@@ -50,6 +50,47 @@ git push
 - [x] Toast notifications for user interactions (audio, layout, visibility, highlighting)
 
 ## 🔄 In Progress / Needs Refinement
+- [ ] **Romcal API Fallback System - Unified Approach** (Jan 23, 2026)
+  - **Issue:** 
+    - Prayer Selection: App renders blank screen if romcal fails (`liturgicalData === null`)
+    - Daily Readings: Falls back to hardcoded green color (ignores actual season)
+  - **Root Cause:** 
+    - PrayerSelectionScreen.tsx L91-93 returns `null` without fallback
+    - DailyReadingsScreen.tsx L75 sets `liturgicalColor = '#10B981'` (always green)
+    - DailyReadingsScreen.tsx L76 sets `liturgicalData = null` (no rank info)
+  - **Solution:** Create unified `getFallbackLiturgicalData(date, language)` utility:
+    - Dec 1-24: "Advent" + Violet (#8B5CF6)
+    - Dec 25-Jan 6: "Christmas" + White (#F3F4F6)
+    - Feb/Mar (Easter -40): "Lent" + Violet (#8B5CF6)
+    - Easter +50 days: "Easter" + White (#F3F4F6)
+    - Default: "Ordinary Time" + Green (#10B981)
+  - **Files to modify:**
+    - `src/utils/liturgicalCalendar.ts` - Add `getFallbackLiturgicalData()` function
+    - `src/components/PrayerSelectionScreen.tsx` - Use fallback if fetch fails
+    - `src/components/DailyReadingsScreen.tsx` - Use fallback instead of hardcoded green
+  - **Benefits:** Both screens degrade gracefully with season-appropriate colors
+  - **Alternative:** Cache last successful fetch in localStorage
+  - **Priority:** Medium (app stability + liturgical accuracy)
+
+- [ ] **Cross-API Fallback for Feast Names** (Jan 23, 2026)
+  - **Goal:** Show actual feast names even if one API fails
+  - **Prayer Selection Fallback Chain:**
+    1. Romcal API → Use full liturgical data (season, color, feast name)
+    2. Romcal fails → Fetch USCCB or Vatican title for feast name
+    3. Both fail → Generic weekday with date-aware season/color
+  - **Daily Readings Title Fallback:**
+    1. USCCB title → Display with romcal color/rank
+    2. USCCB missing → Use Vatican News title
+    3. Both missing → Generic weekday name
+  - **Files to modify:**
+    - `src/components/PrayerSelectionScreen.tsx` - Add USCCB/Vatican fetch as backup
+    - `src/components/DailyReadingsScreen.tsx` - Add Vatican title fallback logic
+  - **Benefits:** 
+    - Real feast names survive single API failure
+    - Better UX (actual liturgical data vs generic)
+    - Leverages existing API endpoints
+  - **Priority:** Low-Medium (enhancement, not critical)
+
 - [x] Remove debug console logs from production code
 - [x] Add error boundaries for highlighting feature
 - [x] Update HIGHLIGHTING_IMPLEMENTATION_STATUS.md with final state
@@ -935,10 +976,12 @@ User
 ##  Current Status / Hand-off (Jan 21, 2026)
 
 ### Liturgical Calendar State
-- **Library:** omcal v1.3 (Stable Downgrade)
+- **Library:** 
+omcal v1.3 (Stable Downgrade)
 - **Reason:** v3 Alpha caused server crashes on Vercel.
 - **Current Issue:** Green/Red Color Logic.
-  - omcal v1.3 returns multiple events for a day (e.g., [Green Ordinary Time, Red St Agnes]).
+  - 
+omcal v1.3 returns multiple events for a day (e.g., [Green Ordinary Time, Red St Agnes]).
   - Current pi/liturgy.js blindly picks the first event.
   - **Fix Needed:** Implement sorting in pi/liturgy.js to prioritize Red/White events over Green.
 
@@ -954,4 +997,5 @@ User
 
 ### Next Steps for Developer
 1. Modify pi/liturgy.js to sort events by rank/color.
-2. Ensure equest.query.date is respected in pi/liturgy.js.
+2. Ensure 
+equest.query.date is respected in pi/liturgy.js.
