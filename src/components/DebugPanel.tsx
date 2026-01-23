@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Copy, X, Trash2 } from 'lucide-react';
+import { Copy, X, Trash2, Bug } from 'lucide-react';
 import './DebugPanel.css';
 
 interface LogEntry {
@@ -59,8 +59,8 @@ export function DebugPanel() {
 
     if (!isOpen) {
         return (
-            <button className="debug-toggle" onClick={() => setIsOpen(true)}>
-                Debug
+            <button className="debug-toggle" onClick={() => setIsOpen(true)} aria-label="Open debug console">
+                <Bug size={20} />
             </button>
         );
     }

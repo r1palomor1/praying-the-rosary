@@ -1,21 +1,20 @@
 .debug-toggle {
     position: fixed;
-    bottom: 20px;
+    top: 72px;
     right: 20px;
-    padding: 8px 16px;
-    background: rgba(59, 130, 246, 0.2);
-    border: 1px solid rgba(59, 130, 246, 0.4);
-    border-radius: 20px;
-    color: #60A5FA;
-    font-size: 0.875rem;
-    font-weight: 600;
+    padding: 4px;
+    background: transparent;
+    border: none;
+    color: #4C6EF5;
     cursor: pointer;
     z-index: 9998;
-    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .debug-toggle:hover {
-    background: rgba(59, 130, 246, 0.3);
     transform: translateY(-2px);
 }
 
