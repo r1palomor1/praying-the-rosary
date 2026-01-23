@@ -295,14 +295,16 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
                 {!loading && !error && (
                     <div className="liturgical-info">
-                        {data?.title && (
+                        {/* Use USCCB title, fallback to Vatican if missing */}
+                        {(data?.title || vaticanData?.readings?.[0]?.title) && (
                             <h2
                                 className="liturgical-day"
                                 style={{ color: liturgicalColor, textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
                             >
                                 {(() => {
+                                    const titleSource = data?.title || vaticanData?.readings?.[0]?.title || '';
                                     // Check if title already has rank prefix
-                                    const hasRankPrefix = /^(Solemnity|Feast|Memorial|Optional Memorial) of/i.test(data.title);
+                                    const hasRankPrefix = /^(Solemnity|Feast|Memorial|Optional Memorial) of/i.test(titleSource);
 
                                     // If no rank prefix and we have liturgical data with rank, add it
                                     if (!hasRankPrefix && liturgicalData?.celebrations?.[0]?.rank) {
@@ -311,10 +313,10 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                             rank === 'FEAST' ? (language === 'es' ? 'Fiesta de' : 'Feast of') :
                                                 rank === 'MEMORIAL' ? (language === 'es' ? 'Memoria de' : 'Memorial of') : '';
 
-                                        return rankLabel ? `${rankLabel} ${data.title}` : data.title;
+                                        return rankLabel ? `${rankLabel} ${titleSource}` : titleSource;
                                     }
 
-                                    return data.title;
+                                    return titleSource;
                                 })()}
                             </h2>
                         )}

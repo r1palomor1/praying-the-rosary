@@ -34,6 +34,32 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                 ]);
 
                 setAppVersion(version);
+                
+                // If romcal returned fallback data, try to enhance with USCCB title
+                if (liturgy && liturgy.celebrations[0].rank === 'WEEKDAY') {
+                    // Likely a fallback - try USCCB for actual feast name
+                    try {
+                        const today = new Date();
+                        const mm = (today.getMonth() + 1).toString().padStart(2, '0');
+                        const dd = today.getDate().toString().padStart(2, '0');
+                        const yy = today.getFullYear().toString().slice(-2);
+                        const dateParam = `${mm}${dd}${yy}`;
+                        
+                        const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
+                        const usccbResponse = await fetch(`${API_BASE}/api/readings?date=${dateParam}&lang=${language}`);
+                        
+                        if (usccbResponse.ok) {
+                            const usccbData = await usccbResponse.json();
+                            if (usccbData.title) {
+                                // Replace fallback title with USCCB title
+                                liturgy.celebrations[0].title = usccbData.title;
+                            }
+                        }
+                    } catch (e) {
+                        console.log('USCCB title fetch failed, using fallback', e);
+                    }
+                }
+                
                 setLiturgicalData(liturgy);
 
 

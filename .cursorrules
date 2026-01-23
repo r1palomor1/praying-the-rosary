@@ -54,6 +54,43 @@ Before generating any code or solution, you must perform a **Deterministic Trace
 
 **PENALTY FOR VIOLATION:** IMMEDIATE STOP.
 
+## 🔍 Code Reuse Verification Protocol (CRITICAL)
+
+**MANDATORY FIRST STEP before implementing ANY feature:**
+
+1. **Search for existing implementation:**
+   - `grep_search` for related keywords/function names
+   - Check API files (`api/`) for data already being fetched
+   - Review utilities (`src/utils/`) for similar logic
+   - Examine component files for duplicate patterns
+
+2. **Verify what data already exists:**
+   - API responses may already contain needed data
+   - Existing state may already track needed values
+   - Utility functions may already perform needed calculations
+
+3. **Document findings:**
+   - "Existing implementation found: [file path + description]"
+   - "No existing implementation - proceeding with new code"
+
+**Prohibited Behaviors:**
+- ❌ Implementing new fetch logic without checking existing APIs first
+- ❌ Creating new utility functions without searching for similar ones
+- ❌ Duplicating component logic that exists elsewhere
+- ❌ Assuming data doesn't exist without verification
+
+**Example Workflow:**
+```
+User Request: "Fetch celebration title for Prayer Selection"
+❌ WRONG: Start writing new fetch function
+✅ RIGHT: 
+  1. grep_search "celebration|title" in api/ folder
+  2. Find api/readings.js already returns "title"
+  3. Reuse existing API instead of creating new one
+```
+
+**Penalty:** Wasting resources reconstructing existing code = immediate stop and review
+
 ## 🎯 Systematic Problem-Solving Protocol
 
 **CORE PRINCIPLES:**
@@ -94,16 +131,27 @@ The agent must **NEVER** push code to the remote repository (`git push`) without
 
 **Workflow (Version Accuracy Protocol):**
 To ensure the `Settings Info Panel` displays the correct Commit Date and Hash:
-1.  **Stage & Commit FIRST:**
+
+**MANDATORY SEQUENCE (STRICT ORDER):**
+1.  **Initial Build & Error Check:**
+    *   `npm run build`
+    *   *(Fix any TypeScript/build errors before proceeding)*
+2.  **Stage & Commit:**
     *   `git add .`
     *   `git commit -m "message"`
-    *   *(Reasoning: The build script reads the `git log` to generate version.json. If we build before committing, it captures the OLD version.)*
-2.  **Validation Build (Optional but Recommended):**
+    *   *(CRITICAL: Build script reads git log. Commit FIRST or version.json shows OLD data)*
+3.  **Final Build (Version Generation):**
     *   `npm run build`
-    *   *(Reasoning: Verifies the build passes. If it fails, fix and amend commit.)*
-3.  **Push:**
+    *   *(Generates version.json with correct commit hash/date)*
+4.  **Push:**
     *   `git push`
-    *   *(Trigger deployment)*
+    *   *(Triggers Vercel deployment with accurate version)*
+
+**Why This Order Matters:**
+- `scripts/generate-version.js` runs during build
+- Reads `git log` to extract commit hash/date
+- If you build → commit → push, Settings panel shows PREVIOUS commit
+- Correct: build (test) → commit → build (version) → push
 
 ## ⛔ Destructive Commands Policy (STRICT)
 
