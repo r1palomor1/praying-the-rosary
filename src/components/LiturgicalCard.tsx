@@ -44,7 +44,16 @@ export function LiturgicalCard({ dayData }: LiturgicalCardProps) {
 
             {/* Date */}
             <div className="liturgical-date-simple">
-                {new Date(dayData.date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'long', day: 'numeric' })}
+                {(() => {
+                    // Explicitly parse YYYY-MM-DD to local time to avoid UTC timezone shifts
+                    const [year, month, day] = dayData.date.split('-').map(Number);
+                    const localDate = new Date(year, month - 1, day);
+                    return localDate.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                })()}
             </div>
 
             {/* Feast Name */}

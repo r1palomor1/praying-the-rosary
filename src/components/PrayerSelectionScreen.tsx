@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { SettingsModal } from './SettingsModal';
 import { getVersionInfo, type VersionInfo } from '../utils/version';
 import { LiturgicalCard } from './LiturgicalCard';
-import { fetchLiturgicalDay, type LiturgicalDay } from '../utils/liturgicalCalendar'; // Import fetcher
+import { fetchLiturgicalDay, type LiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar'; // Import fetcher
 import './PrayerSelectionScreen.css';
 
 interface PrayerSelectionScreenProps {
@@ -23,6 +23,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
     // Liturgical data guaranteed non-null via fallback
     const [liturgicalData, setLiturgicalData] = useState<LiturgicalDay | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isRosaryCompleted, setIsRosaryCompleted] = useState(false);
 
     useEffect(() => {
         const initScreen = async () => {
@@ -34,35 +35,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                 ]);
 
                 setAppVersion(version);
-                
-                // If romcal returned fallback data, try to enhance with USCCB title
-                if (liturgy && liturgy.celebrations[0].rank === 'WEEKDAY') {
-                    // Likely a fallback - try USCCB for actual feast name
-                    try {
-                        const today = new Date();
-                        const mm = (today.getMonth() + 1).toString().padStart(2, '0');
-                        const dd = today.getDate().toString().padStart(2, '0');
-                        const yy = today.getFullYear().toString().slice(-2);
-                        const dateParam = `${mm}${dd}${yy}`;
-                        
-                        const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
-                        const usccbResponse = await fetch(`${API_BASE}/api/readings?date=${dateParam}&lang=${language}`);
-                        
-                        if (usccbResponse.ok) {
-                            const usccbData = await usccbResponse.json();
-                            if (usccbData.title) {
-                                // Replace fallback title with USCCB title
-                                liturgy.celebrations[0].title = usccbData.title;
-                            }
-                        }
-                    } catch (e) {
-                        console.log('USCCB title fetch failed, using fallback', e);
-                    }
-                }
-                
                 setLiturgicalData(liturgy);
-
-
             } catch (e) {
                 console.error("Failed to load screen data", e);
             } finally {
@@ -70,46 +43,64 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
             }
         };
 
+        // Check rosary completion status
+        const lastCompleted = localStorage.getItem('rosary_last_completed');
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        if (lastCompleted === todayStr) {
+            setIsRosaryCompleted(true);
+        }
+
         initScreen();
     }, [language]);
+
+    // Calculate liturgical color hex for Rosary card styling
+    const rosaryColorHex = liturgicalData?.celebrations?.[0]?.colour
+        ? getLiturgicalColorHex(liturgicalData.celebrations[0].colour)
+        : '#10B981';
+
+    const handleReset = () => {
+        localStorage.removeItem('rosary_last_completed');
+        setIsRosaryCompleted(false);
+        if (onResetProgress) onResetProgress();
+    };
 
     const t = {
         en: {
             title: 'Choose Prayer',
+            rosary: 'Holy Rosary',
+            rosarySubtitle: 'Joyful, Sorrowful, Glorious & Luminous',
             sacredPrayers: 'Sacred Prayers',
-            sacredPrayersSubtitle: 'Communion with the Most High',
-            rosary: 'The Rosary',
-            rosarySubtitle: 'Mysteries of faith and hope',
+            sacredPrayersSubtitle: 'Essential Catholic Prayers',
             dailyReadings: 'Daily Readings',
-            dailyReadingsSubtitle: 'The living word of God',
-            back: 'Back',
-            settings: 'Settings'
+            dailyReadingsSubtitle: 'Today\'s Mass Readings',
+            settings: 'Settings',
+            prayed: 'Prayed'
         },
         es: {
             title: 'Elegir Oración',
+            rosary: 'Santo Rosario',
+            rosarySubtitle: 'Gozosos, Dolorosos, Gloriosos y Luminosos',
             sacredPrayers: 'Oraciones Sagradas',
-            sacredPrayersSubtitle: 'Comunión con el Altísimo',
-            rosary: 'El Rosario',
-            rosarySubtitle: 'Misterios de fe y esperanza',
+            sacredPrayersSubtitle: 'Oraciones Católicas Esenciales',
             dailyReadings: 'Lecturas Diarias',
-            dailyReadingsSubtitle: 'La palabra viva de Dios',
-            back: 'Volver',
-            settings: 'Configuración'
+            dailyReadingsSubtitle: 'Lecturas de la Misa de Hoy',
+            settings: 'Ajustes',
+            prayed: 'Completado'
         }
     }[language];
 
-    const handleReset = () => {
-        if (onResetProgress) {
-            onResetProgress();
-        }
-        setShowSettings(false);
-    };
 
-    // BLOCKING LOAD - Show nothing or simple spinner until data is ready
+
+    // Show loading state
     if (loading) {
         return (
-            <div className="selection-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
-                <Loader2 className="animate-spin" size={48} color="#D4AF37" />
+            <div className="selection-container">
+                <main className="selection-main">
+                    <div className="loading-spinner-container">
+                        <Loader2 className="spinner-icon" size={48} />
+                    </div>
+                </main>
             </div>
         );
     }
@@ -117,17 +108,26 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
     // liturgicalData is guaranteed non-null due to fallback logic
     return (
         <div className="selection-container fade-in" style={{ position: 'relative' }}>
-            {/* Minimal Header for Settings Icon Only */}
-            <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10 }}>
+            <SettingsModal
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                onResetProgress={handleReset}
+            />
+
+            <div className="selection-header" style={{ position: 'absolute', top: '1rem', right: '1rem', width: 'auto', padding: 0, zIndex: 10 }}>
                 <button
-                    className="header-btn"
+                    className="settings-button"
                     onClick={() => setShowSettings(true)}
                     aria-label={t.settings}
                     style={{
                         color: 'rgba(255, 255, 255, 0.9)',
+                        background: 'transparent',
+                        border: 'none',
+                        boxShadow: 'none',
+                        padding: '8px'
                     }}
                 >
-                    <SettingsIcon size={21} strokeWidth={3} />
+                    <SettingsIcon size={24} strokeWidth={2.5} />
                 </button>
             </div>
 
@@ -139,7 +139,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                 <h1
                     className="selection-title"
                     style={{
-                        margin: '0.75rem 0 -0.4rem', // Negative margin matches gap to 0.6rem
+                        margin: '-0.4rem 0 -0.4rem', // symmetrical negative spacing
                         fontSize: '1.5rem',
                         letterSpacing: '0.15em',
                         color: '#E5E7EB', // Action header is neutral/white
@@ -153,7 +153,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                 </h1>
 
                 {/* 3. Helper Divider (Below Title) - Reduced spacing */}
-                <div className="decorative-divider" style={{ opacity: 0.6, marginBottom: '0.75rem' }}>
+                <div className="decorative-divider" style={{ opacity: 0.6 }}>
                     <div className="divider-line divider-line-left"></div>
                     <span className="material-symbols-outlined divider-icon">church</span>
                     <div className="divider-line divider-line-right"></div>
@@ -181,17 +181,50 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                 </div>
 
                 {/* Rosary Card */}
-                <button onClick={onSelectRosary} className="prayer-card">
+                <button
+                    onClick={onSelectRosary}
+                    className="prayer-card"
+                    style={{
+                        // When completed, use default border (undefined). When active, use colored border.
+                        border: isRosaryCompleted ? undefined : `1px solid ${rosaryColorHex}`,
+                        boxShadow: isRosaryCompleted ? 'none' : `0 0 15px ${rosaryColorHex}40`,
+                        transition: 'all 0.3s ease'
+                    }}
+                >
                     <div className="card-image-container">
                         <div className="card-image">
                             <img src="/rosary_icon.png" alt={t.rosary} />
                         </div>
                     </div>
                     <div className="card-content">
-                        <h2 className="card-title">{t.rosary.toUpperCase()}</h2>
+                        <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            {t.rosary.toUpperCase()}
+                        </h2>
                         <p className="card-subtitle">{t.rosarySubtitle}</p>
                     </div>
-                    <ChevronRight className="card-chevron" size={24} />
+                    {isRosaryCompleted ? (
+                        <div style={{
+                            backgroundColor: rosaryColorHex,
+                            borderRadius: '50%',
+                            width: '28px',
+                            height: '28px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <span
+                                className="material-symbols-outlined"
+                                style={{
+                                    fontSize: '20px',
+                                    color: (rosaryColorHex === '#F3F4F6' || rosaryColorHex === '#F59E0B') ? '#1F2937' : '#fff' // Black icon for White/Gold 
+                                }}
+                            >
+                                check
+                            </span>
+                        </div>
+                    ) : (
+                        <ChevronRight className="card-chevron" size={24} />
+                    )}
                 </button>
 
                 {/* Divider (Between Rosary & Sacred Prayers) */}

@@ -108,6 +108,11 @@ function AppContent() {
 
   const handleCompletePrayer = () => {
     completeSession();
+    // Save today's date as completed for the "glow" logic
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('rosary_last_completed', dateStr);
+
     // Don't clear prayer progress - keep it saved at completion step
     // so we can detect it's complete when user presses Pray again
 

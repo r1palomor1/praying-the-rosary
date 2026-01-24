@@ -53,6 +53,28 @@ git push
 
 ## ✅ Completed Features (Jan 23, 2026 Session)
 
+### Litany Progressive Reveal & Scrolling
+- [x] **Litany Progressive Fade-In** ✅ COMPLETED (Commit: 69bb370)
+  - **Implemented:** Rows fade in one-at-a-time as audio plays
+  - **Solution:** Track revealed rows in state array, trigger on audio segment start
+  - **Scrolling:** Smooth centered scroll using `scrollIntoView({ behavior: 'smooth', block: 'center' })`
+  - **Resume Support:** Tracks last played row for seamless resume from pause
+  - **Files Modified:**
+    - `src/components/MysteryScreen.tsx` - Progressive reveal logic + scroll function
+    - `src/components/ClassicMysteryView.tsx` - Render revealed rows with fade-in
+    - `src/components/CinematicMysteryView.tsx` - Render revealed rows with fade-in
+    - `src/components/SacredPrayersScreen.tsx` - Added missing `revealedRows` prop
+  - **Result:** Cinematic reveal experience that guides user's attention during litany prayer
+
+- [x] **Debug Panel UI Polish** ✅ COMPLETED (Commit: ef28096)
+  - **Updated:** Changed debug panel button from text to Bug icon
+  - **Repositioned:** Moved from bottom-right to top-right (below settings icon)
+  - **Styling:** Matched opacity adjuster style (transparent background, drop-shadow)
+  - **Files Modified:**
+    - `src/components/DebugPanel.tsx` - Changed button to icon with aria-label
+    - `src/components/DebugPanel.css` - Updated positioning and removed outline
+  - **Result:** Cleaner UI with consistent icon-based controls
+
 ### API Resilience & Fallback System
 - [x] **Romcal API Fallback System - Unified Approach** ✅ COMPLETED (Commit: 52251ec)
   - **Implemented:** Date-aware fallback when romcal API fails

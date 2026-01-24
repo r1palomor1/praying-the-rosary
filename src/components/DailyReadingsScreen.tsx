@@ -303,8 +303,9 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                             >
                                 {(() => {
                                     const titleSource = data?.title || vaticanData?.readings?.[0]?.title || '';
-                                    // Check if title already has rank prefix
-                                    const hasRankPrefix = /^(Solemnity|Feast|Memorial|Optional Memorial) of/i.test(titleSource);
+                                    // Check if title already has rank prefix (English or Spanish)
+                                    // Handles: "Solemnity of...", "Solemnidad de...", "Memoria de...", etc.
+                                    const hasRankPrefix = /^(Solemnity|Feast|Memorial|Optional Memorial|Solemnidad|Fiesta|Memoria) (of|de)/i.test(titleSource);
 
                                     // If no rank prefix and we have liturgical data with rank, add it
                                     if (!hasRankPrefix && liturgicalData?.celebrations?.[0]?.rank) {
