@@ -259,11 +259,7 @@ git push
   - Improve Responsorial Psalm whitespace/newlines
   - Ensure 'R.' responses are visually distinct
   
-- [ ] **Highlighting Enhancements**
-  - Pause/Resume support (track elapsed time)
-  - Fine-tune timing based on TTS performance
-  - Adjustable speed/timing in settings
-  - Different highlight colors/styles option
+
 
 ---
 
