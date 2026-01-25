@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Copy, X, Trash2, Bug } from 'lucide-react';
+import { Copy, X, Trash2 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import './DebugPanel.css';
 
 interface LogEntry {
@@ -9,7 +10,7 @@ interface LogEntry {
 }
 
 export function DebugPanel() {
-    const [isOpen, setIsOpen] = useState(false);
+    const { debugOpen, setDebugOpen } = useApp();
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const [copySuccess, setCopySuccess] = useState(false);
 
@@ -57,13 +58,7 @@ export function DebugPanel() {
         setLogs([]);
     };
 
-    if (!isOpen) {
-        return (
-            <button className="debug-toggle" onClick={() => setIsOpen(true)} aria-label="Open debug console">
-                <Bug size={20} />
-            </button>
-        );
-    }
+    if (!debugOpen) return null;
 
     return (
         <div className="debug-panel">
@@ -77,7 +72,7 @@ export function DebugPanel() {
                     <button onClick={clearLogs} title="Clear logs">
                         <Trash2 size={16} />
                     </button>
-                    <button onClick={() => setIsOpen(false)} title="Close">
+                    <button onClick={() => setDebugOpen(false)} title="Close">
                         <X size={16} />
                     </button>
                 </div>

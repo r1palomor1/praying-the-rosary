@@ -255,7 +255,7 @@ git push
 ### 🎨 UI/UX Refinements (Not Started)
 **Priority:** Low | **Time:** 1-2 hours
 
-- [ ] **Daily Readings Text Formatting**
+- [x] **Daily Readings Text Formatting**
   - Improve Responsorial Psalm whitespace/newlines
   - Ensure 'R.' responses are visually distinct
   

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Languages, Trash2, Gauge, Type, Info, Calendar } from 'lucide-react';
+import { Languages, Trash2, Gauge, Type, Info, Calendar, Bug } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../utils/storage';
 import { getVersionInfo, formatDateTime, type VersionInfo } from '../utils/version';
@@ -15,7 +15,7 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose, onResetProgress, currentMysteryName: _currentMysteryName }: SettingsModalProps) {
-    const { language, setLanguage, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
+    const { language, setLanguage, speechRate, setSpeechRate, fontSize, setFontSize, setDebugOpen } = useApp();
     const [showConfirmClear, setShowConfirmClear] = useState(false);
     const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
     const [showVersionModal, setShowVersionModal] = useState(false);
@@ -479,7 +479,7 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                 {/* Version Info Footer */}
                 {
                     versionInfo && (
-                        <footer className="settings-footer">
+                        <footer className="settings-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <button
                                 className="version-info-button"
                                 onClick={() => setShowVersionModal(true)}
@@ -489,6 +489,28 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                                     {t.lastUpdated}: {formatDateTime(versionInfo.timestamp, language)}
                                 </span>
                                 <Info size={16} className="version-icon" />
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setDebugOpen(true);
+                                    onClose();
+                                }}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    padding: '0.5rem',
+                                    cursor: 'pointer',
+                                    opacity: 0.3,
+                                    color: 'inherit',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginLeft: 'auto'
+                                }}
+                                aria-label="Open Debug Console"
+                            >
+                                <Bug size={16} />
                             </button>
                         </footer>
                     )

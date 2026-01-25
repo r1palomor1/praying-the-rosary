@@ -23,6 +23,10 @@ interface AppContextType {
     mysteryLayout: 'classic' | 'cinematic';
     setMysteryLayout: (layout: 'classic' | 'cinematic') => void;
 
+    // Debug
+    debugOpen: boolean;
+    setDebugOpen: (isOpen: boolean) => void;
+
     // Session
     currentMysterySet: MysterySetType;
     setCurrentMysterySet: (type: MysterySetType) => void;
@@ -58,6 +62,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const [speechRate, setSpeechRateState] = useState(0.85);
     const [fontSize, setFontSizeState] = useState<'normal' | 'large' | 'xl'>('normal');
     const [mysteryLayout, setMysteryLayout] = useState<'classic' | 'cinematic'>('cinematic');
+    const [debugOpen, setDebugOpen] = useState(false);
 
     // Session state
     // Load last active mystery from storage, ONLY if it was set 'today' AND matches today's recommended mystery
@@ -339,6 +344,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setFontSize: setFontSizeState,
         mysteryLayout,
         setMysteryLayout,
+        debugOpen,
+        setDebugOpen,
         currentMysterySet,
         setCurrentMysterySet,
         currentMysteryNumber,

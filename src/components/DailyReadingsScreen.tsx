@@ -146,17 +146,82 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     };
 
     // Parse reading text
-    const renderReadingText = (text: string) => {
-        return text.split('\n\n').map((para, paraIndex) => {
-            if (para.includes('<strong>')) {
+    const renderReadingText = (text: string, source: 'usccb' | 'vatican') => {
+        let cleanText = text;
+
+        if (source === 'usccb') {
+            // USCCB Specific Fixes:
+            // 1. Force breaks to be double-newlines (Paragraphs)
+            cleanText = cleanText.replace(/<br\s*\/?>/gi, '\n\n');
+            // 2. Isolate "R." onto its own line
+            cleanText = cleanText.replace(/([^\n])\s*(R\.|R\/\.)/g, '$1\n\n$2');
+        } else {
+            // Vatican Handling:
+            // Preserve line breaks as simple newlines, but DO NOT force new paragraphs
+            cleanText = cleanText.replace(/<br\s*\/?>/gi, '\n');
+        }
+
+        // Split by Double Newline only. 
+        // Single newlines (Vatican) will remain inside the paragraph.
+        return cleanText.split('\n\n').map((para, paraIndex) => {
+            const trimmed = para.trim();
+            if (!trimmed) return null;
+
+            // USCCB Special Formatting: Response Lines
+            if (source === 'usccb') {
+                const isResponse = /^(R\.|R\/\.)\s/.test(trimmed);
+
+                // Handle Mixed Content (R. ... Verse ...)
+                if (isResponse) {
+                    const splitMatch = trimmed.match(/^(R\.|R\/\.)\s*(.*?[.!?])\s+(.*)/);
+                    if (splitMatch) {
+                        return (
+                            <div key={paraIndex} className="mixed-reading-group" style={{ marginBottom: '1rem' }}>
+                                <p className="reading-response" style={{
+                                    fontWeight: '700',
+                                    color: liturgicalColor,
+                                    margin: '0 0 0.4rem 0'
+                                }}>
+                                    {splitMatch[1]} {splitMatch[2].replace(/<[^>]+>/g, '')}
+                                </p>
+                                <p className="reading-verse">
+                                    {splitMatch[3].replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}
+                                </p>
+                            </div>
+                        );
+                    }
+                }
+
+                // Pure Response Line check (if no mixed content matched)
+                // But we must be careful not to trigger on Strong tags below
+                // If it starts with R., lets style it, UNLESS strong tags handle it?
+                // Actually, if mixed match failed, it might be a short "R. Alleluia." line.
+                // We'll let it fall through or handle it here?
+                if (isResponse && !trimmed.includes('<strong>')) {
+                    return (
+                        <p
+                            key={paraIndex}
+                            style={{
+                                fontWeight: '700',
+                                color: liturgicalColor,
+                                margin: '0.8rem 0'
+                            }}
+                        >
+                            {trimmed.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}
+                        </p>
+                    );
+                }
+            }
+
+            if (trimmed.includes('<strong>')) {
                 const parts: React.ReactNode[] = [];
                 let lastIndex = 0;
                 const strongRegex = /<strong>(.*?)<\/strong>/g;
                 let match;
 
-                while ((match = strongRegex.exec(para)) !== null) {
+                while ((match = strongRegex.exec(trimmed)) !== null) {
                     if (match.index > lastIndex) {
-                        const beforeText = para.substring(lastIndex, match.index);
+                        const beforeText = trimmed.substring(lastIndex, match.index);
                         parts.push(beforeText.replace(/<[^>]+>/g, ''));
                     }
                     parts.push(
@@ -166,8 +231,8 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     );
                     lastIndex = match.index + match[0].length;
                 }
-                if (lastIndex < para.length) {
-                    const afterText = para.substring(lastIndex);
+                if (lastIndex < trimmed.length) {
+                    const afterText = trimmed.substring(lastIndex);
                     parts.push(afterText.replace(/<[^>]+>/g, ''));
                 }
                 return <p key={paraIndex}>{parts}</p>;
@@ -364,7 +429,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                             </button>
                         </div>
                         <div className="reading-text">
-                            {renderReadingText(reading.text)}
+                            {renderReadingText(reading.text, 'usccb')}
                         </div>
                     </div>
                 ))}
@@ -384,7 +449,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                             </button>
                         </div>
                         <div className="reading-text">
-                            {renderReadingText(reading.text)}
+                            {renderReadingText(reading.text, 'vatican')}
                         </div>
                     </div>
                 ))}
