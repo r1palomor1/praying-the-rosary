@@ -95,22 +95,22 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
         en: {
             title: 'Choose Prayer',
             rosary: 'Holy Rosary',
-            rosarySubtitle: 'Joyful, Sorrowful, Glorious & Luminous',
+            rosarySubtitle: 'Mysteries of faith and hope',
             sacredPrayers: 'Sacred Prayers',
-            sacredPrayersSubtitle: 'Essential Catholic Prayers',
+            sacredPrayersSubtitle: 'Communion with the Most High',
             dailyReadings: 'Daily Readings',
-            dailyReadingsSubtitle: 'Today\'s Mass Readings',
+            dailyReadingsSubtitle: 'The living word of God',
             settings: 'Settings',
             prayed: 'Prayed'
         },
         es: {
             title: 'Elegir Oración',
             rosary: 'Santo Rosario',
-            rosarySubtitle: 'Gozosos, Dolorosos, Gloriosos y Luminosos',
+            rosarySubtitle: 'Misterios de fe y esperanza',
             sacredPrayers: 'Oraciones Sagradas',
-            sacredPrayersSubtitle: 'Oraciones Católicas Esenciales',
+            sacredPrayersSubtitle: 'Comunión con el Altísimo',
             dailyReadings: 'Lecturas Diarias',
-            dailyReadingsSubtitle: 'Lecturas de la Misa de Hoy',
+            dailyReadingsSubtitle: 'La palabra viva de Dios',
             settings: 'Ajustes',
             prayed: 'Completado'
         }
