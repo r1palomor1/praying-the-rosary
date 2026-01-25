@@ -6,6 +6,7 @@ import { getVersionInfo, type VersionInfo } from '../utils/version';
 import { LiturgicalCard } from './LiturgicalCard';
 import { fetchLiturgicalDay, type LiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar'; // Import fetcher
 import './PrayerSelectionScreen.css';
+import { hasCompletionOnDate } from '../utils/prayerHistory';
 
 interface PrayerSelectionScreenProps {
     onSelectRosary: () => void;
@@ -24,6 +25,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
     const [liturgicalData, setLiturgicalData] = useState<LiturgicalDay | null>(null);
     const [loading, setLoading] = useState(true);
     const [isRosaryCompleted, setIsRosaryCompleted] = useState(false);
+    const [isReminderEnabled, setIsReminderEnabled] = useState(false);
 
     useEffect(() => {
         const initScreen = async () => {
@@ -43,21 +45,45 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
             }
         };
 
-        // Check rosary completion status
-        const lastCompleted = localStorage.getItem('rosary_last_completed');
-        const today = new Date();
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        if (lastCompleted === todayStr) {
-            setIsRosaryCompleted(true);
+        // Check settings & completion status
+        const reminderSetting = localStorage.getItem('rosary_reminder_enabled') === 'true';
+        setIsReminderEnabled(reminderSetting);
+
+        if (reminderSetting) {
+            // Check rosary completion status (Flag OR Persistent History)
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+
+            const lastCompletedFlag = localStorage.getItem('rosary_last_completed');
+            const hasHistoryCompletion = hasCompletionOnDate(todayStr); // Check persistent history
+
+            if (lastCompletedFlag === todayStr || hasHistoryCompletion) {
+                setIsRosaryCompleted(true);
+                // Sync the flag so next time it's faster
+                if (hasHistoryCompletion && lastCompletedFlag !== todayStr) {
+                    localStorage.setItem('rosary_last_completed', todayStr);
+                }
+            } else {
+                setIsRosaryCompleted(false);
+            }
+        } else {
+            // Default to OFF (Status Quo)
+            setIsRosaryCompleted(false);
         }
 
         initScreen();
-    }, [language]);
+    }, [language, showSettings]);
 
     // Calculate liturgical color hex for Rosary card styling
     const rosaryColorHex = liturgicalData?.celebrations?.[0]?.colour
         ? getLiturgicalColorHex(liturgicalData.celebrations[0].colour)
         : '#10B981';
+
+    // Determine if we should show the glow (Only if reminder ON and NOT completed)
+    const showGlow = isReminderEnabled && !isRosaryCompleted;
 
     const handleReset = () => {
         localStorage.removeItem('rosary_last_completed');
@@ -185,9 +211,10 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                     onClick={onSelectRosary}
                     className="prayer-card"
                     style={{
-                        // When completed, use default border (undefined). When active, use colored border.
-                        border: isRosaryCompleted ? undefined : `1px solid ${rosaryColorHex}`,
-                        boxShadow: isRosaryCompleted ? 'none' : `0 0 15px ${rosaryColorHex}40`,
+                        // When completed or disabled, use default border (undefined)
+                        // When reminder active and NOT completed, use colored border
+                        border: showGlow ? `1px solid ${rosaryColorHex}` : undefined,
+                        boxShadow: showGlow ? `0 0 15px ${rosaryColorHex}40` : 'none',
                         transition: 'all 0.3s ease'
                     }}
                 >

@@ -21,7 +21,11 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
     const [showVersionModal, setShowVersionModal] = useState(false);
     const [rosaryStartDate, setRosaryStartDateState] = useState<string>('');
     const [sacredStartDate, setSacredStartDateState] = useState<string>('');
+
     const [showProgressInfo, setShowProgressInfo] = useState(false);
+    const [rosaryReminder, setRosaryReminder] = useState(() => {
+        return localStorage.getItem('rosary_reminder_enabled') === 'true';
+    });
 
     // Fetch version info and start dates on mount
     useEffect(() => {
@@ -163,7 +167,11 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             thisYear: 'This Year',
             clearCustomDates: 'Clear Custom Start Dates',
             clear: 'Clear',
-            apply: 'Apply Changes'
+            apply: 'Apply Changes',
+            dailyRosaryReminder: 'Daily Rosary Reminder',
+            reminderDesc: 'Daily liturgical glow on Rosary card that fades once completed.',
+            on: 'ON',
+            off: 'OFF'
         },
         es: {
             title: 'CONFIGURACIÓN',
@@ -193,7 +201,11 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
             thisYear: 'Este Año',
             clearCustomDates: 'Borrar Fechas de Inicio Personalizadas',
             clear: 'Borrar',
-            apply: 'Aplicar Cambios'
+            apply: 'Aplicar Cambios',
+            dailyRosaryReminder: 'Recordatorio Diario',
+            reminderDesc: 'Brillo litúrgico diario en la tarjeta del Rosario que se desvanece al completarse.',
+            on: 'ACTIVADO',
+            off: 'DESACTIVADO'
         }
     };
 
@@ -373,31 +385,9 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                     </div>
 
                     {/* Display Section */}
+                    {/* Display Section */}
                     <div className="settings-card">
                         <h2 className="card-title">{t.display}</h2>
-
-                        {/* Theme toggle - HIDDEN: Dark mode only
-                        <div className="setting-group">
-                            <div className="setting-header">
-                                {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
-                                <h3>{t.theme}</h3>
-                            </div>
-                            <div className="setting-grid-2">
-                                <button
-                                    className={`btn-option ${theme === 'light' ? 'active' : 'inactive'}`}
-                                    onClick={() => theme === 'dark' && toggleTheme()}
-                                >
-                                    {t.light}
-                                </button>
-                                <button
-                                    className={`btn-option ${theme === 'dark' ? 'active' : 'inactive'}`}
-                                    onClick={() => theme === 'light' && toggleTheme()}
-                                >
-                                    {t.dark}
-                                </button>
-                            </div>
-                        </div>
-                        */}
 
                         <div className="setting-group">
                             <div className="setting-header">
@@ -424,6 +414,39 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                                     {t.extraLarge}
                                 </button>
                             </div>
+                        </div>
+
+                        {/* Daily Rosary Reminder Toggle */}
+                        <div className="setting-group" style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>
+                            <div className="setting-header">
+                                <Info size={20} />
+                                <h3>{t.dailyRosaryReminder}</h3>
+                            </div>
+                            <div className="setting-grid-2">
+                                <button
+                                    className={`btn-option ${!rosaryReminder ? 'active' : 'inactive'}`}
+                                    onClick={() => {
+                                        setRosaryReminder(false);
+                                        localStorage.setItem('rosary_reminder_enabled', 'false');
+                                    }}
+                                >
+                                    {t.off}
+                                </button>
+                                <button
+                                    className={`btn-option ${rosaryReminder ? 'active' : 'inactive'}`}
+                                    onClick={() => {
+                                        setRosaryReminder(true);
+                                        localStorage.setItem('rosary_reminder_enabled', 'true');
+                                    }}
+                                >
+                                    {t.on}
+                                </button>
+                            </div>
+                            {rosaryReminder && (
+                                <p className="setting-help-text" style={{ marginTop: '0.5rem', fontStyle: 'italic', opacity: 0.7 }}>
+                                    {t.reminderDesc}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -454,30 +477,34 @@ export function SettingsModal({ isOpen, onClose, onResetProgress, currentMystery
                 </main>
 
                 {/* Version Info Footer */}
-                {versionInfo && (
-                    <footer className="settings-footer">
-                        <button
-                            className="version-info-button"
-                            onClick={() => setShowVersionModal(true)}
-                            aria-label="View version information"
-                        >
-                            <span className="version-text">
-                                {t.lastUpdated}: {formatDateTime(versionInfo.timestamp, language)}
-                            </span>
-                            <Info size={16} className="version-icon" />
-                        </button>
-                    </footer>
-                )}
-            </div>
+                {
+                    versionInfo && (
+                        <footer className="settings-footer">
+                            <button
+                                className="version-info-button"
+                                onClick={() => setShowVersionModal(true)}
+                                aria-label="View version information"
+                            >
+                                <span className="version-text">
+                                    {t.lastUpdated}: {formatDateTime(versionInfo.timestamp, language)}
+                                </span>
+                                <Info size={16} className="version-icon" />
+                            </button>
+                        </footer>
+                    )
+                }
+            </div >
 
             {/* Version Modal */}
-            {showVersionModal && versionInfo && (
-                <VersionModal
-                    versionInfo={versionInfo}
-                    onClose={() => setShowVersionModal(false)}
-                    language={language}
-                />
-            )}
-        </div>
+            {
+                showVersionModal && versionInfo && (
+                    <VersionModal
+                        versionInfo={versionInfo}
+                        onClose={() => setShowVersionModal(false)}
+                        language={language}
+                    />
+                )
+            }
+        </div >
     );
 }

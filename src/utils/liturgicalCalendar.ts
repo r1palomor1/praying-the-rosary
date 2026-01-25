@@ -77,25 +77,25 @@ export function getFallbackLiturgicalData(date: Date, language: string): Liturgi
     const year = date.getFullYear();
     const month = date.getMonth(); // 0-indexed
     const day = date.getDate();
-    
+
     const easter = calculateEaster(year);
     const ashWednesday = new Date(easter);
     ashWednesday.setDate(easter.getDate() - 46);
     const pentecost = new Date(easter);
     pentecost.setDate(easter.getDate() + 49);
-    
+
     const dateStr = date.toISOString().split('T')[0];
     const dayOfWeek = date.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { weekday: 'long' });
-    
+
     let season = 'ordinary_time';
     let colour = 'green';
     let title = '';
-    
+
     // Advent: December 1-24
     if (month === 11 && day >= 1 && day <= 24) {
         season = 'advent';
         colour = 'violet';
-        title = language === 'es' 
+        title = language === 'es'
             ? `${dayOfWeek} de la Tercera Semana de Adviento`
             : `${dayOfWeek} of the Third Week of Advent`;
     }
@@ -133,7 +133,7 @@ export function getFallbackLiturgicalData(date: Date, language: string): Liturgi
             ? `${dayOfWeek} de la Tercera Semana del Tiempo Ordinario`
             : `${dayOfWeek} of the Third Week in Ordinary Time`;
     }
-    
+
     return {
         date: dateStr,
         season: season,
@@ -154,7 +154,11 @@ export const fetchLiturgicalDay = async (date?: Date, language: string = 'en'): 
         const params = new URLSearchParams();
 
         if (date) {
-            const dateStr = date.toISOString().split('T')[0];
+            // Use local date values to avoid UTC timezone shifts
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
             params.append('date', dateStr);
         }
 
