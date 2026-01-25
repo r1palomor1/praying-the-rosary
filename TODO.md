@@ -122,8 +122,29 @@ git push
   - **Result:** Correct liturgical colors (Red/White feasts prioritized over Green)
   - **Verification:** Line 70 comment: "The first item is always the primary celebration (romcal v3 handles priority)"
 
+## ✅ Completed Features (Jan 24, 2026 Session)
+
+### UI Enhancements & Fixes
+- [x] **Rosary Reminder Toggle** (Opt-In)
+  - **Implemented:** New setting "Daily Rosary Reminder" in Settings > Display
+  - **Behavior:** Defaults to OFF. When ON, Rosary card glows if incomplete, shows checkmark if complete
+  - **Logic:** Persists to localStorage (`rosary_reminder_enabled`)
+  - **Files Modified:** `SettingsModal.tsx`, `PrayerSelectionScreen.tsx`
+
+- [x] **Timezone Synchronization Fix**
+  - **Issue:** App showed "tomorrow's" feast day in the evening (UTC vs Local mismatch)
+  - **Root Cause:** `fetchLiturgicalDay` used `date.toISOString()` which converts to UTC
+  - **Solution:** Switched to local date formatting (YYYY-MM-DD)
+  - **Files Modified:** `utils/liturgicalCalendar.ts`
+
+- [x] **Prayer Selection Subtitles Restoration**
+  - **Issue:** Subtitles had reverted to generic slogans during a previous refactor
+  - **Action:** Restored original descriptive text ("Joyful, Sorrowful..." etc.)
+  - **Files Modified:** `PrayerSelectionScreen.tsx`
+
 ### Documentation & Process Improvements
-- [x] **Code Reuse Verification Protocol** - Added to .cursorrules
+- [x] **Code Reuse Verification Protocol** - Added to .
+
   - Mandatory check for existing implementations before coding
   - Prevents duplicate logic and wasted resources
   

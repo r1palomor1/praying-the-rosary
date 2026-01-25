@@ -231,19 +231,21 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                     </div>
                     {isRosaryCompleted ? (
                         <div style={{
-                            backgroundColor: rosaryColorHex,
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)', // Subtle glassy background
+                            border: `1px solid ${rosaryColorHex}`, // Colored border matches text
                             borderRadius: '50%',
                             width: '28px',
                             height: '28px',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            boxShadow: `0 0 10px ${rosaryColorHex}30` // Subtle glow matching theme
                         }}>
                             <span
                                 className="material-symbols-outlined"
                                 style={{
                                     fontSize: '20px',
-                                    color: (rosaryColorHex === '#F3F4F6' || rosaryColorHex === '#F59E0B') ? '#1F2937' : '#fff' // Black icon for White/Gold 
+                                    color: rosaryColorHex // Icon takes the liturgical color (like text)
                                 }}
                             >
                                 check
