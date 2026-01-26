@@ -258,6 +258,14 @@ git push
 - [x] **Daily Readings Text Formatting**
   - Improve Responsorial Psalm whitespace/newlines
   - Ensure 'R.' responses are visually distinct
+- [x] **Debug Panel Access Refinement**
+  - Moved debug icon to Settings footer (clean icon style)
+  - Removed persistent floating button
+- [x] **Daily Readings UX Improvements**
+  - Dropdown order: USCCB first, Vatican second
+  - Logic: Persist last selected source
+- [x] **Sacred Progress UI Polish**
+  - Hide visual scrollbars in modal content
   
 
 
