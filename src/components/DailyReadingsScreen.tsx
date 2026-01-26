@@ -37,7 +37,9 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
-    const [readingSource, setReadingSource] = useState<'usccb' | 'vatican'>('vatican');
+    const [readingSource, setReadingSource] = useState<'usccb' | 'vatican'>(() => {
+        return (localStorage.getItem('preferred_reading_source') as 'usccb' | 'vatican') || 'usccb';
+    });
     const [showSettings, setShowSettings] = useState(false);
     const [liturgicalColor, setLiturgicalColor] = useState('#10B981'); // Default green
     const [liturgicalData, setLiturgicalData] = useState<any>(null); // Store full liturgical data for rank info
@@ -393,11 +395,15 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                             <select
                                 className="source-select"
                                 value={readingSource}
-                                onChange={(e) => setReadingSource(e.target.value as 'usccb' | 'vatican')}
+                                onChange={(e) => {
+                                    const newSource = e.target.value as 'usccb' | 'vatican';
+                                    setReadingSource(newSource);
+                                    localStorage.setItem('preferred_reading_source', newSource);
+                                }}
                                 aria-label={language === 'es' ? 'Fuente de lectura' : 'Reading Source'}
                             >
-                                <option value="vatican">VATICAN</option>
                                 <option value="usccb">USCCB</option>
+                                <option value="vatican">VATICAN</option>
                             </select>
                             {(readingSource === 'usccb' ? data?.readings : vaticanData?.readings) && (readingSource === 'usccb' ? data!.readings.length > 0 : vaticanData!.readings.length > 0) && (
                                 <button
