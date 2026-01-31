@@ -1,3 +1,4 @@
+import { Volume2, VolumeX } from 'lucide-react';
 import { ResponsiveImage } from './ResponsiveImage';
 import './CinematicMysteryView.css';
 
@@ -10,6 +11,8 @@ interface CinematicMysteryViewProps {
     getSentences: (text: string) => string[];
     spokenIndex: number;
     revealedRows: number[];
+    announceFruitDuringDecades: boolean;
+    onAnnounceFruitToggle: (enabled: boolean) => void;
 }
 
 export function CinematicMysteryView({
@@ -20,7 +23,9 @@ export function CinematicMysteryView({
     renderTextWithHighlighting,
     getSentences,
     spokenIndex,
-    revealedRows
+    revealedRows,
+    announceFruitDuringDecades,
+    onAnnounceFruitToggle
 }: CinematicMysteryViewProps) {
     // CRITICAL: Use correct prayer type strings (fixed from original)
     const isIntroPrayer = ['sign_of_cross_start', 'opening_invocation', 'act_of_contrition',
@@ -303,9 +308,27 @@ export function CinematicMysteryView({
                                     {(currentStep.title || '').toUpperCase()}
                                 </h1>
 
-                                {/* CRITICAL FIX: Show Fruit for ALL decade prayers */}
+                                {/* Show Fruit for ALL decade prayers, but only show speaker icon on Hail Marys */}
                                 {currentStep.decadeNumber && decadeInfo?.fruit && (
                                     <div className="cinematic-fruit-label">
+                                        {/* Only show speaker toggle on Hail Mary prayers */}
+                                        {(currentStep.type === 'decade_hail_mary' || currentStep.type === 'hail_mary') && (
+                                            announceFruitDuringDecades ? (
+                                                <Volume2
+                                                    size={18}
+                                                    onClick={() => onAnnounceFruitToggle(false)}
+                                                    style={{ marginRight: '8px', cursor: 'pointer', color: '#a855f7', display: 'inline-block', verticalAlign: 'middle' }}
+                                                    aria-label={language === 'es' ? 'Desactivar anuncios de fruto' : 'Disable fruit announcements'}
+                                                />
+                                            ) : (
+                                                <VolumeX
+                                                    size={18}
+                                                    onClick={() => onAnnounceFruitToggle(true)}
+                                                    style={{ marginRight: '8px', cursor: 'pointer', color: '#94a3b8', opacity: 0.6, display: 'inline-block', verticalAlign: 'middle' }}
+                                                    aria-label={language === 'es' ? 'Activar anuncios de fruto' : 'Enable fruit announcements'}
+                                                />
+                                            )
+                                        )}
                                         <span>{t.fruit}</span>
                                         <span>{decadeInfo.fruit.toUpperCase()}</span>
                                     </div>

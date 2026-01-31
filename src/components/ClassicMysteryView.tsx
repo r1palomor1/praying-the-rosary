@@ -1,3 +1,4 @@
+import { Volume2, VolumeX } from 'lucide-react';
 import './ClassicMysteryView.css';
 
 interface ClassicMysteryViewProps {
@@ -9,6 +10,8 @@ interface ClassicMysteryViewProps {
     getSentences: (text: string) => string[];
     spokenIndex: number;
     revealedRows: number[];
+    announceFruitDuringDecades: boolean;
+    onAnnounceFruitToggle: (enabled: boolean) => void;
 }
 
 export function ClassicMysteryView({
@@ -19,7 +22,9 @@ export function ClassicMysteryView({
     renderTextWithHighlighting,
     getSentences,
     spokenIndex,
-    revealedRows
+    revealedRows,
+    announceFruitDuringDecades,
+    onAnnounceFruitToggle
 }: ClassicMysteryViewProps) {
     // CRITICAL: Use correct prayer type strings (fixed from original implementation)
     const isIntroPrayer = ['sign_of_cross_start', 'opening_invocation', 'act_of_contrition',
@@ -312,9 +317,27 @@ export function ClassicMysteryView({
                 <div className={`classic-card ${userWantsTextHidden ? 'collapsed' : ''}`}>
                     <h2 className="classic-card-title">{currentStep.title}</h2>
 
-                    {/* CRITICAL FIX: Show fruit label for ALL decade prayers */}
+                    {/* Show fruit label for ALL decade prayers, but only show speaker icon on Hail Marys */}
                     {decadeInfo?.fruit && (
                         <div className="classic-fruit-label">
+                            {/* Only show speaker toggle on Hail Mary prayers */}
+                            {(currentStep.type === 'decade_hail_mary' || currentStep.type === 'hail_mary') && (
+                                announceFruitDuringDecades ? (
+                                    <Volume2
+                                        size={16}
+                                        onClick={() => onAnnounceFruitToggle(false)}
+                                        style={{ marginRight: '6px', cursor: 'pointer', color: '#a855f7', verticalAlign: 'middle' }}
+                                        aria-label={language === 'es' ? 'Desactivar anuncios de fruto' : 'Disable fruit announcements'}
+                                    />
+                                ) : (
+                                    <VolumeX
+                                        size={16}
+                                        onClick={() => onAnnounceFruitToggle(true)}
+                                        style={{ marginRight: '6px', cursor: 'pointer', color: '#94a3b8', opacity: 0.6, verticalAlign: 'middle' }}
+                                        aria-label={language === 'es' ? 'Activar anuncios de fruto' : 'Enable fruit announcements'}
+                                    />
+                                )
+                            )}
                             {t.fruit} {decadeInfo.fruit}
                         </div>
                     )}

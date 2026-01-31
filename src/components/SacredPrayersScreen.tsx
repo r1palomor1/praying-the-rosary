@@ -530,6 +530,8 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                         getSentences={getSentences}
                         spokenIndex={highlightIndex}
                         revealedRows={[]}
+                        announceFruitDuringDecades={false}
+                        onAnnounceFruitToggle={() => { }}
                     />
                 ) : (
                     <ClassicMysteryView
@@ -541,6 +543,8 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                         getSentences={getSentences}
                         spokenIndex={highlightIndex}
                         revealedRows={[]}
+                        announceFruitDuringDecades={false}
+                        onAnnounceFruitToggle={() => { }}
                     />
                 )}
             </div>

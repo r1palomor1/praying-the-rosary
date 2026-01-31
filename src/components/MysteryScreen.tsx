@@ -55,6 +55,12 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         return saved ? parseFloat(saved) : 0;  // Default to 0% for text-hidden state
     });
 
+    // Fruit announcement during decades
+    const [announceFruitDuringDecades, setAnnounceFruitDuringDecades] = useState(() => {
+        const saved = localStorage.getItem('announce_fruit_in_decades');
+        return saved === 'true'; // Defaults to false (OFF) if not set
+    });
+
     const [flowEngine] = useState(() => {
         const engine = new PrayerFlowEngine(currentMysterySet as MysteryType, language);
         const savedProgress = loadPrayerProgress(currentMysterySet);
@@ -233,14 +239,14 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         setHighlightIndex(-1);
         setSpokenIndex(-1);
         lastLitanyRowRef.current = -1; // Reset resume position on step change
-        
+
         // If litany step loads without audio, show all rows immediately
         if (currentStep.type === 'litany_of_loreto' && !isPlaying && currentStep.litanyData) {
             const data = currentStep.litanyData;
-            const totalRows = data.initial_petitions.length + 
-                            data.trinity_invocations.length + 
-                            data.mary_invocations.length + 
-                            data.agnus_dei.length;
+            const totalRows = data.initial_petitions.length +
+                data.trinity_invocations.length +
+                data.mary_invocations.length +
+                data.agnus_dei.length;
             setRevealedRows(Array.from({ length: totalRows }, (_, i) => i));
         } else {
             setRevealedRows([]);
@@ -391,7 +397,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         setTimeout(() => {
             const rows = document.querySelectorAll('.litany-row-new');
             const targetRow = rows[rowIndex] as HTMLElement;
-            
+
             if (targetRow) {
                 targetRow.scrollIntoView({
                     behavior: 'smooth',
@@ -428,18 +434,18 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             const data = step.litanyData;
             const segments: { text: string; gender: 'female' | 'male'; rate?: number; postPause?: number; onStart?: () => void }[] = [];
             let rowIndex = 0;
-            
+
             // Determine where to start (resume from last position or start fresh)
             const startFromRow = lastLitanyRowRef.current >= 0 ? lastLitanyRowRef.current : 0;
 
             // Helper to add segments for a row if it should be included
             const addRowSegments = (item: any, currentRow: number, isInitialPetition: boolean = false) => {
                 if (currentRow < startFromRow) return; // Skip already played rows
-                
-                segments.push({ 
-                    text: item.call, 
-                    gender: 'female', 
-                    rate: 1.0, 
+
+                segments.push({
+                    text: item.call,
+                    gender: 'female',
+                    rate: 1.0,
                     postPause: isInitialPetition ? 200 : undefined,
                     onStart: () => {
                         setRevealedRows(prev => [...prev, currentRow]);
@@ -460,7 +466,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             [...data.trinity_invocations, ...data.mary_invocations, ...data.agnus_dei].forEach((item: any) => {
                 addRowSegments(item, rowIndex++);
             });
-            
+
             return segments;
         }
 
@@ -484,7 +490,22 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
             const splitPhrase = language === 'es' ? 'Santa María' : 'Holy Mary';
             const parts = text.split(splitPhrase);
             if (parts.length > 1) {
-                return createSegments(parts[0], splitPhrase + parts.slice(1).join(splitPhrase));
+                const segments = createSegments(parts[0], splitPhrase + parts.slice(1).join(splitPhrase));
+
+                // Check localStorage in real-time (not React state) so toggles mid-prayer take effect immediately
+                // Check if we should announce fruit (every other Hail Mary: 1, 3, 5, 7, 9)
+                // NOTE: To announce on ALL 10 Hail Marys, remove the "step.hailMaryNumber % 2 === 1" condition
+                const isEnabled = localStorage.getItem('announce_fruit_in_decades') === 'true';
+                if (isEnabled && decadeInfo?.fruit && step.hailMaryNumber && step.hailMaryNumber % 2 === 1) {
+                    const fruitLabel = language === 'es' ? 'Fruto' : 'Fruit';
+                    const fruitAnnouncement = {
+                        text: `${fruitLabel}: ${decadeInfo.fruit}`,
+                        gender: 'female' as const
+                    };
+                    return [fruitAnnouncement, ...segments];
+                }
+
+                return segments;
             }
         }
         if (step.title.includes('Glory Be') || step.title.includes('Gloria')) {
@@ -642,6 +663,27 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     // const beadCount = currentStep.type === 'decade_hail_mary' && currentStep.hailMaryNumber ? 10 : 0;
     // const currentBead = currentStep.hailMaryNumber || 0;
 
+    // Handler for fruit announcement toggle
+    const handleAnnounceFruitToggle = (enabled: boolean) => {
+        setAnnounceFruitDuringDecades(enabled);
+        localStorage.setItem('announce_fruit_in_decades', enabled.toString());
+        if (enabled) {
+            showToast(
+                language === 'es'
+                    ? 'Fruto se anunciará durante las Ave Marías'
+                    : 'Fruit will be announced during Hail Marys',
+                'success'
+            );
+        } else {
+            showToast(
+                language === 'es'
+                    ? 'Anuncios de fruto desactivados'
+                    : 'Fruit announcements disabled',
+                'info'
+            );
+        }
+    };
+
     return (
         <div className={`mystery-screen-container ${!showPrayerText ? 'prayer-text-hidden' : ''}`}>
             {/* NEW: Use shared MysteryHeader component */}
@@ -683,6 +725,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                         getSentences={getSentences}
                         spokenIndex={spokenIndex}
                         revealedRows={revealedRows}
+                        announceFruitDuringDecades={announceFruitDuringDecades}
+                        onAnnounceFruitToggle={handleAnnounceFruitToggle}
                     />
                 ) : (
                     <div className="mystery-screen-content" ref={contentRef}>
@@ -695,6 +739,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                             getSentences={getSentences}
                             spokenIndex={spokenIndex}
                             revealedRows={revealedRows}
+                            announceFruitDuringDecades={announceFruitDuringDecades}
+                            onAnnounceFruitToggle={handleAnnounceFruitToggle}
                         />
                     </div>
                 )}

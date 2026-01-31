@@ -152,69 +152,39 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         let cleanText = text;
 
         if (source === 'usccb') {
-            // USCCB Specific Fixes:
-            // 1. Force breaks to be double-newlines (Paragraphs)
-            cleanText = cleanText.replace(/<br\s*\/?>/gi, '\n\n');
-            // 2. Isolate "R." onto its own line
-            cleanText = cleanText.replace(/([^\n])\s*(R\.|R\/\.)/g, '$1\n\n$2');
+            // USCCB Specific: Replace HTML breaks with newlines
+            cleanText = cleanText.replace(/\u003cbr\s*\/?\u003e/gi, '\n');
         } else {
-            // Vatican Handling:
-            // Preserve line breaks as simple newlines, but DO NOT force new paragraphs
-            cleanText = cleanText.replace(/<br\s*\/?>/gi, '\n');
+            // Vatican: Preserve line breaks as simple newlines
+            cleanText = cleanText.replace(/\u003cbr\s*\/?\u003e/gi, '\n');
         }
 
-        // Split by Double Newline only. 
-        // Single newlines (Vatican) will remain inside the paragraph.
-        return cleanText.split('\n\n').map((para, paraIndex) => {
-            const trimmed = para.trim();
+        // Split by single newlines and render each line
+        return cleanText.split('\n').map((line, lineIndex) => {
+            const trimmed = line.trim();
             if (!trimmed) return null;
 
-            // USCCB Special Formatting: Response Lines
-            if (source === 'usccb') {
-                const isResponse = /^(R\.|R\/\.)\s/.test(trimmed);
+            // Check if this is a response line (starts with "R." or ends with " R.")
+            const startsWithR = /^(R\.|R\/\.)\s/.test(trimmed);
+            const endsWithR = /\s+(R\.|R\/\.)$/.test(trimmed);
 
-                // Handle Mixed Content (R. ... Verse ...)
-                if (isResponse) {
-                    const splitMatch = trimmed.match(/^(R\.|R\/\.)\s*(.*?[.!?])\s+(.*)/);
-                    if (splitMatch) {
-                        return (
-                            <div key={paraIndex} className="mixed-reading-group" style={{ marginBottom: '1rem' }}>
-                                <p className="reading-response" style={{
-                                    fontWeight: '700',
-                                    color: liturgicalColor,
-                                    margin: '0 0 0.4rem 0'
-                                }}>
-                                    {splitMatch[1]} {splitMatch[2].replace(/<[^>]+>/g, '')}
-                                </p>
-                                <p className="reading-verse">
-                                    {splitMatch[3].replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}
-                                </p>
-                            </div>
-                        );
-                    }
-                }
-
-                // Pure Response Line check (if no mixed content matched)
-                // But we must be careful not to trigger on Strong tags below
-                // If it starts with R., lets style it, UNLESS strong tags handle it?
-                // Actually, if mixed match failed, it might be a short "R. Alleluia." line.
-                // We'll let it fall through or handle it here?
-                if (isResponse && !trimmed.includes('<strong>')) {
-                    return (
-                        <p
-                            key={paraIndex}
-                            style={{
-                                fontWeight: '700',
-                                color: liturgicalColor,
-                                margin: '0.8rem 0'
-                            }}
-                        >
-                            {trimmed.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}
-                        </p>
-                    );
-                }
+            // If it's a response line (either format), style it
+            if (startsWithR || endsWithR) {
+                return (
+                    <p
+                        key={lineIndex}
+                        style={{
+                            fontWeight: '700',
+                            color: liturgicalColor,
+                            margin: '0.5rem 0'
+                        }}
+                    >
+                        {trimmed.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}
+                    </p>
+                );
             }
 
+            // Handle strong tags for highlighting
             if (trimmed.includes('<strong>')) {
                 const parts: React.ReactNode[] = [];
                 let lastIndex = 0;
@@ -237,9 +207,11 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     const afterText = trimmed.substring(lastIndex);
                     parts.push(afterText.replace(/<[^>]+>/g, ''));
                 }
-                return <p key={paraIndex}>{parts}</p>;
+                return <p key={lineIndex} style={{ margin: '0.3rem 0' }}>{parts}</p>;
             }
-            return <p key={paraIndex}>{para.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}</p>;
+
+            // Regular verse line
+            return <p key={lineIndex} style={{ margin: '0.3rem 0' }}>{trimmed.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}</p>;
         });
     };
 
