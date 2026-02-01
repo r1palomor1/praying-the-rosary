@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
 import { PrayerFlowEngine, type MysteryType } from '../utils/prayerFlowEngine';
-import { SettingsModal } from './SettingsModal';
+import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { BottomNav } from './BottomNav';
 import { getTodaysDevotion } from '../data/devotions';
 import { useNavigationHandler } from '../hooks/useNavigationHandler';

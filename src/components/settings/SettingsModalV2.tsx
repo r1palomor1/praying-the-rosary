@@ -14,9 +14,10 @@ interface SettingsModalV2Props {
     isOpen: boolean;
     onClose: () => void;
     onResetProgress?: () => void;
+    currentMysteryName?: string; // Optional, for compatibility
 }
 
-export function SettingsModalV2({ isOpen, onClose, onResetProgress }: SettingsModalV2Props) {
+export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMysteryName: _currentMysteryName }: SettingsModalV2Props) {
     const { language, setLanguage, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
     const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
     const [rosaryStartDate, setRosaryStartDateState] = useState<string>('');
@@ -46,6 +47,7 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress }: SettingsMo
             title: 'SETTINGS',
             general: 'General',
             language: 'Language',
+            clearProgress: 'Clear Prayer Progress',
             display: 'Display',
             audio: 'Audio',
             speed: 'Playback Speed',
@@ -64,6 +66,7 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress }: SettingsMo
             title: 'CONFIGURACIÓN',
             general: 'General',
             language: 'Idioma',
+            clearProgress: 'Borrar Progreso de Oración',
             display: 'Pantalla',
             audio: 'Audio',
             speed: 'Velocidad de Reproducción',

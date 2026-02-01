@@ -1,7 +1,7 @@
 import { Type, Bell } from 'lucide-react';
 
 interface DisplaySectionProps {
-    textSize: 'normal' | 'large' | 'extra-large';
+    textSize: 'normal' | 'large' | 'xl';
     dailyReminderEnabled: boolean;
     onTextSizeClick: () => void;
     onReminderToggle: (enabled: boolean) => void;
@@ -26,7 +26,7 @@ export function DisplaySection({
     const getTextSizeLabel = () => {
         switch (textSize) {
             case 'large': return translations.large;
-            case 'extra-large': return translations.extraLarge;
+            case 'xl': return translations.extraLarge;
             default: return translations.normal;
         }
     };
