@@ -1,9 +1,10 @@
-import { Languages, History } from 'lucide-react';
+import { Languages, Trash2, ChevronRight } from 'lucide-react';
 
 interface GeneralSectionProps {
     language: 'en' | 'es';
-    onLanguageClick: () => void;
+    onLanguageChange: (lang: 'en' | 'es') => void;
     onResetClick: () => void;
+    showConfirmReset: boolean;
     translations: {
         general: string;
         language: string;
@@ -13,21 +14,21 @@ interface GeneralSectionProps {
 }
 
 export function GeneralSection({
-    onLanguageClick,
+    language,
+    onLanguageChange,
     onResetClick,
+    showConfirmReset,
     translations,
     currentLanguage
 }: GeneralSectionProps) {
     return (
         <section>
-            <h2 className="settings-section-header">
-                {translations.general}
-            </h2>
+            <h2 className="settings-section-header">{translations.general}</h2>
             <div className="settings-card">
                 {/* Language */}
                 <button
                     className="settings-list-item"
-                    onClick={onLanguageClick}
+                    onClick={() => onLanguageChange(language === 'en' ? 'es' : 'en')}
                 >
                     <div className="settings-item-left">
                         <Languages className="settings-icon" size={20} />
@@ -35,23 +36,24 @@ export function GeneralSection({
                     </div>
                     <div className="settings-item-right">
                         <span className="settings-item-value">{currentLanguage}</span>
-                        <span className="settings-chevron">›</span>
                     </div>
                 </button>
 
-                {/* Prayer Progress Reset */}
+                {/* Clear Prayer Progress */}
                 <button
-                    className="settings-list-item"
+                    className={`settings-list-item ${showConfirmReset ? 'settings-reset-item-confirm' : 'settings-reset-item'}`}
                     onClick={onResetClick}
                 >
                     <div className="settings-item-left">
-                        <History className="settings-icon" size={20} />
-                        <span className="settings-item-label">Prayer Progress</span>
+                        <Trash2 className="settings-icon settings-icon-red" size={20} />
+                        <span className={`settings-item-label ${showConfirmReset ? 'settings-label-confirm' : 'settings-label-red'}`}>
+                            {showConfirmReset
+                                ? (language === 'es' ? '¡Haz clic de nuevo para confirmar!' : 'Click again to confirm!')
+                                : translations.clearProgress
+                            }
+                        </span>
                     </div>
-                    <div className="settings-item-right">
-                        <span className="settings-item-value settings-reset-text">Reset</span>
-                        <span className="settings-chevron">›</span>
-                    </div>
+                    {!showConfirmReset && <ChevronRight className="settings-chevron" size={20} />}
                 </button>
             </div>
         </section>

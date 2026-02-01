@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ArrowLeft, Play, Square, Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
-import { SettingsModal } from './SettingsModal';
+import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { fetchLiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar';
 import './DailyReadingsScreen.css';
 

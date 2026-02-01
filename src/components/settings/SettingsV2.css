@@ -18,9 +18,15 @@
 
 /* Modal Container */
 .settings-modal-v2 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: var(--settings-bg-dark);
     color: var(--settings-text-primary);
-    min-height: 100vh;
+    overflow-y: auto;
+    z-index: 9999;
     padding-bottom: 5rem;
 }
 
@@ -108,6 +114,94 @@
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
+/* Groups */
+.settings-group {
+    margin-bottom: 1.5rem;
+}
+
+.settings-group:last-child {
+    margin-bottom: 0;
+}
+
+.settings-group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.settings-group-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--settings-text-primary);
+}
+
+/* Button Groups */
+.settings-button-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.settings-option-button {
+    padding: 0.625rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(168, 125, 62, 0.3);
+    background-color: transparent;
+    color: var(--settings-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.settings-option-button:hover {
+    border-color: rgba(168, 125, 62, 0.5);
+    background-color: rgba(168, 125, 62, 0.05);
+}
+
+.settings-option-button.active {
+    background-color: var(--settings-primary);
+    border-color: var(--settings-primary);
+    color: white;
+}
+
+/* Reset Button */
+.settings-reset-button {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: none;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--settings-reset-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.settings-reset-button:hover {
+    background-color: rgba(239, 68, 68, 0.15);
+}
+
+.settings-reset-button.confirm {
+    background-color: var(--settings-reset-color);
+    color: white;
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+}
+
 /* List Items */
 .settings-list-item {
     width: 100%;
@@ -173,6 +267,23 @@
 .settings-reset-text {
     color: var(--settings-reset-color);
     font-weight: 500;
+}
+
+.settings-icon-red {
+    color: var(--settings-reset-color) !important;
+}
+
+.settings-label-red {
+    color: var(--settings-reset-color);
+}
+
+.settings-label-confirm {
+    color: white;
+    font-weight: 600;
+}
+
+.settings-reset-item-confirm {
+    background-color: var(--settings-reset-color) !important;
 }
 
 .settings-chevron {
@@ -272,11 +383,11 @@
     border-radius: 50%;
 }
 
-.settings-toggle-input:checked + .settings-toggle-slider {
+.settings-toggle-input:checked+.settings-toggle-slider {
     background-color: var(--settings-primary);
 }
 
-.settings-toggle-input:checked + .settings-toggle-slider:before {
+.settings-toggle-input:checked+.settings-toggle-slider:before {
     transform: translateX(1.25rem);
 }
 
@@ -341,20 +452,29 @@
 /* Footer */
 .settings-footer {
     margin-top: 3rem;
-    text-align: center;
 }
 
-.settings-version-badge {
-    display: inline-flex;
+.settings-footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.settings-version-button {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: inherit;
+    display: flex;
     align-items: center;
     gap: 0.5rem;
-    background-color: #0f172a;
-    padding: 0.5rem 1rem;
-    border-radius: 9999px;
+    transition: opacity 0.2s;
 }
 
-.settings-version-icon {
-    color: var(--settings-text-secondary);
+.settings-version-button:hover {
+    opacity: 0.8;
 }
 
 .settings-version-text {
@@ -363,10 +483,29 @@
     font-weight: 500;
 }
 
-.settings-footer-icons {
-    margin-top: 2rem;
+.settings-version-icon {
+    color: var(--settings-text-secondary);
+}
+
+.settings-debug-button {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    opacity: 0.3;
+    color: inherit;
     display: flex;
+    align-items: center;
     justify-content: center;
+    transition: opacity 0.2s;
+}
+
+.settings-debug-button:hover {
+    opacity: 0.6;
+}
+
+.settings-footer-icons {
+    display: flex;
     gap: 1.5rem;
     color: var(--settings-text-secondary);
 }
@@ -383,4 +522,237 @@
 
 .settings-footer-icon.active {
     opacity: 1;
+}
+
+/* Modal Overlays */
+.settings-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 1rem;
+}
+
+/* Picker Modal (Text Size) */
+.settings-picker-modal {
+    background-color: var(--settings-surface-dark);
+    border-radius: 1rem;
+    max-width: 24rem;
+    width: 100%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.settings-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--settings-divider);
+}
+
+.settings-picker-title {
+    font-family: 'Noto Serif', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--settings-text-primary);
+}
+
+.settings-picker-close {
+    background: transparent;
+    border: none;
+    color: var(--settings-text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: color 0.2s;
+}
+
+.settings-picker-close:hover {
+    color: var(--settings-text-primary);
+}
+
+.settings-picker-options {
+    padding: 0.5rem;
+}
+
+.settings-picker-option {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--settings-text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: left;
+}
+
+.settings-picker-option:hover {
+    background-color: rgba(168, 125, 62, 0.1);
+}
+
+.settings-picker-option.active {
+    background-color: rgba(168, 125, 62, 0.2);
+    color: var(--settings-primary);
+    font-weight: 600;
+}
+
+.settings-picker-check {
+    color: var(--settings-primary);
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+/* Date Edit Modal */
+.settings-date-modal {
+    background-color: var(--settings-surface-dark);
+    border-radius: 1rem;
+    max-width: 28rem;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.settings-date-content {
+    padding: 1.5rem;
+}
+
+.settings-date-presets {
+    margin-bottom: 2rem;
+}
+
+.settings-preset-label {
+    font-size: 0.875rem;
+    color: var(--settings-text-secondary);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.settings-preset-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.settings-preset-btn {
+    padding: 0.625rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(168, 125, 62, 0.3);
+    background-color: transparent;
+    color: var(--settings-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.settings-preset-btn:hover {
+    border-color: var(--settings-primary);
+    background-color: rgba(168, 125, 62, 0.1);
+    color: var(--settings-primary);
+}
+
+.settings-date-group {
+    margin-bottom: 1.5rem;
+}
+
+.settings-date-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.settings-date-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--settings-text-primary);
+}
+
+.settings-date-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.settings-date-input {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--settings-divider);
+    background-color: rgba(0, 0, 0, 0.2);
+    color: var(--settings-text-primary);
+    font-size: 0.875rem;
+}
+
+.settings-date-input:focus {
+    outline: none;
+    border-color: var(--settings-primary);
+}
+
+.settings-date-clear-btn {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--settings-reset-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.settings-date-clear-btn:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+}
+
+.settings-date-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.settings-date-cancel-btn {
+    flex: 1;
+    padding: 0.875rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--settings-divider);
+    background-color: transparent;
+    color: var(--settings-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.settings-date-cancel-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--settings-text-primary);
+}
+
+.settings-date-apply-btn {
+    flex: 1;
+    padding: 0.875rem;
+    border-radius: 0.5rem;
+    border: none;
+    background-color: var(--settings-primary);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.settings-date-apply-btn:hover {
+    background-color: #8f6a35;
+    transform: translateY(-1px);
 }

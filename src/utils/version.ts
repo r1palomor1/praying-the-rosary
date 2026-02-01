@@ -52,16 +52,17 @@ export function formatDate(dateString: string): string {
 }
 
 /**
- * Format date with time (e.g., "01/02/2026, 2:24 PM")
+ * Format date with time (e.g., "Feb 01, 2026, 2:24 PM")
  */
 export function formatDateTime(isoString: string, language: 'en' | 'es' = 'en'): string {
     const date = new Date(isoString);
 
-    // Date part: MM/DD/YYYY
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    // Date part: MMM DD, YYYY (same format for both languages)
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = monthNames[date.getMonth()];
     const day = String(date.getDate()).padStart(2, '0');
     const year = date.getFullYear();
-    const datePart = `${month}/${day}/${year}`;
+    const datePart = `${month} ${day}, ${year}`;
 
     // Time part: h:mm AM/PM
     const timePart = date.toLocaleString(language === 'es' ? 'es-ES' : 'en-US', {

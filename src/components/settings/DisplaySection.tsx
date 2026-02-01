@@ -1,54 +1,39 @@
-import { Type, Bell } from 'lucide-react';
+import { Type, Bell, ChevronRight } from 'lucide-react';
 
 interface DisplaySectionProps {
-    textSize: 'normal' | 'large' | 'xl';
-    dailyReminderEnabled: boolean;
+    fontSize: 'normal' | 'large' | 'xl';
     onTextSizeClick: () => void;
+    rosaryReminder: boolean;
     onReminderToggle: (enabled: boolean) => void;
     translations: {
         display: string;
         textSize: string;
-        normal: string;
-        large: string;
-        extraLarge: string;
         dailyRosaryReminder: string;
         reminderDesc: string;
     };
+    textSizeLabel: string;
 }
 
 export function DisplaySection({
-    textSize,
-    dailyReminderEnabled,
     onTextSizeClick,
+    rosaryReminder,
     onReminderToggle,
-    translations
+    translations,
+    textSizeLabel
 }: DisplaySectionProps) {
-    const getTextSizeLabel = () => {
-        switch (textSize) {
-            case 'large': return translations.large;
-            case 'xl': return translations.extraLarge;
-            default: return translations.normal;
-        }
-    };
-
     return (
         <section>
-            <h2 className="settings-section-header">
-                {translations.display}
-            </h2>
+            <h2 className="settings-section-header">{translations.display}</h2>
             <div className="settings-card">
                 {/* Text Size */}
-                <button
-                    className="settings-list-item"
-                    onClick={onTextSizeClick}
-                >
+                <button className="settings-list-item" onClick={onTextSizeClick}>
                     <div className="settings-item-left">
                         <Type className="settings-icon" size={20} />
                         <span className="settings-item-label">{translations.textSize}</span>
                     </div>
                     <div className="settings-item-right">
-                        <span className="settings-item-value">{getTextSizeLabel()}</span>
-                        <span className="settings-chevron">›</span>
+                        <span className="settings-item-value">{textSizeLabel}</span>
+                        <ChevronRight className="settings-chevron" size={20} />
                     </div>
                 </button>
 
@@ -65,7 +50,7 @@ export function DisplaySection({
                         <label className="settings-toggle">
                             <input
                                 type="checkbox"
-                                checked={dailyReminderEnabled}
+                                checked={rosaryReminder}
                                 onChange={(e) => onReminderToggle(e.target.checked)}
                                 className="settings-toggle-input"
                             />

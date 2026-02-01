@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, CalendarCheck } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
-import { SettingsModal } from './SettingsModal';
+import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { SacredProgressModal } from './SacredProgressModal';
 import { SacredPrayerFlowEngine } from '../utils/SacredPrayerFlowEngine';
 import { savePrayerProgress, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';

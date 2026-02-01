@@ -20,13 +20,17 @@ export function ProgressTrackingSection({
     // Format date for display
     const formatDate = (dateStr: string) => {
         if (!dateStr) return language === 'es' ? 'Hoy' : 'Today';
-        const date = new Date(dateStr);
-        const options: Intl.DateTimeFormatOptions = {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        };
-        return date.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', options);
+
+        // Parse as UTC to avoid timezone issues
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const date = new Date(Date.UTC(year, month - 1, day));
+
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthName = monthNames[date.getUTCMonth()];
+        const dayNum = String(date.getUTCDate()).padStart(2, '0');
+        const yearNum = date.getUTCFullYear();
+
+        return `${monthName} ${dayNum}, ${yearNum}`;
     };
 
     const today = language === 'es' ? 'Hoy' : 'Today';
@@ -39,7 +43,6 @@ export function ProgressTrackingSection({
                 <Info
                     className="settings-info-icon"
                     size={16}
-                    title={translations.startDateTooltip}
                 />
             </h2>
             <div className="settings-card settings-progress-card">

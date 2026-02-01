@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Info, Settings, HelpCircle, Shield } from 'lucide-react';
+import { Info, Bug } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../../utils/storage';
 import { getVersionInfo, formatDateTime, type VersionInfo } from '../../utils/version';
 import { getRosaryStartDate, setRosaryStartDate, getSacredStartDate, setSacredStartDate } from '../../utils/progressSettings';
+import { VersionModal } from '../VersionModal';
+import { TextSizeModal } from './TextSizeModal';
+import { DateEditModal } from './DateEditModal';
 import { GeneralSection } from './GeneralSection';
 import { ProgressTrackingSection } from './ProgressTrackingSection';
 import { DisplaySection } from './DisplaySection';
@@ -18,7 +21,7 @@ interface SettingsModalV2Props {
 }
 
 export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMysteryName: _currentMysteryName }: SettingsModalV2Props) {
-    const { language, setLanguage, speechRate, setSpeechRate, fontSize, setFontSize } = useApp();
+    const { language, setLanguage, speechRate, setSpeechRate, fontSize, setFontSize, setDebugOpen } = useApp();
     const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
     const [rosaryStartDate, setRosaryStartDateState] = useState<string>('');
     const [sacredStartDate, setSacredStartDateState] = useState<string>('');
@@ -27,13 +30,14 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
     });
 
     // Modal states
-    const [showLanguageModal, setShowLanguageModal] = useState(false);
     const [showTextSizeModal, setShowTextSizeModal] = useState(false);
     const [showDateModal, setShowDateModal] = useState(false);
     const [showConfirmReset, setShowConfirmReset] = useState(false);
+    const [showVersionModal, setShowVersionModal] = useState(false);
 
     // Fetch version info and start dates on mount
     useEffect(() => {
+        console.log('🎨 SettingsModalV2 LOADED - Brown/Beige Theme');
         getVersionInfo().then(setVersionInfo);
         setRosaryStartDateState(getRosaryStartDate() || '');
         setSacredStartDateState(getSacredStartDate() || '');
@@ -86,6 +90,15 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
     const t = translations[language];
     const currentLanguage = language === 'en' ? 'English' : 'Español';
 
+    // Helper function for text size labels
+    const getTextSizeLabel = (size: 'normal' | 'large' | 'xl') => {
+        switch (size) {
+            case 'normal': return language === 'en' ? 'Normal' : 'Normal';
+            case 'large': return language === 'en' ? 'Large' : 'Grande';
+            case 'xl': return language === 'en' ? 'Extra Large' : 'Extra Grande';
+        }
+    };
+
     // Handlers
     const handleReminderToggle = (enabled: boolean) => {
         setRosaryReminder(enabled);
@@ -109,14 +122,19 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
         onClose();
     };
 
+    const handleDateApply = () => {
+        setRosaryStartDate(rosaryStartDate);
+        setSacredStartDate(sacredStartDate);
+    };
+
     return (
         <div className="settings-modal-v2">
             <div className="settings-content">
                 {/* Header */}
                 <header className="settings-header">
                     <h1 className="settings-title">{t.title}</h1>
-                    <button className="settings-close-button" onClick={onClose}>
-                        {t.close}
+                    <button className="settings-close-btn" onClick={onClose} aria-label="Close">
+                        CLOSE
                     </button>
                 </header>
 
@@ -124,8 +142,9 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
                 <div className="settings-sections">
                     <GeneralSection
                         language={language}
-                        onLanguageClick={() => setShowLanguageModal(true)}
+                        onLanguageChange={setLanguage}
                         onResetClick={handleResetClick}
+                        showConfirmReset={showConfirmReset}
                         translations={t}
                         currentLanguage={currentLanguage}
                     />
@@ -139,11 +158,12 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
                     />
 
                     <DisplaySection
-                        textSize={fontSize}
-                        dailyReminderEnabled={rosaryReminder}
+                        fontSize={fontSize}
                         onTextSizeClick={() => setShowTextSizeModal(true)}
+                        rosaryReminder={rosaryReminder}
                         onReminderToggle={handleReminderToggle}
                         translations={t}
+                        textSizeLabel={getTextSizeLabel(fontSize)}
                     />
 
                     <AudioSection
@@ -155,24 +175,59 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
 
                 {/* Footer */}
                 <footer className="settings-footer">
-                    {versionInfo && (
-                        <div className="settings-version-badge">
-                            <Info className="settings-version-icon" size={14} />
-                            <span className="settings-version-text">
-                                {t.lastUpdated}: {formatDateTime(versionInfo.timestamp, language)}
-                            </span>
-                        </div>
-                    )}
-                    <div className="settings-footer-icons">
-                        <Settings className="settings-footer-icon active" size={20} />
-                        <HelpCircle className="settings-footer-icon" size={20} />
-                        <Shield className="settings-footer-icon" size={20} />
+                    <div className="settings-footer-row">
+                        {versionInfo && (
+                            <button
+                                className="settings-version-button"
+                                onClick={() => setShowVersionModal(true)}
+                                aria-label="View version information"
+                            >
+                                <span className="settings-version-text">
+                                    {t.lastUpdated}: {formatDateTime(versionInfo.timestamp, language)}
+                                </span>
+                                <Info size={16} className="settings-version-icon" />
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setDebugOpen(true)}
+                            className="settings-debug-button"
+                            aria-label="Open Debug Console"
+                        >
+                            <Bug size={16} />
+                        </button>
                     </div>
                 </footer>
             </div>
 
-            {/* TODO: Add modals for language, text size, and date editing */}
-            {/* These will be implemented in the next phase */}
+            {/* Version Modal */}
+            {showVersionModal && versionInfo && (
+                <VersionModal
+                    versionInfo={versionInfo}
+                    onClose={() => setShowVersionModal(false)}
+                    language={language}
+                />
+            )}
+
+            {/* Text Size Modal */}
+            <TextSizeModal
+                isOpen={showTextSizeModal}
+                onClose={() => setShowTextSizeModal(false)}
+                currentSize={fontSize}
+                onSelect={setFontSize}
+                language={language}
+            />
+
+            {/* Date Edit Modal */}
+            <DateEditModal
+                isOpen={showDateModal}
+                onClose={() => setShowDateModal(false)}
+                rosaryStartDate={rosaryStartDate}
+                sacredStartDate={sacredStartDate}
+                onRosaryDateChange={setRosaryStartDateState}
+                onSacredDateChange={setSacredStartDateState}
+                onApply={handleDateApply}
+                language={language}
+            />
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
-import { SettingsModal } from './SettingsModal';
+import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { LearnMoreModal, type EducationalContent } from './LearnMoreModal';
 import { PrayerFlowEngine } from '../utils/prayerFlowEngine';
 import { sanitizeTextForSpeech } from '../utils/textSanitizer';
