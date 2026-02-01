@@ -496,13 +496,18 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 // Check if we should announce fruit (every other Hail Mary: 1, 3, 5, 7, 9)
                 // NOTE: To announce on ALL 10 Hail Marys, remove the "step.hailMaryNumber % 2 === 1" condition
                 const isEnabled = localStorage.getItem('announce_fruit_in_decades') === 'true';
-                if (isEnabled && decadeInfo?.fruit && step.hailMaryNumber && step.hailMaryNumber % 2 === 1) {
-                    const fruitLabel = language === 'es' ? 'Fruto' : 'Fruit';
-                    const fruitAnnouncement = {
-                        text: `${fruitLabel}: ${decadeInfo.fruit}`,
-                        gender: 'female' as const
-                    };
-                    return [fruitAnnouncement, ...segments];
+                if (isEnabled && step.hailMaryNumber && step.hailMaryNumber % 2 === 1) {
+                    // Get the CURRENT decade's info (not the captured one from parent scope)
+                    const currentDecadeInfo = flowEngine.getCurrentDecadeInfo();
+                    if (currentDecadeInfo?.fruit) {
+                        // Use "Meditating on" instead of "Fruit:" to avoid confusion with "fruit of thy womb"
+                        const prefix = language === 'es' ? 'Meditando en' : 'Meditating on';
+                        const fruitAnnouncement = {
+                            text: `${prefix} ${currentDecadeInfo.fruit}`,
+                            gender: 'female' as const
+                        };
+                        return [fruitAnnouncement, ...segments];
+                    }
                 }
 
                 return segments;
