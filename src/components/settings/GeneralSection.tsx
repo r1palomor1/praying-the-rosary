@@ -41,19 +41,24 @@ export function GeneralSection({
 
                 {/* Clear Prayer Progress */}
                 <button
-                    className={`settings-list-item ${showConfirmReset ? 'settings-reset-item-confirm' : 'settings-reset-item'}`}
+                    className="settings-list-item"
                     onClick={onResetClick}
                 >
                     <div className="settings-item-left">
-                        <Trash2 className="settings-icon settings-icon-red" size={20} />
-                        <span className={`settings-item-label ${showConfirmReset ? 'settings-label-confirm' : 'settings-label-red'}`}>
-                            {showConfirmReset
-                                ? (language === 'es' ? '¡Haz clic de nuevo para confirmar!' : 'Click again to confirm!')
-                                : translations.clearProgress
-                            }
+                        <Trash2 className="settings-icon" size={20} />
+                        <span className="settings-item-label">
+                            {translations.clearProgress}
                         </span>
                     </div>
-                    {!showConfirmReset && <ChevronRight className="settings-chevron" size={20} />}
+                    <div className="settings-item-right">
+                        {showConfirmReset ? (
+                            <span className="settings-item-value" style={{ color: '#ef4444', fontWeight: 600 }}>
+                                {language === 'es' ? '¡Confirmar!' : 'Confirm!'}
+                            </span>
+                        ) : (
+                            <ChevronRight className="settings-chevron" size={20} />
+                        )}
+                    </div>
                 </button>
             </div>
         </section>

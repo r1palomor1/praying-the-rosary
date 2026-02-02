@@ -25,13 +25,13 @@ export function AudioSection({
                         <Gauge className="settings-icon" size={20} />
                         <span className="settings-item-label">{translations.speed}</span>
                     </div>
-                    <span className="settings-speed-value">{playbackSpeed.toFixed(2)}x</span>
+                    <span className="settings-speed-value">{Math.round(playbackSpeed * 100)}%</span>
                 </div>
                 <input
                     type="range"
                     min="0.5"
-                    max="2.0"
-                    step="0.25"
+                    max="1.5"
+                    step="0.05"
                     value={playbackSpeed}
                     onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
                     className="settings-speed-slider"

@@ -12,6 +12,7 @@ interface TTSSegment {
 class UnifiedTTSManager {
     private language: Language = 'en';
     private volume: number = 0.8;
+    private speechRate: number = 0.85;
     private synth: SpeechSynthesis;
     private onEndCallback?: () => void;
     private onBoundaryCallback?: (event: SpeechSynthesisEvent) => void;
@@ -40,6 +41,13 @@ class UnifiedTTSManager {
      */
     setVolume(volume: number) {
         this.volume = Math.max(0, Math.min(1, volume));
+    }
+
+    /**
+     * Set speech rate
+     */
+    setSpeechRate(rate: number) {
+        this.speechRate = Math.max(0.5, Math.min(2.0, rate));
     }
 
     /**
@@ -107,7 +115,7 @@ class UnifiedTTSManager {
             this.activeUtterance = utterance; // Prevent GC
             utterance.lang = this.language === 'en' ? 'en-US' : 'es-ES';
             utterance.volume = this.volume;
-            utterance.rate = segment.rate || 0.85;
+            utterance.rate = segment.rate || this.speechRate;
             utterance.pitch = 1.0;
 
             const voice = this.getWebSpeechVoice(segment.gender);

@@ -133,7 +133,7 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
                 {/* Header */}
                 <header className="settings-header">
                     <h1 className="settings-title">{t.title}</h1>
-                    <button className="settings-close-btn" onClick={onClose} aria-label="Close">
+                    <button className="settings-close-button" onClick={onClose} aria-label="Close">
                         CLOSE
                     </button>
                 </header>

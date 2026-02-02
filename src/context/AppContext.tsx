@@ -120,7 +120,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setTheme('dark');
         setAudioEnabled(settings.audioEnabled);
         setVolumeState(settings.volume);
-        if (settings.speechRate) setSpeechRateState(settings.speechRate);
+        if (settings.speechRate) {
+            setSpeechRateState(settings.speechRate);
+            ttsManager.setSpeechRate(settings.speechRate);
+        }
         if (settings.fontSize) setFontSizeState(settings.fontSize);
         if (settings.mysteryLayout) setMysteryLayout(settings.mysteryLayout);
 
@@ -232,6 +235,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const setSpeechRate = (rate: number) => {
         const clampedRate = Math.max(0.5, Math.min(2.0, rate));
         setSpeechRateState(clampedRate);
+
+        // Update TTS manager
+        ttsManager.setSpeechRate(clampedRate);
+
+        // Persist to localStorage
+        const settings = JSON.parse(localStorage.getItem('app_settings') || '{}');
+        settings.speechRate = clampedRate;
+        localStorage.setItem('app_settings', JSON.stringify(settings));
     };
 
     // Session management
