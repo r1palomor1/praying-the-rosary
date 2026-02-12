@@ -1,5 +1,7 @@
 import * as cheerio from 'cheerio';
 
+// Bible citation API - parses citations like "Genesis 1-2" and fetches from USCCB
+
 export const config = {
     runtime: 'edge',
 };
