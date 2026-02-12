@@ -101,6 +101,8 @@ export interface AppSettings {
     femaleVoiceName?: string; // Name of preferred female voice
     maleVoiceName?: string; // Name of preferred male voice
     mysteryLayout?: 'classic' | 'cinematic'; // Visual style for mystery pages
+    bibleStartDate?: string; // ISO date string for Bible in a Year start
+    bibleCompletedDays?: number[]; // Array of completed day numbers (1-365)
 }
 
 // Prayer stage (what prayer is currently being displayed)

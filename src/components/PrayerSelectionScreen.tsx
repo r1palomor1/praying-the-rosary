@@ -12,10 +12,11 @@ interface PrayerSelectionScreenProps {
     onSelectRosary: () => void;
     onSelectSacredPrayers: () => void;
     onSelectDailyReadings: () => void;
+    onSelectBibleInYear?: () => void;
     onResetProgress?: () => void;
 }
 
-export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, onSelectDailyReadings, onResetProgress }: PrayerSelectionScreenProps) {
+export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, onSelectDailyReadings, onSelectBibleInYear, onResetProgress }: PrayerSelectionScreenProps) {
     const { language } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
@@ -100,6 +101,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
             sacredPrayersSubtitle: 'Communion with the Most High',
             dailyReadings: 'Daily Readings',
             dailyReadingsSubtitle: 'The living word of God',
+            bibleInAYear: 'Bible in a Year',
+            bibleInAYearSubtitle: 'Day {day} of 365',
             settings: 'Settings',
             prayed: 'Prayed'
         },
@@ -111,6 +114,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
             sacredPrayersSubtitle: 'Comunión con el Altísimo',
             dailyReadings: 'Lecturas Diarias',
             dailyReadingsSubtitle: 'La palabra viva de Dios',
+            bibleInAYear: 'Biblia en un Año',
+            bibleInAYearSubtitle: 'Día {day} de 365',
             settings: 'Ajustes',
             prayed: 'Completado'
         }
@@ -199,7 +204,28 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                     <ChevronRight className="card-chevron" size={24} />
                 </button>
 
-                {/* Divider (Between Readings & Rosary) */}
+                {/* Divider */}
+                <div className="decorative-divider">
+                    <div className="divider-line divider-line-left"></div>
+                    <span className="material-symbols-outlined divider-icon">church</span>
+                    <div className="divider-line divider-line-right"></div>
+                </div>
+
+                {/* Bible in a Year Card */}
+                <button onClick={() => onSelectBibleInYear?.()} className="prayer-card">
+                    <div className="card-image-container">
+                        <div className="card-image">
+                            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#D4AF37' }}>book</span>
+                        </div>
+                    </div>
+                    <div className="card-content">
+                        <h2 className="card-title">{t.bibleInAYear.toUpperCase()}</h2>
+                        <p className="card-subtitle">{t.bibleInAYearSubtitle.replace('{day}', '1')}</p>
+                    </div>
+                    <ChevronRight className="card-chevron" size={24} />
+                </button>
+
+                {/* Divider */}
                 <div className="decorative-divider">
                     <div className="divider-line divider-line-left"></div>
                     <span className="material-symbols-outlined divider-icon">church</span>

@@ -20,11 +20,12 @@ const PrayerSelectionScreen = lazy(() => import('./components/PrayerSelectionScr
 const SacredPrayersScreen = lazy(() => import('./components/SacredPrayersScreen'));
 const SacredCompletionScreen = lazy(() => import('./components/SacredCompletionScreen'));
 const DailyReadingsScreen = lazy(() => import('./components/DailyReadingsScreen'));
+const BibleInYearScreen = lazy(() => import('./components/BibleInYearScreen'));
 import { DebugPanel } from './components/DebugPanel';
 
 import './styles/index.css';
 
-type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete' | 'progress' | 'prayer-selection' | 'sacred-prayers' | 'sacred-complete' | 'daily-readings';
+type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete' | 'progress' | 'prayer-selection' | 'sacred-prayers' | 'sacred-complete' | 'daily-readings' | 'bible-in-year';
 
 function AppContent() {
   const { language, clearSession, completeSession, currentMysterySet } = useApp();
@@ -245,6 +246,7 @@ function AppContent() {
             onSelectRosary={handleSelectRosary}
             onSelectSacredPrayers={handleSelectSacredPrayers}
             onSelectDailyReadings={() => setCurrentScreen('daily-readings')}
+            onSelectBibleInYear={() => setCurrentScreen('bible-in-year')}
             onResetProgress={handleResetProgress}
           />
         )}
@@ -258,6 +260,9 @@ function AppContent() {
           <DailyReadingsScreen
             onBack={() => setCurrentScreen('prayer-selection')}
           />
+        )}
+        {currentScreen === 'bible-in-year' && (
+          <BibleInYearScreen />
         )}
         {currentScreen === 'sacred-complete' && (
           <SacredCompletionScreen onHome={handleBackToSelection} />

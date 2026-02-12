@@ -223,6 +223,19 @@ git push
 
 ## 📋 OUTSTANDING ITEMS (Verified Jan 23, 2026)
 
+### 🐛 Bugs to Fix
+- [ ] **Settings Close Button Translation**
+  - Issue: "CLOSE" button shows in English when app is in Spanish mode
+  - Location: `SettingsModalV2.tsx` line 137
+  - Fix: Add translation for close button text
+  - Priority: Low
+
+- [ ] **Progress Tracking Info Icon Not Working**
+  - Issue: Info icon (ⓘ) in "Progress Tracking" section header is not clickable
+  - Location: Settings > Progress Tracking section
+  - Fix: Restore click handler for info tooltip
+  - Priority: Low
+
 ### ✅ Completed (Needs Checkbox Update)
 - [x] **Debug Panel** ✅ ALREADY IMPLEMENTED
   - Location: `src/components/DebugPanel.tsx`
