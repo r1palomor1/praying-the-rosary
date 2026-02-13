@@ -221,6 +221,16 @@ git push
     - Responsive typesetting (Cinzel font)
   - **Status:** Deployed and working
 
+## 📋 OUTSTANDING ITEMS (Feb 13, 2026)
+
+### Bible in a Year Polish (Planned)
+- [ ] **Settings Integration** - Add Settings `cog` icon and modal to Bible screen
+- [ ] **TTS Natural Pronunciation** - Speak section titles and expand "Chapter #" markers
+- [ ] **TTS Spanish Localization** - Localize book names (e.g. "Génesis") and chapter prefix
+- [ ] **TTS Long Text Handling** - Implement robust chunking for long chapters
+- [ ] **Footer Polish** - Add "Source: ebible.org" and copyright info popup
+- [ ] **Reliable Text Parsing** - Fix "World English Bible" text removal bug safely
+
 ## 📋 OUTSTANDING ITEMS (Verified Jan 23, 2026)
 
 ### 🐛 Bugs to Fix

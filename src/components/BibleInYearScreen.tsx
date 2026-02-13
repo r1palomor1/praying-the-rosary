@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ArrowLeft, Play, Square } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, Play, Square, Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
+import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import biblePlan from '../data/bibleInYearPlan.json';
 import './DailyReadingsScreen.css'; // Reuse Daily Readings styles
 
@@ -23,6 +24,84 @@ interface Props {
     onBack: () => void;
 }
 
+// Spanish translations for Bible book names (for TTS)
+const bibleBookNames: Record<string, string> = {
+    "Genesis": "Génesis",
+    "Exodus": "Éxodo",
+    "Leviticus": "Levítico",
+    "Numbers": "Números",
+    "Deuteronomy": "Deuteronomio",
+    "Joshua": "Josué",
+    "Judges": "Jueces",
+    "Ruth": "Rut",
+    "1 Samuel": "1 Samuel",
+    "2 Samuel": "2 Samuel",
+    "1 Kings": "1 Reyes",
+    "2 Kings": "2 Reyes",
+    "1 Chronicles": "1 Crónicas",
+    "2 Chronicles": "2 Crónicas",
+    "Ezra": "Esdras",
+    "Nehemiah": "Nehemías",
+    "Tobit": "Tobías",
+    "Judith": "Judit",
+    "Esther": "Ester",
+    "1 Maccabees": "1 Macabeos",
+    "2 Maccabees": "2 Macabeos",
+    "Job": "Job",
+    "Psalm": "Salmo",
+    "Psalms": "Salmos",
+    "Proverbs": "Proverbios",
+    "Ecclesiastes": "Eclesiastés",
+    "Song of Solomon": "Cantar de los Cantares",
+    "Wisdom": "Sabiduría",
+    "Sirach": "Eclesiástico",
+    "Isaiah": "Isaías",
+    "Jeremiah": "Jeremías",
+    "Lamentations": "Lamentaciones",
+    "Baruch": "Baruc",
+    "Ezekiel": "Ezequiel",
+    "Daniel": "Daniel",
+    "Hosea": "Oseas",
+    "Joel": "Joel",
+    "Amos": "Amós",
+    "Obadiah": "Abdías",
+    "Jonah": "Jonás",
+    "Micah": "Miqueas",
+    "Nahum": "Nahúm",
+    "Habakkuk": "Habacuc",
+    "Zephaniah": "Sofonías",
+    "Haggai": "Hageo",
+    "Zechariah": "Zacarías",
+    "Malachi": "Malaquías",
+    "Matthew": "Mateo",
+    "Mark": "Marcos",
+    "Luke": "Lucas",
+    "John": "Juan",
+    "Acts": "Hechos",
+    "Romans": "Romanos",
+    "1 Corinthians": "1 Corintios",
+    "2 Corinthians": "2 Corintios",
+    "Galatians": "Gálatas",
+    "Ephesians": "Efesios",
+    "Philippians": "Filipenses",
+    "Colossians": "Colosenses",
+    "1 Thessalonians": "1 Tesalonicenses",
+    "2 Thessalonians": "2 Tesalonicenses",
+    "1 Timothy": "1 Timoteo",
+    "2 Timothy": "2 Timoteo",
+    "Titus": "Tito",
+    "Philemon": "Filemón",
+    "Hebrews": "Hebreos",
+    "James": "Santiago",
+    "1 Peter": "1 Pedro",
+    "2 Peter": "2 Pedro",
+    "1 John": "1 Juan",
+    "2 John": "2 Juan",
+    "3 John": "3 Juan",
+    "Jude": "Judas",
+    "Revelation": "Apocalipsis"
+};
+
 export default function BibleInYearScreen({ onBack }: Props) {
     const { language } = useApp();
     const [currentDay, setCurrentDay] = useState(1);
@@ -31,6 +110,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
+    const [showSettings, setShowSettings] = useState(false);
 
 
     const dayData: BibleDay = (biblePlan as BibleDay[])[currentDay - 1];
@@ -85,6 +165,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 if (response.ok) {
                     const result = await response.json();
                     if (result.debug) console.log('[Bible Debug] First Reading:', result.debug);
+                    console.log('[Bible Text] First Reading length:', result.text?.length, 'Preview:', result.text?.substring(0, 100));
                     readingsToFetch.push({
                         title: t.firstReading,
                         citation: data.first_reading,
@@ -190,7 +271,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
         }
     };
 
-    const handlePlayContent = async (id: string, text: string) => {
+    const handlePlayContent = async (id: string, title: string, citation: string, text: string) => {
         if (isPlaying && currentlyPlayingId === id) {
             ttsManager.stop();
             setIsPlaying(false);
@@ -199,9 +280,33 @@ export default function BibleInYearScreen({ onBack }: Props) {
             if (ttsManager.isSpeaking()) {
                 ttsManager.stop();
             }
+
+            // Extract book name from citation (e.g., "Genesis 1-2" -> "Genesis")
+            // Handle books with numbers like "1 Samuel 5" or "2 Kings 10-12"
+            let bookName = citation ? (citation.match(/^(.+?)\s+\d/)?.[1] || "") : "";
+
+            // Translate book name to Spanish if needed
+            const isSpanish = language === 'es';
+            if (isSpanish && bookName && bibleBookNames[bookName]) {
+                bookName = bibleBookNames[bookName];
+            }
+
+            // Localize "Chapter" word
+            const chapterWord = isSpanish ? 'Capítulo' : 'Chapter';
+
+            // Replace [ # ] with "Book Chapter #" (e.g., [ 1 ] -> "Genesis Chapter 1")
+            const replacement = bookName ? `${bookName} ${chapterWord} $1` : `${chapterWord} $1`;
+            const spokenText = text.replace(/\[\s*(\d+)\s*\]/g, replacement);
+
+            // Create segments: Title first, then the text
+            const segments = [
+                { text: title, gender: 'female' as const, postPause: 500 },
+                { text: spokenText, gender: 'female' as const }
+            ];
+
             setIsPlaying(true);
             setCurrentlyPlayingId(id);
-            await ttsManager.speakSegments([{ text, gender: 'female' }]);
+            await ttsManager.speakSegments(segments);
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
         }
@@ -213,10 +318,33 @@ export default function BibleInYearScreen({ onBack }: Props) {
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
         } else {
-            const allText = readings.map(r => r.text).join(' ');
+            // Process all readings with titles and proper chapter markers
+            const segments: any[] = [];
+            const chapterWord = language === 'es' ? 'Capítulo' : 'Chapter';
+
+            readings.forEach(r => {
+                // Add title segment
+                segments.push({ text: r.title, gender: 'female' as const, postPause: 500 });
+
+                // Extract book name and replace chapter markers
+                let bookName = r.citation ? (r.citation.match(/^(.+?)\s+\d/)?.[1] || "") : "";
+
+                // Translate book name to Spanish if needed
+                const isSpanish = language === 'es';
+                if (isSpanish && bookName && bibleBookNames[bookName]) {
+                    bookName = bibleBookNames[bookName];
+                }
+
+                const replacement = bookName ? `${bookName} ${chapterWord} $1` : `${chapterWord} $1`;
+                const spokenText = r.text.replace(/\[\s*(\d+)\s*\]/g, replacement);
+
+                // Add text segment
+                segments.push({ text: spokenText, gender: 'female' as const });
+            });
+
             setIsPlaying(true);
             setCurrentlyPlayingId('all');
-            await ttsManager.speakSegments([{ text: allText, gender: 'female' }]);
+            await ttsManager.speakSegments(segments);
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
         }
@@ -238,7 +366,13 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         <ArrowLeft size={24} />
                     </button>
                     <h1 className="page-title">{t.title}</h1>
-                    <div style={{ width: '40px' }}></div>
+                    <button
+                        onClick={() => setShowSettings(true)}
+                        className="icon-btn"
+                        aria-label="Settings"
+                    >
+                        <SettingsIcon size={24} />
+                    </button>
                 </div>
 
                 <div className="date-controls-wrapper">
@@ -298,7 +432,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                             </div>
                             <button
                                 className={`reading-play-btn ${isPlaying && currentlyPlayingId === `reading-${index}` ? 'playing' : ''}`}
-                                onClick={() => handlePlayContent(`reading-${index}`, reading.text)}
+                                onClick={() => handlePlayContent(`reading-${index}`, reading.title, reading.citation || '', reading.text)}
                                 aria-label={isPlaying && currentlyPlayingId === `reading-${index}` ? "Stop" : "Play"}
                             >
                                 {isPlaying && currentlyPlayingId === `reading-${index}` ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
@@ -310,6 +444,12 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     </div>
                 ))}
             </div>
+
+            <SettingsModal
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                onResetProgress={() => { }}
+            />
         </div>
     );
 }
