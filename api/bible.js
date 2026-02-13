@@ -187,6 +187,15 @@ export default async function handler(request) {
                 $('.footer').remove();
                 $('.header').remove();
 
+                // Remove persistent footer text SAFELY
+                $('div').filter((i, el) => {
+                    const t = $(el).text();
+                    if (t.length > 500) return false; // Safety
+                    return t.includes('World English Bible') ||
+                        t.includes('Public Domain') ||
+                        t.includes('ecumenical book set');
+                }).remove();
+
                 // Remove titles and chapter numbers (we handle titles in UI)
                 $('h1, h2, h3, h4, h5, h6').remove();
                 $('.mt, .mt1, .mt2, .mt3, .mt4').remove(); // Major titles

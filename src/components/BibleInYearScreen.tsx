@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ArrowLeft, Play, Square, Settings as SettingsIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, Play, Square, Info, Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
@@ -111,6 +111,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
     const [showSettings, setShowSettings] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
 
 
     const dayData: BibleDay = (biblePlan as BibleDay[])[currentDay - 1];
@@ -271,6 +272,23 @@ export default function BibleInYearScreen({ onBack }: Props) {
         }
     };
 
+    const chunkText = (text: string, maxLength: number = 200): string[] => {
+        const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+        const chunks: string[] = [];
+        let currentChunk = '';
+
+        sentences.forEach(sentence => {
+            if (currentChunk.length + sentence.length > maxLength) {
+                if (currentChunk) chunks.push(currentChunk.trim());
+                currentChunk = sentence;
+            } else {
+                currentChunk += sentence;
+            }
+        });
+        if (currentChunk) chunks.push(currentChunk.trim());
+        return chunks;
+    };
+
     const handlePlayContent = async (id: string, title: string, citation: string, text: string) => {
         if (isPlaying && currentlyPlayingId === id) {
             ttsManager.stop();
@@ -297,18 +315,26 @@ export default function BibleInYearScreen({ onBack }: Props) {
             // Replace [ # ] with "Book Chapter #" (e.g., [ 1 ] -> "Genesis Chapter 1")
             const replacement = bookName ? `${bookName} ${chapterWord} $1` : `${chapterWord} $1`;
             const spokenText = text.replace(/\[\s*(\d+)\s*\]/g, replacement);
+            const chunks = chunkText(spokenText);
 
-            // Create segments: Title first, then the text
+            // Create segments: Title first, then the text chunks
             const segments = [
                 { text: title, gender: 'female' as const, postPause: 500 },
-                { text: spokenText, gender: 'female' as const }
+                ...chunks.map(chunk => ({
+                    text: chunk,
+                    gender: 'female' as const
+                }))
             ];
 
             setIsPlaying(true);
             setCurrentlyPlayingId(id);
+
+            ttsManager.setOnEnd(() => {
+                setIsPlaying(false);
+                setCurrentlyPlayingId(null);
+            });
+
             await ttsManager.speakSegments(segments);
-            setIsPlaying(false);
-            setCurrentlyPlayingId(null);
         }
     };
 
@@ -338,15 +364,27 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 const replacement = bookName ? `${bookName} ${chapterWord} $1` : `${chapterWord} $1`;
                 const spokenText = r.text.replace(/\[\s*(\d+)\s*\]/g, replacement);
 
-                // Add text segment
-                segments.push({ text: spokenText, gender: 'female' as const });
+                // Chunk the text
+                const chunks = chunkText(spokenText);
+                chunks.forEach(chunk => {
+                    segments.push({ text: chunk, gender: 'female' as const });
+                });
+
+                // Add pause between readings
+                if (segments.length > 0) {
+                    segments[segments.length - 1].postPause = 1000;
+                }
             });
 
             setIsPlaying(true);
             setCurrentlyPlayingId('all');
+
+            ttsManager.setOnEnd(() => {
+                setIsPlaying(false);
+                setCurrentlyPlayingId(null);
+            });
+
             await ttsManager.speakSegments(segments);
-            setIsPlaying(false);
-            setCurrentlyPlayingId(null);
         }
     };
 
@@ -443,6 +481,29 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         </div>
                     </div>
                 ))}
+
+                {!loading && !error && (
+                    <div className="sources-attribution">
+                        <p>
+                            Source:{' '}
+                            <a href="https://ebible.org/" target="_blank" rel="noopener noreferrer">
+                                ebible.org
+                            </a>
+                            <button
+                                className="info-btn-text"
+                                onClick={() => setShowInfo(!showInfo)}
+                                aria-label="Copyright Information"
+                            >
+                                <Info size={16} />
+                            </button>
+                        </p>
+                        {showInfo && (
+                            <p className="attribution-detail" style={{ fontSize: '0.8rem', fontStyle: 'italic', maxWidth: '600px', margin: '0 auto' }}>
+                                This is the Classic World English Bible which is in the Public Domain.
+                            </p>
+                        )}
+                    </div>
+                )}
             </div>
 
             <SettingsModal
