@@ -165,22 +165,52 @@ export default async function handler(request) {
                 const html = await response.text();
                 const $ = cheerio.load(html);
 
+                // DEBUG: Collect debug info to return to client
+                const debugInfo = {
+                    url: targetUrl,
+                    titles: $('h1, h2, h3, h4, h5, h6').map((i, el) => $(el).text()).get().join(' | '),
+                    nav: $('.nav, .toc').map((i, el) => $(el).text()).get().join(' | '),
+                    chapters: $('.c, .c1').map((i, el) => $(el).text()).get().join(' | '),
+                    links: $('a').map((i, el) => $(el).text()).get().join(' | '),
+                    rawTextStart: $('body').text().substring(0, 100)
+                };
+
                 // 4. Extract Text
 
-                // Remove navigation links (often "Next", "Previous" at top/bottom)
+                // Remove navigation/TOC (often unordered lists or divs with class 'toc' or 'nav')
+                $('.toc').remove();
                 $('.nav').remove();
+                $('.tnav').remove(); // New from user
                 $('.chapnav').remove();
 
-                // Remove header/footer nonsense
-                $('div.toc').remove();
-                $('div.footer').remove();
+                // Remove header/footer/copyright
+                $('.footer').remove();
+                $('.header').remove();
 
-                // Remove verse numbers (often in <span class="v">)
+                // Remove titles and chapter numbers (we handle titles in UI)
+                $('h1, h2, h3, h4, h5, h6').remove();
+                $('.mt, .mt1, .mt2, .mt3, .mt4').remove(); // Major titles
+
+                // Transform chapter label to [ # ] format
+                $('.chapterlabel').each((i, el) => {
+                    const num = $(el).text().trim();
+                    $(el).text(`[ ${num} ]`);
+                });
+
+                $('.c, .c1, .c2').remove(); // Other chapter markers
+                $('.s, .s1, .s2').remove(); // Section headings (optional, usually good to keep structure but often distracting in plain text)
+
+                // Remove verse numbers
                 $('.v').remove();
+                $('.verse').remove(); // <span class="verse">
 
-                // Remove footnotes (often <span class="note"> or similar)
+                // Remove footnotes
                 $('.note').remove();
                 $('.notemark').remove();
+                $('.footnote').remove();
+
+                // Remove blank lines
+                $('.b').remove();
 
                 // Get textual content
                 let text = $('body').text();
@@ -190,7 +220,8 @@ export default async function handler(request) {
 
                 chapters.push({
                     chapter,
-                    text
+                    text,
+                    debug: debugInfo
                 });
 
             } catch (err) {
@@ -211,6 +242,7 @@ export default async function handler(request) {
         }
 
         const combinedText = chapters.map(c => c.text).join('\n\n');
+        const debugLog = chapters.map(c => c.debug);
 
         return new Response(JSON.stringify({
             citation,
@@ -218,13 +250,14 @@ export default async function handler(request) {
             chapters: chapters.map(c => c.chapter),
             text: combinedText,
             source: 'ebible.org',
-            version: version
+            version: version,
+            debug: debugLog
         }), {
             status: 200,
             headers: {
                 ...corsHeaders,
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, max-age=86400'
+                'Cache-Control': 'no-cache, no-store, must-revalidate' // Disable cache for debugging
             }
         });
 

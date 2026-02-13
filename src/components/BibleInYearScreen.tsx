@@ -19,7 +19,7 @@ interface Reading {
     text: string;
 }
 
-export default function BibleInYearScreen() {
+export default function BibleInYearScreen({ onBack }: { onBack: () => void }) {
     const { language } = useApp();
     const [currentDay, setCurrentDay] = useState(1);
     const [readings, setReadings] = useState<Reading[]>([]);
@@ -78,17 +78,26 @@ export default function BibleInYearScreen() {
             // Fetch First Reading
             try {
                 const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(data.first_reading)}&lang=${language}`);
-                const result = await response.json();
-                readingsToFetch.push({
-                    title: t.firstReading,
-                    citation: data.first_reading,
-                    text: result.text || `Error loading ${data.first_reading}`
-                });
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.debug) console.log('[Bible Debug] First Reading:', result.debug);
+                    readingsToFetch.push({
+                        title: t.firstReading,
+                        citation: data.first_reading,
+                        text: result.text || `📖 ${data.first_reading}\n\n[Scripture text loading...]`
+                    });
+                } else {
+                    readingsToFetch.push({
+                        title: t.firstReading,
+                        citation: data.first_reading,
+                        text: `📖 ${data.first_reading}\n\n[Scripture text will be available shortly - API deploying...]`
+                    });
+                }
             } catch (err) {
                 readingsToFetch.push({
                     title: t.firstReading,
                     citation: data.first_reading,
-                    text: `Error loading ${data.first_reading}`
+                    text: `📖 ${data.first_reading}\n\n[Scripture text will be available shortly - API deploying...]`
                 });
             }
 
@@ -96,17 +105,26 @@ export default function BibleInYearScreen() {
             if (data.second_reading) {
                 try {
                     const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(data.second_reading)}&lang=${language}`);
-                    const result = await response.json();
-                    readingsToFetch.push({
-                        title: t.secondReading,
-                        citation: data.second_reading,
-                        text: result.text || `Error loading ${data.second_reading}`
-                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.debug) console.log('[Bible Debug] Second Reading:', result.debug);
+                        readingsToFetch.push({
+                            title: t.secondReading,
+                            citation: data.second_reading,
+                            text: result.text || `📖 ${data.second_reading}\n\n[Scripture text loading...]`
+                        });
+                    } else {
+                        readingsToFetch.push({
+                            title: t.secondReading,
+                            citation: data.second_reading,
+                            text: `📖 ${data.second_reading}\n\n[Scripture text will be available shortly - API deploying...]`
+                        });
+                    }
                 } catch (err) {
                     readingsToFetch.push({
                         title: t.secondReading,
                         citation: data.second_reading,
-                        text: `Error loading ${data.second_reading}`
+                        text: `📖 ${data.second_reading}\n\n[Scripture text will be available shortly - API deploying...]`
                     });
                 }
             }
@@ -114,17 +132,26 @@ export default function BibleInYearScreen() {
             // Fetch Psalm/Proverbs
             try {
                 const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(data.psalm_proverbs)}&lang=${language}`);
-                const result = await response.json();
-                readingsToFetch.push({
-                    title: t.psalmProverbs,
-                    citation: data.psalm_proverbs,
-                    text: result.text || `Error loading ${data.psalm_proverbs}`
-                });
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.debug) console.log('[Bible Debug] Psalm/Proverbs:', result.debug);
+                    readingsToFetch.push({
+                        title: t.psalmProverbs,
+                        citation: data.psalm_proverbs,
+                        text: result.text || `📖 ${data.psalm_proverbs}\n\n[Scripture text loading...]`
+                    });
+                } else {
+                    readingsToFetch.push({
+                        title: t.psalmProverbs,
+                        citation: data.psalm_proverbs,
+                        text: `📖 ${data.psalm_proverbs}\n\n[Scripture text will be available shortly - API deploying...]`
+                    });
+                }
             } catch (err) {
                 readingsToFetch.push({
                     title: t.psalmProverbs,
                     citation: data.psalm_proverbs,
-                    text: `Error loading ${data.psalm_proverbs}`
+                    text: `📖 ${data.psalm_proverbs}\n\n[Scripture text will be available shortly - API deploying...]`
                 });
             }
 
@@ -197,9 +224,7 @@ export default function BibleInYearScreen() {
         ));
     };
 
-    const onBack = () => {
-        window.history.back();
-    };
+
 
     return (
         <div className="readings-container fade-in">
