@@ -1,25 +1,103 @@
-import * as cheerio from 'cheerio';
-
-// Bible citation API - parses citations like "Genesis 1-2" and fetches from USCCB
+import { geolocation } from '@vercel/edge';
 
 export const config = {
     runtime: 'edge',
 };
 
+// Map book names to wldeh/bible-api IDs (English)
+const BOOK_MAPPINGS = {
+    // Law
+    'genesis': 'genesis',
+    'exodus': 'exodus',
+    'leviticus': 'leviticus',
+    'numbers': 'numbers',
+    'deuteronomy': 'deuteronomy',
+    // History
+    'joshua': 'joshua',
+    'judges': 'judges',
+    'ruth': 'ruth',
+    '1 samuel': '1samuel',
+    '2 samuel': '2samuel',
+    '1 kings': '1kings',
+    '2 kings': '2kings',
+    '1 chronicles': '1chronicles',
+    '2 chronicles': '2chronicles',
+    'ezra': 'ezra',
+    'nehemiah': 'nehemiah',
+    'tobit': 'tobit',
+    'judith': 'judith',
+    'esther': 'esther',
+    '1 maccabees': '1maccabees',
+    '2 maccabees': '2maccabees',
+    // Wisdom
+    'job': 'job',
+    'psalms': 'psalms',
+    'psalm': 'psalms',
+    'proverbs': 'proverbs',
+    'ecclesiastes': 'ecclesiastes',
+    'song of solomon': 'songofsolomon',
+    'song of songs': 'songofsolomon',
+    'wisdom': 'wisdom',
+    'sirach': 'sirach',
+    'ecclesiasticus': 'sirach',
+    // Prophecy
+    'isaiah': 'isaiah',
+    'jeremiah': 'jeremiah',
+    'lamentations': 'lamentations',
+    'baruch': 'baruch',
+    'ezekiel': 'ezekiel',
+    'daniel': 'daniel',
+    'hosea': 'hosea',
+    'joel': 'joel',
+    'amos': 'amos',
+    'obadiah': 'obadiah',
+    'jonah': 'jonah',
+    'micah': 'micah',
+    'nahum': 'nahum',
+    'habakkuk': 'habakkuk',
+    'zephaniah': 'zephaniah',
+    'haggai': 'haggai',
+    'zechariah': 'zechariah',
+    'malachi': 'malachi',
+    // New Testament
+    'matthew': 'matthew',
+    'mark': 'mark',
+    'luke': 'luke',
+    'john': 'john',
+    'acts': 'acts',
+    'romans': 'romans',
+    '1 corinthians': '1corinthians',
+    '2 corinthians': '2corinthians',
+    'galatians': 'galatians',
+    'ephesians': 'ephesians',
+    'philippians': 'philippians',
+    'colossians': 'colossians',
+    '1 thessalonians': '1thessalonians',
+    '2 thessalonians': '2thessalonians',
+    '1 timothy': '1timothy',
+    '2 timothy': '2timothy',
+    'titus': 'titus',
+    'philemon': 'philemon',
+    'hebrews': 'hebrews',
+    'james': 'james',
+    '1 peter': '1peter',
+    '2 peter': '2peter',
+    '1 john': '1john',
+    '2 john': '2john',
+    '3 john': '3john',
+    'jude': 'jude',
+    'revelation': 'revelation'
+};
+
 export default async function handler(request) {
-    // CORS headers
     const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
     };
 
-    // Handle preflight
     if (request.method === 'OPTIONS') {
-        return new Response(null, {
-            status: 204,
-            headers: corsHeaders
-        });
+        return new Response(null, { status: 204, headers: corsHeaders });
     }
 
     try {
@@ -27,14 +105,25 @@ export default async function handler(request) {
         const citation = url.searchParams.get('citation');
         const lang = url.searchParams.get('lang') || 'en';
 
+        // Spanish is currently unavailable via this API source
+        if (lang === 'es') {
+            return new Response(JSON.stringify({
+                error: 'Spanish content source currently unavailable',
+                available: false
+            }), {
+                status: 404, // Use 404 to trigger "Content not available" UI
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+
         if (!citation) {
-            return new Response(JSON.stringify({ error: 'Citation parameter required (e.g., "Genesis 1-2")' }), {
+            return new Response(JSON.stringify({ error: 'Citation required' }), {
                 status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
         }
 
-        // Parse citation: "Genesis 1-2" or "Psalm 19"
+        // Parse citation: "Genesis 1-2"
         const match = citation.match(/^(.+?)\s+(\d+)(?:-(\d+))?/);
         if (!match) {
             return new Response(JSON.stringify({ error: 'Invalid citation format' }), {
@@ -43,91 +132,69 @@ export default async function handler(request) {
             });
         }
 
-        const book = match[1].trim();
+        const rawBook = match[1].trim().toLowerCase();
         const startChapter = parseInt(match[2]);
         const endChapter = match[3] ? parseInt(match[3]) : startChapter;
 
-        // Convert book name to USCCB slug
-        const bookSlug = book.toLowerCase().replace(/\s+/g, '-');
-        const langPath = lang === 'es' ? '/es' : '';
+        // Map to API ID
+        let bookId = BOOK_MAPPINGS[rawBook] || rawBook.replace(/\s+/g, '');
 
-        // Fetch all chapters
-        const chapters = [];
+        // Always use English Douay-Rheims (en-dra) as it is 100% complete
+        const version = 'en-dra';
+
+        const chaptersData = [];
         for (let chapter = startChapter; chapter <= endChapter; chapter++) {
-            const targetUrl = `https://bible.usccb.org${langPath}/bible/${bookSlug}/${chapter}`;
+            const apiUrl = `https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/${version}/books/${bookId}/chapters/${chapter}.json`;
 
             try {
-                const response = await fetch(targetUrl);
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
-                    console.error(`Failed to fetch ${book} ${chapter}: ${response.status}`);
+                    console.error(`Failed to fetch ${bookId} ${chapter}: ${response.status}`);
                     continue;
                 }
 
-                const html = await response.text();
-                const $ = cheerio.load(html);
+                const data = await response.json();
+                // wldeh returns { data: [ {verse: "1", text: "..."}, ... ] }
+                const chapterText = data.data.map(v => `${v.verse} ${v.text}`).join(' ');
 
-                // Extract scripture content
-                const contentBody = $('.content-body');
-                if (contentBody.length === 0) {
-                    console.error(`No content found for ${book} ${chapter}`);
-                    continue;
-                }
-
-                // Clean up the content
-                contentBody.find('sup').remove(); // Remove verse numbers
-                contentBody.find('.footnote').remove(); // Remove footnotes
-                contentBody.find('a').each((i, el) => {
-                    $(el).replaceWith($(el).text()); // Remove links but keep text
-                });
-
-                const text = contentBody.text()
-                    .replace(/\s+/g, ' ') // Normalize whitespace
-                    .replace(/\[\s*\*\s*\]/g, '') // Remove asterisks
-                    .trim();
-
-                chapters.push({
+                chaptersData.push({
                     chapter,
-                    text
+                    text: chapterText
                 });
+
             } catch (err) {
-                console.error(`Error fetching ${book} ${chapter}:`, err);
+                console.error(`Error processing ${bookId} ${chapter}:`, err);
             }
         }
 
-        if (chapters.length === 0) {
-            return new Response(JSON.stringify({
-                error: 'No content found',
-                citation,
-                book: bookSlug
-            }), {
+        if (chaptersData.length === 0) {
+            return new Response(JSON.stringify({ error: 'Content not found', citation }), {
                 status: 404,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
         }
 
-        // Combine all chapters
-        const combinedText = chapters.map(c => c.text).join('\n\n');
+        const combinedText = chaptersData.map(c =>
+            `Chapter ${c.chapter}\n\n${c.text}`
+        ).join('\n\n');
 
         return new Response(JSON.stringify({
             citation,
-            book,
-            chapters: chapters.map(c => c.chapter),
+            book: match[1].trim(),
+            chapters: chaptersData.map(c => c.chapter),
             text: combinedText
         }), {
             status: 200,
             headers: {
                 ...corsHeaders,
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, max-age=86400' // Cache for 24 hours
+                'Cache-Control': 'public, max-age=86400'
             }
         });
 
     } catch (error) {
         console.error('Bible API Error:', error);
-        return new Response(JSON.stringify({
-            error: 'Internal server error',
-            message: error.message
-        }), {
+        return new Response(JSON.stringify({ error: 'Internal server error', details: error.message }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
