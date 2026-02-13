@@ -19,7 +19,11 @@ interface Reading {
     text: string;
 }
 
-export default function BibleInYearScreen({ onBack }: { onBack: () => void }) {
+interface Props {
+    onBack: () => void;
+}
+
+export default function BibleInYearScreen({ onBack }: Props) {
     const { language } = useApp();
     const [currentDay, setCurrentDay] = useState(1);
     const [readings, setReadings] = useState<Reading[]>([]);

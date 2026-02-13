@@ -262,7 +262,9 @@ function AppContent() {
           />
         )}
         {currentScreen === 'bible-in-year' && (
-          <BibleInYearScreen />
+          <BibleInYearScreen
+            onBack={() => setCurrentScreen('prayer-selection')}
+          />
         )}
         {currentScreen === 'sacred-complete' && (
           <SacredCompletionScreen onHome={handleBackToSelection} />
