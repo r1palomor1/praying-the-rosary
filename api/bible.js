@@ -1,11 +1,11 @@
 
 export const config = {
-    runtime: 'edge',
+    runtime: 'edge', // Using Edge runtime for optimal performance
 };
 
 // Map English Book Names (from our App) to:
-// 1. bible-api.com (Standard English) - No mapping needed usually, English names work fine.
-// 2. wldeh/bible-api Spanish Folders (es-rv09) - Needs "génesis", "1samuel" (lowercase, no spaces, Spanish names)
+// 1. bible-api.com (Standard English) - Standard English names work fine.
+// 2. wldeh/bible-api Spanish Folders (es-vbl) - Needs "génesis", "1samuel" (lowercase, no spaces, Spanish names)
 
 const ENGLISH_TO_SPANISH_REPO = {
     // Pentateuch
@@ -123,25 +123,29 @@ export default async function handler(request) {
             startChapter = parseInt(match[2]);
             endChapter = match[3] ? parseInt(match[3]) : startChapter;
         } else {
-            // Fallback for unexpected formats
             rawBook = citation.split(' ')[0].toLowerCase();
             startChapter = 1;
             endChapter = 1;
         }
 
+        const chaptersText = [];
+        let sourceInfo = "";
+        let versionInfo = "";
+
         // --- STRATEGY SELECTION ---
 
         if (lang === 'es') {
-            // SPANISH STRATEGY: wldeh/bible-api (Static JSON, Reina Valera 1909)
-            // Verified Scheme: { data: [ { text: "..." }, ... ] }
+            // SPANISH STRATEGY: wldeh/bible-api (Static JSON, es-vbl)
+            // Repo: https://github.com/wldeh/bible-api/tree/main/bibles/es-vbl
+            // Note: Switched from es-rv09 (noisy) to es-vbl (cleaner).
 
             const spanishBook = ENGLISH_TO_SPANISH_REPO[rawBook] || rawBook;
-            const chaptersText = [];
+            sourceInfo = 'github/wldeh/bible-api';
+            versionInfo = 'Sagradas Escrituras (VBL)';
 
             for (let chapter = startChapter; chapter <= endChapter; chapter++) {
                 // Fetch JSON from raw.githubusercontent.com
-                // URL: https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-rv09/books/{BOOK}/chapters/{CHAPTER}.json
-                const targetUrl = `https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-rv09/books/${encodeURIComponent(spanishBook)}/chapters/${chapter}.json`;
+                const targetUrl = `https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-vbl/books/${encodeURIComponent(spanishBook)}/chapters/${chapter}.json`;
                 console.log(`Fetching Spanish: ${targetUrl}`);
 
                 try {
@@ -153,14 +157,12 @@ export default async function handler(request) {
 
                     const data = await res.json();
 
-                    // Strict Parsing based on verified schema
+                    // Strict Parsing based on verified schema: { data: [ { text: "..." } ... ] }
                     let text = "Text unavailable.";
 
                     if (data.data && Array.isArray(data.data)) {
-                        // Join all verse texts
                         text = data.data.map(v => v.text || "").join(' ');
                     } else {
-                        // Verification failed or schema changed unexpectedly
                         console.error("Spanish JSON schema mismatch:", JSON.stringify(data).substring(0, 100));
                         text = "Error: Invalid content format.";
                     }
@@ -172,51 +174,63 @@ export default async function handler(request) {
                 }
             }
 
-            if (chaptersText.length === 0) {
-                return new Response(JSON.stringify({
-                    error: 'Content not found (Spanish)',
-                    details: 'Failed to retrieve text from repository.'
-                }), { status: 404, headers: corsHeaders });
-            }
-
-            return new Response(JSON.stringify({
-                citation: citation,
-                text: chaptersText.join('\n\n'),
-                source: 'github/wldeh/bible-api',
-                version: 'Reina Valera 1909'
-            }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-
         } else {
             // ENGLISH STRATEGY: bible-api.com (WEB)
+            // Iterating chapters individually to avoid rate limits or range errors.
 
-            const apiUrl = `https://bible-api.com/${encodeURIComponent(citation)}?translation=web`;
-            console.log(`Fetching English: ${apiUrl}`);
+            sourceInfo = 'bible-api.com';
+            versionInfo = 'World English Bible';
 
-            const response = await fetch(apiUrl);
+            for (let chapter = startChapter; chapter <= endChapter; chapter++) {
+                // Format: https://bible-api.com/Genesis+1?translation=web
+                // Note: book + chapter encoding
+                const query = `${rawBook} ${chapter}`;
+                const apiUrl = `https://bible-api.com/${encodeURIComponent(query)}?translation=web`;
+                console.log(`Fetching English: ${apiUrl}`);
 
-            if (!response.ok) {
-                return new Response(JSON.stringify({ error: 'Failed to fetch English scripture' }), {
-                    status: response.status,
-                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-                });
-            }
+                try {
+                    const response = await fetch(apiUrl);
 
-            const data = await response.json();
+                    if (!response.ok) {
+                        console.error(`Failed English API: ${response.status}`);
+                        continue;
+                    }
 
-            return new Response(JSON.stringify({
-                citation: data.reference,
-                text: data.text,
-                source: 'bible-api.com',
-                version: 'World English Bible'
-            }), {
-                status: 200,
-                headers: {
-                    ...corsHeaders,
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'public, max-age=86400'
+                    const data = await response.json();
+
+                    if (data.text) {
+                        chaptersText.push(data.text);
+                    } else if (data.verses) {
+                        // Fallback just in case text is missing but verses exist
+                        chaptersText.push(data.verses.map(v => v.text).join(' '));
+                    }
+
+                } catch (e) {
+                    console.error("Error fetching English API:", e);
                 }
-            });
+            }
         }
+
+        if (chaptersText.length === 0) {
+            return new Response(JSON.stringify({
+                error: 'Content not found',
+                details: 'Failed to retrieve text from source.'
+            }), { status: 404, headers: corsHeaders });
+        }
+
+        return new Response(JSON.stringify({
+            citation: citation,
+            text: chaptersText.join('\n\n'),
+            source: sourceInfo,
+            version: versionInfo
+        }), {
+            status: 200,
+            headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, max-age=86400'
+            }
+        });
 
     } catch (error) {
         console.error('Bible Proxy Error:', error);
