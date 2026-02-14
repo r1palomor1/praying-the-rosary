@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Info } from 'lucide-react';
 
 interface ProgressTrackingSectionProps {
@@ -17,6 +18,8 @@ export function ProgressTrackingSection({
     translations,
     language
 }: ProgressTrackingSectionProps) {
+    const [showTooltip, setShowTooltip] = useState(false);
+
     // Format date for display
     const formatDate = (dateStr: string) => {
         if (!dateStr) return language === 'es' ? 'Hoy' : 'Today';
@@ -40,10 +43,39 @@ export function ProgressTrackingSection({
         <section>
             <h2 className="settings-section-header">
                 {translations.progressTracking}
-                <Info
-                    className="settings-info-icon"
-                    size={16}
-                />
+                <div style={{ position: 'relative', display: 'inline-block', marginLeft: '8px' }}>
+                    <button
+                        className="info-icon-btn"
+                        onClick={() => setShowTooltip(!showTooltip)}
+                        aria-label="Info"
+                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', display: 'flex' }}
+                    >
+                        <Info size={16} />
+                    </button>
+
+                    {showTooltip && (
+                        <div className="tooltip-popup" style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            marginTop: '8px',
+                            padding: '12px',
+                            backgroundColor: 'rgba(30, 30, 30, 0.95)',
+                            color: '#fff',
+                            borderRadius: '8px',
+                            fontSize: '0.85rem',
+                            width: '240px',
+                            zIndex: 1000,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            textAlign: 'center',
+                            lineHeight: '1.4'
+                        }}>
+                            {translations.startDateTooltip}
+                        </div>
+                    )}
+                </div>
             </h2>
             <div className="settings-card settings-progress-card">
                 <div className="settings-progress-content">
