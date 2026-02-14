@@ -5,7 +5,7 @@ export const config = {
 
 // Map English Book Names (from our App) to:
 // 1. bible-api.com (Standard English) - Standard English names work fine.
-// 2. wldeh/bible-api Spanish Folders (es-vbl) - Needs "génesis", "1samuel" (lowercase, no spaces, Spanish names)
+// 2. wldeh/bible-api Spanish Folders (es-bes) - Needs "génesis", "1samuel" (lowercase, no spaces, Spanish names)
 
 const ENGLISH_TO_SPANISH_REPO = {
     // Pentateuch
@@ -135,17 +135,17 @@ export default async function handler(request) {
         // --- STRATEGY SELECTION ---
 
         if (lang === 'es') {
-            // SPANISH STRATEGY: wldeh/bible-api (Static JSON, es-vbl)
-            // Repo: https://github.com/wldeh/bible-api/tree/main/bibles/es-vbl
-            // Note: Switched from es-rv09 (noisy) to es-vbl (cleaner).
+            // SPANISH STRATEGY: wldeh/bible-api (Static JSON, es-bes)
+            // Verified clean text: Bible in Basic Spanish (Biblia en Español Sencillo)
 
             const spanishBook = ENGLISH_TO_SPANISH_REPO[rawBook] || rawBook;
             sourceInfo = 'github/wldeh/bible-api';
-            versionInfo = 'Sagradas Escrituras (VBL)';
+            versionInfo = 'Biblia en Español Sencillo';
 
             for (let chapter = startChapter; chapter <= endChapter; chapter++) {
                 // Fetch JSON from raw.githubusercontent.com
-                const targetUrl = `https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-vbl/books/${encodeURIComponent(spanishBook)}/chapters/${chapter}.json`;
+                // URL: https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-bes/books/{BOOK}/chapters/{CHAPTER}.json
+                const targetUrl = `https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-bes/books/${encodeURIComponent(spanishBook)}/chapters/${chapter}.json`;
                 console.log(`Fetching Spanish: ${targetUrl}`);
 
                 try {
@@ -161,13 +161,15 @@ export default async function handler(request) {
                     let text = "Text unavailable.";
 
                     if (data.data && Array.isArray(data.data)) {
-                        text = data.data.map(v => v.text || "").join(' ');
+                        // Use newline to separate verses for better readability (user preference)
+                        text = data.data.map(v => v.text || "").join('\n\n');
                     } else {
                         console.error("Spanish JSON schema mismatch:", JSON.stringify(data).substring(0, 100));
                         text = "Error: Invalid content format.";
                     }
 
-                    chaptersText.push(text);
+                    // Add header
+                    chaptersText.push(`### Capítulo ${chapter}\n\n${text}`);
 
                 } catch (e) {
                     console.error("Error parsing Spanish JSON:", e);
@@ -198,12 +200,16 @@ export default async function handler(request) {
 
                     const data = await response.json();
 
+                    let text = "";
                     if (data.text) {
-                        chaptersText.push(data.text);
+                        text = data.text;
                     } else if (data.verses) {
                         // Fallback just in case text is missing but verses exist
-                        chaptersText.push(data.verses.map(v => v.text).join(' '));
+                        text = data.verses.map(v => v.text).join('\n\n');
                     }
+
+                    // Add header
+                    chaptersText.push(`### Chapter ${chapter}\n\n${text}`);
 
                 } catch (e) {
                     console.error("Error fetching English API:", e);
