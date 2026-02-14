@@ -3,7 +3,8 @@ import { Info } from 'lucide-react';
 
 interface ProgressTrackingSectionProps {
     rosaryStartDate: string;
-    sacredStartDate: string;
+    // sacredStartDate: string; // Deprecated per user request
+    bibleStartDate: string;
     onEditClick: () => void;
     translations: {
         progressTracking: string;
@@ -14,6 +15,7 @@ interface ProgressTrackingSectionProps {
 
 export function ProgressTrackingSection({
     rosaryStartDate,
+    bibleStartDate,
     onEditClick,
     translations,
     language
@@ -37,7 +39,8 @@ export function ProgressTrackingSection({
     };
 
     const today = language === 'es' ? 'Hoy' : 'Today';
-    const startDateDisplay = formatDate(rosaryStartDate);
+    const rosaryDisplay = formatDate(rosaryStartDate);
+    const bibleDisplay = formatDate(bibleStartDate);
 
     return (
         <section>
@@ -80,16 +83,30 @@ export function ProgressTrackingSection({
             <div className="settings-card settings-progress-card">
                 <div className="settings-progress-content">
                     <div className="settings-progress-info">
-                        <p className="settings-progress-label">
-                            {language === 'es' ? 'Período Actual' : 'Current Period'}
-                        </p>
-                        <p className="settings-progress-dates">
-                            {startDateDisplay} — {today}
-                        </p>
+                        {/* Rosary Row */}
+                        <div style={{ marginBottom: '12px' }}>
+                            <p className="settings-progress-label">
+                                {language === 'es' ? 'Rosario' : 'Rosary'}
+                            </p>
+                            <p className="settings-progress-dates">
+                                {rosaryDisplay} — {today}
+                            </p>
+                        </div>
+
+                        {/* Bible Row */}
+                        <div>
+                            <p className="settings-progress-label">
+                                {language === 'es' ? 'Biblia en un Año' : 'Bible in a Year'}
+                            </p>
+                            <p className="settings-progress-dates">
+                                {bibleDisplay} — {today}
+                            </p>
+                        </div>
                     </div>
                     <button
                         className="settings-edit-button"
                         onClick={onEditClick}
+                        style={{ alignSelf: 'flex-start', marginTop: '8px' }}
                     >
                         {language === 'es' ? 'EDITAR' : 'EDIT'}
                     </button>

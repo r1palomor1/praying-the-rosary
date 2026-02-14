@@ -7,6 +7,7 @@ import { LiturgicalCard } from './LiturgicalCard';
 import { fetchLiturgicalDay, type LiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar'; // Import fetcher
 import './PrayerSelectionScreen.css';
 import { hasCompletionOnDate } from '../utils/prayerHistory';
+import { useBibleProgress } from '../hooks/useBibleProgress';
 
 interface PrayerSelectionScreenProps {
     onSelectRosary: () => void;
@@ -27,6 +28,9 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
     const [loading, setLoading] = useState(true);
     const [isRosaryCompleted, setIsRosaryCompleted] = useState(false);
     const [isReminderEnabled, setIsReminderEnabled] = useState(false);
+
+    // Bible Progress
+    const { missedDays, expectedDay, isDayComplete, bibleStartDate } = useBibleProgress();
 
     useEffect(() => {
         const initScreen = async () => {
@@ -220,7 +224,27 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                     </div>
                     <div className="card-content">
                         <h2 className="card-title">{t.bibleInAYear.toUpperCase()}</h2>
-                        <p className="card-subtitle">{t.bibleInAYearSubtitle.replace('{day}', '1')}</p>
+                        <p className="card-subtitle">
+                            {(() => {
+                                if (!bibleStartDate) return t.bibleInAYearSubtitle.replace('{day}', '1');
+
+                                // Logic:
+                                // 1. If missed days exist -> Show first missed day + "X missed"
+                                // 2. If expected day is complete -> Show "Day X • Complete"
+                                // 3. Else -> Show "Day X of 365"
+
+                                if (missedDays.length > 0) {
+                                    const resumeDay = missedDays[0];
+                                    return `Resume Day ${resumeDay} (${missedDays.length} missed)`;
+                                }
+
+                                if (isDayComplete(expectedDay)) {
+                                    return `Day ${expectedDay} • Complete`;
+                                }
+
+                                return t.bibleInAYearSubtitle.replace('{day}', expectedDay.toString());
+                            })()}
+                        </p>
                     </div>
                     <ChevronRight className="card-chevron" size={24} />
                 </button>

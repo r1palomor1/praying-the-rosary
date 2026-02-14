@@ -3,7 +3,7 @@ import { Info, Bug } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { clearPrayerProgress, clearSession as clearLocalStorageSession } from '../../utils/storage';
 import { getVersionInfo, formatDateTime, type VersionInfo } from '../../utils/version';
-import { getRosaryStartDate, setRosaryStartDate, getSacredStartDate, setSacredStartDate } from '../../utils/progressSettings';
+import { getRosaryStartDate, setRosaryStartDate, getSacredStartDate, setSacredStartDate, getBibleStartDate, setBibleStartDate } from '../../utils/progressSettings';
 import { VersionModal } from '../VersionModal';
 import { TextSizeModal } from './TextSizeModal';
 import { DateEditModal } from './DateEditModal';
@@ -25,6 +25,7 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
     const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
     const [rosaryStartDate, setRosaryStartDateState] = useState<string>('');
     const [sacredStartDate, setSacredStartDateState] = useState<string>('');
+    const [bibleStartDate, setBibleStartDateState] = useState<string>('');
     const [rosaryReminder, setRosaryReminder] = useState(() => {
         return localStorage.getItem('rosary_reminder_enabled') === 'true';
     });
@@ -37,10 +38,11 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
 
     // Fetch version info and start dates on mount
     useEffect(() => {
-        console.log('🎨 SettingsModalV2 LOADED - Brown/Beige Theme');
+
         getVersionInfo().then(setVersionInfo);
         setRosaryStartDateState(getRosaryStartDate() || '');
         setSacredStartDateState(getSacredStartDate() || '');
+        setBibleStartDateState(getBibleStartDate() || '');
     }, []);
 
     if (!isOpen) return null;
@@ -125,6 +127,7 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
     const handleDateApply = () => {
         setRosaryStartDate(rosaryStartDate);
         setSacredStartDate(sacredStartDate);
+        setBibleStartDate(bibleStartDate);
     };
 
     return (
@@ -151,7 +154,8 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
 
                     <ProgressTrackingSection
                         rosaryStartDate={rosaryStartDate}
-                        sacredStartDate={sacredStartDate}
+                        // sacredStartDate={sacredStartDate} // Removed from UI per user request
+                        bibleStartDate={bibleStartDate}
                         onEditClick={() => setShowDateModal(true)}
                         translations={t}
                         language={language}
@@ -223,8 +227,10 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
                 onClose={() => setShowDateModal(false)}
                 rosaryStartDate={rosaryStartDate}
                 sacredStartDate={sacredStartDate}
+                bibleStartDate={bibleStartDate}
                 onRosaryDateChange={setRosaryStartDateState}
                 onSacredDateChange={setSacredStartDateState}
+                onBibleDateChange={setBibleStartDateState}
                 onApply={handleDateApply}
                 language={language}
             />

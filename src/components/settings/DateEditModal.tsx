@@ -6,8 +6,10 @@ interface DateEditModalProps {
     onClose: () => void;
     rosaryStartDate: string;
     sacredStartDate: string;
+    bibleStartDate: string;
     onRosaryDateChange: (date: string) => void;
     onSacredDateChange: (date: string) => void;
+    onBibleDateChange: (date: string) => void;
     onApply: () => void;
     language: 'en' | 'es';
 }
@@ -17,21 +19,25 @@ export function DateEditModal({
     onClose,
     rosaryStartDate,
     sacredStartDate,
+    bibleStartDate,
     onRosaryDateChange,
     onSacredDateChange,
+    onBibleDateChange,
     onApply,
     language
 }: DateEditModalProps) {
     if (!isOpen) return null;
 
     const [localRosaryDate, setLocalRosaryDate] = useState(rosaryStartDate);
-    const [localSacredDate, setLocalSacredDate] = useState(sacredStartDate);
+    const [localSacredDate] = useState(sacredStartDate);
+    const [localBibleDate, setLocalBibleDate] = useState(bibleStartDate);
 
     const translations = {
         en: {
             title: 'Edit Progress Tracking',
             rosaryStartDate: 'Rosary Start Date',
             sacredStartDate: 'Sacred Prayers Start Date',
+            bibleStartDate: 'Bible in a Year Start Date',
             quickPresets: 'Quick Presets:',
             today: 'Today',
             thisMonth: 'This Month',
@@ -44,6 +50,7 @@ export function DateEditModal({
             title: 'Editar Seguimiento',
             rosaryStartDate: 'Fecha de Inicio del Rosario',
             sacredStartDate: 'Fecha de Inicio de Oraciones Sagradas',
+            bibleStartDate: 'Inicio Biblia en un Año',
             quickPresets: 'Atajos Rápidos:',
             today: 'Hoy',
             thisMonth: 'Este Mes',
@@ -56,30 +63,12 @@ export function DateEditModal({
 
     const t = translations[language];
 
-    const setToday = () => {
-        const today = new Date().toISOString().split('T')[0];
-        setLocalRosaryDate(today);
-        setLocalSacredDate(today);
-    };
-
-    const setFirstOfMonth = () => {
-        const now = new Date();
-        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-            .toISOString().split('T')[0];
-        setLocalRosaryDate(firstOfMonth);
-        setLocalSacredDate(firstOfMonth);
-    };
-
-    const setFirstOfYear = () => {
-        const year = new Date().getFullYear();
-        const firstOfYear = `${year}-01-01`;
-        setLocalRosaryDate(firstOfYear);
-        setLocalSacredDate(firstOfYear);
-    };
+    // Helper functions removed in favor of inline specific handlers
 
     const handleApply = () => {
         onRosaryDateChange(localRosaryDate);
         onSacredDateChange(localSacredDate);
+        onBibleDateChange(localBibleDate);
         onApply();
         onClose();
     };
@@ -95,16 +84,6 @@ export function DateEditModal({
                 </div>
 
                 <div className="settings-date-content">
-                    {/* Quick Presets */}
-                    <div className="settings-date-presets">
-                        <p className="settings-preset-label">{t.quickPresets}</p>
-                        <div className="settings-preset-buttons">
-                            <button onClick={setToday} className="settings-preset-btn">{t.today}</button>
-                            <button onClick={setFirstOfMonth} className="settings-preset-btn">{t.thisMonth}</button>
-                            <button onClick={setFirstOfYear} className="settings-preset-btn">{t.thisYear}</button>
-                        </div>
-                    </div>
-
                     {/* Rosary Start Date */}
                     <div className="settings-date-group">
                         <div className="settings-date-header">
@@ -128,32 +107,62 @@ export function DateEditModal({
                                 </button>
                             )}
                         </div>
+                        <div className="settings-quick-actions">
+                            <button
+                                onClick={() => setLocalRosaryDate(new Date().toISOString().split('T')[0])}
+                                className="settings-quick-btn"
+                            >
+                                {t.today}
+                            </button>
+                            <button
+                                onClick={() => setLocalRosaryDate(`${new Date().getFullYear()}-01-01`)}
+                                className="settings-quick-btn"
+                            >
+                                Jan 1
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Sacred Start Date */}
+                    {/* Bible Start Date */}
                     <div className="settings-date-group">
                         <div className="settings-date-header">
                             <Calendar className="settings-icon" size={20} />
-                            <label className="settings-date-label">{t.sacredStartDate}</label>
+                            <label className="settings-date-label">{t.bibleStartDate}</label>
                         </div>
                         <div className="settings-date-input-group">
                             <input
                                 type="date"
-                                value={localSacredDate}
-                                onChange={(e) => setLocalSacredDate(e.target.value)}
+                                value={localBibleDate}
+                                onChange={(e) => setLocalBibleDate(e.target.value)}
                                 className="settings-date-input"
                                 max={new Date().toISOString().split('T')[0]}
                             />
-                            {localSacredDate && (
+                            {localBibleDate && (
                                 <button
-                                    onClick={() => setLocalSacredDate('')}
+                                    onClick={() => setLocalBibleDate('')}
                                     className="settings-date-clear-btn"
                                 >
                                     {t.clear}
                                 </button>
                             )}
                         </div>
+                        <div className="settings-quick-actions">
+                            <button
+                                onClick={() => setLocalBibleDate(new Date().toISOString().split('T')[0])}
+                                className="settings-quick-btn"
+                            >
+                                {t.today}
+                            </button>
+                            <button
+                                onClick={() => setLocalBibleDate(`${new Date().getFullYear()}-01-01`)}
+                                className="settings-quick-btn"
+                            >
+                                Jan 1
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Sacred Prayers (Hidden/Disabled via UI removal, but state preserved) */}
 
                     {/* Action Buttons */}
                     <div className="settings-date-actions">

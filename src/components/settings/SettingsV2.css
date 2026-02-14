@@ -756,3 +756,27 @@
     background-color: #8f6a35;
     transform: translateY(-1px);
 }
+/* Quick Date Actions */
+.settings-quick-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding-left: 0.25rem;
+}
+
+.settings-quick-btn {
+    background: none;
+    border: none;
+    color: var(--settings-text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    opacity: 0.8;
+    transition: all 0.2s;
+}
+
+.settings-quick-btn:hover {
+    color: var(--settings-primary);
+    opacity: 1;
+}

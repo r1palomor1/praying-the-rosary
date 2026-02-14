@@ -4,10 +4,12 @@
 
 const ROSARY_START_DATE_KEY = 'rosary_start_date';
 const SACRED_START_DATE_KEY = 'sacred_start_date';
+const BIBLE_START_DATE_KEY = 'bible_start_date';
 
 export interface ProgressSettings {
     rosaryStartDate: string | null; // YYYY-MM-DD format
     sacredStartDate: string | null; // YYYY-MM-DD format
+    bibleStartDate: string | null; // YYYY-MM-DD format
 }
 
 /**
@@ -63,12 +65,39 @@ export function setSacredStartDate(date: string | null): void {
 }
 
 /**
+ * Get bible in a year start date
+ */
+export function getBibleStartDate(): string | null {
+    try {
+        return localStorage.getItem(BIBLE_START_DATE_KEY);
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Set bible in a year start date
+ */
+export function setBibleStartDate(date: string | null): void {
+    try {
+        if (date) {
+            localStorage.setItem(BIBLE_START_DATE_KEY, date);
+        } else {
+            localStorage.removeItem(BIBLE_START_DATE_KEY);
+        }
+    } catch (e) {
+        console.error('Failed to save bible start date:', e);
+    }
+}
+
+/**
  * Get all progress settings
  */
 export function getProgressSettings(): ProgressSettings {
     return {
         rosaryStartDate: getRosaryStartDate(),
-        sacredStartDate: getSacredStartDate()
+        sacredStartDate: getSacredStartDate(),
+        bibleStartDate: getBibleStartDate()
     };
 }
 

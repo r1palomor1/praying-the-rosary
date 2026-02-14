@@ -1,93 +1,94 @@
-import * as cheerio from 'cheerio';
 
 export const config = {
     runtime: 'edge',
 };
 
-// Map book names to eBible.org 3-letter codes
-// Codes based on standard USFM/eBible filenames: GEN01.htm, 1MA01.htm, etc.
-const BOOK_MAPPINGS = {
+// Map English Book Names (from our App) to:
+// 1. bible-api.com (Standard English) - No mapping needed usually, English names work fine.
+// 2. wldeh/bible-api Spanish Folders (es-rv09) - Needs "génesis", "1samuel" (lowercase, no spaces, Spanish names)
+
+const ENGLISH_TO_SPANISH_REPO = {
     // Pentateuch
-    'genesis': 'GEN',
-    'exodus': 'EXO',
-    'leviticus': 'LEV',
-    'numbers': 'NUM',
-    'deuteronomy': 'DEU',
+    'genesis': 'génesis',
+    'exodus': 'éxodo',
+    'leviticus': 'levítico',
+    'numbers': 'números',
+    'deuteronomy': 'deuteronomio',
     // History
-    'joshua': 'JOS',
-    'judges': 'JDG',
-    'ruth': 'RUT',
-    '1 samuel': '1SA',
-    '2 samuel': '2SA',
-    '1 kings': '1KI',
-    '2 kings': '2KI',
-    '1 chronicles': '1CH',
-    '2 chronicles': '2CH',
-    'ezra': 'EZR',
-    'nehemiah': 'NEH',
-    'tobit': 'TOB',
-    'judith': 'JDT',
-    'esther': 'EST',
-    '1 maccabees': '1MA',
-    '2 maccabees': '2MA',
+    'joshua': 'josué',
+    'judges': 'jueces',
+    'ruth': 'rut',
+    '1 samuel': '1samuel',
+    '2 samuel': '2samuel',
+    '1 kings': '1reyes',
+    '2 kings': '2reyes',
+    '1 chronicles': '1crónicas',
+    '2 chronicles': '2crónicas',
+    'ezra': 'esdras',
+    'nehemiah': 'nehemías',
+    'tobit': 'tobías',
+    'judith': 'judit',
+    'esther': 'ester',
+    '1 maccabees': '1macabeos',
+    '2 maccabees': '2macabeos',
     // Wisdom
-    'job': 'JOB',
-    'psalms': 'PSA',
-    'psalm': 'PSA',
-    'proverbs': 'PRO',
-    'ecclesiastes': 'ECC',
-    'song of solomon': 'SNG',
-    'song of songs': 'SNG',
-    'wisdom': 'WIS',
-    'sirach': 'SIR',
-    'ecclesiasticus': 'SIR',
+    'job': 'job',
+    'psalms': 'salmos',
+    'psalm': 'salmos',
+    'proverbs': 'proverbios',
+    'ecclesiastes': 'eclesiastés',
+    'song of solomon': 'cantares',
+    'song of songs': 'cantares',
+    'wisdom': 'sabiduría',
+    'sirach': 'eclesiástico',
+    'ecclesiasticus': 'eclesiástico',
     // Prophecy
-    'isaiah': 'ISA',
-    'jeremiah': 'JER',
-    'lamentations': 'LAM',
-    'baruch': 'BAR',
-    'ezekiel': 'EZK',
-    'daniel': 'DAN',
-    'hosea': 'HOS',
-    'joel': 'JOL',
-    'amos': 'AMO',
-    'obadiah': 'OBA',
-    'jonah': 'JON',
-    'micah': 'MIC',
-    'nahum': 'NAM',
-    'habakkuk': 'HAB',
-    'zephaniah': 'ZEP',
-    'haggai': 'HAG',
-    'zechariah': 'ZEC',
-    'malachi': 'MAL',
+    'isaiah': 'isaías',
+    'jeremiah': 'jeremías',
+    'lamentations': 'lamentaciones',
+    'baruch': 'baruc',
+    'ezekiel': 'ezequiel',
+    'daniel': 'daniel',
+    'hosea': 'oseas',
+    'joel': 'joel',
+    'amos': 'amós',
+    'obadiah': 'abdías',
+    'jonah': 'jonás',
+    'micah': 'miqueas',
+    'nahum': 'nahúm',
+    'habakkuk': 'habacuc',
+    'zephaniah': 'sofonías',
+    'haggai': 'hageo',
+    'zechariah': 'zacarías',
+    'malachi': 'malaquías',
     // New Testament
-    'matthew': 'MAT',
-    'mark': 'MRK',
-    'luke': 'LUK',
-    'john': 'JHN',
-    'acts': 'ACT',
-    'romans': 'ROM',
-    '1 corinthians': '1CO',
-    '2 corinthians': '2CO',
-    'galatians': 'GAL',
-    'ephesians': 'EPH',
-    'philippians': 'PHP',
-    'colossians': 'COL',
-    '1 thessalonians': '1TH',
-    '2 thessalonians': '2TH',
-    '1 timothy': '1TI',
-    '2 timothy': '2TI',
-    'titus': 'TIT',
-    'philemon': 'PHM',
-    'hebrews': 'HEB',
-    'james': 'JAS',
-    '1 peter': '1PE',
-    '2 peter': '2PE',
-    '1 john': '1JN',
-    '2 john': '2JN',
-    '3 john': '3JN',
-    'jude': 'JUD',
-    'revelation': 'REV'
+    'matthew': 'mateo',
+    'mark': 'marcos',
+    'luke': 'lucas',
+    'john': 'juan',
+    'acts': 'hechos',
+    'romans': 'romanos',
+    '1 corinthians': '1corintios',
+    '2 corinthians': '2corintios',
+    'galatians': 'gálatas',
+    'ephesians': 'efesios',
+    'philippians': 'filipenses',
+    'colossians': 'colosenses',
+    '1 thessalonians': '1tesalonicenses',
+    '2 thessalonians': '2tesalonicenses',
+    '1 timothy': '1timoteo',
+    '2 timothy': '2timoteo',
+    'titus': 'tito',
+    'philemon': 'filemón',
+    'hebrews': 'hebreos',
+    'james': 'santiago',
+    '1 peter': '1pedro',
+    '2 peter': '2pedro',
+    '1 john': '1juan',
+    '2 john': '2juan',
+    '3 john': '3juan',
+    'jude': 'judas',
+    'revelation': 'apocalipsis'
 };
 
 export default async function handler(request) {
@@ -113,165 +114,112 @@ export default async function handler(request) {
             });
         }
 
-        // Parse citation: "Genesis 1-2" -> Book: Genesis, Start: 1, End: 2
+        // Parse citation: "Genesis 1" or "Genesis 1-2"
         const match = citation.match(/^(.+?)\s+(\d+)(?:-(\d+))?/);
-        if (!match) {
-            return new Response(JSON.stringify({ error: 'Invalid citation format' }), {
-                status: 400,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            });
+        let rawBook, startChapter, endChapter;
+
+        if (match) {
+            rawBook = match[1].trim().toLowerCase();
+            startChapter = parseInt(match[2]);
+            endChapter = match[3] ? parseInt(match[3]) : startChapter;
+        } else {
+            // Fallback for unexpected formats
+            rawBook = citation.split(' ')[0].toLowerCase();
+            startChapter = 1;
+            endChapter = 1;
         }
 
-        const rawBook = match[1].trim().toLowerCase();
-        const startChapter = parseInt(match[2]);
-        const endChapter = match[3] ? parseInt(match[3]) : startChapter;
+        // --- STRATEGY SELECTION ---
 
-        // 1. Map Book Name to 3-Letter Code
-        const bookCode = BOOK_MAPPINGS[rawBook];
-        if (!bookCode) {
-            return new Response(JSON.stringify({ error: `Book not found: ${rawBook}` }), {
-                status: 404,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            });
-        }
+        if (lang === 'es') {
+            // SPANISH STRATEGY: wldeh/bible-api (Static JSON, Reina Valera 1909)
+            // Verified Scheme: { data: [ { text: "..." }, ... ] }
 
-        // 2. Select Version (eBible.org project code)
-        // en -> eng-web (World English Bible)
-        // es -> spablm (Santa Biblia libre para el mundo)
-        const version = lang === 'es' ? 'spablm' : 'eng-web';
+            const spanishBook = ENGLISH_TO_SPANISH_REPO[rawBook] || rawBook;
+            const chaptersText = [];
 
-        const chapters = [];
-        for (let chapter = startChapter; chapter <= endChapter; chapter++) {
-            // 3. Construct URL
-            // Format: https://ebible.org/{version}/{BOOK}{CHAPTER}.htm
-            // Important: Chapters are usually 2 digits (01, 10). Psalms are 3 digits (001, 119).
-            let chapterStr;
-            if (bookCode === 'PSA') {
-                chapterStr = chapter.toString().padStart(3, '0');
-            } else {
-                chapterStr = chapter.toString().padStart(2, '0');
-            }
+            for (let chapter = startChapter; chapter <= endChapter; chapter++) {
+                // Fetch JSON from raw.githubusercontent.com
+                // URL: https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-rv09/books/{BOOK}/chapters/{CHAPTER}.json
+                const targetUrl = `https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-rv09/books/${encodeURIComponent(spanishBook)}/chapters/${chapter}.json`;
+                console.log(`Fetching Spanish: ${targetUrl}`);
 
-            const targetUrl = `https://ebible.org/${version}/${bookCode}${chapterStr}.htm`;
-            console.log(`Fetching: ${targetUrl}`);
+                try {
+                    const res = await fetch(targetUrl);
+                    if (!res.ok) {
+                        console.error(`Failed to fetch Spanish chapter: ${res.status}`);
+                        continue;
+                    }
 
-            try {
-                const response = await fetch(targetUrl);
-                if (!response.ok) {
-                    console.error(`Failed to fetch ${targetUrl}: ${response.status}`);
-                    continue;
+                    const data = await res.json();
+
+                    // Strict Parsing based on verified schema
+                    let text = "Text unavailable.";
+
+                    if (data.data && Array.isArray(data.data)) {
+                        // Join all verse texts
+                        text = data.data.map(v => v.text || "").join(' ');
+                    } else {
+                        // Verification failed or schema changed unexpectedly
+                        console.error("Spanish JSON schema mismatch:", JSON.stringify(data).substring(0, 100));
+                        text = "Error: Invalid content format.";
+                    }
+
+                    chaptersText.push(text);
+
+                } catch (e) {
+                    console.error("Error parsing Spanish JSON:", e);
                 }
-
-                const html = await response.text();
-                const $ = cheerio.load(html);
-
-                // DEBUG: Collect debug info to return to client
-                const debugInfo = {
-                    url: targetUrl,
-                    titles: $('h1, h2, h3, h4, h5, h6').map((i, el) => $(el).text()).get().join(' | '),
-                    nav: $('.nav, .toc').map((i, el) => $(el).text()).get().join(' | '),
-                    chapters: $('.c, .c1').map((i, el) => $(el).text()).get().join(' | '),
-                    links: $('a').map((i, el) => $(el).text()).get().join(' | '),
-                    rawTextStart: $('body').text().substring(0, 100)
-                };
-
-                // 4. Extract Text
-
-                // Remove navigation/TOC (often unordered lists or divs with class 'toc' or 'nav')
-                $('.toc').remove();
-                $('.nav').remove();
-                $('.tnav').remove(); // New from user
-                $('.chapnav').remove();
-
-                // Remove header/footer/copyright
-                $('.footer').remove();
-                $('.header').remove();
-
-                // Remove persistent footer text SAFELY
-                $('div').filter((i, el) => {
-                    const t = $(el).text();
-                    if (t.length > 500) return false; // Safety
-                    return t.includes('World English Bible') ||
-                        t.includes('Public Domain') ||
-                        t.includes('ecumenical book set');
-                }).remove();
-
-                // Remove titles and chapter numbers (we handle titles in UI)
-                $('h1, h2, h3, h4, h5, h6').remove();
-                $('.mt, .mt1, .mt2, .mt3, .mt4').remove(); // Major titles
-
-                // Transform chapter label to [ # ] format
-                $('.chapterlabel').each((i, el) => {
-                    const num = $(el).text().trim();
-                    $(el).text(`[ ${num} ]`);
-                });
-
-                $('.c, .c1, .c2').remove(); // Other chapter markers
-                $('.s, .s1, .s2').remove(); // Section headings (optional, usually good to keep structure but often distracting in plain text)
-
-                // Remove verse numbers
-                $('.v').remove();
-                $('.verse').remove(); // <span class="verse">
-
-                // Remove footnotes
-                $('.note').remove();
-                $('.notemark').remove();
-                $('.footnote').remove();
-
-                // Remove blank lines
-                $('.b').remove();
-
-                // Get textual content
-                let text = $('body').text();
-
-                // Text often has excessive whitespace/newlines from HTML formatting
-                text = text.replace(/\s+/g, ' ').trim();
-
-                chapters.push({
-                    chapter,
-                    text,
-                    debug: debugInfo
-                });
-
-            } catch (err) {
-                console.error(`Error processing ${targetUrl}:`, err);
             }
-        }
 
-        if (chapters.length === 0) {
+            if (chaptersText.length === 0) {
+                return new Response(JSON.stringify({
+                    error: 'Content not found (Spanish)',
+                    details: 'Failed to retrieve text from repository.'
+                }), { status: 404, headers: corsHeaders });
+            }
+
             return new Response(JSON.stringify({
-                error: 'No content found',
-                citation,
-                book: rawBook,
-                version
+                citation: citation,
+                text: chaptersText.join('\n\n'),
+                source: 'github/wldeh/bible-api',
+                version: 'Reina Valera 1909'
+            }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+        } else {
+            // ENGLISH STRATEGY: bible-api.com (WEB)
+
+            const apiUrl = `https://bible-api.com/${encodeURIComponent(citation)}?translation=web`;
+            console.log(`Fetching English: ${apiUrl}`);
+
+            const response = await fetch(apiUrl);
+
+            if (!response.ok) {
+                return new Response(JSON.stringify({ error: 'Failed to fetch English scripture' }), {
+                    status: response.status,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+            }
+
+            const data = await response.json();
+
+            return new Response(JSON.stringify({
+                citation: data.reference,
+                text: data.text,
+                source: 'bible-api.com',
+                version: 'World English Bible'
             }), {
-                status: 404,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                status: 200,
+                headers: {
+                    ...corsHeaders,
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'public, max-age=86400'
+                }
             });
         }
-
-        const combinedText = chapters.map(c => c.text).join('\n\n');
-        const debugLog = chapters.map(c => c.debug);
-
-        return new Response(JSON.stringify({
-            citation,
-            book: rawBook,
-            chapters: chapters.map(c => c.chapter),
-            text: combinedText,
-            source: 'ebible.org',
-            version: version,
-            debug: debugLog
-        }), {
-            status: 200,
-            headers: {
-                ...corsHeaders,
-                'Content-Type': 'application/json',
-                'Cache-Control': 'no-cache, no-store, must-revalidate' // Disable cache for debugging
-            }
-        });
 
     } catch (error) {
-        console.error('Bible API Error:', error);
+        console.error('Bible Proxy Error:', error);
         return new Response(JSON.stringify({
             error: 'Internal server error',
             message: error.message

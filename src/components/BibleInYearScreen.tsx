@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ArrowLeft, Play, Square, Info, Settings as SettingsIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, Play, Square, Info, Settings as SettingsIcon, Calendar, CheckCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
+import { BibleProgressModal } from './BibleProgressModal';
+import { useBibleProgress } from '../hooks/useBibleProgress';
+import { bibleBookNames } from '../utils/bibleBooks';
 import biblePlan from '../data/bibleInYearPlan.json';
 import './DailyReadingsScreen.css'; // Reuse Daily Readings styles
 
@@ -25,82 +28,7 @@ interface Props {
 }
 
 // Spanish translations for Bible book names (for TTS)
-const bibleBookNames: Record<string, string> = {
-    "Genesis": "Génesis",
-    "Exodus": "Éxodo",
-    "Leviticus": "Levítico",
-    "Numbers": "Números",
-    "Deuteronomy": "Deuteronomio",
-    "Joshua": "Josué",
-    "Judges": "Jueces",
-    "Ruth": "Rut",
-    "1 Samuel": "1 Samuel",
-    "2 Samuel": "2 Samuel",
-    "1 Kings": "1 Reyes",
-    "2 Kings": "2 Reyes",
-    "1 Chronicles": "1 Crónicas",
-    "2 Chronicles": "2 Crónicas",
-    "Ezra": "Esdras",
-    "Nehemiah": "Nehemías",
-    "Tobit": "Tobías",
-    "Judith": "Judit",
-    "Esther": "Ester",
-    "1 Maccabees": "1 Macabeos",
-    "2 Maccabees": "2 Macabeos",
-    "Job": "Job",
-    "Psalm": "Salmo",
-    "Psalms": "Salmos",
-    "Proverbs": "Proverbios",
-    "Ecclesiastes": "Eclesiastés",
-    "Song of Solomon": "Cantar de los Cantares",
-    "Wisdom": "Sabiduría",
-    "Sirach": "Eclesiástico",
-    "Isaiah": "Isaías",
-    "Jeremiah": "Jeremías",
-    "Lamentations": "Lamentaciones",
-    "Baruch": "Baruc",
-    "Ezekiel": "Ezequiel",
-    "Daniel": "Daniel",
-    "Hosea": "Oseas",
-    "Joel": "Joel",
-    "Amos": "Amós",
-    "Obadiah": "Abdías",
-    "Jonah": "Jonás",
-    "Micah": "Miqueas",
-    "Nahum": "Nahúm",
-    "Habakkuk": "Habacuc",
-    "Zephaniah": "Sofonías",
-    "Haggai": "Hageo",
-    "Zechariah": "Zacarías",
-    "Malachi": "Malaquías",
-    "Matthew": "Mateo",
-    "Mark": "Marcos",
-    "Luke": "Lucas",
-    "John": "Juan",
-    "Acts": "Hechos",
-    "Romans": "Romanos",
-    "1 Corinthians": "1 Corintios",
-    "2 Corinthians": "2 Corintios",
-    "Galatians": "Gálatas",
-    "Ephesians": "Efesios",
-    "Philippians": "Filipenses",
-    "Colossians": "Colosenses",
-    "1 Thessalonians": "1 Tesalonicenses",
-    "2 Thessalonians": "2 Tesalonicenses",
-    "1 Timothy": "1 Timoteo",
-    "2 Timothy": "2 Timoteo",
-    "Titus": "Tito",
-    "Philemon": "Filemón",
-    "Hebrews": "Hebreos",
-    "James": "Santiago",
-    "1 Peter": "1 Pedro",
-    "2 Peter": "2 Pedro",
-    "1 John": "1 Juan",
-    "2 John": "2 Juan",
-    "3 John": "3 Juan",
-    "Jude": "Judas",
-    "Revelation": "Apocalipsis"
-};
+// Spanish translations moved to utils/bibleBooks.ts
 
 export default function BibleInYearScreen({ onBack }: Props) {
     const { language } = useApp();
@@ -112,6 +40,37 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
     const [showSettings, setShowSettings] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
+    const [showProgressModal, setShowProgressModal] = useState(false);
+
+    // Progress Hooks
+    const {
+        markDayComplete,
+        unmarkDay,
+        isDayComplete,
+        missedDays,
+        expectedDay,
+        bibleStartDate
+    } = useBibleProgress();
+
+    // Check for "Catch Up" opportunity on mount or when progress data loads
+    useEffect(() => {
+        if (!bibleStartDate) return;
+
+        // Ensure we prioritize the FIRST missed day (Resume)
+        // If no missed days, go to Expected Day (Today)
+        if (missedDays.length > 0) {
+            setCurrentDay(missedDays[0]);
+            // Optional: Still show modal if very behind? 
+            // The user feedback implies they want "card and reader to be in sync". 
+            // If we jump to Day 3, and card says Day 3, we are good.
+            // We can still show the modal if they are significantly behind (e.g. > 3 days) to offer the "Calendar" view
+            if (missedDays.length > 3) setShowProgressModal(true);
+        } else if (expectedDay > 1) {
+            if (!isDayComplete(expectedDay)) {
+                setCurrentDay(expectedDay);
+            }
+        }
+    }, [bibleStartDate, missedDays.length, expectedDay]); // React to progress updates
 
 
     const dayData: BibleDay = (biblePlan as BibleDay[])[currentDay - 1];
@@ -127,7 +86,11 @@ export default function BibleInYearScreen({ onBack }: Props) {
             playAll: 'All',
             back: 'Back',
             loading: 'Loading...',
-            error: 'Unable to load readings. Please check your connection.'
+            error: 'Unable to load readings. Please check your connection.',
+            markComplete: 'Mark as Complete',
+            completed: 'Completed',
+            catchUp: 'Review Progress',
+            viewCalendar: 'View Calendar'
         },
         es: {
             title: 'Biblia en un Año',
@@ -139,7 +102,11 @@ export default function BibleInYearScreen({ onBack }: Props) {
             playAll: 'Todo',
             back: 'Atrás',
             loading: 'Cargando...',
-            error: 'No se pudieron cargar las lecturas. Verifique su conexión.'
+            error: 'No se pudieron cargar las lecturas. Verifique su conexión.',
+            markComplete: 'Marcar como Completado',
+            completed: 'Completado',
+            catchUp: 'Revisar Progreso',
+            viewCalendar: 'Ver Calendario'
         }
     }[language];
 
@@ -382,6 +349,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
             ttsManager.setOnEnd(() => {
                 setIsPlaying(false);
                 setCurrentlyPlayingId(null);
+                // Auto-mark as complete when full playlist finishes
+                markDayComplete(currentDay);
             });
 
             await ttsManager.speakSegments(segments);
@@ -404,6 +373,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         <ArrowLeft size={24} />
                     </button>
                     <h1 className="page-title">{t.title}</h1>
+
                     <button
                         onClick={() => setShowSettings(true)}
                         className="icon-btn"
@@ -444,8 +414,34 @@ export default function BibleInYearScreen({ onBack }: Props) {
                             {dayData.period}
                         </h2>
                         <div className="lectionary-row">
-                            <div className="lectionary-center">
-                                <p className="lectionary-text">{t.day} {currentDay} {t.of} 365</p>
+                            <div className="lectionary-center" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+                                <p className="lectionary-text" style={{ margin: 0 }}>{t.day} {currentDay} {t.of} 365</p>
+                                <button
+                                    onClick={() => setShowProgressModal(true)}
+                                    className="icon-btn"
+                                    aria-label={t.viewCalendar}
+                                    style={{
+                                        position: 'relative',
+                                        padding: '4px',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        boxShadow: 'none',
+                                        color: 'inherit' // Inherit text color (likely gray/white)
+                                    }}
+                                >
+                                    <Calendar size={20} />
+                                    {missedDays.length > 0 && (
+                                        <span style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            right: 0,
+                                            width: 8,
+                                            height: 8,
+                                            backgroundColor: '#ef4444',
+                                            borderRadius: '50%'
+                                        }} />
+                                    )}
+                                </button>
                             </div>
                             {readings.length > 0 && (
                                 <button
@@ -482,6 +478,34 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     </div>
                 ))}
 
+                {/* Completion Button */}
+                {!loading && !error && (
+                    <div className="completion-section" style={{ textAlign: 'center', marginTop: '2rem', marginBottom: '4rem' }}>
+                        <button
+                            onClick={() => isDayComplete(currentDay) ? unmarkDay(currentDay) : markDayComplete(currentDay)}
+                            className={`completion-btn ${isDayComplete(currentDay) ? 'completed' : ''}`}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 24px',
+                                borderRadius: '30px',
+                                fontSize: '1rem',
+                                fontWeight: '600',
+                                backgroundColor: isDayComplete(currentDay) ? '#10b981' : '#1d4ed8',
+                                color: '#fff',
+                                transition: 'all 0.3s ease',
+                                border: 'none',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                            }}
+                        >
+                            {isDayComplete(currentDay) ? <CheckCircle size={20} /> : <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.5)' }} />}
+                            {isDayComplete(currentDay) ? t.completed : t.markComplete}
+                        </button>
+                    </div>
+                )}
+
                 {!loading && !error && (
                     <div className="sources-attribution">
                         <p>
@@ -511,6 +535,18 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 onClose={() => setShowSettings(false)}
                 onResetProgress={() => { }}
             />
-        </div>
+
+            {
+                showProgressModal && (
+                    <BibleProgressModal
+                        onClose={() => setShowProgressModal(false)}
+                        onDaySelect={(day) => {
+                            setCurrentDay(day);
+                            setShowProgressModal(false);
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 }
