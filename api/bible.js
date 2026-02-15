@@ -217,13 +217,15 @@ export default async function handler(request) {
                             let cleanText = v.text || "";
 
                             // Clean up unwanted artifacts from the text:
-                            // 1. Remove chapter.verse references like "1.4", "1.5", "1.6"
-                            cleanText = cleanText.replace(/\b\d+\.\d+\b/g, '');
-                            // 2. Remove "Heb." abbreviations
-                            cleanText = cleanText.replace(/\bHeb\.\s*/g, '');
-                            // 3. Remove paragraph symbols
+                            // 1. Remove KJV footnotes (everything from "chapter.verse" reference onward)
+                            //    Example: "...first day.1.5 And the evening…: Heb. And the evening was, and the morning was etc."
+                            //    We want to keep only: "...first day."
+                            cleanText = cleanText.replace(/\d+\.\d+\s+.*$/g, '');
+
+                            // 2. Remove paragraph symbols
                             cleanText = cleanText.replace(/¶/g, '');
-                            // 4. Clean up extra whitespace
+
+                            // 3. Clean up extra whitespace
                             cleanText = cleanText.replace(/\s+/g, ' ').trim();
 
                             return `[${verseNum}] ${cleanText}`;
