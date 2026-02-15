@@ -9,7 +9,6 @@ export interface BibleProgress {
     completedDays: number[]; // Array of day numbers (1-365)
     missedDays: number[]; // Array of missed day numbers based on start date
     expectedDay: number; // What day user "should" be on (1-based relative to start)
-    setBibleStartDate: (date: string | null) => void;
     markDayComplete: (day: number) => void;
     unmarkDay: (day: number) => void;
     isDayComplete: (day: number) => boolean;
@@ -31,6 +30,23 @@ export function useBibleProgress(): BibleProgress {
     const [expectedDay, setExpectedDay] = useState<number>(1);
 
     // --- Effects ---
+
+    // 0. Listen for localStorage changes (when Settings modal updates the date)
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const newDate = localStorage.getItem(BIBLE_START_DATE_KEY);
+            setBibleStartDateState(newDate);
+        };
+
+        // Listen for storage events (cross-tab) and custom events (same-tab)
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('bible-start-date-changed', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('bible-start-date-changed', handleStorageChange);
+        };
+    }, []);
 
     // 1. Calculate Missed Days whenever Start Date or Completed Days change
     useEffect(() => {
@@ -81,15 +97,6 @@ export function useBibleProgress(): BibleProgress {
 
     // --- Actions ---
 
-    const setBibleStartDate = (date: string | null) => {
-        if (date) {
-            localStorage.setItem(BIBLE_START_DATE_KEY, date);
-        } else {
-            localStorage.removeItem(BIBLE_START_DATE_KEY);
-        }
-        setBibleStartDateState(date);
-    };
-
     const markDayComplete = (day: number) => {
         if (completedDays.includes(day)) return; // Already complete
 
@@ -113,7 +120,6 @@ export function useBibleProgress(): BibleProgress {
         completedDays,
         missedDays,
         expectedDay,
-        setBibleStartDate,
         markDayComplete,
         unmarkDay,
         isDayComplete,

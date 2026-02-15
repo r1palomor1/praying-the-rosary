@@ -85,6 +85,8 @@ export function setBibleStartDate(date: string | null): void {
         } else {
             localStorage.removeItem(BIBLE_START_DATE_KEY);
         }
+        // Dispatch custom event to notify hook of change
+        window.dispatchEvent(new Event('bible-start-date-changed'));
     } catch (e) {
         console.error('Failed to save bible start date:', e);
     }

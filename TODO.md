@@ -1,5 +1,17 @@
 # Holy Rosary App - Feature To-Do List
 
+## 🛑 URGENT FIXES (Next Session)
+- [ ] **English Bible Text Formatting Alignment**
+  - **Issue:** English text has no breaks between verses/paragraphs, while Spanish does. They must align.
+  - **Action:** Fix the parser or CSS to ensure KJV text renders with proper gold headers and verse breaks, matching the Spanish layout exactly.
+  - **Note:** Do NOT modify the Spanish side.
+  - **Ref:** User feedback: "English still has no breaks while spanish does so they are not aligned which is bad practice."
+
+## ⚠️ DEVELOPER NOTICE
+- **RESPECT THE APP:** Care for the application's quality and the user's detailed requirements. Do not make assumptions. Verify every change visually or via rigorous data checks before committing. The goal is EXCELLENCE, not just "done".
+
+---
+
 ---
 
 ## 🚨 CRITICAL SAFETY PROTOCOL 🚨

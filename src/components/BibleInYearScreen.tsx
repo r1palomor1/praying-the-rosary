@@ -281,7 +281,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
             // Replace [ # ] with "Book Chapter #" (e.g., [ 1 ] -> "Genesis Chapter 1")
             const replacement = bookName ? `${bookName} ${chapterWord} $1` : `${chapterWord} $1`;
-            const spokenText = text.replace(/\[\s*(\d+)\s*\]/g, replacement);
+            // Remove markdown headers (###) to prevent TTS from reading "hash hash hash"
+            const spokenText = text
+                .replace(/###\s*/g, '')  // Remove markdown headers
+                .replace(/\[\s*(\d+)\s*\]/g, replacement);
             const chunks = chunkText(spokenText);
 
             // Create segments: Title first, then the text chunks
@@ -329,7 +332,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 }
 
                 const replacement = bookName ? `${bookName} ${chapterWord} $1` : `${chapterWord} $1`;
-                const spokenText = r.text.replace(/\[\s*(\d+)\s*\]/g, replacement);
+                // Remove markdown headers (###) to prevent TTS from reading "hash hash hash"
+                const spokenText = r.text
+                    .replace(/###\s*/g, '')  // Remove markdown headers
+                    .replace(/\[\s*(\d+)\s*\]/g, replacement);
 
                 // Chunk the text
                 const chunks = chunkText(spokenText);

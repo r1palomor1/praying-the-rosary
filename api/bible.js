@@ -184,30 +184,37 @@ export default async function handler(request) {
             }
 
         } else {
-            // ENGLISH STRATEGY: bible-api.com (KJV)
-            // Using King James Version to ensure traditional "LORD" usage instead of "Yahweh" found in WEB.
+            // ENGLISH STRATEGY: wldeh/bible-api (Static JSON, en-kjv)
+            // Using same source as Spanish for consistency and verse-by-verse structure
 
-            sourceInfo = 'bible-api.com';
+            sourceInfo = 'github/wldeh/bible-api';
             versionInfo = 'King James Version';
 
             for (let chapter = startChapter; chapter <= endChapter; chapter++) {
-                const query = `${rawBook} ${chapter}`;
-                const apiUrl = `https://bible-api.com/${encodeURIComponent(query)}?translation=kjv`;
-                console.log(`Fetching English: ${apiUrl}`);
+                const targetUrl = `https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-kjv/books/${encodeURIComponent(rawBook.toLowerCase())}/chapters/${chapter}.json`;
+                console.log(`Fetching English: ${targetUrl}`);
 
                 try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) continue;
+                    const res = await fetch(targetUrl);
+                    if (!res.ok) {
+                        console.error(`Failed to fetch English chapter: ${res.status}`);
+                        continue;
+                    }
 
-                    const data = await response.json();
-                    let text = data.text || (data.verses ? data.verses.map(v => v.text).join('\n\n') : "");
+                    const data = await res.json();
+                    let text = "Text unavailable.";
+
+                    if (data.data && Array.isArray(data.data)) {
+                        // Join verses with paragraph breaks (matching Spanish behavior)
+                        text = data.data.map(v => v.text || "").join('\n\n');
+                    }
 
                     // Header: "Genesis Chapter 1"
                     const displayBook = formatBookTitle(rawBook);
                     chaptersText.push(`### ${displayBook} Chapter ${chapter}\n\n${text}`);
 
                 } catch (e) {
-                    console.error("Error fetching English API:", e);
+                    console.error("Error parsing English JSON:", e);
                 }
             }
         }
