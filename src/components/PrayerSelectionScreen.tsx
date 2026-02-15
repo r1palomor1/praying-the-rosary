@@ -219,7 +219,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                 <button onClick={() => onSelectBibleInYear?.()} className="prayer-card">
                     <div className="card-image-container">
                         <div className="card-image">
-                            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#D4AF37' }}>book</span>
+                            <img src="/bible_year_icon.png" alt={t.bibleInAYear} />
                         </div>
                     </div>
                     <div className="card-content">

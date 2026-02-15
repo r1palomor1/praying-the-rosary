@@ -64,7 +64,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             // The user feedback implies they want "card and reader to be in sync". 
             // If we jump to Day 3, and card says Day 3, we are good.
             // We can still show the modal if they are significantly behind (e.g. > 3 days) to offer the "Calendar" view
-            if (missedDays.length > 3) setShowProgressModal(true);
+            // if (missedDays.length > 3) setShowProgressModal(true);
         } else if (expectedDay > 1) {
             if (!isDayComplete(expectedDay)) {
                 setCurrentDay(expectedDay);
@@ -414,7 +414,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
                             {dayData.period}
                         </h2>
                         <div className="lectionary-row">
-                            <div className="lectionary-center" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+                            <div className="lectionary-center" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                                {isDayComplete(currentDay) && (
+                                    <CheckCircle size={18} color="#10b981" fill="#10b981" stroke="white" strokeWidth={2.5} />
+                                )}
                                 <p className="lectionary-text" style={{ margin: 0 }}>{t.day} {currentDay} {t.of} 365</p>
                                 <button
                                     onClick={() => setShowProgressModal(true)}
@@ -492,12 +495,14 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                 borderRadius: '30px',
                                 fontSize: '1rem',
                                 fontWeight: '600',
-                                backgroundColor: isDayComplete(currentDay) ? '#10b981' : '#1d4ed8',
+                                backgroundColor: isDayComplete(currentDay) ? '#10b981' : '#1d4ed8', // Green vs Blue
                                 color: '#fff',
                                 transition: 'all 0.3s ease',
-                                border: 'none',
+                                border: '2px solid rgba(255,255,255,0.2)',
                                 cursor: 'pointer',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                                boxShadow: isDayComplete(currentDay)
+                                    ? '0 0 15px rgba(16, 185, 129, 0.4)'
+                                    : '0 4px 12px rgba(29, 78, 216, 0.3)'
                             }}
                         >
                             {isDayComplete(currentDay) ? <CheckCircle size={20} /> : <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.5)' }} />}
@@ -510,8 +515,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     <div className="sources-attribution">
                         <p>
                             Source:{' '}
-                            <a href="https://ebible.org/" target="_blank" rel="noopener noreferrer">
-                                ebible.org
+                            <a href="https://bible-api.com/" target="_blank" rel="noopener noreferrer">
+                                bible-api.com
                             </a>
                             <button
                                 className="info-btn-text"
@@ -523,7 +528,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         </p>
                         {showInfo && (
                             <p className="attribution-detail" style={{ fontSize: '0.8rem', fontStyle: 'italic', maxWidth: '600px', margin: '0 auto' }}>
-                                This is the Classic World English Bible which is in the Public Domain.
+                                King James Version (Public Domain).
                             </p>
                         )}
                     </div>

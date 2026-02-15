@@ -1,3 +1,4 @@
+
 import { X, Calendar } from 'lucide-react';
 import { useState } from 'react';
 
@@ -29,7 +30,7 @@ export function DateEditModal({
     if (!isOpen) return null;
 
     const [localRosaryDate, setLocalRosaryDate] = useState(rosaryStartDate);
-    const [localSacredDate] = useState(sacredStartDate);
+    const [localSacredDate, setLocalSacredDate] = useState(sacredStartDate);
     const [localBibleDate, setLocalBibleDate] = useState(bibleStartDate);
 
     const translations = {
@@ -63,14 +64,28 @@ export function DateEditModal({
 
     const t = translations[language];
 
-    // Helper functions removed in favor of inline specific handlers
-
     const handleApply = () => {
         onRosaryDateChange(localRosaryDate);
         onSacredDateChange(localSacredDate);
         onBibleDateChange(localBibleDate);
         onApply();
         onClose();
+    };
+
+    // Helper to calculate "This Month 1st"
+    const getMonthStart = () => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    };
+
+    // Helper to calculate "This Year 1st" (Jan 1)
+    const getYearStart = () => {
+        return `${new Date().getFullYear()}-01-01`;
+    };
+
+    // Helper to get Today
+    const getToday = () => {
+        return new Date().toISOString().split('T')[0];
     };
 
     return (
@@ -96,7 +111,7 @@ export function DateEditModal({
                                 value={localRosaryDate}
                                 onChange={(e) => setLocalRosaryDate(e.target.value)}
                                 className="settings-date-input"
-                                max={new Date().toISOString().split('T')[0]}
+                                max={getToday()}
                             />
                             {localRosaryDate && (
                                 <button
@@ -109,16 +124,67 @@ export function DateEditModal({
                         </div>
                         <div className="settings-quick-actions">
                             <button
-                                onClick={() => setLocalRosaryDate(new Date().toISOString().split('T')[0])}
+                                onClick={() => setLocalRosaryDate(getToday())}
                                 className="settings-quick-btn"
                             >
                                 {t.today}
                             </button>
                             <button
-                                onClick={() => setLocalRosaryDate(`${new Date().getFullYear()}-01-01`)}
+                                onClick={() => setLocalRosaryDate(getMonthStart())}
                                 className="settings-quick-btn"
                             >
-                                Jan 1
+                                {t.thisMonth}
+                            </button>
+                            <button
+                                onClick={() => setLocalRosaryDate(getYearStart())}
+                                className="settings-quick-btn"
+                            >
+                                {t.thisYear}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Sacred Prayers Start Date */}
+                    <div className="settings-date-group">
+                        <div className="settings-date-header">
+                            <Calendar className="settings-icon" size={20} />
+                            <label className="settings-date-label">{t.sacredStartDate}</label>
+                        </div>
+                        <div className="settings-date-input-group">
+                            <input
+                                type="date"
+                                value={localSacredDate}
+                                onChange={(e) => setLocalSacredDate(e.target.value)}
+                                className="settings-date-input"
+                                max={getToday()}
+                            />
+                            {localSacredDate && (
+                                <button
+                                    onClick={() => setLocalSacredDate('')}
+                                    className="settings-date-clear-btn"
+                                >
+                                    {t.clear}
+                                </button>
+                            )}
+                        </div>
+                        <div className="settings-quick-actions">
+                            <button
+                                onClick={() => setLocalSacredDate(getToday())}
+                                className="settings-quick-btn"
+                            >
+                                {t.today}
+                            </button>
+                            <button
+                                onClick={() => setLocalSacredDate(getMonthStart())}
+                                className="settings-quick-btn"
+                            >
+                                {t.thisMonth}
+                            </button>
+                            <button
+                                onClick={() => setLocalSacredDate(getYearStart())}
+                                className="settings-quick-btn"
+                            >
+                                {t.thisYear}
                             </button>
                         </div>
                     </div>
@@ -135,7 +201,7 @@ export function DateEditModal({
                                 value={localBibleDate}
                                 onChange={(e) => setLocalBibleDate(e.target.value)}
                                 className="settings-date-input"
-                                max={new Date().toISOString().split('T')[0]}
+                                max={getToday()}
                             />
                             {localBibleDate && (
                                 <button
@@ -148,21 +214,25 @@ export function DateEditModal({
                         </div>
                         <div className="settings-quick-actions">
                             <button
-                                onClick={() => setLocalBibleDate(new Date().toISOString().split('T')[0])}
+                                onClick={() => setLocalBibleDate(getToday())}
                                 className="settings-quick-btn"
                             >
                                 {t.today}
                             </button>
                             <button
-                                onClick={() => setLocalBibleDate(`${new Date().getFullYear()}-01-01`)}
+                                onClick={() => setLocalBibleDate(getMonthStart())}
                                 className="settings-quick-btn"
                             >
-                                Jan 1
+                                {t.thisMonth}
+                            </button>
+                            <button
+                                onClick={() => setLocalBibleDate(getYearStart())}
+                                className="settings-quick-btn"
+                            >
+                                {t.thisYear}
                             </button>
                         </div>
                     </div>
-
-                    {/* Sacred Prayers (Hidden/Disabled via UI removal, but state preserved) */}
 
                     {/* Action Buttons */}
                     <div className="settings-date-actions">

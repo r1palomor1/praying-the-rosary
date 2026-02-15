@@ -173,10 +173,10 @@ export default async function handler(request) {
                         text = data.data.map(v => v.text || "").join('\n\n');
                     }
 
-                    // Header: "Génesis Capítulo 1"
+                    // Header: "### Génesis Capítulo 1"
                     // Use formatting to make "1samuel" -> "1 Samuel"
                     const displayBook = formatBookTitle(spanishBook);
-                    chaptersText.push(`${displayBook} Capítulo ${chapter}\n\n${text}`);
+                    chaptersText.push(`### ${displayBook} Capítulo ${chapter}\n\n${text}`);
 
                 } catch (e) {
                     console.error("Error parsing Spanish JSON:", e);
@@ -184,14 +184,15 @@ export default async function handler(request) {
             }
 
         } else {
-            // ENGLISH STRATEGY: bible-api.com (WEB)
+            // ENGLISH STRATEGY: bible-api.com (KJV)
+            // Using King James Version to ensure traditional "LORD" usage instead of "Yahweh" found in WEB.
 
             sourceInfo = 'bible-api.com';
-            versionInfo = 'World English Bible';
+            versionInfo = 'King James Version';
 
             for (let chapter = startChapter; chapter <= endChapter; chapter++) {
                 const query = `${rawBook} ${chapter}`;
-                const apiUrl = `https://bible-api.com/${encodeURIComponent(query)}?translation=web`;
+                const apiUrl = `https://bible-api.com/${encodeURIComponent(query)}?translation=kjv`;
                 console.log(`Fetching English: ${apiUrl}`);
 
                 try {
@@ -203,7 +204,7 @@ export default async function handler(request) {
 
                     // Header: "Genesis Chapter 1"
                     const displayBook = formatBookTitle(rawBook);
-                    chaptersText.push(`${displayBook} Chapter ${chapter}\n\n${text}`);
+                    chaptersText.push(`### ${displayBook} Chapter ${chapter}\n\n${text}`);
 
                 } catch (e) {
                     console.error("Error fetching English API:", e);
@@ -217,7 +218,7 @@ export default async function handler(request) {
             }), { status: 404, headers: corsHeaders });
         }
 
-        // Final Clean-up: Remove slashes used in citations or text that clutter audio
+        // Final Clean-up: Remove slashes used in citations citation or text that clutter audio
         // e.g. "Psalm 1 / Psalm 2" -> "Psalm 1  Psalm 2"
         let finalText = chaptersText.join('\n\n');
 

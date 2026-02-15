@@ -66,7 +66,8 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
             progressTracking: 'Progress Tracking',
             startDateTooltip: 'Started praying mid-year? No problem! Your goals will adjust so you\'re never "behind". Try different dates to see what-if scenarios.',
             dailyRosaryReminder: 'Daily Rosary Reminder',
-            reminderDesc: 'Liturgical glow on active cards'
+            reminderDesc: 'Liturgical glow on active cards',
+            sacredPrayers: 'Sacred Prayers'
         },
         es: {
             title: 'CONFIGURACIÓN',
@@ -85,7 +86,8 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
             progressTracking: 'Seguimiento de Progreso',
             startDateTooltip: '¿Empezaste a rezar a mitad de año? ¡No hay problema! Tus metas se ajustarán para que nunca estés "atrasado". Prueba diferentes fechas para ver escenarios hipotéticos.',
             dailyRosaryReminder: 'Recordatorio Diario del Rosario',
-            reminderDesc: 'Brillo litúrgico en tarjetas activas'
+            reminderDesc: 'Brillo litúrgico en tarjetas activas',
+            sacredPrayers: 'Oraciones Sagradas'
         }
     };
 
@@ -154,7 +156,7 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
 
                     <ProgressTrackingSection
                         rosaryStartDate={rosaryStartDate}
-                        // sacredStartDate={sacredStartDate} // Removed from UI per user request
+                        sacredStartDate={sacredStartDate}
                         bibleStartDate={bibleStartDate}
                         onEditClick={() => setShowDateModal(true)}
                         translations={t}
