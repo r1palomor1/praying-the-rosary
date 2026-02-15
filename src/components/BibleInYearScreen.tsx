@@ -358,9 +358,42 @@ export default function BibleInYearScreen({ onBack }: Props) {
     };
 
     const renderReadingText = (text: string) => {
-        return text.split('\n').map((paragraph, i) => (
-            <p key={i} className="reading-paragraph">{paragraph}</p>
-        ));
+        // Split by double newlines to separate paragraphs/sections
+        const blocks = text.split(/\n\n+/);
+
+        return blocks.map((block, i) => {
+            const cleanBlock = block.trim();
+            if (!cleanBlock) return null;
+
+            // Check for Markdown Header (###)
+            if (cleanBlock.startsWith('###')) {
+                const headerText = cleanBlock.replace(/^###\s*/, '').trim();
+                return (
+                    <h4 key={i} className="reading-chapter-header" style={{
+                        marginTop: '1.5rem',
+                        marginBottom: '1rem',
+                        color: '#FBBF24',
+                        fontFamily: 'var(--font-heading)',
+                        fontSize: '1.1rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                    }}>
+                        {headerText}
+                    </h4>
+                );
+            }
+
+            // Regular Paragraph: Replace single newlines with spaces to prevent awkward breaking
+            // But preserve formatting if it looks like poetry (optional, but for Gen 1 it's prose)
+            // For now, simpler approach: Reflow all non-header text.
+            const reflowedText = cleanBlock.replace(/\n/g, ' ');
+
+            return (
+                <p key={i} className="reading-paragraph">
+                    {reflowedText}
+                </p>
+            );
+        });
     };
 
 
