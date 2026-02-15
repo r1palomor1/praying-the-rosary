@@ -1,6 +1,6 @@
 
 export const config = {
-    runtime: 'edge', // Using Edge runtime for optimal performance
+    runtime: 'edge',
 };
 
 // Map English Book Names (from our App) to:
@@ -91,6 +91,21 @@ const ENGLISH_TO_SPANISH_REPO = {
     'revelation': 'apocalipsis'
 };
 
+function capitalize(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Special casing for books that need spacing or capitalization restoration (basic logic)
+function formatBookTitle(str) {
+    if (!str) return '';
+    // Fix "1samuel" -> "1 Samuel"
+    if (str.match(/^\d+[a-z]/)) {
+        return str.replace(/(\d+)([a-z])/, '$1 $2').split(' ').map(capitalize).join(' ');
+    }
+    return str.split(' ').map(capitalize).join(' ');
+}
+
 export default async function handler(request) {
     const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
@@ -114,7 +129,6 @@ export default async function handler(request) {
             });
         }
 
-        // Parse citation: "Genesis 1" or "Genesis 1-2"
         const match = citation.match(/^(.+?)\s+(\d+)(?:-(\d+))?/);
         let rawBook, startChapter, endChapter;
 
@@ -136,15 +150,12 @@ export default async function handler(request) {
 
         if (lang === 'es') {
             // SPANISH STRATEGY: wldeh/bible-api (Static JSON, es-bes)
-            // Verified clean text: Bible in Basic Spanish (Biblia en Español Sencillo)
 
             const spanishBook = ENGLISH_TO_SPANISH_REPO[rawBook] || rawBook;
             sourceInfo = 'github/wldeh/bible-api';
             versionInfo = 'Biblia en Español Sencillo';
 
             for (let chapter = startChapter; chapter <= endChapter; chapter++) {
-                // Fetch JSON from raw.githubusercontent.com
-                // URL: https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-bes/books/{BOOK}/chapters/{CHAPTER}.json
                 const targetUrl = `https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-bes/books/${encodeURIComponent(spanishBook)}/chapters/${chapter}.json`;
                 console.log(`Fetching Spanish: ${targetUrl}`);
 
@@ -156,20 +167,16 @@ export default async function handler(request) {
                     }
 
                     const data = await res.json();
-
-                    // Strict Parsing based on verified schema: { data: [ { text: "..." } ... ] }
                     let text = "Text unavailable.";
 
                     if (data.data && Array.isArray(data.data)) {
-                        // Use newline to separate verses for better readability (user preference)
                         text = data.data.map(v => v.text || "").join('\n\n');
-                    } else {
-                        console.error("Spanish JSON schema mismatch:", JSON.stringify(data).substring(0, 100));
-                        text = "Error: Invalid content format.";
                     }
 
-                    // Add header
-                    chaptersText.push(`### Capítulo ${chapter}\n\n${text}`);
+                    // Header: "Génesis Capítulo 1"
+                    // Use formatting to make "1samuel" -> "1 Samuel"
+                    const displayBook = formatBookTitle(spanishBook);
+                    chaptersText.push(`${displayBook} Capítulo ${chapter}\n\n${text}`);
 
                 } catch (e) {
                     console.error("Error parsing Spanish JSON:", e);
@@ -178,38 +185,25 @@ export default async function handler(request) {
 
         } else {
             // ENGLISH STRATEGY: bible-api.com (WEB)
-            // Iterating chapters individually to avoid rate limits or range errors.
 
             sourceInfo = 'bible-api.com';
             versionInfo = 'World English Bible';
 
             for (let chapter = startChapter; chapter <= endChapter; chapter++) {
-                // Format: https://bible-api.com/Genesis+1?translation=web
-                // Note: book + chapter encoding
                 const query = `${rawBook} ${chapter}`;
                 const apiUrl = `https://bible-api.com/${encodeURIComponent(query)}?translation=web`;
                 console.log(`Fetching English: ${apiUrl}`);
 
                 try {
                     const response = await fetch(apiUrl);
-
-                    if (!response.ok) {
-                        console.error(`Failed English API: ${response.status}`);
-                        continue;
-                    }
+                    if (!response.ok) continue;
 
                     const data = await response.json();
+                    let text = data.text || (data.verses ? data.verses.map(v => v.text).join('\n\n') : "");
 
-                    let text = "";
-                    if (data.text) {
-                        text = data.text;
-                    } else if (data.verses) {
-                        // Fallback just in case text is missing but verses exist
-                        text = data.verses.map(v => v.text).join('\n\n');
-                    }
-
-                    // Add header
-                    chaptersText.push(`### Chapter ${chapter}\n\n${text}`);
+                    // Header: "Genesis Chapter 1"
+                    const displayBook = formatBookTitle(rawBook);
+                    chaptersText.push(`${displayBook} Chapter ${chapter}\n\n${text}`);
 
                 } catch (e) {
                     console.error("Error fetching English API:", e);
@@ -220,13 +214,19 @@ export default async function handler(request) {
         if (chaptersText.length === 0) {
             return new Response(JSON.stringify({
                 error: 'Content not found',
-                details: 'Failed to retrieve text from source.'
             }), { status: 404, headers: corsHeaders });
         }
 
+        // Final Clean-up: Remove slashes used in citations or text that clutter audio
+        // e.g. "Psalm 1 / Psalm 2" -> "Psalm 1  Psalm 2"
+        let finalText = chaptersText.join('\n\n');
+
+        // Remove forward slashes globallly (replace with space to prevent 'slash' being read)
+        finalText = finalText.replace(/\//g, ' ');
+
         return new Response(JSON.stringify({
             citation: citation,
-            text: chaptersText.join('\n\n'),
+            text: finalText,
             source: sourceInfo,
             version: versionInfo
         }), {
