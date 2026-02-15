@@ -45,6 +45,19 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
         setBibleStartDateState(getBibleStartDate() || '');
     }, []);
 
+    // Listen for Bible start date changes
+    useEffect(() => {
+        const handleBibleDateChange = () => {
+            setBibleStartDateState(getBibleStartDate() || '');
+        };
+
+        window.addEventListener('bible-start-date-changed', handleBibleDateChange);
+
+        return () => {
+            window.removeEventListener('bible-start-date-changed', handleBibleDateChange);
+        };
+    }, []);
+
     if (!isOpen) return null;
 
     // Translations
@@ -127,9 +140,8 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
     };
 
     const handleDateApply = () => {
-        setRosaryStartDate(rosaryStartDate);
-        setSacredStartDate(sacredStartDate);
-        setBibleStartDate(bibleStartDate);
+        // No-op: DateEditModal already saves via onRosaryDateChange, onSacredDateChange, onBibleDateChange
+        // Those handlers update parent state AND call progressSettings functions to save to localStorage
     };
 
     return (
@@ -230,9 +242,18 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
                 rosaryStartDate={rosaryStartDate}
                 sacredStartDate={sacredStartDate}
                 bibleStartDate={bibleStartDate}
-                onRosaryDateChange={setRosaryStartDateState}
-                onSacredDateChange={setSacredStartDateState}
-                onBibleDateChange={setBibleStartDateState}
+                onRosaryDateChange={(date) => {
+                    setRosaryStartDateState(date);
+                    setRosaryStartDate(date || null);
+                }}
+                onSacredDateChange={(date) => {
+                    setSacredStartDateState(date);
+                    setSacredStartDate(date || null);
+                }}
+                onBibleDateChange={(date) => {
+                    setBibleStartDateState(date);
+                    setBibleStartDate(date || null);
+                }}
                 onApply={handleDateApply}
                 language={language}
             />

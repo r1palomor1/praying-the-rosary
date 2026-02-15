@@ -170,7 +170,12 @@ export default async function handler(request) {
                     let text = "Text unavailable.";
 
                     if (data.data && Array.isArray(data.data)) {
-                        text = data.data.map(v => v.text || "").join('\n\n');
+                        // Add verse numbers in [1], [2] format
+                        // Extract just the verse number from "chapter.verse" format (e.g., "1.5" -> "5")
+                        text = data.data.map(v => {
+                            const verseNum = v.verse ? v.verse.split('.').pop() : '';
+                            return `[${verseNum}] ${v.text || ""}`;
+                        }).join('\n\n');
                     }
 
                     // Header: "### Génesis Capítulo 1"
@@ -205,8 +210,12 @@ export default async function handler(request) {
                     let text = "Text unavailable.";
 
                     if (data.data && Array.isArray(data.data)) {
-                        // Join verses with paragraph breaks (matching Spanish behavior)
-                        text = data.data.map(v => v.text || "").join('\n\n');
+                        // Add verse numbers in [1], [2] format and join with paragraph breaks
+                        // Extract just the verse number from "chapter.verse" format (e.g., "1.5" -> "5")
+                        text = data.data.map(v => {
+                            const verseNum = v.verse ? v.verse.split('.').pop() : '';
+                            return `[${verseNum}] ${v.text || ""}`;
+                        }).join('\n\n');
                     }
 
                     // Header: "Genesis Chapter 1"

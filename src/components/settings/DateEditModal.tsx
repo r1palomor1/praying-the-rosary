@@ -1,6 +1,6 @@
 
 import { X, Calendar } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface DateEditModalProps {
     isOpen: boolean;
@@ -32,6 +32,15 @@ export function DateEditModal({
     const [localRosaryDate, setLocalRosaryDate] = useState(rosaryStartDate);
     const [localSacredDate, setLocalSacredDate] = useState(sacredStartDate);
     const [localBibleDate, setLocalBibleDate] = useState(bibleStartDate);
+
+    // Re-sync local state when modal opens or props change
+    useEffect(() => {
+        if (isOpen) {
+            setLocalRosaryDate(rosaryStartDate);
+            setLocalSacredDate(sacredStartDate);
+            setLocalBibleDate(bibleStartDate);
+        }
+    }, [isOpen, rosaryStartDate, sacredStartDate, bibleStartDate]);
 
     const translations = {
         en: {

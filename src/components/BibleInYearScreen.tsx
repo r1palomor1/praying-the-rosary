@@ -5,7 +5,6 @@ import { ttsManager } from '../utils/ttsManager';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { BibleProgressModal } from './BibleProgressModal';
 import { useBibleProgress } from '../hooks/useBibleProgress';
-import { bibleBookNames } from '../utils/bibleBooks';
 import biblePlan from '../data/bibleInYearPlan.json';
 import './DailyReadingsScreen.css'; // Reuse Daily Readings styles
 
@@ -256,7 +255,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
         return chunks;
     };
 
-    const handlePlayContent = async (id: string, title: string, citation: string, text: string) => {
+    const handlePlayContent = async (id: string, title: string, text: string) => {
         if (isPlaying && currentlyPlayingId === id) {
             ttsManager.stop();
             setIsPlaying(false);
@@ -267,24 +266,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
             }
 
             // Extract book name from citation (e.g., "Genesis 1-2" -> "Genesis")
-            // Handle books with numbers like "1 Samuel 5" or "2 Kings 10-12"
-            let bookName = citation ? (citation.match(/^(.+?)\s+\d/)?.[1] || "") : "";
-
-            // Translate book name to Spanish if needed
-            const isSpanish = language === 'es';
-            if (isSpanish && bookName && bibleBookNames[bookName]) {
-                bookName = bibleBookNames[bookName];
-            }
-
-            // Localize "Chapter" word
-            const chapterWord = isSpanish ? 'Capítulo' : 'Chapter';
-
-            // Replace [ # ] with "Book Chapter #" (e.g., [ 1 ] -> "Genesis Chapter 1")
-            const replacement = bookName ? `${bookName} ${chapterWord} $1` : `${chapterWord} $1`;
-            // Remove markdown headers (###) to prevent TTS from reading "hash hash hash"
+            // Remove markdown headers (###) and verse numbers [1], [2], etc. for TTS
             const spokenText = text
                 .replace(/###\s*/g, '')  // Remove markdown headers
-                .replace(/\[\s*(\d+)\s*\]/g, replacement);
+                .replace(/\[\s*\d+\s*\]/g, '');  // Remove verse numbers like [1], [2], etc.
             const chunks = chunkText(spokenText);
 
             // Create segments: Title first, then the text chunks
@@ -316,26 +301,15 @@ export default function BibleInYearScreen({ onBack }: Props) {
         } else {
             // Process all readings with titles and proper chapter markers
             const segments: any[] = [];
-            const chapterWord = language === 'es' ? 'Capítulo' : 'Chapter';
 
             readings.forEach(r => {
                 // Add title segment
                 segments.push({ text: r.title, gender: 'female' as const, postPause: 500 });
 
-                // Extract book name and replace chapter markers
-                let bookName = r.citation ? (r.citation.match(/^(.+?)\s+\d/)?.[1] || "") : "";
-
-                // Translate book name to Spanish if needed
-                const isSpanish = language === 'es';
-                if (isSpanish && bookName && bibleBookNames[bookName]) {
-                    bookName = bibleBookNames[bookName];
-                }
-
-                const replacement = bookName ? `${bookName} ${chapterWord} $1` : `${chapterWord} $1`;
-                // Remove markdown headers (###) to prevent TTS from reading "hash hash hash"
+                // Remove markdown headers (###) and verse numbers [1], [2], etc. for TTS
                 const spokenText = r.text
                     .replace(/###\s*/g, '')  // Remove markdown headers
-                    .replace(/\[\s*(\d+)\s*\]/g, replacement);
+                    .replace(/\[\s*\d+\s*\]/g, '');  // Remove verse numbers like [1], [2], etc.
 
                 // Chunk the text
                 const chunks = chunkText(spokenText);
@@ -525,7 +499,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                             </div>
                             <button
                                 className={`reading-play-btn ${isPlaying && currentlyPlayingId === `reading-${index}` ? 'playing' : ''}`}
-                                onClick={() => handlePlayContent(`reading-${index}`, reading.title, reading.citation || '', reading.text)}
+                                onClick={() => handlePlayContent(`reading-${index}`, reading.title, reading.text)}
                                 aria-label={isPlaying && currentlyPlayingId === `reading-${index}` ? "Stop" : "Play"}
                             >
                                 {isPlaying && currentlyPlayingId === `reading-${index}` ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
@@ -571,8 +545,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     <div className="sources-attribution">
                         <p>
                             Source:{' '}
-                            <a href="https://bible-api.com/" target="_blank" rel="noopener noreferrer">
-                                bible-api.com
+                            <a href="https://github.com/wldeh/bible-api" target="_blank" rel="noopener noreferrer">
+                                wldeh/bible-api
                             </a>
                             <button
                                 className="info-btn-text"
@@ -584,7 +558,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         </p>
                         {showInfo && (
                             <p className="attribution-detail" style={{ fontSize: '0.8rem', fontStyle: 'italic', maxWidth: '600px', margin: '0 auto' }}>
-                                King James Version (Public Domain).
+                                English: King James Version (KJV) • Spanish: Biblia en Español Sencillo (BES) • Both versions are Public Domain, served via GitHub CDN.
                             </p>
                         )}
                     </div>
