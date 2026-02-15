@@ -358,18 +358,37 @@ export default function BibleInYearScreen({ onBack }: Props) {
     };
 
     const renderReadingText = (text: string) => {
-        // Split by double newlines to separate paragraphs/sections
-        const blocks = text.split(/\n\n+/);
+        const lines = text.split('\n');
+        const nodes: any[] = [];
+        let currentParagraph: string[] = [];
 
-        return blocks.map((block, i) => {
-            const cleanBlock = block.trim();
-            if (!cleanBlock) return null;
+        const flushParagraph = (key: string) => {
+            if (currentParagraph.length > 0) {
+                nodes.push(
+                    <p key={key} className="reading-paragraph">
+                        {currentParagraph.join(' ')}
+                    </p>
+                );
+                currentParagraph = [];
+            }
+        };
 
-            // Check for Markdown Header (###)
-            if (cleanBlock.startsWith('###')) {
-                const headerText = cleanBlock.replace(/^###\s*/, '').trim();
-                return (
-                    <h4 key={i} className="reading-chapter-header" style={{
+        lines.forEach((line, i) => {
+            const cleanLine = line.trim();
+
+            // Empty line -> Paragraph Break
+            if (!cleanLine) {
+                flushParagraph(`p-break-${i}`);
+                return;
+            }
+
+            // Header Detection -> Flush current paragraph, then render header
+            if (cleanLine.startsWith('###')) {
+                flushParagraph(`p-before-header-${i}`);
+                // Remove the ### marker and render as styled H4
+                const headerText = cleanLine.replace(/^###\s*/, '').trim();
+                nodes.push(
+                    <h4 key={`h-${i}`} className="reading-chapter-header" style={{
                         marginTop: '1.5rem',
                         marginBottom: '1rem',
                         color: '#FBBF24',
@@ -381,19 +400,17 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         {headerText}
                     </h4>
                 );
+            } else {
+                // Regular Text Line -> Add to current paragraph buffer
+                // This ensures lines like "was" are joined to the previous line
+                currentParagraph.push(cleanLine);
             }
-
-            // Regular Paragraph: Replace single newlines with spaces to prevent awkward breaking
-            // But preserve formatting if it looks like poetry (optional, but for Gen 1 it's prose)
-            // For now, simpler approach: Reflow all non-header text.
-            const reflowedText = cleanBlock.replace(/\n/g, ' ');
-
-            return (
-                <p key={i} className="reading-paragraph">
-                    {reflowedText}
-                </p>
-            );
         });
+
+        // Flush any remaining text at the end
+        flushParagraph('p-end');
+
+        return nodes;
     };
 
 
