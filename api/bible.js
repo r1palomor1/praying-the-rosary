@@ -214,7 +214,19 @@ export default async function handler(request) {
                         // Extract just the verse number from "chapter.verse" format (e.g., "1.5" -> "5")
                         text = data.data.map(v => {
                             const verseNum = v.verse ? v.verse.split('.').pop() : '';
-                            return `[${verseNum}] ${v.text || ""}`;
+                            let cleanText = v.text || "";
+
+                            // Clean up unwanted artifacts from the text:
+                            // 1. Remove chapter.verse references like "1.4", "1.5", "1.6"
+                            cleanText = cleanText.replace(/\b\d+\.\d+\b/g, '');
+                            // 2. Remove "Heb." abbreviations
+                            cleanText = cleanText.replace(/\bHeb\.\s*/g, '');
+                            // 3. Remove paragraph symbols
+                            cleanText = cleanText.replace(/¶/g, '');
+                            // 4. Clean up extra whitespace
+                            cleanText = cleanText.replace(/\s+/g, ' ').trim();
+
+                            return `[${verseNum}] ${cleanText}`;
                         }).join('\n\n');
                     }
 
