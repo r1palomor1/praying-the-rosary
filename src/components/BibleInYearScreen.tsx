@@ -269,7 +269,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
             // Remove markdown headers (###) and verse numbers [1], [2], etc. for TTS
             const spokenText = text
                 .replace(/###\s*/g, '')  // Remove markdown headers
-                .replace(/\[\s*\d+\s*\]/g, '');  // Remove verse numbers like [1], [2], etc.
+                .replace(/\[\s*\d+\s*\]/g, '')  // Remove verse numbers like [1], [2], etc.
+                .replace(/\//g, ' ');  // Replace slashes with spaces (e.g., "Psalm/Proverbs" -> "Psalm Proverbs")
             const chunks = chunkText(spokenText);
 
             // Create segments: Title first, then the text chunks
@@ -309,7 +310,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 // Remove markdown headers (###) and verse numbers [1], [2], etc. for TTS
                 const spokenText = r.text
                     .replace(/###\s*/g, '')  // Remove markdown headers
-                    .replace(/\[\s*\d+\s*\]/g, '');  // Remove verse numbers like [1], [2], etc.
+                    .replace(/\[\s*\d+\s*\]/g, '')  // Remove verse numbers like [1], [2], etc.
+                    .replace(/\//g, ' ');  // Replace slashes with spaces
 
                 // Chunk the text
                 const chunks = chunkText(spokenText);

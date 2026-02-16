@@ -142,6 +142,11 @@ export default async function handler(request) {
             endChapter = 1;
         }
 
+        // Handle cases like "Psalm/Proverbs 19" - take only the first book
+        if (rawBook.includes('/')) {
+            rawBook = rawBook.split('/')[0].trim();
+        }
+
         const chaptersText = [];
         let sourceInfo = "";
         let versionInfo = "";
@@ -178,10 +183,14 @@ export default async function handler(request) {
                         }).join('\n\n');
                     }
 
-                    // Header: "### Génesis Capítulo 1"
+                    // Header: "### Génesis Capítulo 1" or "### Salmos 19" (no Capítulo for Psalms/Proverbs)
                     // Use formatting to make "1samuel" -> "1 Samuel"
                     const displayBook = formatBookTitle(spanishBook);
-                    chaptersText.push(`### ${displayBook} Capítulo ${chapter}\n\n${text}`);
+                    const isPsalmOrProverb = spanishBook === 'salmos' || spanishBook === 'proverbios';
+                    const header = isPsalmOrProverb
+                        ? `### ${displayBook} ${chapter}\n\n${text}`
+                        : `### ${displayBook} Capítulo ${chapter}\n\n${text}`;
+                    chaptersText.push(header);
 
                 } catch (e) {
                     console.error("Error parsing Spanish JSON:", e);
@@ -232,9 +241,13 @@ export default async function handler(request) {
                         }).join('\n\n');
                     }
 
-                    // Header: "Genesis Chapter 1"
+                    // Header: "Genesis Chapter 1" or "Psalm 19" (no Chapter for Psalms/Proverbs)
                     const displayBook = formatBookTitle(rawBook);
-                    chaptersText.push(`### ${displayBook} Chapter ${chapter}\n\n${text}`);
+                    const isPsalmOrProverb = rawBook === 'psalm' || rawBook === 'psalms' || rawBook === 'proverbs';
+                    const header = isPsalmOrProverb
+                        ? `### ${displayBook} ${chapter}\n\n${text}`
+                        : `### ${displayBook} Chapter ${chapter}\n\n${text}`;
+                    chaptersText.push(header);
 
                 } catch (e) {
                     console.error("Error parsing English JSON:", e);
