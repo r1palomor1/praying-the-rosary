@@ -419,17 +419,11 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 </div>
 
                 <div className="date-controls-wrapper">
-                    <button onClick={() => changeDay(-1)} className="icon-btn nav-arrow" aria-label="Previous Day" disabled={currentDay === 1}>
-                        <ChevronLeft size={28} />
-                    </button>
                     <h2 className="date-display">
                         {new Date().toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', {
                             weekday: 'long', month: 'long', day: 'numeric'
                         })}
                     </h2>
-                    <button onClick={() => changeDay(1)} className="icon-btn nav-arrow" aria-label="Next Day" disabled={currentDay === 365}>
-                        <ChevronRight size={28} />
-                    </button>
                 </div>
             </div>
 
@@ -450,10 +444,16 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         </h2>
                         <div className="lectionary-row">
                             <div className="lectionary-center" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                                <button onClick={() => changeDay(-1)} className="icon-btn nav-arrow" aria-label="Previous Day" disabled={currentDay === 1}>
+                                    <ChevronLeft size={24} />
+                                </button>
                                 {isDayComplete(currentDay) && (
                                     <CheckCircle size={18} color="#10b981" fill="#10b981" stroke="white" strokeWidth={2.5} />
                                 )}
                                 <p className="lectionary-text" style={{ margin: 0 }}>{t.day} {currentDay} {t.of} 365</p>
+                                <button onClick={() => changeDay(1)} className="icon-btn nav-arrow" aria-label="Next Day" disabled={currentDay === 365}>
+                                    <ChevronRight size={24} />
+                                </button>
                                 <button
                                     onClick={() => setShowProgressModal(true)}
                                     className="icon-btn"
@@ -464,7 +464,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                         background: 'transparent',
                                         border: 'none',
                                         boxShadow: 'none',
-                                        color: 'inherit' // Inherit text color (likely gray/white)
+                                        color: 'inherit'
                                     }}
                                 >
                                     <Calendar size={20} />
