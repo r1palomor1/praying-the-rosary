@@ -6,10 +6,12 @@
   - **Fix:** Attached listener to `.readings-content` using `useRef`.
   - **Polish:** Added premium glassmorphism style with Gold/Amber accents.
 
-- [ ] **Data Source Parity (Spanish)**
-  - **Issue:** Spanish (BES) lacks paragraph structure, causing format inconsistency with English (KJV).
-  - **Goal:** Switch Spanish source to Reina Valera (RVR1960) or similar structural version to achieve native paragraph formatting parity.
-  - **Strategy:** "Uniform Excellence" - Replace the data source rather than patching the output.
+- [x] **Bible Text Paragraph Formatting** ✅ FIXED (Feb 16, 2026)
+  - **Issue:** Both languages lacked paragraph structure (list style).
+  - **Fix:** Implemented "Blueprint Strategy":
+    - **English:** Grouped by `¶` markers.
+    - **Spanish:** Mapped English structure to Spanish text via "Double Fetch" pattern.
+    - **Safety:** Added verse-count mismatch guard to fallback gracefully.
 
 ## ⚠️ DEVELOPER NOTICE
 - **RESPECT THE APP:** Care for the application's quality and the user's detailed requirements. Do not make assumptions. Verify every change visually or via rigorous data checks before committing. The goal is EXCELLENCE, not just "done".

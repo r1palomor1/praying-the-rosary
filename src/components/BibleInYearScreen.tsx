@@ -136,7 +136,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             // Fetch First Reading
             try {
                 const citation = data.first_reading;
-                const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(citation)}&lang=${language}`);
+                const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(citation)}&lang=${language}&v=layout_v1`);
 
                 if (response.ok) {
                     const result = await response.json();
@@ -165,7 +165,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             // Fetch Second Reading (if exists)
             if (data.second_reading) {
                 try {
-                    const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(data.second_reading)}&lang=${language}`);
+                    const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(data.second_reading)}&lang=${language}&v=layout_v1`);
                     if (response.ok) {
                         const result = await response.json();
                         if (result.debug) console.log('[Bible Debug] Second Reading:', result.debug);
@@ -192,7 +192,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
             // Fetch Psalm/Proverbs
             try {
-                const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(data.psalm_proverbs)}&lang=${language}`);
+                const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(data.psalm_proverbs)}&lang=${language}&v=layout_v1`);
                 if (response.ok) {
                     const result = await response.json();
                     if (result.debug) console.log('[Bible Debug] Psalm/Proverbs:', result.debug);

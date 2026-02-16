@@ -305,7 +305,7 @@ export default async function handler(request) {
             headers: {
                 ...corsHeaders,
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, max-age=86400'
+                'Cache-Control': 'public, max-age=0, s-maxage=86400, must-revalidate'
             }
         });
 
