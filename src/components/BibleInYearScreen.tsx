@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ArrowLeft, Play, Square, Info, Settings as SettingsIcon, Calendar, CheckCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, ArrowUp, ArrowDown, Play, Square, Info, Settings as SettingsIcon, Calendar, CheckCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
@@ -40,6 +40,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [showSettings, setShowSettings] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
     const [showProgressModal, setShowProgressModal] = useState(false);
+    const [showScrollTop, setShowScrollTop] = useState(false);
+    const [showScrollBottom, setShowScrollBottom] = useState(false);
 
     // Progress Hooks
     const {
@@ -231,11 +233,42 @@ export default function BibleInYearScreen({ onBack }: Props) {
         };
     }, []);
 
+    // Handle scroll to show/hide floating scroll buttons
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight;
+            const clientHeight = document.documentElement.clientHeight;
+
+            // Show "scroll to top" button when scrolled down 100px (lowered for easier visibility)
+            const shouldShowTop = scrollTop > 100;
+            setShowScrollTop(shouldShowTop);
+
+            // Show "scroll to bottom" button when not near bottom (100px threshold)
+            const shouldShowBottom = scrollTop + clientHeight < scrollHeight - 100;
+            setShowScrollBottom(shouldShowBottom);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        handleScroll(); // Check initial state
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+
     const changeDay = (delta: number) => {
         const newDay = currentDay + delta;
         if (newDay >= 1 && newDay <= 365) {
             setCurrentDay(newDay);
         }
+    };
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const scrollToBottom = () => {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
     };
 
     const chunkText = (text: string, maxLength: number = 200): string[] => {
@@ -587,6 +620,63 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     />
                 )
             }
+
+            {/* Floating Scroll Buttons */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="floating-scroll-btn floating-scroll-top"
+                    aria-label="Scroll to top"
+                    style={{
+                        position: 'fixed',
+                        bottom: '140px',
+                        right: '20px',
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        zIndex: 1000,
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                    }}
+                >
+                    <ArrowUp size={24} />
+                </button>
+            )}
+
+            {showScrollBottom && (
+                <button
+                    onClick={scrollToBottom}
+                    className="floating-scroll-btn floating-scroll-bottom"
+                    aria-label="Scroll to bottom"
+                    style={{
+                        position: 'fixed',
+                        bottom: '80px',
+                        right: '20px',
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        zIndex: 1000,
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                    }}
+                >
+                    <ArrowDown size={24} />
+                </button>
+            )}
         </div >
     );
 }
