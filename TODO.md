@@ -1,10 +1,16 @@
 # Holy Rosary App - Feature To-Do List
 
 ## 🛑 URGENT FIXES (Next Session)
+- [x] **Floating Scroll Buttons**
+  - **Issue:** Buttons were not appearing due to scroll listener on window instead of container.
+  - **Fix:** Attached listener to `.readings-content` using `useRef`.
+  - **Polish:** Added premium glassmorphism style with Gold/Amber accents.
+
+
 - [ ] **English Bible Text Formatting Alignment**
-  - **Issue:** English text has no breaks between verses/paragraphs, while Spanish does. They must align.
-  - **Action:** Fix the parser or CSS to ensure KJV text renders with proper gold headers and verse breaks, matching the Spanish layout exactly.
-  - **Note:** Do NOT modify the Spanish side.
+  - **Issue:** English text layout (verse-by-verse with double spacing) does not align with Spanish layout (paragraph blocks).
+  - **Analysis:** Current implementation in `api/bible.js` strips semantic paragraph markers (`¶`) and forces `\n\n` after every single verse.
+  - **Goal:** Restore paragraph structure. Instead of stripping `¶`, use it to determine where actual paragraph breaks should occur, grouping multiple verses together like the Spanish version.
   - **Ref:** User feedback: "English still has no breaks while spanish does so they are not aligned which is bad practice."
 
 ## ⚠️ DEVELOPER NOTICE
@@ -35,31 +41,27 @@ git push
 
 ## ✅ Completed Features
 
-### Audio & Highlighting
-- [x] Audio read-along highlighting for all prayers (gold text)
-- [x] Highlighter toggle button with pulsate animation
-- [x] Auto-enable highlighting from home page audio
-- [x] Session-based highlighting preference (persists until app restart)
-- [x] Time-based sentence synchronization
-- [x] Universal highlighting across all prayer types
-- [x] Last sentence/row stays highlighted until step changes
-- [x] Final Hail Mary continuous highlighting (sentence offset)
-- [x] Persist last active mystery selection across reloads
-- [x] **Refined Persistence:** "New Day" logic prioritizes today's mystery over old state
-- [x] **Light Mode Highlighting:** Fixed unreadable text with yellow/black high contrast style
-- [x] **Litany highlighting - DISABLED** (see decision below)
+### Bible in a Year (Feb 15, 2026)
+- [x] **Progress Tracking System**
+  - Implemented `useBibleProgress` hook
+  - `localStorage` persistence for completed days
+  - "Mark Complete" button at bottom of readings
+  - Visual indicators (Green Checkmarks) for completed days
+- [x] **Catch-Up Logic**
+  - "Resuming Journey" modal detects missed days
+  - Options: Resume (First Missed), Today, or View Calendar
+- [x] **Progress Calendar**
+  - 365-day heat map calendar view
+  - Status indicators: Complete (Green), Missed (Red), Future (Gray)
+  - Clickable days to jump to any reading
+- [x] **Header UX Redesign**
+  - Moved navigation arrows to Day Counter (`< Day X of 365 >`)
+  - Grouped Calendar icon with Day Counter as "Day Picker"
+  - Static Date display for clarity
+- [x] **TTS Improvements**
+  - Removed slashes from titles (e.g., "Psalm/Proverbs" -> "Psalm Proverbs")
+  - Fixed verse number pronunciation
 
-### UI/UX Polish
-- [x] Book icon states: open (white) when visible, closed (colored) when hidden
-- [x] Highlighter icon pulsates orange-gold when active
-- [x] Book icon and layout toggle hidden on litany page (not applicable)
-- [x] Classic mode prayer titles in bright gold (#FFD700) (Cinematic Mode)
-- [x] **Light Mode Classic:** Standardized headers/titles to Amber-700 (#B45309) for readability
-- [x] Reflection text centered for consistency
-- [x] Fruit labels styled with bright gold (#FBBF24)
-- [x] Text visibility delay reduced to 1s (from 2.5s)
-- [x] Initial delay for mystery announcements
-- [x] Toast notifications for user interactions (audio, layout, visibility, highlighting)
 
 ## 🔄 In Progress / Needs Refinement
 

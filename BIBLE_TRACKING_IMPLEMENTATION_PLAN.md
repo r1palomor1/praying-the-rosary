@@ -71,8 +71,46 @@ Implement a progress tracking system for the "Bible in a Year" feature to help u
    - Update `currentDay` state to match user selection.
 
 ## 4. Work Checklist
-- [ ] Create `useBibleProgress` hook (storage logic).
-- [ ] Implement "Mark as Read" UI in `BibleInYearScreen`.
-- [ ] Implement "Continue Your Journey" Modal.
-- [ ] Add "Missed Days" List View (optional first pass, maybe just jump to first missed).
-- [ ] Integrate into `BibleInYearScreen` on mount.
+- [x] Create `useBibleProgress` hook (storage logic).
+- [x] Implement "Mark as Read" UI in `BibleInYearScreen`.
+- [x] Implement "Continue Your Journey" Modal.
+- [x] Add "Missed Days" List View / Calendar View in Modal.
+- [x] Integrate into `BibleInYearScreen` on mount.
+- [x] Implement Catch-Up logic (Resume vs View Calendar).
+- [x] Refine Header Navigation (Day Counter vs Date).
+- [x] Improve TTS (Slash removal, Verse pronunciation).
+
+## 5. Completed Implementation Details (Feb 15, 2026)
+
+### Storage & Logic
+- **`useBibleProgress` Hook**: Manages `bible_progress` in localStorage.
+- **Logic**:
+  - `markDayComplete(day)`: Adds day to array, saves timestamp.
+  - `isDayComplete(day)`: Returns boolean.
+  - `missedDays`: Calculated array of days < currentDayOfYear not in completed list.
+  - `expectedDay`: The current day of the year (1-365).
+
+### UI Components
+- **BibleInYearScreen**:
+  - **Header**: `[Date] < Day X of 365 > [Calendar Icon]`
+  - **Readings**: Standard layout with "Mark Complete" button at bottom.
+  - **Floating Scroll Buttons**: 
+    - Auto-appear based on scroll direction/position.
+    - Premium Glassmorphism style with Gold accents.
+    - Context-aware: Bottom button hides when at bottom.
+  
+- **BibleProgressModal**:
+  - 365-day grid visualization.
+  - **Green**: Completed days.
+  - **Red**: Missed days (past days not completed).
+  - **Gray**: Future days.
+  - **Current Day**: Highlighted border.
+  - **Interaction**: Clicking a day closes modal and loads that day's readings. 
+
+### Catch-Up Flow
+1. **On Load**: Checks for missed days.
+2. **If Missed Days**: Shows "Continue Your Journey" modal.
+3. **Options**:
+   - **Resume**: Jumps to first missed day.
+   - **Today**: Loads current calendar day.
+   - **View Calendar**: Opens full progress grid.

@@ -224,16 +224,25 @@ export default async function handler(request) {
                     let text = "Text unavailable.";
 
                     if (data.data && Array.isArray(data.data)) {
+                        // Deduplicate verses (fix for corrupted source JSON in wldeh/bible-api en-kjv)
+                        const seenVerses = new Set();
+                        const uniqueData = data.data.filter(v => {
+                            // Extract verse number, handling "1.5" format if present
+                            const verseNum = v.verse ? v.verse.split('.').pop() : v.verse;
+                            if (seenVerses.has(verseNum)) {
+                                return false; // Skip duplicate
+                            }
+                            seenVerses.add(verseNum);
+                            return true;
+                        });
+
                         // Add verse numbers in [1], [2] format and join with paragraph breaks
-                        // Extract just the verse number from "chapter.verse" format (e.g., "1.5" -> "5")
-                        text = data.data.map(v => {
+                        text = uniqueData.map(v => {
                             const verseNum = v.verse ? v.verse.split('.').pop() : '';
                             let cleanText = v.text || "";
 
                             // Clean up unwanted artifacts from the text:
                             // 1. Remove KJV footnotes (everything from "chapter.verse" reference onward)
-                            //    Example: "...first day.1.5 And the evening…: Heb. And the evening was, and the morning was etc."
-                            //    We want to keep only: "...first day."
                             cleanText = cleanText.replace(/\d+\.\d+\s+.*$/g, '');
 
                             // 2. Remove paragraph symbols

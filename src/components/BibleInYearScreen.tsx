@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ArrowLeft, ArrowUp, ArrowDown, Play, Square, Info, Settings as SettingsIcon, Calendar, CheckCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
@@ -42,6 +42,11 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [showProgressModal, setShowProgressModal] = useState(false);
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showScrollBottom, setShowScrollBottom] = useState(false);
+
+    // Refs for scroll handling
+    const contentRef = useRef<HTMLDivElement>(null);
+    const lastScrollTopRef = useRef(0);
+
 
     // Progress Hooks
     const {
@@ -130,24 +135,26 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
             // Fetch First Reading
             try {
-                const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(data.first_reading)}&lang=${language}`);
+                const citation = data.first_reading;
+                const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(citation)}&lang=${language}`);
+
                 if (response.ok) {
                     const result = await response.json();
-                    if (result.debug) console.log('[Bible Debug] First Reading:', result.debug);
-                    console.log('[Bible Text] First Reading length:', result.text?.length, 'Preview:', result.text?.substring(0, 100));
                     readingsToFetch.push({
                         title: t.firstReading,
-                        citation: data.first_reading,
-                        text: result.text || `📖 ${data.first_reading}\n\n[Scripture text loading...]`
+                        citation: citation,
+                        text: result.text || `📖 ${citation}\n\n[Scripture text loading...]`
                     });
                 } else {
+                    console.error(`[API] Fetch failed for ${citation}: ${response.status}`);
                     readingsToFetch.push({
                         title: t.firstReading,
-                        citation: data.first_reading,
-                        text: `📖 ${data.first_reading}\n\n[Scripture text will be available shortly - API deploying...]`
+                        citation: citation,
+                        text: `📖 ${citation}\n\n[Scripture text unavailable from API]`
                     });
                 }
             } catch (err) {
+                console.error('[Bible] Error fetching first reading:', err);
                 readingsToFetch.push({
                     title: t.firstReading,
                     citation: data.first_reading,
@@ -233,26 +240,86 @@ export default function BibleInYearScreen({ onBack }: Props) {
         };
     }, []);
 
+    // Wake Lock: Keep screen on during playback
+    useEffect(() => {
+        let wakeLock: any = null;
+
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator) {
+                try {
+                    // @ts-ignore - Navigator type might not include wakeLock yet
+                    wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) {
+                    console.log('Wake Lock denied/error:', err);
+                }
+            }
+        };
+
+        if (isPlaying) {
+            requestWakeLock();
+        }
+
+        return () => {
+            if (wakeLock) {
+                wakeLock.release().catch(console.error);
+                wakeLock = null;
+            }
+        };
+    }, [isPlaying]);
+
+    // Handle scroll to show/hide floating scroll buttons
     // Handle scroll to show/hide floating scroll buttons
     useEffect(() => {
         const handleScroll = () => {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const scrollHeight = document.documentElement.scrollHeight;
-            const clientHeight = document.documentElement.clientHeight;
+            if (!contentRef.current) return;
 
-            // Show "scroll to top" button when scrolled down 100px (lowered for easier visibility)
-            const shouldShowTop = scrollTop > 100;
-            setShowScrollTop(shouldShowTop);
+            const element = contentRef.current;
+            const currentScroll = element.scrollTop;
+            const lastScroll = lastScrollTopRef.current;
+            const scrollHeight = element.scrollHeight;
+            const clientHeight = element.clientHeight;
 
-            // Show "scroll to bottom" button when not near bottom (100px threshold)
-            const shouldShowBottom = scrollTop + clientHeight < scrollHeight - 100;
-            setShowScrollBottom(shouldShowBottom);
+            // Update ref for next check
+            lastScrollTopRef.current = currentScroll <= 0 ? 0 : currentScroll;
+
+            // 1. If near top (< 150px), hide both
+            if (currentScroll < 150) {
+                setShowScrollTop(false);
+                setShowScrollBottom(false);
+                return;
+            }
+
+            // 2. If at very bottom, force show UP arrow
+            // Use a small buffer (50px) to make it feel responsive
+            if (scrollHeight - currentScroll - clientHeight < 50) {
+                setShowScrollTop(true);
+                setShowScrollBottom(false);
+                return;
+            }
+
+            // 3. Dynamic Switching based on direction
+            if (currentScroll > lastScroll) {
+                // Scrolling Down -> Show DOWN arrow to get to bottom faster
+                setShowScrollTop(false);
+                setShowScrollBottom(true);
+            } else {
+                // Scrolling Up -> Show UP arrow
+                setShowScrollTop(true);
+                setShowScrollBottom(false);
+            }
         };
 
-        window.addEventListener('scroll', handleScroll);
-        handleScroll(); // Check initial state
+        const element = contentRef.current;
+        if (element) {
+            element.addEventListener('scroll', handleScroll);
+            handleScroll(); // Check initial state
+        }
 
-        return () => window.removeEventListener('scroll', handleScroll);
+        return () => {
+            if (element) {
+                element.removeEventListener('scroll', handleScroll);
+            }
+        };
     }, []);
 
 
@@ -264,11 +331,15 @@ export default function BibleInYearScreen({ onBack }: Props) {
     };
 
     const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (contentRef.current) {
+            contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     const scrollToBottom = () => {
-        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+        if (contentRef.current) {
+            contentRef.current.scrollTo({ top: contentRef.current.scrollHeight, behavior: 'smooth' });
+        }
     };
 
     const chunkText = (text: string, maxLength: number = 200): string[] => {
@@ -375,6 +446,54 @@ export default function BibleInYearScreen({ onBack }: Props) {
         }
     };
 
+    const handlePlayChapter = async (chapterTitle: string, fullText: string) => {
+        if (isPlaying) {
+            ttsManager.stop();
+            setIsPlaying(false);
+            setCurrentlyPlayingId(null);
+            return;
+        }
+
+        // 1. Find the section for this chapter
+        // Split by markdown headers (###)
+        const sections = fullText.split('###');
+        // Find the section that starts with our chapter title (trimmed)
+        const chapterSection = sections.find(s => s.trim().startsWith(chapterTitle));
+
+        if (!chapterSection) {
+            console.error('Chapter not found:', chapterTitle);
+            return;
+        }
+
+        // 2. Prepare text for TTS
+        const spokenText = chapterSection
+            .replace(chapterTitle, '') // Remove the title from the text itself
+            .replace(/\[\s*\d+\s*\]/g, '')  // Remove verse numbers
+            .replace(/\//g, ' ');
+
+        const chunks = chunkText(spokenText);
+
+        // 3. Create segments
+        const segments = [
+            { text: chapterTitle, gender: 'female' as const, postPause: 500 },
+            ...chunks.map(chunk => ({
+                text: chunk,
+                gender: 'female' as const
+            }))
+        ];
+
+        setIsPlaying(true);
+        // Use a composite ID so we know exactly what is playing
+        setCurrentlyPlayingId(`chapter-${chapterTitle}`);
+
+        ttsManager.setOnEnd(() => {
+            setIsPlaying(false);
+            setCurrentlyPlayingId(null);
+        });
+
+        await ttsManager.speakSegments(segments);
+    };
+
     const renderReadingText = (text: string) => {
         const lines = text.split('\n');
         const nodes: any[] = [];
@@ -405,18 +524,49 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 flushParagraph(`p-before-header-${i}`);
                 // Remove the ### marker and render as styled H4
                 const headerText = cleanLine.replace(/^###\s*/, '').trim();
+                const isChapterPlaying = isPlaying && currentlyPlayingId === `chapter-${headerText}`;
+
                 nodes.push(
-                    <h4 key={`h-${i}`} className="reading-chapter-header" style={{
+                    <div key={`h-container-${i}`} className="chapter-header-row" style={{
+                        display: 'flex',
+                        alignItems: 'center',
                         marginTop: '1.5rem',
                         marginBottom: '1rem',
-                        color: '#FBBF24',
-                        fontFamily: 'var(--font-heading)',
-                        fontSize: '1.1rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px'
+                        gap: '0.75rem'
                     }}>
-                        {headerText}
-                    </h4>
+                        <button
+                            onClick={() => handlePlayChapter(headerText, text)}
+                            className={`chapter-play-btn ${isChapterPlaying ? 'playing' : ''}`}
+                            aria-label={isChapterPlaying ? `Stop ${headerText}` : `Play ${headerText}`}
+                            style={{
+                                background: isChapterPlaying ? 'rgba(220, 38, 38, 0.2)' : 'rgba(59, 130, 246, 0.15)',
+                                border: isChapterPlaying ? '1px solid rgba(220, 38, 38, 0.4)' : '1px solid rgba(59, 130, 246, 0.3)',
+                                color: isChapterPlaying ? '#F87171' : '#60A5FA',
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                flexShrink: 0
+                            }}
+                        >
+                            {isChapterPlaying ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+                        </button>
+
+                        <h4 className="reading-chapter-header" style={{
+                            margin: 0,
+                            color: '#FBBF24',
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '1.1rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px'
+                        }}>
+                            {headerText}
+                        </h4>
+                    </div>
                 );
             } else {
                 // Regular Text Line -> Add to current paragraph buffer
@@ -460,7 +610,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 </div>
             </div>
 
-            <div className="readings-content">
+            <div
+                className="readings-content"
+                ref={contentRef}
+            >
                 {loading && (
                     <div className="readings-loading-container">
                         <div className="loading-spinner"></div>
@@ -630,20 +783,22 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     style={{
                         position: 'fixed',
                         bottom: '140px',
-                        right: '20px',
+                        right: '24px',
                         width: '48px',
                         height: '48px',
                         borderRadius: '50%',
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        color: 'white',
+                        backgroundColor: 'rgba(30, 41, 59, 0.8)', // Lighter slate-800 equivalent
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        border: '1px solid rgba(251, 191, 36, 0.3)', // Amber border
+                        color: '#FBBF24', // Amber/Gold icon
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
                         zIndex: 1000,
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
                     }}
                 >
                     <ArrowUp size={24} />
@@ -658,20 +813,22 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     style={{
                         position: 'fixed',
                         bottom: '80px',
-                        right: '20px',
+                        right: '24px',
                         width: '48px',
                         height: '48px',
                         borderRadius: '50%',
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        color: 'white',
+                        backgroundColor: 'rgba(30, 41, 59, 0.8)', // Lighter slate-800 equivalent
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        border: '1px solid rgba(251, 191, 36, 0.3)', // Amber border
+                        color: '#FBBF24', // Amber/Gold icon
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
                         zIndex: 1000,
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
                     }}
                 >
                     <ArrowDown size={24} />
