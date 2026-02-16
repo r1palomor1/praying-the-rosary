@@ -274,8 +274,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
             const chunks = chunkText(spokenText);
 
             // Create segments: Title first, then the text chunks
+            // Clean slash from title for TTS (e.g., "Psalm/Proverbs" -> "Psalm Proverbs")
+            const cleanTitle = title.replace(/\//g, ' ');
             const segments = [
-                { text: title, gender: 'female' as const, postPause: 500 },
+                { text: cleanTitle, gender: 'female' as const, postPause: 500 },
                 ...chunks.map(chunk => ({
                     text: chunk,
                     gender: 'female' as const
@@ -304,8 +306,9 @@ export default function BibleInYearScreen({ onBack }: Props) {
             const segments: any[] = [];
 
             readings.forEach(r => {
-                // Add title segment
-                segments.push({ text: r.title, gender: 'female' as const, postPause: 500 });
+                // Add title segment (clean slash for TTS)
+                const cleanTitle = r.title.replace(/\//g, ' ');
+                segments.push({ text: cleanTitle, gender: 'female' as const, postPause: 500 });
 
                 // Remove markdown headers (###) and verse numbers [1], [2], etc. for TTS
                 const spokenText = r.text
