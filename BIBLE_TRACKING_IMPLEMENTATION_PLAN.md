@@ -130,24 +130,18 @@ Implement a progress tracking system for the "Bible in a Year" feature to help u
 
 ## 7. Formatting & Polish (Next Steps)
 
-### English & Spanish Text Formatting
-- **Issue**: Both languages currently break at every verse, causing a disjointed reading experience.
-- **Solution**:
-  - **English (KJV)**: Preserve `¶` markers in API logic. Use them to group verses into paragraph blocks.
-  - **Spanish**: Investigate source data for paragraph markers. If missing, explore alternative data sources or heuristic grouping.
+## 8. Strategic Pivot: Reference-Based Formatting (Blueprint Strategy)
 
-### Visual Polish
-- **Daily Readings**: Improve styling for Responsorial Psalms and Alleluia (hanging indent, bold R.).
-- **APK Optimization**: Execute release build and bundle generation.
+**Decision**: Validated by "Blueprint" architectural advice. We will NOT switch APIs. Instead, we will use the English KJV structure as the master layout for Spanish.
 
-## 8. Strategic Pivot: Data Source Parity (Feb 16, 2026)
-
-**Decision**: Instead of patching inconsistent formatting (paragraphs for English, lists for Spanish), we will pursue structural parity.
-
-### New Objective
-Switch the Spanish Bible source from `es-bes` (Biblia en Español Sencillo) to a version that natively supports paragraph structure (e.g., Reina Valera 1960), ensuring both languages offer a premium, book-like reading experience without custom hacks.
+### Objective
+Ensure consistent paragraph formatting between languages by applying English paragraph breaks to the Spanish text.
 
 ### Action Plan
-1.  **Investigate**: Verify availability of structural-rich Spanish Bible JSON (e.g., `es-rvr`, `es-1960`).
-2.  **Implement**: Update `api/bible.js` to fetch from the new source.
-3.  **Format**: Apply the same paragraph-grouping logic to both languages.
+1.  **Logic Update (`api/bible.js`)**:
+    - **English Requests**: Fetch KJV. Use `¶` tokens to group verses into paragraphs.
+    - **Spanish Requests**: 
+      1. Fetch English KJV (Reference) to extract paragraph map (Set of starting verses).
+      2. Fetch Spanish BES (Content).
+      3. Apply English paragraph map to Spanish content.
+      4. **Safeguard**: If verse counts mismatch significantly (>10%), fallback to simple list format.

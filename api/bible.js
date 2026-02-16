@@ -153,120 +153,137 @@ export default async function handler(request) {
         }
 
         const chaptersText = [];
-        let sourceInfo = "";
-        let versionInfo = "";
+        let sourceInfo = lang === 'es' ? 'github/wldeh/bible-api (Layout: KJV)' : 'github/wldeh/bible-api';
+        let versionInfo = lang === 'es' ? 'Biblia en Español Sencillo' : 'King James Version';
 
-        // --- STRATEGY SELECTION ---
+        for (let chapter = startChapter; chapter <= endChapter; chapter++) {
+            // 1. ALWAYS Fetch English (Reference for Layout)
+            // We use English KJV to determine paragraph breaks ("¶") and unique verses
+            const enUrl = `https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-kjv/books/${encodeURIComponent(rawBook.toLowerCase())}/chapters/${chapter}.json`;
+            console.log(`[Reference] Fetching English: ${enUrl}`);
 
-        if (lang === 'es') {
-            // SPANISH STRATEGY: wldeh/bible-api (Static JSON, es-bes)
+            let enData = null;
+            let paragraphStarts = new Set(); // Verse numbers that start a new paragraph
 
-            const spanishBook = ENGLISH_TO_SPANISH_REPO[rawBook] || rawBook;
-            sourceInfo = 'github/wldeh/bible-api';
-            versionInfo = 'Biblia en Español Sencillo';
+            try {
+                const res = await fetch(enUrl);
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.data && Array.isArray(json.data)) {
+                        // Deduplicate English Data first
+                        enData = deduplicateVerses(json.data);
 
-            for (let chapter = startChapter; chapter <= endChapter; chapter++) {
-                const targetUrl = `https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-bes/books/${encodeURIComponent(spanishBook)}/chapters/${chapter}.json`;
-                console.log(`Fetching Spanish: ${targetUrl}`);
-
-                try {
-                    const res = await fetch(targetUrl);
-                    if (!res.ok) {
-                        console.error(`Failed to fetch Spanish chapter: ${res.status}`);
-                        continue;
-                    }
-
-                    const data = await res.json();
-                    let text = "Text unavailable.";
-
-                    if (data.data && Array.isArray(data.data)) {
-                        // Add verse numbers in [1], [2] format
-                        // Extract just the verse number from "chapter.verse" format (e.g., "1.5" -> "5")
-                        text = data.data.map(v => {
-                            const verseNum = v.verse ? v.verse.split('.').pop() : '';
-                            return `[${verseNum}] ${v.text || ""}`;
-                        }).join('\n\n');
-                    }
-
-                    // Header: "### Génesis Capítulo 1" or "### Salmos 19" (no Capítulo for Psalms/Proverbs)
-                    // Use formatting to make "1samuel" -> "1 Samuel"
-                    const displayBook = formatBookTitle(spanishBook);
-                    const isPsalmOrProverb = spanishBook === 'salmos' || spanishBook === 'proverbios';
-                    const header = isPsalmOrProverb
-                        ? `### ${displayBook} ${chapter}\n\n${text}`
-                        : `### ${displayBook} Capítulo ${chapter}\n\n${text}`;
-                    chaptersText.push(header);
-
-                } catch (e) {
-                    console.error("Error parsing Spanish JSON:", e);
-                }
-            }
-
-        } else {
-            // ENGLISH STRATEGY: wldeh/bible-api (Static JSON, en-kjv)
-            // Using same source as Spanish for consistency and verse-by-verse structure
-
-            sourceInfo = 'github/wldeh/bible-api';
-            versionInfo = 'King James Version';
-
-            for (let chapter = startChapter; chapter <= endChapter; chapter++) {
-                const targetUrl = `https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-kjv/books/${encodeURIComponent(rawBook.toLowerCase())}/chapters/${chapter}.json`;
-                console.log(`Fetching English: ${targetUrl}`);
-
-                try {
-                    const res = await fetch(targetUrl);
-                    if (!res.ok) {
-                        console.error(`Failed to fetch English chapter: ${res.status}`);
-                        continue;
-                    }
-
-                    const data = await res.json();
-                    let text = "Text unavailable.";
-
-                    if (data.data && Array.isArray(data.data)) {
-                        // Deduplicate verses (fix for corrupted source JSON in wldeh/bible-api en-kjv)
-                        const seenVerses = new Set();
-                        const uniqueData = data.data.filter(v => {
-                            // Extract verse number, handling "1.5" format if present
-                            const verseNum = v.verse ? v.verse.split('.').pop() : v.verse;
-                            if (seenVerses.has(verseNum)) {
-                                return false; // Skip duplicate
+                        // Extract Blueprint
+                        enData.forEach((v, index) => {
+                            // If verse text has '¶' OR it's the first verse, it marks a paragraph start
+                            if ((v.text && v.text.includes('¶')) || index === 0) {
+                                const verseNum = getVerseNumber(v);
+                                if (verseNum) paragraphStarts.add(verseNum);
                             }
-                            seenVerses.add(verseNum);
-                            return true;
                         });
-
-                        // Add verse numbers in [1], [2] format and join with paragraph breaks
-                        text = uniqueData.map(v => {
-                            const verseNum = v.verse ? v.verse.split('.').pop() : '';
-                            let cleanText = v.text || "";
-
-                            // Clean up unwanted artifacts from the text:
-                            // 1. Remove KJV footnotes (everything from "chapter.verse" reference onward)
-                            cleanText = cleanText.replace(/\d+\.\d+\s+.*$/g, '');
-
-                            // 2. Remove paragraph symbols
-                            cleanText = cleanText.replace(/¶/g, '');
-
-                            // 3. Clean up extra whitespace
-                            cleanText = cleanText.replace(/\s+/g, ' ').trim();
-
-                            return `[${verseNum}] ${cleanText}`;
-                        }).join('\n\n');
                     }
+                }
+            } catch (e) {
+                console.error("Error fetching English reference:", e);
+            }
 
-                    // Header: "Genesis Chapter 1" or "Psalm 19" (no Chapter for Psalms/Proverbs)
-                    const displayBook = formatBookTitle(rawBook);
-                    const isPsalmOrProverb = rawBook === 'psalm' || rawBook === 'psalms' || rawBook === 'proverbs';
-                    const header = isPsalmOrProverb
-                        ? `### ${displayBook} ${chapter}\n\n${text}`
-                        : `### ${displayBook} Chapter ${chapter}\n\n${text}`;
-                    chaptersText.push(header);
+            // 2. Process Content based on Language
+            let text = "Text unavailable.";
+            let displayBook = "";
 
+            if (lang === 'es') {
+                // --- SPANISH MODE ---
+                const spanishBook = ENGLISH_TO_SPANISH_REPO[rawBook] || rawBook;
+                displayBook = formatBookTitle(spanishBook);
+
+                const esUrl = `https://raw.githubusercontent.com/wldeh/bible-api/main/bibles/es-bes/books/${encodeURIComponent(spanishBook)}/chapters/${chapter}.json`;
+                console.log(`Fetching Spanish Content: ${esUrl}`);
+
+                try {
+                    const res = await fetch(esUrl);
+                    if (res.ok) {
+                        const json = await res.json();
+                        if (json.data && Array.isArray(json.data)) {
+                            const esVerses = deduplicateVerses(json.data);
+
+                            // Safety Guard: Verse Count Mismatch
+                            // If verse counts differ, paragraph alignment might be wrong. Fallback to list.
+                            if (enData && esVerses.length !== enData.length) {
+                                console.warn(`[Bible API] Verse mismatch for ${spanishBook} ${chapter} (ES: ${esVerses.length}, EN: ${enData.length}). Disabling blueprint.`);
+                                paragraphStarts.clear();
+                            }
+
+                            // Apply English Blueprint to Spanish Verses
+                            const paragraphs = [];
+                            let currentParagraph = "";
+
+                            esVerses.forEach((v, index) => {
+                                const verseNum = getVerseNumber(v);
+                                const textContent = cleanVerseText(v.text, false); // Don't strip symbols, Spanish doesn't have them
+                                const formattedVerse = `[${verseNum}] ${textContent}`;
+
+                                // Check if this verse should start a paragraph based on English Blueprint
+                                // Fallback: If no blueprint (English failed), default to first verse only
+                                const shouldStart = (paragraphStarts.size > 0 && paragraphStarts.has(verseNum)) || index === 0;
+
+                                if (shouldStart) {
+                                    if (currentParagraph) paragraphs.push(currentParagraph);
+                                    currentParagraph = formattedVerse;
+                                } else {
+                                    currentParagraph += " " + formattedVerse;
+                                }
+                            });
+                            if (currentParagraph) paragraphs.push(currentParagraph);
+
+                            text = paragraphs.join('\n\n');
+                        }
+                    } else {
+                        console.error(`Failed to fetch Spanish: ${res.status}`);
+                    }
                 } catch (e) {
-                    console.error("Error parsing English JSON:", e);
+                    console.error("Error fetching Spanish content:", e);
+                }
+
+            } else {
+                // --- ENGLISH MODE ---
+                displayBook = formatBookTitle(rawBook);
+
+                if (enData) {
+                    const paragraphs = [];
+                    let currentParagraph = "";
+
+                    enData.forEach((v, index) => {
+                        const verseNum = getVerseNumber(v);
+                        const textContent = cleanVerseText(v.text, true); // Strip '¶' for display
+                        const formattedVerse = `[${verseNum}] ${textContent}`;
+
+                        // Logic: Does this verse HAVE a marker in raw text?
+                        const shouldStart = (v.text && v.text.includes('¶')) || index === 0;
+
+                        if (shouldStart) {
+                            if (currentParagraph) paragraphs.push(currentParagraph);
+                            currentParagraph = formattedVerse;
+                        } else {
+                            currentParagraph += " " + formattedVerse;
+                        }
+                    });
+                    if (currentParagraph) paragraphs.push(currentParagraph);
+
+                    text = paragraphs.join('\n\n');
                 }
             }
+
+            // Header Construction
+            const isPsalmOrProverb = displayBook.toLowerCase().includes('salmos') ||
+                displayBook.toLowerCase().includes('proverbios') ||
+                rawBook === 'psalms' || rawBook === 'proverbs';
+
+            // Note: Spanish BES uses "Salmos 1" not "Salmos Capítulo 1" usually, logic preserved
+            const header = isPsalmOrProverb
+                ? `### ${displayBook} ${chapter}\n\n${text}`
+                : `### ${displayBook} ${lang === 'es' ? 'Capítulo' : 'Chapter'} ${chapter}\n\n${text}`;
+
+            chaptersText.push(header);
         }
 
         if (chaptersText.length === 0) {
@@ -275,11 +292,7 @@ export default async function handler(request) {
             }), { status: 404, headers: corsHeaders });
         }
 
-        // Final Clean-up: Remove slashes used in citations citation or text that clutter audio
-        // e.g. "Psalm 1 / Psalm 2" -> "Psalm 1  Psalm 2"
         let finalText = chaptersText.join('\n\n');
-
-        // Remove forward slashes globallly (replace with space to prevent 'slash' being read)
         finalText = finalText.replace(/\//g, ' ');
 
         return new Response(JSON.stringify({
@@ -306,4 +319,35 @@ export default async function handler(request) {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
     }
+}
+
+// --- HELPER FUNCTIONS ---
+
+function getVerseNumber(v) {
+    if (!v.verse) return "1";
+    // Handle "1.5" -> "5" or just "5"
+    return v.verse.split('.').pop();
+}
+
+function deduplicateVerses(data) {
+    const seen = new Set();
+    return data.filter(v => {
+        const num = getVerseNumber(v);
+        if (seen.has(num)) return false;
+        seen.add(num);
+        return true;
+    });
+}
+
+function cleanVerseText(text, isEnglish) {
+    if (!text) return "";
+    let clean = text;
+    // Remove KJV footnotes
+    clean = clean.replace(/\d+\.\d+\s+.*$/g, '');
+    // Remove paragraph symbols if present (we used them for logic already)
+    if (isEnglish) {
+        clean = clean.replace(/¶/g, '');
+    }
+    // Clean whitespace
+    return clean.replace(/\s+/g, ' ').trim();
 }
