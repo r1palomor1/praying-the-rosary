@@ -114,3 +114,40 @@ Implement a progress tracking system for the "Bible in a Year" feature to help u
    - **Resume**: Jumps to first missed day.
    - **Today**: Loads current calendar day.
    - **View Calendar**: Opens full progress grid.
+
+## 6. TTS & Audio Enhancements (Feb 16, 2026)
+
+### Features
+- **Wake Lock**: Prevents screen sleep during audio playback.
+- **Chapter Controls**: Individual Play/Stop buttons for each chapter.
+- **Deduplication**: Fixed API data issue where chapters were repeated.
+- **Floating Scroll Controls**: Improved visibility/styling (Glassmorphism + Gold).
+
+### Technical Details
+- **Wake Lock API**: `navigator.wakeLock.request('screen')`.
+- **API Fix**: Deduplicated verses in `api/bible.js` to handle corrupted upstream KJV data.
+- **Component**: `handlePlayChapter` logic splits text by `###` markers.
+
+## 7. Formatting & Polish (Next Steps)
+
+### English & Spanish Text Formatting
+- **Issue**: Both languages currently break at every verse, causing a disjointed reading experience.
+- **Solution**:
+  - **English (KJV)**: Preserve `¶` markers in API logic. Use them to group verses into paragraph blocks.
+  - **Spanish**: Investigate source data for paragraph markers. If missing, explore alternative data sources or heuristic grouping.
+
+### Visual Polish
+- **Daily Readings**: Improve styling for Responsorial Psalms and Alleluia (hanging indent, bold R.).
+- **APK Optimization**: Execute release build and bundle generation.
+
+## 8. Strategic Pivot: Data Source Parity (Feb 16, 2026)
+
+**Decision**: Instead of patching inconsistent formatting (paragraphs for English, lists for Spanish), we will pursue structural parity.
+
+### New Objective
+Switch the Spanish Bible source from `es-bes` (Biblia en Español Sencillo) to a version that natively supports paragraph structure (e.g., Reina Valera 1960), ensuring both languages offer a premium, book-like reading experience without custom hacks.
+
+### Action Plan
+1.  **Investigate**: Verify availability of structural-rich Spanish Bible JSON (e.g., `es-rvr`, `es-1960`).
+2.  **Implement**: Update `api/bible.js` to fetch from the new source.
+3.  **Format**: Apply the same paragraph-grouping logic to both languages.

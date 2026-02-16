@@ -1,17 +1,15 @@
 # Holy Rosary App - Feature To-Do List
 
 ## 🛑 URGENT FIXES (Next Session)
-- [x] **Floating Scroll Buttons**
+- [x] **Floating Scroll Buttons** ✅ FIXED (Feb 16, 2026)
   - **Issue:** Buttons were not appearing due to scroll listener on window instead of container.
   - **Fix:** Attached listener to `.readings-content` using `useRef`.
   - **Polish:** Added premium glassmorphism style with Gold/Amber accents.
 
-
-- [ ] **English Bible Text Formatting Alignment**
-  - **Issue:** English text layout (verse-by-verse with double spacing) does not align with Spanish layout (paragraph blocks).
-  - **Analysis:** Current implementation in `api/bible.js` strips semantic paragraph markers (`¶`) and forces `\n\n` after every single verse.
-  - **Goal:** Restore paragraph structure. Instead of stripping `¶`, use it to determine where actual paragraph breaks should occur, grouping multiple verses together like the Spanish version.
-  - **Ref:** User feedback: "English still has no breaks while spanish does so they are not aligned which is bad practice."
+- [ ] **Data Source Parity (Spanish)**
+  - **Issue:** Spanish (BES) lacks paragraph structure, causing format inconsistency with English (KJV).
+  - **Goal:** Switch Spanish source to Reina Valera (RVR1960) or similar structural version to achieve native paragraph formatting parity.
+  - **Strategy:** "Uniform Excellence" - Replace the data source rather than patching the output.
 
 ## ⚠️ DEVELOPER NOTICE
 - **RESPECT THE APP:** Care for the application's quality and the user's detailed requirements. Do not make assumptions. Verify every change visually or via rigorous data checks before committing. The goal is EXCELLENCE, not just "done".
@@ -40,6 +38,13 @@ git push
 ---
 
 ## ✅ Completed Features
+
+### Bible Audio & Controls (Feb 16, 2026)
+- [x] **TTS Enhancements**
+  - **Wake Lock:** Keeps screen active during playback (`navigator.wakeLock`)
+  - **Chapter Controls:** Specific "Play Chapter" buttons next to headers.
+  - **Deduplication:** Fixed repeating chapters in English KJV (API Side).
+  - **Visuals:** Premium Glassmorphism scroll buttons.
 
 ### Bible in a Year (Feb 15, 2026)
 - [x] **Progress Tracking System**
