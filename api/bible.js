@@ -147,6 +147,11 @@ export default async function handler(request) {
             rawBook = rawBook.split('/')[0].trim();
         }
 
+        // Normalize singular to plural for API folder names
+        if (rawBook === 'psalm') {
+            rawBook = 'psalms';
+        }
+
         const chaptersText = [];
         let sourceInfo = "";
         let versionInfo = "";
