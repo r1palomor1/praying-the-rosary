@@ -7,11 +7,11 @@
   - **Polish:** Added premium glassmorphism style with Gold/Amber accents.
 
 - [x] **Bible Text Paragraph Formatting** ✅ FIXED (Feb 16, 2026)
-  - **Issue:** Both languages lacked paragraph structure (list style).
-  - **Fix:** Implemented "Blueprint Strategy":
-    - **English:** Grouped by `¶` markers.
-    - **Spanish:** Mapped English structure to Spanish text via "Double Fetch" pattern.
-    - **Safety:** Added verse-count mismatch guard to fallback gracefully.
+  - **Issue:** Stale cache prevented updates; Spanish lacked paragraphs.
+  - **Fix:** Implemented "Blueprint Strategy", added `max-age=0` to API, and forced frontend cache bust (`layout_v1`).
+- [x] **Tablet/Fold Layout Optimization** ✅ FIXED (Feb 16, 2026)
+  - **Issue:** 4th card cutoff on Fold 5 inner screen.
+  - **Fix:** Tuned `PrayerSelectionScreen` for tablet breakpoint (reduced padding/gaps, sized icons to 60px).
 
 ## ⚠️ DEVELOPER NOTICE
 - **RESPECT THE APP:** Care for the application's quality and the user's detailed requirements. Do not make assumptions. Verify every change visually or via rigorous data checks before committing. The goal is EXCELLENCE, not just "done".

@@ -130,18 +130,27 @@ Implement a progress tracking system for the "Bible in a Year" feature to help u
 
 ## 7. Formatting & Polish (Next Steps)
 
-## 8. Strategic Pivot: Reference-Based Formatting (Blueprint Strategy)
+## 9. Completed Strategy: Reference-Based Formatting (Blueprint Strategy)
 
-**Decision**: Validated by "Blueprint" architectural advice. We will NOT switch APIs. Instead, we will use the English KJV structure as the master layout for Spanish.
+**Status**: ✅ COMPLETED (Feb 16, 2026)
 
-### Objective
-Ensure consistent paragraph formatting between languages by applying English paragraph breaks to the Spanish text.
+**Decision**: Validated by "Blueprint" architectural advice. We used English KJV structure as the master layout for Spanish.
 
-### Action Plan
+### Implementation
 1.  **Logic Update (`api/bible.js`)**:
     - **English Requests**: Fetch KJV. Use `¶` tokens to group verses into paragraphs.
     - **Spanish Requests**: 
-      1. Fetch English KJV (Reference) to extract paragraph map (Set of starting verses).
+      1. Fetch English KJV (Reference) to extract paragraph map.
       2. Fetch Spanish BES (Content).
       3. Apply English paragraph map to Spanish content.
-      4. **Safeguard**: If verse counts mismatch significantly (>10%), fallback to simple list format.
+      4. **Safeguard**: Added verse-count mismatch guard (fallback to list if counts differ).
+    - **Caching**: Implemented `max-age=0` header and frontend `layout_v1` param to bust stale caches.
+
+## 10. Layout Optimization (Feb 16, 2026)
+
+### Tablet/Fold Support
+- **Issue**: Content overflow on Fold 5 inner screen (4th card cutoff).
+- **Fix**: Targeted `min-width: 768px` media query.
+  - **Icons**: Reduced from 64px to 60px.
+  - **Padding/Gap**: Tightened vertical spacing.
+- **Result**: Perfect fit for 4-card stack on foldable tablet screens without affecting mobile layout.
