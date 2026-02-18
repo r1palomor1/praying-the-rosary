@@ -80,6 +80,32 @@ Implement a progress tracking system for the "Bible in a Year" feature to help u
 - [x] Refine Header Navigation (Day Counter vs Date).
 - [x] Improve TTS (Slash removal, Verse pronunciation).
 
+## 11. Approved Wireframe
+```
++-------------------------------------------------------------+
+|                                                             |
+|           [ < ]      [Calendar]      [ > ]                  |
+|                                                             |
+|   THE PATRIARCHS  [ (>) Gold Icon ]     Day 16 of 365       |
+|   [===================================================]     |
+|                                                             |
++-------------------------------------------------------------+
+|                                                             |
+|  [Icon] FIRST READING                 [Play Section]        |
+|  +-------------------------------------------------------+  |
+|  |  [Play]  GENESIS 31                        [v]        |  |
+|  |          (Hidden Text Container)                      |  |
+|  +-------------------------------------------------------+  |
+...
+```
+
+### Key Design Specs
+1.  **Header:**
+    *   **Nav Row:** Centered arrows flanking the Calendar icon.
+    *   **Info Row:** Period Name (Left) + **Gold Play Icon** (Next to Title) + "Day X of 365" (Right).
+    *   **Play Icon:** Solid Gold Circle with Shadow, hollow play triangle inside.
+    *   **Progress Bar:** Gold line spanning full width below info row.
+2.  **Compact Cards:** (As previously defined)
 ## 5. Completed Implementation Details (Feb 15, 2026)
 
 ### Storage & Logic

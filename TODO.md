@@ -41,6 +41,18 @@ git push
 
 ## ✅ Completed Features
 
+### 🎯 Priority Items for Next Session
+
+### 🎨 Bible in a Year: Compact Card Redesign (Approved Feb 18, 2026)
+- [ ] **Implement New Layout**
+  - **Header:** Navigation-centric (`< Calendar >`) + Title + Gold Play Icon
+  - **Structure:** "Section Cards" (Header Only) -> "Chapter Rows"
+  - **Interaction:** Expandable chapters (text hidden by default)
+  - **Audio:** "Play Section" buttons and "Play Chapter" buttons
+  - **Goal:** Shift from "Reader" to "Dashboard/Player" UX
+  - **Reference:** See Section 11 in `BIBLE_TRACKING_IMPLEMENTATION_PLAN.md`e).
+  - **Visuals:** Premium Glassmorphism scroll buttons.
+
 ### Bible Audio & Controls (Feb 16, 2026)
 - [x] **TTS Enhancements**
   - **Wake Lock:** Keeps screen active during playback (`navigator.wakeLock`)
