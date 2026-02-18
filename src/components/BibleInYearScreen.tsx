@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, ArrowLeft, ArrowUp, ArrowDown, Play, Square, Info, Settings as SettingsIcon, Calendar, CheckCircle } from 'lucide-react';
+import { Settings as SettingsIcon, ChevronRight, Square, Play, ChevronDown, Calendar, ChevronLeft, CheckCircle, BookOpen, Music, ArrowLeft, ArrowUp, ArrowDown, Info } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
@@ -7,6 +7,7 @@ import { BibleProgressModal } from './BibleProgressModal';
 import { useBibleProgress } from '../hooks/useBibleProgress';
 import biblePlan from '../data/bibleInYearPlan.json';
 import './DailyReadingsScreen.css'; // Reuse Daily Readings styles
+import './BibleInYearScreen.css'; // New styles
 
 interface BibleDay {
     day: number;
@@ -37,6 +38,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
+    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
     const [showSettings, setShowSettings] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
     const [showProgressModal, setShowProgressModal] = useState(false);
@@ -371,15 +374,30 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
             // Extract book name from citation (e.g., "Genesis 1-2" -> "Genesis")
             // Remove markdown headers (###) and verse numbers [1], [2], etc. for TTS
-            const spokenText = text
+            let spokenText = text
                 .replace(/###\s*/g, '')  // Remove markdown headers
-                .replace(/\[\s*\d+\s*\]/g, '')  // Remove verse numbers like [1], [2], etc.
-                .replace(/\//g, ' ');  // Replace slashes with spaces (e.g., "Psalm/Proverbs" -> "Psalm Proverbs")
+                .replace(/\[\s*\d+\s*\]/g, '')  // Remove verse numbers
+                .replace(/\//g, ' ')
+                .replace(/(Chapter|Capítulo)\s+(?=\d)/gi, ''); // Remove "Chapter" before numbers
+
+            // Inject comma in body text to stop TTS from saying "Chapter" (e.g. "Genesis 31" -> "Genesis, 31")
+            spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
+
             const chunks = chunkText(spokenText);
 
             // Create segments: Title first, then the text chunks
             // Clean slash from title for TTS (e.g., "Psalm/Proverbs" -> "Psalm Proverbs")
-            const cleanTitle = title.replace(/\//g, ' ');
+            // Also strip "Chapter" completely for TTS to prevent redundancy
+            // CRITICAL FIX: Add comma between name and number to prevents TTS from adding "Chapter"
+            // e.g. "Genesis 31" -> "Genesis, 31"
+            let cleanTitle = title
+                .replace(/\//g, ' ')
+                .replace(/(Chapter|Capítulo)\s*/gi, '')
+                .trim();
+
+            // Inject comma if missing to stop TTS from saying "Chapter"
+            cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
+
             const segments = [
                 { text: cleanTitle, gender: 'female' as const, postPause: 500 },
                 ...chunks.map(chunk => ({
@@ -411,14 +429,26 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
             readings.forEach(r => {
                 // Add title segment (clean slash for TTS)
-                const cleanTitle = r.title.replace(/\//g, ' ');
+                let cleanTitle = r.title
+                    .replace(/\//g, ' ')
+                    .replace(/(Chapter|Capítulo)\s*/gi, '')
+                    .trim();
+
+                // Inject comma for TTS
+                cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
+
                 segments.push({ text: cleanTitle, gender: 'female' as const, postPause: 500 });
 
                 // Remove markdown headers (###) and verse numbers [1], [2], etc. for TTS
-                const spokenText = r.text
+                let spokenText = r.text
                     .replace(/###\s*/g, '')  // Remove markdown headers
                     .replace(/\[\s*\d+\s*\]/g, '')  // Remove verse numbers like [1], [2], etc.
-                    .replace(/\//g, ' ');  // Replace slashes with spaces
+                    .replace(/\//g, ' ')  // Replace slashes with spaces
+                    .replace(/(Chapter|Capítulo)\s+(?=\d)/gi, ''); // Remove "Chapter" before numbers
+
+                // Inject comma in body text too
+                spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
+
 
                 // Chunk the text
                 const chunks = chunkText(spokenText);
@@ -601,12 +631,115 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     </button>
                 </div>
 
-                <div className="date-controls-wrapper">
-                    <h2 className="date-display">
+                <div className="date-controls-wrapper" style={{ textAlign: 'center', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+                    <h2 className="date-display" style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         {new Date().toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', {
                             weekday: 'long', month: 'long', day: 'numeric'
                         })}
                     </h2>
+                </div>
+
+                <div className="bible-dashboard-header">
+                    {/* Row 1: Nav Controls */}
+                    <div className="bible-nav-row" style={{ gap: '1.5rem', marginTop: '0.5rem' }}>
+                        <button
+                            onClick={() => changeDay(-1)}
+                            className="nav-arrow-clean"
+                            aria-label="Previous Day"
+                            disabled={currentDay === 1}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <ChevronLeft size={28} />
+                        </button>
+
+                        <button
+                            onClick={() => setShowProgressModal(true)}
+                            className="calendar-btn-gold"
+                            aria-label={t.viewCalendar}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                position: 'relative'
+                            }}
+                        >
+                            <Calendar size={28} />
+                            {missedDays.length > 0 && (
+                                <span style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: 8,
+                                    height: 8,
+                                    backgroundColor: '#ef4444',
+                                    borderRadius: '50%'
+                                }} />
+                            )}
+                        </button>
+
+                        <button
+                            onClick={() => changeDay(1)}
+                            className="nav-arrow-clean"
+                            aria-label="Next Day"
+                            disabled={currentDay === 365}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <ChevronRight size={28} />
+                        </button>
+                    </div>
+
+                    {/* Row 2: Info & Play All */}
+                    <div className="bible-info-row">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <h2 className="year-period-title">
+                                {dayData.period}
+                            </h2>
+                            {readings.length > 0 && (
+                                <button
+                                    className="play-section-btn-gold"
+                                    onClick={handlePlayAll}
+                                    aria-label={isPlaying ? "Stop All" : "Play All"}
+                                    style={{ transform: 'scale(1.1)' }} // Slightly larger for main
+                                >
+                                    {isPlaying ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+                                </button>
+                            )}
+                        </div>
+                        <span className="day-counter-text">
+                            {t.day} {currentDay} {t.of} 365
+                        </span>
+                    </div>
+
+                    {/* Row 3: Progress Bar */}
+                    <div className="bible-progress-bar-container">
+                        <div
+                            className="bible-progress-bar-fill"
+                            style={{ width: `${(currentDay / 365) * 100}%` }}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -625,82 +758,130 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
                 {!loading && !error && (
                     <div className="liturgical-info">
-                        <h2 className="liturgical-day" style={{ color: '#D4AF37', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
-                            {dayData.period}
-                        </h2>
-                        <div className="lectionary-row">
-                            <div className="lectionary-center" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
-                                <button onClick={() => changeDay(-1)} className="icon-btn nav-arrow" aria-label="Previous Day" disabled={currentDay === 1}>
-                                    <ChevronLeft size={24} />
-                                </button>
-                                {isDayComplete(currentDay) && (
-                                    <CheckCircle size={18} color="#10b981" fill="#10b981" stroke="white" strokeWidth={2.5} />
-                                )}
-                                <p className="lectionary-text" style={{ margin: 0 }}>{t.day} {currentDay} {t.of} 365</p>
-                                <button onClick={() => changeDay(1)} className="icon-btn nav-arrow" aria-label="Next Day" disabled={currentDay === 365}>
-                                    <ChevronRight size={24} />
-                                </button>
-                                <button
-                                    onClick={() => setShowProgressModal(true)}
-                                    className="icon-btn"
-                                    aria-label={t.viewCalendar}
-                                    style={{
-                                        position: 'relative',
-                                        padding: '4px',
-                                        background: 'transparent',
-                                        border: 'none',
-                                        boxShadow: 'none',
-                                        color: 'inherit'
-                                    }}
-                                >
-                                    <Calendar size={20} />
-                                    {missedDays.length > 0 && (
-                                        <span style={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,
-                                            width: 8,
-                                            height: 8,
-                                            backgroundColor: '#ef4444',
-                                            borderRadius: '50%'
-                                        }} />
-                                    )}
-                                </button>
+                        {/* Status Check - Navigation removed */}
+                        {isDayComplete(currentDay) && (
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                                <CheckCircle size={18} color="#10b981" fill="#10b981" stroke="white" strokeWidth={2.5} />
+                                <span style={{ marginLeft: '0.5rem', fontSize: '0.9rem', color: '#10b981' }}>{t.completed}</span>
                             </div>
-                            {readings.length > 0 && (
-                                <button
-                                    className={`play-all-btn ${isPlaying ? 'playing' : ''}`}
-                                    onClick={handlePlayAll}
-                                    aria-label={isPlaying ? "Stop All" : "Play All"}
-                                >
-                                    {isPlaying ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-                                    <span>{t.playAll}</span>
-                                </button>
-                            )}
-                        </div>
+                        )}
                     </div>
                 )}
 
-                {!loading && !error && readings.map((reading, index) => (
-                    <div key={index} className="reading-card">
-                        <div className="reading-header">
-                            <div className="reading-title-section">
-                                <h3 className="reading-title">{reading.title}</h3>
-                                {reading.citation && <div className="reading-citation">{reading.citation}</div>}
+                {!loading && !error && readings.map((reading, index) => {
+                    // Determine Icon based on title
+                    // Default to Lucide BookOpen for Second Reading
+                    let SectionIcon = BookOpen;
+                    let isFirstReading = false;
+
+                    if (reading.title.toLowerCase().includes('first') || reading.title.includes('Primera')) {
+                        isFirstReading = true;
+                    } else if (reading.title.toLowerCase().includes('psalm') || reading.title.includes('Salmo')) {
+                        SectionIcon = Music;
+                    }
+
+                    // Chapter parsing logic
+                    interface Chapter {
+                        title: string;
+                        text: string;
+                    }
+
+                    const parseChapters = (reading: Reading): Chapter[] => {
+                        const chapters: Chapter[] = [];
+                        // Check if text has markdown headers
+                        if (reading.text.includes('###')) {
+                            const segments = reading.text.split('###');
+                            segments.forEach(seg => {
+                                const clean = seg.trim();
+                                if (!clean) return;
+                                const lines = clean.split('\n');
+                                let title = lines[0].trim();
+                                // Strip "Chapter" or "Capítulo" to match design request
+                                title = title.replace(/(Chapter|Capítulo)\s+/i, '');
+
+                                const body = lines.slice(1).join('\n').trim();
+                                if (title && body) {
+                                    chapters.push({ title, text: body });
+                                }
+                            });
+                        }
+
+                        // Fallback if no chapters found
+                        if (chapters.length === 0) {
+                            chapters.push({ title: reading.citation || reading.title, text: reading.text });
+                        }
+
+                        return chapters;
+                    };
+
+                    let chapters = parseChapters(reading);
+
+                    return (
+                        <div key={index} className="reading-section-card">
+                            {/* Section Header */}
+                            <div className="reading-section-header">
+                                <div className="reading-section-title-group">
+                                    {isFirstReading ? (
+                                        <span className="material-symbols-outlined section-icon-gold">church</span>
+                                    ) : (
+                                        <SectionIcon size={20} className="section-icon-gold" />
+                                    )}
+                                    <h3 className="reading-section-title">{reading.title}</h3>
+                                </div>
+                                <button
+                                    className="play-section-btn-gold"
+                                    onClick={() => handlePlayContent(`reading-${index}`, reading.title, reading.text)}
+                                    aria-label="Play Section"
+                                >
+                                    {isPlaying && currentlyPlayingId === `reading-${index}` ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+                                </button>
                             </div>
-                            <button
-                                className={`reading-play-btn ${isPlaying && currentlyPlayingId === `reading-${index}` ? 'playing' : ''}`}
-                                onClick={() => handlePlayContent(`reading-${index}`, reading.title, reading.text)}
-                                aria-label={isPlaying && currentlyPlayingId === `reading-${index}` ? "Stop" : "Play"}
-                            >
-                                {isPlaying && currentlyPlayingId === `reading-${index}` ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-                            </button>
+
+                            {/* Render Each Parsed Chapter as a Row */}
+                            {chapters.map((chapter, chIndex) => {
+                                const rowKey = `${index}-${chIndex}`;
+                                const isExpanded = expandedSections[rowKey as any] || false;
+
+                                return (
+                                    <div key={chIndex} className="chapter-row">
+                                        <div
+                                            className="chapter-row-header"
+                                            onClick={() => {
+                                                setExpandedSections(prev => ({
+                                                    ...prev,
+                                                    [rowKey]: !prev[rowKey as any]
+                                                }));
+                                            }}
+                                        >
+                                            <button
+                                                className={`play-chapter-btn-dark ${isPlaying && currentlyPlayingId === `chapter-${chapter.title}` ? 'playing' : ''}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handlePlayContent(`chapter-${chapter.title}`, chapter.title, chapter.text);
+                                                }}
+                                                aria-label={isPlaying && currentlyPlayingId === `chapter-${chapter.title}` ? "Stop" : "Play"}
+                                            >
+                                                {isPlaying && currentlyPlayingId === `chapter-${chapter.title}` ? <Square size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" />}
+                                            </button>
+
+                                            <span className="chapter-title-text">
+                                                {chapter.title}
+                                            </span>
+
+                                            <ChevronDown size={20} className={`expand-icon ${isExpanded ? 'expanded' : ''}`} />
+                                        </div>
+
+                                        {isExpanded && (
+                                            <div className="chapter-content-body fade-in">
+                                                {renderReadingText(chapter.text)}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
-                        <div className="reading-text">
-                            {renderReadingText(reading.text)}
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {/* Completion Button */}
                 {!loading && !error && (
