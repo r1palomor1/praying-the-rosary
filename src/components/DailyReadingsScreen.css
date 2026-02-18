@@ -195,6 +195,29 @@
     .reading-title {
         font-size: 1.2rem;
     }
+
+    /* Collapse Play All button to icon-only on mobile to prevent overlap */
+    .play-all-btn span {
+        display: none;
+    }
+
+    .play-all-btn {
+        padding: 0 !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px;
+        border-radius: 50%;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Standardize Reading Play buttons to match Chapter buttons (32px) */
+    .reading-play-btn {
+        padding: 0 !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px;
+    }
 }
 
 .audio-fab-container {
