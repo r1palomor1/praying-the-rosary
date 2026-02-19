@@ -1,0 +1,439 @@
+.bible-container {
+    min-height: 100vh;
+    background: radial-gradient(circle at center, #1C2541 0%, #0A1128 100%);
+    color: #F1F5F9;
+    padding-bottom: 2rem;
+}
+
+.bible-header {
+    padding: 2rem 1.5rem 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.back-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #D4AF37;
+    font-size: 1.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.bible-header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    background: linear-gradient(to bottom, #FFF9C4 0%, #D4AF37 50%, #B8860B 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+}
+
+.period {
+    color: #D4AF37;
+    font-size: 0.9rem;
+    margin: 0.25rem 0;
+}
+
+.day-info {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    margin: 0.25rem 0 0;
+}
+
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.tabs button {
+    flex: 1;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: rgba(255, 255, 255, 0.6);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.tabs button.active {
+    background: rgba(212, 175, 55, 0.1);
+    border-color: #D4AF37;
+    color: #D4AF37;
+}
+
+/* --- New Dashboard Header Styles (Feb 2026) --- */
+
+.bible-dashboard-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 1.5rem 1.5rem;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), transparent);
+}
+
+.bible-nav-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.nav-arrow-gold {
+    background: rgba(212, 175, 55, 0.1);
+    color: #D4AF37;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-arrow-gold:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.calendar-btn-gold {
+    position: relative;
+    color: #F1F5F9;
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.bible-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.year-period-title {
+    font-family: 'Serif', serif;
+    /* Or your app's serif font */
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #F1F5F9;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.play-all-gold-btn {
+    background: #D4AF37;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+    transition: transform 0.2s;
+    color: #1a1a1a;
+    /* Dark icon inside gold */
+    margin-left: 0.5rem;
+}
+
+.play-all-gold-btn:active {
+    transform: scale(0.95);
+}
+
+.day-counter-text {
+    font-size: 0.95rem;
+    /* Increased from 0.85rem */
+    color: rgba(255, 255, 255, 0.8);
+    /* Brighter */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.bible-progress-bar-container {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.bible-progress-bar-fill {
+    height: 100%;
+    background: #D4AF37;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+    transition: width 0.5s ease-out;
+}
+
+
+/* --- Compact Card Styles (Feb 2026) --- */
+
+.reading-section-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.reading-section-header {
+    background: rgba(212, 175, 55, 0.05);
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.reading-section-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-icon-gold {
+    color: #D4AF37;
+}
+
+.reading-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #F1F5F9;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.play-section-btn {
+    background: transparent;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 20px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #D4AF37;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.play-section-btn:active {
+    background: rgba(212, 175, 55, 0.1);
+}
+
+/* Chapter Row */
+.chapter-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    background: transparent;
+    transition: background 0.2s;
+}
+
+.chapter-row:last-child {
+    border-bottom: none;
+}
+
+.chapter-row-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    width: 100%;
+    /* justify-content: space-between is handled by flex children */
+}
+
+.chapter-row-header:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.chapter-play-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    /* Subtle grey circle */
+    border: none;
+    color: #94a3b8;
+    /* Slate 400 */
+    margin-right: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.chapter-play-btn.playing {
+    background: rgba(212, 175, 55, 0.2);
+    color: #D4AF37;
+}
+
+.chapter-title-text {
+    flex-grow: 1;
+    font-size: 0.95rem;
+    color: #e2e8f0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-align: left;
+}
+
+.expand-icon {
+    color: rgba(255, 255, 255, 0.4);
+    transition: transform 0.3s;
+}
+
+.expand-icon.expanded {
+    transform: rotate(180deg);
+}
+
+.chapter-content-body {
+    padding: 0 1.25rem 1.5rem 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.1);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #cbd5e1;
+    font-family: 'Serif', serif;
+    /* Reading font */
+}
+
+.reading-section {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.reading-section h3 {
+    color: #D4AF37;
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
+}
+
+.reference {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin: 0 0 1rem;
+}
+
+.text-placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    padding: 1rem;
+    text-align: center;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-primary,
+.btn-secondary {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #D4AF37, #B8860B);
+    border: none;
+    color: #0A1128;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: #D4AF37;
+}
+
+/* --- New Play Button Styles (Matching User Request) --- */
+
+.play-section-btn-gold {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(212, 175, 55, 0.9);
+    /* More solid Gold */
+    border: 1px solid #B8860B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    color: #1a1a1a;
+    /* Dark Icon inside Gold */
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.play-section-btn-gold:hover {
+    transform: scale(1.1);
+    background: #FFD700;
+}
+
+.play-chapter-btn-dark {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(30, 41, 59, 0.8);
+    /* Dark Slate / Blueish */
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #94a3b8;
+    /* Light slate icon */
+    transition: all 0.2s ease;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.play-chapter-btn-dark.playing {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: #60A5FA;
+    color: #60A5FA;
+}
+
+.play-chapter-btn-dark:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+/* Material Icon Sizing */
+.material-symbols-outlined.section-icon-gold {
+    font-size: 20px;
+    color: #D4AF37;
+    margin-right: 0.6rem;
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}

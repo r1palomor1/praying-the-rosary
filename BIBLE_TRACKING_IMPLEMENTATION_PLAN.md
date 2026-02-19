@@ -80,32 +80,40 @@ Implement a progress tracking system for the "Bible in a Year" feature to help u
 - [x] Refine Header Navigation (Day Counter vs Date).
 - [x] Improve TTS (Slash removal, Verse pronunciation).
 
-## 11. Approved Wireframe
-```
-+-------------------------------------------------------------+
-|                                                             |
-|           [ < ]      [Calendar]      [ > ]                  |
-|                                                             |
-|   THE PATRIARCHS  [ (>) Gold Icon ]     Day 16 of 365       |
-|   [===================================================]     |
-|                                                             |
-+-------------------------------------------------------------+
-|                                                             |
-|  [Icon] FIRST READING                 [Play Section]        |
-|  +-------------------------------------------------------+  |
-|  |  [Play]  GENESIS 31                        [v]        |  |
-|  |          (Hidden Text Container)                      |  |
-|  +-------------------------------------------------------+  |
-...
-```
+## 11. Approved Wireframe (Sacred Modernism Redesign)
+**Design Philosophy**: "Sacred Modernism" - Luxurious, dark-themed, gold accents (#a87d3e), with a focus on typography (Noto Serif & Manrope).
 
-### Key Design Specs
-1.  **Header:**
-    *   **Nav Row:** Centered arrows flanking the Calendar icon.
-    *   **Info Row:** Period Name (Left) + **Gold Play Icon** (Next to Title) + "Day X of 365" (Right).
-    *   **Play Icon:** Solid Gold Circle with Shadow, hollow play triangle inside.
-    *   **Progress Bar:** Gold line spanning full width below info row.
-2.  **Compact Cards:** (As previously defined)
+### Visual Style Requirements
+- **Colors**:
+  - Primary (Gold): `#a87d3e`
+  - Background (Dark): `#191b1f`
+  - Surface (Cards): `#2a2c30`
+  - Text: Slate-100 (White/Off-white)
+  - Liturgical Green: `#2d3a2e` (for subtle tags)
+- **Typography**:
+  - Headings: `Noto Serif` (Serif, Elegant)
+  - Body/UI: `Manrope` (Sans-serif, Clean)
+- **Layout Structure**:
+  1. **Header**:
+     - Menu (Left) | Title (Center) | Settings (Right)
+     - Date & Calendar Icon (Centered below title)
+     - **Control Row**:
+       - Play Button (Left, Large, Gold, Floating Shadow)
+       - Phase Tag (Center, Pill shape)
+       - Day Counter (Right, small caps)
+     - Progress Bar: Thin gold line, spans width.
+  2. **Readings List**:
+     - Accordion/Card style.
+     - Header: Title (Serif, Gold) + Play Icon (Small).
+     - Content: List of chapters/segments, expandable.
+  3. **Footer**:
+     - Fixed "Mark as Complete" button (Gold background, dark text, uppercase, bold).
+     - "Amen" flourish with divider lines at bottom of content.
+
+### Code Implementation Strategy
+- **CSS**: Adapt the provided Tailwind classes into `BibleInYearScreen.css` using standard CSS classes to avoid adding Tailwind dependency if not present.
+- **Icons**: Map `Material Symbols` (from provided code) to existing `lucide-react` icons where possible, or use the font if necessary (prefer consistent Lucide icons if they match the style, or add Material font).
+
 ## 5. Completed Implementation Details (Feb 15, 2026)
 
 ### Storage & Logic
