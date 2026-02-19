@@ -639,9 +639,9 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     </h2>
                 </div>
 
-                <div className="bible-dashboard-header">
+                <div className="bible-dashboard-header" style={{ background: 'transparent', paddingBottom: '0.25rem', boxShadow: 'none', border: 'none' }}>
                     {/* Row 1: Nav Controls */}
-                    <div className="bible-nav-row" style={{ gap: '1.5rem', marginTop: '0.5rem' }}>
+                    <div className="bible-nav-row" style={{ gap: '1.5rem', marginTop: '0.25rem', marginBottom: '0.25rem' }}>
                         <button
                             onClick={() => changeDay(-1)}
                             className="nav-arrow-clean"
@@ -712,29 +712,37 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     </div>
 
                     {/* Row 2: Info & Play All */}
-                    <div className="bible-info-row">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <h2 className="year-period-title">
-                                {dayData.period}
-                            </h2>
-                            {readings.length > 0 && (
-                                <button
-                                    className="play-section-btn-gold"
-                                    onClick={handlePlayAll}
-                                    aria-label={isPlaying ? "Stop All" : "Play All"}
-                                    style={{ transform: 'scale(1.1)' }} // Slightly larger for main
-                                >
-                                    {isPlaying ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
-                                </button>
-                            )}
-                        </div>
-                        <span className="day-counter-text">
-                            {t.day} {currentDay} {t.of} 365
+                    <div className="bible-info-row" style={{ position: 'relative', marginTop: '0.5rem', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {/* Play Button - Absolute Left */}
+                        {readings.length > 0 && (
+                            <button
+                                className="play-section-btn-gold"
+                                onClick={handlePlayAll}
+                                aria-label={isPlaying ? "Stop All" : "Play All"}
+                                style={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    transform: 'scale(1.1)',
+                                    zIndex: 10
+                                }}
+                            >
+                                {isPlaying ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+                            </button>
+                        )}
+
+                        {/* Title - Centered */}
+                        <h2 className="year-period-title" style={{ textAlign: 'center', width: '100%', margin: 0, position: 'absolute', left: 0, right: 0, pointerEvents: 'none' }}>
+                            {dayData.period}
+                        </h2>
+
+                        {/* Day Counter - Absolute Right */}
+                        <span className="day-counter-text" style={{ position: 'absolute', right: 0, fontSize: '0.85rem' }}>
+                            {t.day} {currentDay}
                         </span>
                     </div>
 
                     {/* Row 3: Progress Bar */}
-                    <div className="bible-progress-bar-container">
+                    <div className="bible-progress-bar-container" style={{ marginTop: '0.75rem' }}>
                         <div
                             className="bible-progress-bar-fill"
                             style={{ width: `${(currentDay / 365) * 100}%` }}
@@ -756,15 +764,12 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
                 {error && <div className="error-message">{error}</div>}
 
-                {!loading && !error && (
-                    <div className="liturgical-info">
-                        {/* Status Check - Navigation removed */}
-                        {isDayComplete(currentDay) && (
-                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-                                <CheckCircle size={18} color="#10b981" fill="#10b981" stroke="white" strokeWidth={2.5} />
-                                <span style={{ marginLeft: '0.5rem', fontSize: '0.9rem', color: '#10b981' }}>{t.completed}</span>
-                            </div>
-                        )}
+                {!loading && !error && isDayComplete(currentDay) && (
+                    <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                            <CheckCircle size={18} color="#10b981" fill="#10b981" stroke="white" strokeWidth={2.5} />
+                            <span style={{ marginLeft: '0.5rem', fontSize: '0.9rem', color: '#10b981' }}>{t.completed}</span>
+                        </div>
                     </div>
                 )}
 
@@ -885,7 +890,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
                 {/* Completion Button */}
                 {!loading && !error && (
-                    <div className="completion-section" style={{ textAlign: 'center', marginTop: '2rem', marginBottom: '4rem' }}>
+                    <div className="completion-section" style={{ textAlign: 'center', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                         <button
                             onClick={() => isDayComplete(currentDay) ? unmarkDay(currentDay) : markDayComplete(currentDay)}
                             className={`completion-btn ${isDayComplete(currentDay) ? 'completed' : ''}`}
@@ -893,29 +898,27 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                padding: '12px 24px',
+                                padding: '10px 24px',
                                 borderRadius: '30px',
-                                fontSize: '1rem',
+                                fontSize: '0.95rem',
                                 fontWeight: '600',
-                                backgroundColor: isDayComplete(currentDay) ? '#10b981' : '#1d4ed8', // Green vs Blue
-                                color: '#fff',
+                                backgroundColor: 'transparent',
+                                border: isDayComplete(currentDay) ? '1px solid #10b981' : '1px solid rgba(59, 130, 246, 0.6)',
+                                color: isDayComplete(currentDay) ? '#10b981' : 'rgba(59, 130, 246, 0.9)',
                                 transition: 'all 0.3s ease',
-                                border: '2px solid rgba(255,255,255,0.2)',
                                 cursor: 'pointer',
-                                boxShadow: isDayComplete(currentDay)
-                                    ? '0 0 15px rgba(16, 185, 129, 0.4)'
-                                    : '0 4px 12px rgba(29, 78, 216, 0.3)'
+                                boxShadow: 'none'
                             }}
                         >
-                            {isDayComplete(currentDay) ? <CheckCircle size={20} /> : <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.5)' }} />}
+                            {isDayComplete(currentDay) ? <CheckCircle size={18} /> : <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid currentColor' }} />}
                             {isDayComplete(currentDay) ? t.completed : t.markComplete}
                         </button>
                     </div>
                 )}
 
                 {!loading && !error && (
-                    <div className="sources-attribution">
-                        <p>
+                    <div className="sources-attribution" style={{ marginTop: '0' }}>
+                        <p style={{ margin: '0 0 0.5rem 0' }}>
                             Source:{' '}
                             <a href="https://github.com/wldeh/bible-api" target="_blank" rel="noopener noreferrer">
                                 wldeh/bible-api
