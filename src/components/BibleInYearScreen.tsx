@@ -448,7 +448,18 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
             {/* Content */}
             <main className="sacred-content">
-                {loading ? (
+                {error ? (
+                    <div className="loading-container">
+                        <p style={{ color: '#ef4444', textAlign: 'center', padding: '2rem' }}>{error}</p>
+                        <button
+                            className="btn-secondary"
+                            onClick={() => fetchReadings(currentDay)}
+                            style={{ marginTop: '1rem' }}
+                        >
+                            {language === 'es' ? 'Reintentar' : 'Retry'}
+                        </button>
+                    </div>
+                ) : loading ? (
                     <div className="loading-container">
                         <div className="loading-spinner"></div>
                         <p>{language === 'es' ? 'Cargando...' : 'Loading...'}</p>
