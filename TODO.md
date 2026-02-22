@@ -43,15 +43,29 @@ git push
 
 ### 🎯 Priority Items for Next Session
 
-### 🎨 Bible in a Year: Compact Card Redesign (Approved Feb 18, 2026)
-- [ ] **Implement New Layout**
+### 🎨 Bible in a Year: Compact Card Redesign (Completed Feb 20, 2026)
+- [x] **Implement New Layout**
   - **Header:** Navigation-centric (`< Calendar >`) + Title + Gold Play Icon
   - **Structure:** "Section Cards" (Header Only) -> "Chapter Rows"
   - **Interaction:** Expandable chapters (text hidden by default)
   - **Audio:** "Play Section" buttons and "Play Chapter" buttons
   - **Goal:** Shift from "Reader" to "Dashboard/Player" UX
-  - **Reference:** See Section 11 in `BIBLE_TRACKING_IMPLEMENTATION_PLAN.md`e).
-  - **Visuals:** Premium Glassmorphism scroll buttons.
+  - **Reference:** See Section 11 in `BIBLE_TRACKING_IMPLEMENTATION_PLAN.md`
+  - **Visuals:** Seamless dark background (#191b1f) without borders
+
+### 🧠 Bible in a Year: Smart Tracking (Completed Feb 21, 2026)
+- [x] **Smart Resume Audio Logic**
+  - "Play All" and "Play Section" automatically skip completed chapters.
+  - "Reset & Replay" behavior triggers if the section/day is 100% complete.
+  - "Explicit Override" allows playing specific chapters directly.
+- [x] **Chapter-Level Progress Tracking**
+  - `onStart` callback trigger on last text chunk auto-marks chapters complete.
+  - Green checkmarks (`✅`) next to chapter titles upon completion.
+  - Auto-marks full day complete when all chapters finish.
+- [x] **Active TTS Highlighter Lock**
+  - Currently playing chapter card gets highlighted (`active-playing-card`) with gold border.
+- [x] **Dynamic Completion Percentage**
+  - Replaced redundant "Day X" text with dynamic `X% Complete` header indicator.
 
 ### Bible Audio & Controls (Feb 16, 2026)
 - [x] **TTS Enhancements**

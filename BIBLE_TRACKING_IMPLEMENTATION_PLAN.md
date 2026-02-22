@@ -188,3 +188,21 @@ Implement a progress tracking system for the "Bible in a Year" feature to help u
   - **Icons**: Reduced from 64px to 60px.
   - **Padding/Gap**: Tightened vertical spacing.
 - **Result**: Perfect fit for 4-card stack on foldable tablet screens without affecting mobile layout.
+
+## 12. Smart Progress Tracking & Active Highlight (Feb 21, 2026)
+
+### Features Implemented
+1. **Smart Audio Resume Logic**:
+   - `Play All` and `Play Section` buttons automatically scan for completed chapters and strictly enqueue *only* unread chapters.
+   - If a section/day is 100% complete, pressing the play button initiates a "Reset & Replay" behavior, playing all chapters from the beginning.
+   - Specific chapter `Play` buttons act as explicit overrides, always playing the chosen chapter.
+2. **Real-time Chapter Tracking**:
+   - Using the `onStart` callback within the Web Speech API utterance, the app tracks exactly which ~200-character chunk is playing.
+   - Binds the `markChapterComplete` function to the final text chunk of each chapter, accurately completing the chapter just before the audio finishes.
+   - Instantly renders a green checkmark `✅` next to completed chapters without requiring manual input.
+   - Auto-flags the entire day as complete when the final chapter is checkmarked.
+3. **Active Highlighter Lock**:
+   - Tracks the active chapter in `activeChapterId` state.
+   - Enhances the active chapter's card with `.active-playing-card` CSS, mirroring the hover effect (subtle background lighten, `.4` opacity gold border) to guide the user's eye exactly to what's being read.
+4. **Header Polish**:
+   - Replaced redundant "Day X" counter with dynamic percentage complete (e.g. `4% Complete`).
