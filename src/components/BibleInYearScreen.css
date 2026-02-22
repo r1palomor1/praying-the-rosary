@@ -14,11 +14,11 @@
   --shadow-gold: 0 4px 14px 0 rgba(168, 125, 62, 0.39);
 }
 
-/* Full Screen Wrapper to cover the blue body background */
+/* Full Screen Wrapper to cover the body background */
 .bible-screen-wrapper {
   min-height: 100vh;
   width: 100%;
-  background: radial-gradient(circle at center, #2d241c 0%, #1d1712 100%);
+  background-color: var(--color-background-dark);
   display: flex;
   justify-content: center;
 }
