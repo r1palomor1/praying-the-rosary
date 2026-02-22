@@ -3,15 +3,20 @@ import { useState, useEffect } from 'react';
 // Key for localStorage
 export const BIBLE_START_DATE_KEY = 'bible_start_date';
 export const BIBLE_COMPLETED_DAYS_KEY = 'bible_completed_days';
+export const BIBLE_COMPLETED_CHAPTERS_KEY = 'bible_completed_chapters';
 
 export interface BibleProgress {
     bibleStartDate: string | null; // ISO Date string (YYYY-MM-DD)
     completedDays: number[]; // Array of day numbers (1-365)
+    completedChapters: Record<number, string[]>; // Map of day -> array of completed chapter titles
     missedDays: number[]; // Array of missed day numbers based on start date
     expectedDay: number; // What day user "should" be on (1-based relative to start)
     markDayComplete: (day: number) => void;
     unmarkDay: (day: number) => void;
     isDayComplete: (day: number) => boolean;
+    markChapterComplete: (day: number, chapterId: string) => void;
+    unmarkChapter: (day: number, chapterId: string) => void;
+    isChapterComplete: (day: number, chapterId: string) => boolean;
     getMissedDaysCount: () => number;
 }
 
@@ -24,6 +29,11 @@ export function useBibleProgress(): BibleProgress {
     const [completedDays, setCompletedDays] = useState<number[]>(() => {
         const saved = localStorage.getItem(BIBLE_COMPLETED_DAYS_KEY);
         return saved ? JSON.parse(saved) : [];
+    });
+
+    const [completedChapters, setCompletedChaptersState] = useState<Record<number, string[]>>(() => {
+        const saved = localStorage.getItem(BIBLE_COMPLETED_CHAPTERS_KEY);
+        return saved ? JSON.parse(saved) : {};
     });
 
     const [missedDays, setMissedDays] = useState<number[]>([]);
@@ -111,18 +121,46 @@ export function useBibleProgress(): BibleProgress {
         localStorage.setItem(BIBLE_COMPLETED_DAYS_KEY, JSON.stringify(newCompleted));
     };
 
+    const markChapterComplete = (day: number, chapterId: string) => {
+        setCompletedChaptersState(prev => {
+            const dayChapters = prev[day] || [];
+            if (dayChapters.includes(chapterId)) return prev;
+            const updated = { ...prev, [day]: [...dayChapters, chapterId] };
+            localStorage.setItem(BIBLE_COMPLETED_CHAPTERS_KEY, JSON.stringify(updated));
+            return updated;
+        });
+    };
+
+    const unmarkChapter = (day: number, chapterId: string) => {
+        setCompletedChaptersState(prev => {
+            const dayChapters = prev[day] || [];
+            if (!dayChapters.includes(chapterId)) return prev;
+            const updated = { ...prev, [day]: dayChapters.filter(id => id !== chapterId) };
+            localStorage.setItem(BIBLE_COMPLETED_CHAPTERS_KEY, JSON.stringify(updated));
+            return updated;
+        });
+    };
+
     const isDayComplete = (day: number) => completedDays.includes(day);
+
+    // It's also complete if the day is fully complete, to avoid edge cases.
+    const isChapterComplete = (day: number, chapterId: string) =>
+        isDayComplete(day) || (completedChapters[day] || []).includes(chapterId);
 
     const getMissedDaysCount = () => missedDays.length;
 
     return {
         bibleStartDate,
         completedDays,
+        completedChapters,
         missedDays,
         expectedDay,
         markDayComplete,
         unmarkDay,
         isDayComplete,
+        markChapterComplete,
+        unmarkChapter,
+        isChapterComplete,
         getMissedDaysCount,
     };
 }

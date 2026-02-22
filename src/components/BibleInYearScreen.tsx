@@ -44,6 +44,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
+    const [activeChapterId, setActiveChapterId] = useState<string | null>(null);
 
     // Expanded sections state (keyed by citation or title)
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -57,8 +58,45 @@ export default function BibleInYearScreen({ onBack }: Props) {
         isDayComplete,
         missedDays,
         expectedDay,
-        bibleStartDate
+        bibleStartDate,
+        markChapterComplete,
+        isChapterComplete,
+        completedChapters,
+        completedDays
     } = useBibleProgress();
+
+    // Auto-mark day complete if all chapters are done
+    useEffect(() => {
+        if (!readings || readings.length === 0) return;
+        if (isDayComplete(currentDay)) return;
+
+        let allCompleted = true;
+        readings.forEach(r => {
+            // Must use parseChapters locally to know chapters
+            // We can define it above if needed, but it's pure logic
+            let chaps: any[] = [];
+            if (r.text.includes('###')) {
+                const segments = r.text.split('###');
+                segments.forEach((seg: string) => {
+                    const clean = seg.trim();
+                    if (!clean) return;
+                    const lines = clean.split('\n');
+                    let title = lines[0].trim().replace(/(Chapter|Capítulo)\s+/i, '');
+                    const body = lines.slice(1).join('\n').trim();
+                    if (title && body) chaps.push({ title });
+                });
+            }
+            if (chaps.length === 0) chaps.push({ title: r.citation || r.title });
+
+            if (!chaps.every(c => isChapterComplete(currentDay, c.title))) {
+                allCompleted = false;
+            }
+        });
+
+        if (allCompleted) {
+            markDayComplete(currentDay);
+        }
+    }, [currentDay, readings, completedChapters, isDayComplete, isChapterComplete, markDayComplete]);
 
     // --- Hooks & Logic (Identical to previous, ported over) ---
 
@@ -237,109 +275,140 @@ export default function BibleInYearScreen({ onBack }: Props) {
         return chapters;
     };
 
-    const handlePlayAll = async () => {
-        if (isPlaying) {
-            ttsManager.stop();
-            setIsPlaying(false);
-            setCurrentlyPlayingId(null);
-        } else {
-            // Process all readings
-            const segments: any[] = [];
-            readings.forEach(r => {
-                // Reading Title
-                let cleanTitle = r.title
-                    .replace(/\//g, ' ')
-                    .replace(/(Chapter|Capítulo)\s*/gi, '')
-                    .trim();
-                cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
-                segments.push({ text: cleanTitle, gender: 'female' as const, postPause: 500 });
+    const buildSegmentsForChapters = (readingTitle: string, readingCitation: string, chapters: Chapter[]) => {
+        const segments: any[] = [];
 
-                // Parse chapters for this reading
-                const chapters = parseChapters(r);
+        // Reading Title
+        let cleanTitle = readingTitle.replace(/\//g, ' ').replace(/(Chapter|Capítulo)\s*/gi, '').trim();
+        cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
+        segments.push({ text: cleanTitle, gender: 'female' as const, postPause: 500 });
 
-                chapters.forEach(chapter => {
-                    // Chapter Title (if different from reading title)
-                    if (chapter.title !== r.title && chapter.title !== r.citation) {
-                        let pgTitle = chapter.title.replace(/(Chapter|Capítulo)\s*/gi, '').trim();
-                        pgTitle = pgTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2'); // Comma injection
-                        segments.push({ text: pgTitle, gender: 'female' as const, postPause: 400 });
-                    }
+        chapters.forEach((chapter, index) => {
+            // Chapter Title
+            if (chapter.title !== readingTitle && chapter.title !== readingCitation) {
+                let pgTitle = chapter.title.replace(/(Chapter|Capítulo)\s*/gi, '').trim();
+                pgTitle = pgTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
+                segments.push({
+                    text: pgTitle,
+                    gender: 'female' as const,
+                    postPause: 400,
+                    onStart: () => setActiveChapterId(chapter.title)
+                });
+            }
 
-                    // Content
-                    let spokenText = chapter.text
-                        .replace(/###\s*/g, '')
-                        .replace(/\[\s*\d+\s*\]/g, '')
-                        .replace(/\//g, ' ')
-                        .replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
-                    spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
+            // Body
+            let spokenText = chapter.text.replace(/###\s*/g, '').replace(/\[\s*\d+\s*\]/g, '').replace(/\//g, ' ').replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
+            spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
+            const chunks = chunkText(spokenText);
 
-                    const chunks = chunkText(spokenText);
-                    chunks.forEach(chunk => {
-                        segments.push({ text: chunk, gender: 'female' as const });
-                    });
-                    // Pause between chapters
-                    if (chunks.length > 0) {
-                        segments.push({ text: ' ', gender: 'female' as const, postPause: 800 });
+            chunks.forEach((chunk, chunkIndex) => {
+                const isLastChunk = chunkIndex === chunks.length - 1;
+                segments.push({
+                    text: chunk,
+                    gender: 'female' as const,
+                    onStart: () => {
+                        setActiveChapterId(chapter.title);
+                        if (isLastChunk) {
+                            markChapterComplete(currentDay, chapter.title);
+                        }
                     }
                 });
             });
 
-            setIsPlaying(true);
-            setCurrentlyPlayingId('all');
-            ttsManager.setOnEnd(() => {
-                setIsPlaying(false);
-                setCurrentlyPlayingId(null);
-                markDayComplete(currentDay);
-            });
-            await ttsManager.speakSegments(segments);
-        }
+            if (chunks.length > 0 && index < chapters.length - 1) {
+                segments.push({ text: ' ', gender: 'female' as const, postPause: 800 });
+            }
+        });
+        return segments;
     };
 
-    const handlePlayItem = async (e: React.MouseEvent, id: string, title: string, text: string) => {
-        e.stopPropagation(); // Prevent card toggle
+    const handlePlayAll = async () => {
+        if (isPlaying && currentlyPlayingId === 'all') {
+            ttsManager.stop();
+            setIsPlaying(false);
+            setCurrentlyPlayingId(null);
+            setActiveChapterId(null);
+            return;
+        }
+
+        const segments: any[] = [];
+        let allDayCompleted = true;
+
+        readings.forEach(r => {
+            if (!parseChapters(r).every(c => isChapterComplete(currentDay, c.title))) {
+                allDayCompleted = false;
+            }
+        });
+
+        readings.forEach(r => {
+            const chapters = parseChapters(r);
+            const chaptersToPlay = allDayCompleted ? chapters : chapters.filter(c => !isChapterComplete(currentDay, c.title));
+            if (chaptersToPlay.length > 0) {
+                segments.push(...buildSegmentsForChapters(r.title, r.citation, chaptersToPlay));
+                segments.push({ text: ' ', gender: 'female' as const, postPause: 1000 });
+            }
+        });
+
+        if (segments.length === 0) return;
+
+        setIsPlaying(true);
+        setCurrentlyPlayingId('all');
+        ttsManager.setOnEnd(() => {
+            setIsPlaying(false);
+            setCurrentlyPlayingId(null);
+            setActiveChapterId(null);
+        });
+        await ttsManager.speakSegments(segments);
+    };
+
+    const handlePlaySection = async (e: React.MouseEvent, id: string, reading: Reading) => {
+        e.stopPropagation();
         if (isPlaying && currentlyPlayingId === id) {
             ttsManager.stop();
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
+            setActiveChapterId(null);
             return;
         }
 
+        const chapters = parseChapters(reading);
+        let allSectionCompleted = chapters.every(c => isChapterComplete(currentDay, c.title));
+        const chaptersToPlay = allSectionCompleted ? chapters : chapters.filter(c => !isChapterComplete(currentDay, c.title));
+
+        if (chaptersToPlay.length === 0) return;
+
+        const segments = buildSegmentsForChapters(reading.title, reading.citation, chaptersToPlay);
+
         setIsPlaying(true);
         setCurrentlyPlayingId(id);
-
-        const segments: any[] = [];
-
-        // Title
-        let cleanTitle = title
-            .replace(/\//g, ' ')
-            .replace(/(Chapter|Capítulo)\s*/gi, '')
-            .trim();
-        cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
-
-        segments.push({ text: cleanTitle, gender: 'female', postPause: 500 });
-
-        // If this is a full reading (contains ###), parse chapters first IF playing from header
-        // But for simplicity, we treat text as raw content here. 
-        // If 'text' passed here is raw full text, we should probably strip headers if we want to read it all linearly.
-
-        // Content chunks
-        let spokenText = text
-            .replace(/###\s*/g, '')
-            .replace(/\[\s*\d+\s*\]/g, '')
-            .replace(/\//g, ' ')
-            .replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
-        spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
-
-        const chunks = chunkText(spokenText);
-        chunks.forEach(chunk => {
-            segments.push({ text: chunk, gender: 'female' as const });
-        });
-
         ttsManager.setOnEnd(() => {
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
+            setActiveChapterId(null);
         });
+        await ttsManager.speakSegments(segments);
+    };
 
+    const handlePlayChapter = async (e: React.MouseEvent, id: string, reading: Reading, chapter: Chapter) => {
+        e.stopPropagation();
+        if (isPlaying && currentlyPlayingId === id) {
+            ttsManager.stop();
+            setIsPlaying(false);
+            setCurrentlyPlayingId(null);
+            setActiveChapterId(null);
+            return;
+        }
+
+        // Always play just this chapter, explicit override
+        const segments = buildSegmentsForChapters(reading.title, reading.citation, [chapter]);
+
+        setIsPlaying(true);
+        setCurrentlyPlayingId(id);
+        ttsManager.setOnEnd(() => {
+            setIsPlaying(false);
+            setCurrentlyPlayingId(null);
+            setActiveChapterId(null);
+        });
         await ttsManager.speakSegments(segments);
     };
 
@@ -438,7 +507,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         </div>
 
                         <span className="day-counter-small">
-                            {t.day} {currentDay}
+                            {Math.round((completedDays.length / 365) * 100)}% {language === 'es' ? 'Completado' : 'Complete'}
                         </span>
                     </div>
 
@@ -475,7 +544,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                         <h2 className="section-title-sacred">{reading.title}</h2>
                                         <button
                                             className={`section-play-btn-small ${currentlyPlayingId === `reading-${idx}` ? 'active' : ''}`}
-                                            onClick={(e) => handlePlayItem(e, `reading-${idx}`, reading.title, reading.text)}
+                                            onClick={(e) => handlePlaySection(e, `reading-${idx}`, reading)}
                                         >
                                             <span>{currentlyPlayingId === `reading-${idx}` ? (language === 'es' ? 'Detener' : 'Stop') : (language === 'es' ? 'Escuchar' : 'Listen')}</span>
                                             {currentlyPlayingId === `reading-${idx}` ? <Square size={16} /> : <Play size={20} />}
@@ -485,20 +554,18 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                     {/* Render Each Parsed Chapter as a separate Card */}
                                     {chapters.map((chapter, chIdx) => {
                                         const rowKey = `${idx}-${chIdx}`;
+                                        const isActivePlayingCard = isPlaying && activeChapterId === chapter.title;
                                         return (
                                             <div
                                                 key={chIdx}
-                                                className="reading-card-sacred"
+                                                className={`reading-card-sacred ${isActivePlayingCard ? 'active-playing-card' : ''}`}
                                                 onClick={() => toggleSection(rowKey)}
                                             >
                                                 <div className="card-summary-row">
                                                     <div className="card-left">
                                                         {/* Chapter Play Button */}
                                                         <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handlePlayItem(e, `chapter-${chapter.title}`, chapter.title, chapter.text);
-                                                            }}
+                                                            onClick={(e) => handlePlayChapter(e, `chapter-${chapter.title}`, reading, chapter)}
                                                             className="icon-btn-ghost"
                                                             style={{ width: '32px', height: '32px', color: 'var(--color-primary)' }}
                                                         >
@@ -509,7 +576,12 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                                             )}
                                                         </button>
 
-                                                        <span className="chapter-label">{chapter.title}</span>
+                                                        <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            {chapter.title}
+                                                            {isChapterComplete(currentDay, chapter.title) && (
+                                                                <CheckCircle size={14} color="#22c55e" />
+                                                            )}
+                                                        </span>
                                                     </div>
                                                     <ChevronDown
                                                         size={20}

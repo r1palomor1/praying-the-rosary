@@ -246,9 +246,11 @@
   border: 1px solid transparent;
 }
 
-.reading-card-sacred:hover {
+.reading-card-sacred:hover,
+.reading-card-sacred.active-playing-card {
   background-color: var(--color-surface);
-  border-color: rgba(168, 125, 62, 0.1);
+  border-color: rgba(168, 125, 62, 0.4);
+  /* Make it stand out strongly */
 }
 
 .card-summary-row {
