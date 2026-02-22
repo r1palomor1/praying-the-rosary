@@ -362,232 +362,232 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const isCompleted = isDayComplete(currentDay);
 
     return (
-        <div className="bible-container">
-            {/* Header */}
-            <header className="sacred-header">
-                <div className="header-top-row">
-                    <button
-                        className="icon-btn-ghost"
-                        onClick={onBack}
-                        aria-label="Back"
-                    >
-                        <ChevronLeft size={28} />
-                    </button>
-
-                    <h1 className="header-title">{t.title}</h1>
-
-                    <button
-                        className="icon-btn-ghost"
-                        onClick={() => setShowSettings(true)}
-                        aria-label="Settings"
-                    >
-                        <Settings size={24} />
-                    </button>
-                </div>
-
-                <div className="date-row">
-                    <span className="date-text">
-                        {/* Dynamic Date based on current Day? Or Today? Wireframe says "January 15". */}
-                        {/* We should probably show the DATE associated with the PLAN day if possible, or just Today. */}
-                        {/* Implementation Plan says: [Date] < Day X of 365 >. */}
-                        {/* I will use the current date for now as per wireframe text "January 15 • Day 15" */}
-                        {new Date().toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'long', day: 'numeric' })}
-                        {' • '}
-                        {t.day} {currentDay}
-                    </span>
-                    <button
-                        className="icon-btn-ghost"
-                        style={{ width: 'auto', height: 'auto', padding: 0, position: 'relative' }}
-                        onClick={() => setShowProgressModal(true)}
-                        aria-label="View Progress"
-                    >
-                        <Calendar size={18} />
-                        {missedDays.length > 0 && (
-                            <span
-                                style={{
-                                    position: 'absolute',
-                                    top: '-4px',
-                                    right: '-4px',
-                                    width: '8px',
-                                    height: '8px',
-                                    backgroundColor: '#ef4444',
-                                    borderRadius: '50%'
-                                }}
-                            />
-                        )}
-                    </button>
-                </div>
-
-                <div className="controls-row">
-                    <button
-                        className="play-all-btn-large"
-                        onClick={handlePlayAll}
-                        aria-label={isPlaying && currentlyPlayingId === 'all' ? "Stop All" : "Play All"}
-                    >
-                        {isPlaying && currentlyPlayingId === 'all' ? (
-                            <Square size={20} fill="currentColor" />
-                        ) : (
-                            <Play size={24} fill="currentColor" />
-                        )}
-                    </button>
-
-                    <div className="phase-tag">
-                        {/* Church Icon could go here */}
-                        <span>{dayData.period}</span>
-                    </div>
-
-                    <span className="day-counter-small">
-                        {t.day} {currentDay}
-                    </span>
-                </div>
-
-                <div className="progress-container">
-                    <div className="progress-fill" style={{ width: `${(currentDay / 365) * 100}%` }}></div>
-                </div>
-            </header>
-
-            {/* Content */}
-            <main className="sacred-content">
-                {error ? (
-                    <div className="loading-container">
-                        <p style={{ color: '#ef4444', textAlign: 'center', padding: '2rem' }}>{error}</p>
+        <div className="bible-screen-wrapper">
+            <div className="bible-container">
+                {/* Header */}
+                <header className="sacred-header">
+                    <div className="header-top-row">
                         <button
-                            className="btn-secondary"
-                            onClick={() => fetchReadings(currentDay)}
-                            style={{ marginTop: '1rem' }}
+                            className="icon-btn-ghost"
+                            onClick={onBack}
+                            aria-label="Back"
                         >
-                            {language === 'es' ? 'Reintentar' : 'Retry'}
+                            <ChevronLeft size={28} />
+                        </button>
+
+                        <h1 className="header-title">{t.title}</h1>
+
+                        <button
+                            className="icon-btn-ghost"
+                            onClick={() => setShowSettings(true)}
+                            aria-label="Settings"
+                        >
+                            <Settings size={24} />
                         </button>
                     </div>
-                ) : loading ? (
-                    <div className="loading-container">
-                        <div className="loading-spinner"></div>
-                        <p>{language === 'es' ? 'Cargando...' : 'Loading...'}</p>
+
+                    <div className="date-row">
+                        <span className="date-text">
+                            {/* Dynamic Date based on current Day? Or Today? Wireframe says "January 15". */}
+                            {/* We should probably show the DATE associated with the PLAN day if possible, or just Today. */}
+                            {/* Implementation Plan says: [Date] < Day X of 365 >. */}
+                            {/* I will use the current date for now as per wireframe text "January 15 • Day 15" */}
+                            {new Date().toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'long', day: 'numeric' })}
+                            {' • '}
+                            {t.day} {currentDay}
+                        </span>
+                        <button
+                            className="icon-btn-ghost"
+                            style={{ width: 'auto', height: 'auto', padding: 0, position: 'relative' }}
+                            onClick={() => setShowProgressModal(true)}
+                            aria-label="View Progress"
+                        >
+                            <Calendar size={18} />
+                            {missedDays.length > 0 && (
+                                <span
+                                    style={{
+                                        position: 'absolute',
+                                        top: '-4px',
+                                        right: '-4px',
+                                        width: '8px',
+                                        height: '8px',
+                                        backgroundColor: '#ef4444',
+                                        borderRadius: '50%'
+                                    }}
+                                />
+                            )}
+                        </button>
                     </div>
-                ) : (
-                    readings.map((reading, idx) => {
-                        const chapters = parseChapters(reading);
 
-                        return (
-                            <section key={idx} className="reading-section-sacred">
-                                <div className="section-header-sacred">
-                                    <h2 className="section-title-sacred">{reading.title}</h2>
-                                    <button
-                                        className={`section-play-btn-small ${currentlyPlayingId === `reading-${idx}` ? 'active' : ''}`}
-                                        onClick={(e) => handlePlayItem(e, `reading-${idx}`, reading.title, reading.text)}
-                                    >
-                                        <span>{currentlyPlayingId === `reading-${idx}` ? (language === 'es' ? 'Detener' : 'Stop') : (language === 'es' ? 'Escuchar' : 'Listen')}</span>
-                                        {currentlyPlayingId === `reading-${idx}` ? <Square size={16} /> : <Play size={20} />}
-                                    </button>
-                                </div>
+                    <div className="controls-row">
+                        <button
+                            className="play-all-btn-large"
+                            onClick={handlePlayAll}
+                            aria-label={isPlaying && currentlyPlayingId === 'all' ? "Stop All" : "Play All"}
+                        >
+                            {isPlaying && currentlyPlayingId === 'all' ? (
+                                <Square size={20} fill="currentColor" />
+                            ) : (
+                                <Play size={24} fill="currentColor" />
+                            )}
+                        </button>
 
-                                {/* Render Each Parsed Chapter as a separate Card */}
-                                {chapters.map((chapter, chIdx) => {
-                                    const rowKey = `${idx}-${chIdx}`;
-                                    return (
-                                        <div
-                                            key={chIdx}
-                                            className="reading-card-sacred"
-                                            onClick={() => toggleSection(rowKey)}
+                        <div className="phase-tag">
+                            {/* Church Icon could go here */}
+                            <span>{dayData.period}</span>
+                        </div>
+
+                        <span className="day-counter-small">
+                            {t.day} {currentDay}
+                        </span>
+                    </div>
+
+                    <div className="progress-container">
+                        <div className="progress-fill" style={{ width: `${(currentDay / 365) * 100}%` }}></div>
+                    </div>
+                </header>
+
+                {/* Content */}
+                <main className="sacred-content">
+                    {error ? (
+                        <div className="loading-container">
+                            <p style={{ color: '#ef4444', textAlign: 'center', padding: '2rem' }}>{error}</p>
+                            <button
+                                className="btn-secondary"
+                                onClick={() => fetchReadings(currentDay)}
+                                style={{ marginTop: '1rem' }}
+                            >
+                                {language === 'es' ? 'Reintentar' : 'Retry'}
+                            </button>
+                        </div>
+                    ) : loading ? (
+                        <div className="loading-container">
+                            <div className="loading-spinner"></div>
+                            <p>{language === 'es' ? 'Cargando...' : 'Loading...'}</p>
+                        </div>
+                    ) : (
+                        readings.map((reading, idx) => {
+                            const chapters = parseChapters(reading);
+
+                            return (
+                                <section key={idx} className="reading-section-sacred">
+                                    <div className="section-header-sacred">
+                                        <h2 className="section-title-sacred">{reading.title}</h2>
+                                        <button
+                                            className={`section-play-btn-small ${currentlyPlayingId === `reading-${idx}` ? 'active' : ''}`}
+                                            onClick={(e) => handlePlayItem(e, `reading-${idx}`, reading.title, reading.text)}
                                         >
-                                            <div className="card-summary-row">
-                                                <div className="card-left">
-                                                    {/* Chapter Play Button */}
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handlePlayItem(e, `chapter-${chapter.title}`, chapter.title, chapter.text);
-                                                        }}
-                                                        className="icon-btn-ghost"
-                                                        style={{ width: '32px', height: '32px', color: 'var(--color-primary)' }}
-                                                    >
-                                                        {isPlaying && currentlyPlayingId === `chapter-${chapter.title}` ? (
-                                                            <Square size={18} fill="currentColor" />
-                                                        ) : (
-                                                            <Play size={18} fill="currentColor" />
-                                                        )}
-                                                    </button>
+                                            <span>{currentlyPlayingId === `reading-${idx}` ? (language === 'es' ? 'Detener' : 'Stop') : (language === 'es' ? 'Escuchar' : 'Listen')}</span>
+                                            {currentlyPlayingId === `reading-${idx}` ? <Square size={16} /> : <Play size={20} />}
+                                        </button>
+                                    </div>
 
-                                                    <span className="chapter-label">{chapter.title}</span>
+                                    {/* Render Each Parsed Chapter as a separate Card */}
+                                    {chapters.map((chapter, chIdx) => {
+                                        const rowKey = `${idx}-${chIdx}`;
+                                        return (
+                                            <div
+                                                key={chIdx}
+                                                className="reading-card-sacred"
+                                                onClick={() => toggleSection(rowKey)}
+                                            >
+                                                <div className="card-summary-row">
+                                                    <div className="card-left">
+                                                        {/* Chapter Play Button */}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handlePlayItem(e, `chapter-${chapter.title}`, chapter.title, chapter.text);
+                                                            }}
+                                                            className="icon-btn-ghost"
+                                                            style={{ width: '32px', height: '32px', color: 'var(--color-primary)' }}
+                                                        >
+                                                            {isPlaying && currentlyPlayingId === `chapter-${chapter.title}` ? (
+                                                                <Square size={18} fill="currentColor" />
+                                                            ) : (
+                                                                <Play size={18} fill="currentColor" />
+                                                            )}
+                                                        </button>
+
+                                                        <span className="chapter-label">{chapter.title}</span>
+                                                    </div>
+                                                    <ChevronDown
+                                                        size={20}
+                                                        className={`expand-chevron ${expandedSections[rowKey] ? 'expanded' : ''}`}
+                                                    />
                                                 </div>
-                                                <ChevronDown
-                                                    size={20}
-                                                    className={`expand-chevron ${expandedSections[rowKey] ? 'expanded' : ''}`}
-                                                />
+
+                                                {expandedSections[rowKey] && (
+                                                    <div className="card-content-expanded fade-in">
+                                                        {renderContent(chapter.text)}
+                                                    </div>
+                                                )}
                                             </div>
-
-                                            {expandedSections[rowKey] && (
-                                                <div className="card-content-expanded fade-in">
-                                                    {renderContent(chapter.text)}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </section>
-                        );
-                    })
-                )}
-
-                {/* Flourish */}
-                <div className="flourish-container">
-                    <div className="flourish-line"></div>
-                    <div className="flourish-text">{t.amen}</div>
-                    <div className="flourish-line"></div>
-                </div>
-            </main>
-
-            {/* Fixed Footer */}
-            <div className="footer-fixed">
-                <button
-                    className="mark-complete-btn"
-                    onClick={() => markDayComplete(currentDay)}
-                    disabled={isCompleted}
-                >
-                    <CheckCircle size={20} />
-                    <span className="mark-complete-text">
-                        {isCompleted ? t.completed : t.markComplete}
-                    </span>
-                </button>
-
-                <div className="source-container-sacred">
-                    <div className="source-row">
-                        <a
-                            href="https://github.com/wldeh/bible-api"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="source-link-sacred"
-                        >
-                            <span>Source: wldeh/bible-api</span>
-                        </a>
-                        <button
-                            className="info-icon-btn"
-                            onClick={() => setShowSourceInfo(!showSourceInfo)}
-                            aria-label="Show source details"
-                        >
-                            <Info size={14} />
-                        </button>
-                    </div>
-
-                    {showSourceInfo && (
-                        <p className="source-details-text">
-                            English: King James Version (KJV) • Spanish: Biblia en Español Sencillo (BES) • Both versions are Public Domain, served via GitHub CDN.
-                        </p>
+                                        );
+                                    })}
+                                </section>
+                            );
+                        })
                     )}
-                </div>
-            </div>
 
-            {/* Modals */}
-            <SettingsModal
-                isOpen={showSettings}
-                onClose={() => setShowSettings(false)}
-            />
-            {showProgressModal && (
-                <BibleProgressModal
-                    onClose={() => setShowProgressModal(false)}
-                    onDaySelect={setCurrentDay}
+                    {/* Flourish */}
+                    <div className="flourish-container">
+                        <div className="flourish-line"></div>
+                        <div className="flourish-text">{t.amen}</div>
+                        <div className="flourish-line"></div>
+                    </div>
+                    <div className="footer-scrollable">
+                        <button
+                            className="mark-complete-btn"
+                            onClick={() => markDayComplete(currentDay)}
+                            disabled={isCompleted}
+                        >
+                            <CheckCircle size={20} />
+                            <span className="mark-complete-text">
+                                {isCompleted ? t.completed : t.markComplete}
+                            </span>
+                        </button>
+
+                        <div className="source-container-sacred">
+                            <div className="source-row">
+                                <a
+                                    href="https://github.com/wldeh/bible-api"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="source-link-sacred"
+                                >
+                                    <span>Source: wldeh/bible-api</span>
+                                </a>
+                                <button
+                                    className="info-icon-btn"
+                                    onClick={() => setShowSourceInfo(!showSourceInfo)}
+                                    aria-label="Show source details"
+                                >
+                                    <Info size={14} />
+                                </button>
+                            </div>
+
+                            {showSourceInfo && (
+                                <p className="source-details-text">
+                                    English: King James Version (KJV) • Spanish: Biblia en Español Sencillo (BES) • Both versions are Public Domain, served via GitHub CDN.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </main>
+
+                {/* Modals */}
+                <SettingsModal
+                    isOpen={showSettings}
+                    onClose={() => setShowSettings(false)}
                 />
-            )}
+                {showProgressModal && (
+                    <BibleProgressModal
+                        onClose={() => setShowProgressModal(false)}
+                        onDaySelect={setCurrentDay}
+                    />
+                )}
+            </div>
         </div>
     );
 }

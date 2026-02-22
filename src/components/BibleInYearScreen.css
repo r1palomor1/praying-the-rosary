@@ -14,9 +14,19 @@
   --shadow-gold: 0 4px 14px 0 rgba(168, 125, 62, 0.39);
 }
 
-.bible-container {
+/* Full Screen Wrapper to cover the blue body background */
+.bible-screen-wrapper {
   min-height: 100vh;
-  background-color: var(--color-background-dark);
+  width: 100%;
+  background: radial-gradient(circle at center, #2d241c 0%, #1d1712 100%);
+  display: flex;
+  justify-content: center;
+}
+
+.bible-container {
+  width: 100%;
+  min-height: 100vh;
+  /* background-color: var(--color-background-dark); REMOVED to show wrapper gradient */
   color: var(--color-text-light);
   font-family: var(--font-sans);
   overflow-x: hidden;
@@ -25,8 +35,7 @@
   max-width: 480px;
   /* Mobile focused */
   margin: 0 auto;
-  border-left: 1px solid #1e293b;
-  border-right: 1px solid #1e293b;
+  /* float effect */
 }
 
 /* Header Section */
@@ -174,11 +183,11 @@
 
 /* Content Area */
 .sacred-content {
-  padding: 0 1.5rem 6rem;
+  padding: 0 1.5rem 2rem;
   /* Bottom padding for fixed footer */
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
 }
 
 .reading-section-sacred {
@@ -290,24 +299,14 @@
   /* gray-300 */
 }
 
-/* Footer Action */
-.footer-fixed {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  /* Match container */
-  background: rgba(25, 27, 31, 0.95);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid #1e293b;
-  padding: 1.5rem;
-  z-index: 50;
+/* Footer Scrollable */
+.footer-scrollable {
+  margin-top: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.25rem;
+  padding-bottom: 2rem;
 }
 
 .source-container-sacred {
@@ -321,7 +320,7 @@
 .source-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .source-link-sacred {
@@ -364,13 +363,14 @@
 }
 
 .source-details-text {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--color-text-muted);
   text-align: center;
   max-width: 90%;
-  line-height: 1.4;
-  opacity: 0.8;
+  line-height: 1.3;
+  opacity: 0.7;
   margin: 0;
+  margin-top: 0.25rem;
   font-style: italic;
   animation: fadeIn 0.3s ease-in-out;
 }
@@ -432,13 +432,13 @@
   justify-content: center;
   align-items: center;
   opacity: 0.2;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
+  margin-top: 0;
+  margin-bottom: 0.25rem;
 }
 
 .flourish-line {
   height: 1px;
-  width: 3rem;
+  width: 2rem;
   background-color: var(--color-primary);
 }
 
