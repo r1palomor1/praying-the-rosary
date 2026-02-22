@@ -43,6 +43,14 @@ git push
 
 ### 🎯 Priority Items for Next Session
 
+### 🎨 Daily Readings: Unified "Bible in a Year" Layout Migration
+- [ ] **Redesign Daily Readings UI to match Bible in a Year**
+  - **Goal:** Transplant the exact layout, theme, and user experience we just built for the "Bible in a Year" screen to the "Daily Readings" screen.
+  - **Structure:** Use the seamless dark background (`#191b1f`), "Section Cards" (for Reading 1, Psalm, Gospel, etc.) with "Expandable content rows" (hidden text by default).
+  - **Audio Controls:** Replicate the same "Play All" logic at the top, and specific "Play Section / Chapter" logic on the cards.
+  - **State & Logic Integration:** *Keep all the existing background logic* for Daily Readings (fetching USCCB/Vatican sources, offline fallbacks, liturgical coloring) but feed it into the new view layer.
+  - **Smart Tracking UI:** Implement the checkmarks (`✅`), "Completed" styles, and "Mark as Complete" flows so it feels like the exact same app experience.
+
 ### 🎨 Bible in a Year: Compact Card Redesign (Completed Feb 20, 2026)
 - [x] **Implement New Layout**
   - **Header:** Navigation-centric (`< Calendar >`) + Title + Gold Play Icon

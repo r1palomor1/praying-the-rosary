@@ -8,7 +8,8 @@ import {
     CheckCircle,
     Square,
     ChevronLeft,
-    Info
+    Info,
+    Flag
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
@@ -495,19 +496,19 @@ export default function BibleInYearScreen({ onBack }: Props) {
                             aria-label={isPlaying && currentlyPlayingId === 'all' ? "Stop All" : "Play All"}
                         >
                             {isPlaying && currentlyPlayingId === 'all' ? (
-                                <Square size={20} fill="currentColor" />
+                                <Square size={16} fill="currentColor" />
                             ) : (
-                                <Play size={24} fill="currentColor" />
+                                <Play size={18} fill="currentColor" style={{ marginLeft: '2px' }} />
                             )}
                         </button>
 
                         <div className="phase-tag">
-                            {/* Church Icon could go here */}
+                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>church</span>
                             <span>{dayData.period}</span>
                         </div>
 
-                        <span className="day-counter-small">
-                            {Math.round((completedDays.length / 365) * 100)}% {language === 'es' ? 'Completado' : 'Complete'}
+                        <span className="day-counter-small" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            {Math.round((completedDays.length / 365) * 100)}% <Flag size={14} />
                         </span>
                     </div>
 
@@ -545,9 +546,9 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                         <button
                                             className={`section-play-btn-small ${currentlyPlayingId === `reading-${idx}` ? 'active' : ''}`}
                                             onClick={(e) => handlePlaySection(e, `reading-${idx}`, reading)}
+                                            aria-label={currentlyPlayingId === `reading-${idx}` ? "Stop" : "Play Section"}
                                         >
-                                            <span>{currentlyPlayingId === `reading-${idx}` ? (language === 'es' ? 'Detener' : 'Stop') : (language === 'es' ? 'Escuchar' : 'Listen')}</span>
-                                            {currentlyPlayingId === `reading-${idx}` ? <Square size={16} /> : <Play size={20} />}
+                                            {currentlyPlayingId === `reading-${idx}` ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
                                         </button>
                                     </div>
 
