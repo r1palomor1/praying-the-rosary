@@ -1,6 +1,14 @@
-
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ArrowLeft, Play, Square, Settings as SettingsIcon } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import {
+    Settings as SettingsIcon,
+    ChevronDown,
+    Play,
+    Square,
+    ChevronLeft,
+    Info,
+    Calendar,
+    CheckCircle2
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
@@ -37,17 +45,16 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
-    const [readingSource, setReadingSource] = useState<'usccb' | 'vatican'>(() => {
-        return (localStorage.getItem('preferred_reading_source') as 'usccb' | 'vatican') || 'usccb';
-    });
+    const [activeChapterId, setActiveChapterId] = useState<string | null>(null);
     const [showSettings, setShowSettings] = useState(false);
-    const [liturgicalColor, setLiturgicalColor] = useState('#10B981'); // Default green
-    const [liturgicalData, setLiturgicalData] = useState<any>(null); // Store full liturgical data for rank info
+    const [liturgicalColor, setLiturgicalColor] = useState('#a87d3e');
+    const [liturgicalData, setLiturgicalData] = useState<any>(null);
+    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+    const [showSourceInfo, setShowSourceInfo] = useState(false);
+    const [completedItems, setCompletedItems] = useState<string[]>([]);
 
-    // Use production API in dev mode for browser testing
     const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
-    // Format date as MMDDYY for the API
     const formatDateParam = (date: Date) => {
         const mm = (date.getMonth() + 1).toString().padStart(2, '0');
         const dd = date.getDate().toString().padStart(2, '0');
@@ -56,23 +63,23 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     };
 
     const fetchReadings = async (date: Date) => {
-        // Stop any playing audio when changing dates
         if (isPlaying || ttsManager.isSpeaking()) {
             ttsManager.stop();
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
+            setActiveChapterId(null);
         }
+        setCompletedItems([]);
 
         setLoading(true);
         setError(null);
 
         try {
-            // Fetch Liturgical Color for this specific date (guaranteed non-null with fallback)
             const liturgy = await fetchLiturgicalDay(date, language);
-            setLiturgicalColor(getLiturgicalColorHex(liturgy.celebrations[0].colour));
+            const color = getLiturgicalColorHex(liturgy.celebrations[0].colour);
+            setLiturgicalColor(color);
             setLiturgicalData(liturgy);
 
-            // Fetch USCCB readings
             const dateStr = formatDateParam(date);
             const usccbResponse = await fetch(`${API_BASE}/api/readings?date=${dateStr}&lang=${language}`);
 
@@ -83,13 +90,11 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 setData(null);
             }
 
-            // Fetch Vatican readings + reflection
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const vaticanDate = `${year}-${month}-${day}`;
 
-            console.log('[Vatican API] Fetching:', vaticanDate, 'lang:', language);
             const vaticanResponse = await fetch(`${API_BASE}/api/vatican-reflection?date=${vaticanDate}&lang=${language}`);
 
             if (vaticanResponse.ok) {
@@ -110,14 +115,12 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     };
 
     useEffect(() => {
-        // Debounce slightly to avoid rapid clicks spamming API
         const timer = setTimeout(() => {
             fetchReadings(currentDate);
         }, 300);
         return () => clearTimeout(timer);
     }, [currentDate, language]);
 
-    // Handle cleanup when unmounting
     useEffect(() => {
         return () => {
             if (ttsManager.isSpeaking()) {
@@ -126,13 +129,13 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         };
     }, []);
 
-    const changeDate = (days: number) => {
-        const newDate = new Date(currentDate);
-        newDate.setDate(newDate.getDate() + days);
-        setCurrentDate(newDate);
+    const toggleSection = (id: string) => {
+        setExpandedSections(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
     };
 
-    // Normalize reading titles
     const normalizeReadingTitle = (title: string): string => {
         const romanToOrdinal: Record<string, string> = {
             'I': language === 'es' ? 'Primera Lectura' : 'First Reading',
@@ -147,28 +150,16 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         return title;
     };
 
-    // Parse reading text
-    const renderReadingText = (text: string, source: 'usccb' | 'vatican') => {
-        let cleanText = text;
+    const renderReadingText = (text: string) => {
+        let cleanText = text.replace(/\u003cbr\s*\/?\u003e/gi, '\n');
 
-        if (source === 'usccb') {
-            // USCCB Specific: Replace HTML breaks with newlines
-            cleanText = cleanText.replace(/\u003cbr\s*\/?\u003e/gi, '\n');
-        } else {
-            // Vatican: Preserve line breaks as simple newlines
-            cleanText = cleanText.replace(/\u003cbr\s*\/?\u003e/gi, '\n');
-        }
-
-        // Split by single newlines and render each line
         return cleanText.split('\n').map((line, lineIndex) => {
             const trimmed = line.trim();
             if (!trimmed) return null;
 
-            // Check if this is a response line (starts with "R." or ends with " R.")
             const startsWithR = /^(R\.|R\/\.)\s/.test(trimmed);
             const endsWithR = /\s+(R\.|R\/\.)$/.test(trimmed);
 
-            // If it's a response line (either format), style it
             if (startsWithR || endsWithR) {
                 return (
                     <p
@@ -184,7 +175,6 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 );
             }
 
-            // Handle strong tags for highlighting
             if (trimmed.includes('<strong>')) {
                 const parts: React.ReactNode[] = [];
                 let lastIndex = 0;
@@ -197,7 +187,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                         parts.push(beforeText.replace(/<[^>]+>/g, ''));
                     }
                     parts.push(
-                        <span key={match.index} className="response-highlight">
+                        <span key={match.index} className="response-highlight" style={{ color: liturgicalColor, fontStyle: 'italic' }}>
                             {match[1]}
                         </span>
                     );
@@ -210,22 +200,28 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 return <p key={lineIndex} style={{ margin: '0.3rem 0' }}>{parts}</p>;
             }
 
-            // Regular verse line
             return <p key={lineIndex} style={{ margin: '0.3rem 0' }}>{trimmed.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}</p>;
         });
     };
 
-    // Play arbitrary content
-    const handlePlayContent = async (id: string, title: string, text: string) => {
+    const handlePlayContent = async (e: React.MouseEvent, id: string, title: string, text: string) => {
+        e.stopPropagation();
         if (isPlaying && currentlyPlayingId === id) {
             ttsManager.stop();
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
+            setActiveChapterId(null);
         } else {
             const cleanText = text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
             const segments = [
-                { text: title, gender: 'female' as const, postPause: 800 },
-                { text: cleanText, gender: 'female' as const, postPause: 0 }
+                { text: title, gender: 'female' as const, postPause: 800, onStart: () => setActiveChapterId(id) },
+                {
+                    text: cleanText,
+                    gender: 'female' as const,
+                    postPause: 0,
+                    onStart: () => setActiveChapterId(id),
+                    onEnd: () => setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id])
+                }
             ];
 
             setIsPlaying(true);
@@ -235,257 +231,428 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             ttsManager.setOnEnd(() => {
                 setIsPlaying(false);
                 setCurrentlyPlayingId(null);
+                setActiveChapterId(null);
             });
 
             try {
                 await ttsManager.speakSegments(segments);
-            } catch (e) {
-                console.error("Audio error", e);
+            } catch (error) {
+                console.error("Audio error", error);
                 setIsPlaying(false);
                 setCurrentlyPlayingId(null);
+                setActiveChapterId(null);
             }
         }
     };
 
-    // Play All
     const handlePlayAll = async () => {
-        if (isPlaying) {
+        if (isPlaying && currentlyPlayingId === 'all') {
             ttsManager.stop();
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
-        } else {
-            const readingsToPlay = readingSource === 'usccb' ? data?.readings : vaticanData?.readings;
-            if (!readingsToPlay || readingsToPlay.length === 0) return;
+            setActiveChapterId(null);
+            return;
+        }
 
-            const segments = [
-                ...(data?.title ? [{ text: data.title, gender: 'female' as const, postPause: 1000 }] : []),
-                ...readingsToPlay.flatMap(reading => [
-                    { text: normalizeReadingTitle(reading.title), gender: 'female' as const, postPause: 800 },
-                    { text: reading.text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>'), gender: 'female' as const, postPause: 1500 }
-                ]),
-                ...(reflection ? [
-                    { text: reflection.title, gender: 'female' as const, postPause: 800 },
-                    { text: reflection.content.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>'), gender: 'female' as const, postPause: 0 }
-                ] : [])
-            ].filter(s => s.text);
+        const readingsToPlay = data?.readings;
+        if (!readingsToPlay || readingsToPlay.length === 0) return;
 
-            setIsPlaying(true);
-            setCurrentlyPlayingId('all');
-            await ttsManager.setLanguage(language);
+        const segments: any[] = [];
 
-            ttsManager.setOnEnd(() => {
-                setIsPlaying(false);
-                setCurrentlyPlayingId(null);
+        let titleFallback = '';
+        if (data?.title) {
+            titleFallback = data.title;
+        } else if (vaticanData?.readings?.[0]?.title) {
+            titleFallback = vaticanData.readings[0].title;
+        }
+
+        if (titleFallback) {
+            segments.push({ text: titleFallback, gender: 'female' as const, postPause: 1000 });
+        }
+
+        readingsToPlay.forEach((reading, index) => {
+            const id = `usccb-${index}`;
+            const cleanText = reading.text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+
+            segments.push({
+                text: normalizeReadingTitle(reading.title),
+                gender: 'female' as const,
+                postPause: 800,
+                onStart: () => setActiveChapterId(id)
             });
+            segments.push({
+                text: cleanText,
+                gender: 'female' as const,
+                postPause: 1500,
+                onStart: () => setActiveChapterId(id),
+                onEnd: () => setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id])
+            });
+        });
 
-            try {
-                await ttsManager.speakSegments(segments);
-            } catch (e) {
-                console.error("Audio error", e);
-                setIsPlaying(false);
-                setCurrentlyPlayingId(null);
+        if (reflection) {
+            const id = 'reflection';
+            const cleanText = reflection.content.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            segments.push({
+                text: reflection.title,
+                gender: 'female' as const,
+                postPause: 800,
+                onStart: () => setActiveChapterId(id)
+            });
+            segments.push({
+                text: cleanText,
+                gender: 'female' as const,
+                postPause: 0,
+                onStart: () => setActiveChapterId(id),
+                onEnd: () => setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id])
+            });
+        }
+
+        if (segments.length === 0) return;
+
+        setIsPlaying(true);
+        setCurrentlyPlayingId('all');
+        await ttsManager.setLanguage(language);
+
+        ttsManager.setOnEnd(() => {
+            setIsPlaying(false);
+            setCurrentlyPlayingId(null);
+            setActiveChapterId(null);
+        });
+
+        try {
+            await ttsManager.speakSegments(segments);
+        } catch (error) {
+            console.error("Audio error", error);
+            setIsPlaying(false);
+            setCurrentlyPlayingId(null);
+            setActiveChapterId(null);
+        }
+    };
+
+    const inputRef = useRef<HTMLInputElement>(null);
+    const triggerDatePicker = () => {
+        if (inputRef.current) {
+            // @ts-ignore
+            if (typeof inputRef.current.showPicker === 'function') {
+                // @ts-ignore
+                inputRef.current.showPicker();
+            } else {
+                inputRef.current.click();
             }
         }
     };
 
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.value) {
+            const [y, m, d] = e.target.value.split('-').map(Number);
+            setCurrentDate(new Date(y, m - 1, d));
+        }
+    };
+
+    const yyyy = currentDate.getFullYear();
+    const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(currentDate.getDate()).padStart(2, '0');
+    const htmlDateStr = `${yyyy}-${mm}-${dd}`;
+
+    const readingsToRender = data?.readings;
+
     return (
-        <div className="readings-container fade-in">
-            <div className="readings-header-section">
-                <div className="readings-top-bar">
-                    <button onClick={onBack} className="icon-btn" aria-label="Back">
-                        <ArrowLeft size={24} />
-                    </button>
-                    <h1 className="page-title">
-                        {language === 'es' ? 'Lecturas Diarias' : 'Daily Readings'}
-                    </h1>
-                    <button
-                        onClick={() => setShowSettings(true)}
-                        className="icon-btn"
-                        aria-label="Settings"
-                    >
-                        <SettingsIcon size={24} />
-                    </button>
-                </div>
-
-                <div className="date-controls-wrapper">
-                    <button onClick={() => changeDate(-1)} className="icon-btn nav-arrow" aria-label="Previous Day">
-                        <ChevronLeft size={28} />
-                    </button>
-                    <h2 className="date-display">
-                        {currentDate.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', {
-                            weekday: 'long', month: 'long', day: 'numeric'
-                        })}
-                    </h2>
-                    <button onClick={() => changeDate(1)} className="icon-btn nav-arrow" aria-label="Next Day">
-                        <ChevronRight size={28} />
-                    </button>
-                </div>
-            </div>
-
-            <div className="readings-content">
-                {loading && (
-                    <div className="readings-loading-container">
-                        <div className="loading-spinner"></div>
-                        <div className="loading-text">Loading...</div>
+        <div className="readings-screen-wrapper">
+            <div className="readings-container">
+                <header className="sacred-header">
+                    <div className="header-top-row">
+                        <button className="icon-btn-ghost" onClick={onBack} aria-label="Back">
+                            <ChevronLeft size={28} />
+                        </button>
+                        <h1 className="header-title">
+                            {language === 'es' ? 'Lecturas Diarias' : 'Daily Readings'}
+                        </h1>
+                        <button
+                            className="icon-btn-ghost"
+                            onClick={() => setShowSettings(true)}
+                            aria-label="Settings"
+                        >
+                            <SettingsIcon size={24} />
+                        </button>
                     </div>
-                )}
 
-                {error && <div className="error-message">{error}</div>}
-
-                {!loading && !error && (
-                    <div className="liturgical-info">
-                        {/* Use USCCB title, fallback to Vatican if missing */}
-                        {(data?.title || vaticanData?.readings?.[0]?.title) && (
-                            <h2
-                                className="liturgical-day"
-                                style={{ color: liturgicalColor, textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
+                    <div className="date-row">
+                        <span className="date-text">
+                            {currentDate.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', {
+                                month: 'long', day: 'numeric'
+                            }).toUpperCase()}
+                        </span>
+                        <div style={{ position: 'relative', display: 'flex' }}>
+                            <button
+                                className="icon-btn-ghost"
+                                style={{ width: '24px', height: '24px', color: 'var(--color-primary)' }}
+                                onClick={triggerDatePicker}
+                                aria-label="Select Date"
                             >
-                                {(() => {
-                                    const titleSource = data?.title || vaticanData?.readings?.[0]?.title || '';
-                                    // Check if title already has rank prefix (English or Spanish)
-                                    // Handles: "Solemnity of...", "Solemnidad de...", "Memoria de...", etc.
-                                    const hasRankPrefix = /^(Solemnity|Feast|Memorial|Optional Memorial|Solemnidad|Fiesta|Memoria) (of|de)/i.test(titleSource);
-
-                                    // If no rank prefix and we have liturgical data with rank, add it
-                                    if (!hasRankPrefix && liturgicalData?.celebrations?.[0]?.rank) {
-                                        const rank = liturgicalData.celebrations[0].rank;
-                                        const rankLabel = rank === 'SOLEMNITY' ? (language === 'es' ? 'Solemnidad de' : 'Solemnity of') :
-                                            rank === 'FEAST' ? (language === 'es' ? 'Fiesta de' : 'Feast of') :
-                                                rank === 'MEMORIAL' ? (language === 'es' ? 'Memoria de' : 'Memorial of') : '';
-
-                                        return rankLabel ? `${rankLabel} ${titleSource}` : titleSource;
-                                    }
-
-                                    return titleSource;
-                                })()}
-                            </h2>
-                        )}
-                        <div className="lectionary-row">
-                            <div className="lectionary-center">
-                                {data?.lectionary && <p className="lectionary-text">{data.lectionary}</p>}
-                            </div>
-                            <select
-                                className="source-select"
-                                value={readingSource}
-                                onChange={(e) => {
-                                    const newSource = e.target.value as 'usccb' | 'vatican';
-                                    setReadingSource(newSource);
-                                    localStorage.setItem('preferred_reading_source', newSource);
+                                <Calendar size={18} />
+                            </button>
+                            <input
+                                ref={inputRef}
+                                type="date"
+                                value={htmlDateStr}
+                                onChange={handleDateChange}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    opacity: 0,
+                                    pointerEvents: 'none'
                                 }}
-                                aria-label={language === 'es' ? 'Fuente de lectura' : 'Reading Source'}
-                            >
-                                <option value="usccb">USCCB</option>
-                                <option value="vatican">VATICAN</option>
-                            </select>
-                            {(readingSource === 'usccb' ? data?.readings : vaticanData?.readings) && (readingSource === 'usccb' ? data!.readings.length > 0 : vaticanData!.readings.length > 0) && (
-                                <button
-                                    className={`play-all-btn ${isPlaying ? 'playing' : ''}`}
-                                    onClick={handlePlayAll}
-                                    aria-label={isPlaying ? "Stop All" : "Play All"}
-                                >
-                                    {isPlaying ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-                                    <span>{language === 'es' ? 'Todo' : 'All'}</span>
-                                </button>
+                            />
+                        </div>
+                    </div>
+
+                    <div className="controls-row" style={{ justifyContent: 'center', flexWrap: 'nowrap', gap: '1rem', width: '100%' }}>
+                        <div style={{ flexShrink: 0, width: '32px' }}></div>
+
+                        <div className="liturgical-title-center" style={{
+                            color: liturgicalColor,
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '1.1rem',
+                            fontWeight: 600,
+                            letterSpacing: '0.05em',
+                            textAlign: 'center',
+                            flex: 1,
+                            padding: '0 0.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                            textTransform: 'uppercase'
+                        }}>
+                            {(() => {
+                                const titleSource = data?.title || vaticanData?.readings?.[0]?.title || '';
+                                const hasRankPrefix = /^(Solemnity|Feast|Memorial|Optional Memorial|Solemnidad|Fiesta|Memoria) (of|de)/i.test(titleSource);
+
+                                if (!hasRankPrefix && liturgicalData?.celebrations?.[0]?.rank) {
+                                    const rank = liturgicalData.celebrations[0].rank;
+                                    const rankLabel = rank === 'SOLEMNITY' ? (language === 'es' ? 'Solemnidad de' : 'Solemnity of') :
+                                        rank === 'FEAST' ? (language === 'es' ? 'Fiesta de' : 'Feast of') :
+                                            rank === 'MEMORIAL' ? (language === 'es' ? 'Memoria de' : 'Memorial of') : '';
+                                    if (rankLabel) return `${rankLabel} ${titleSource}`;
+                                }
+                                return titleSource;
+                            })()}
+                        </div>
+
+                        <div style={{ flexShrink: 0, width: '32px' }}></div>
+                    </div>
+
+                    <div className="decorative-divider" style={{ opacity: 0.6, marginTop: '1rem', marginBottom: '1.5rem' }}>
+                        <div className="divider-line divider-line-left" style={{ backgroundColor: liturgicalColor }}></div>
+                        <span className="material-symbols-outlined divider-icon" style={{ color: liturgicalColor }}>church</span>
+                        <div className="divider-line divider-line-right" style={{ backgroundColor: liturgicalColor }}></div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0' }}>
+                        <button
+                            className="play-all-btn-large"
+                            onClick={handlePlayAll}
+                            aria-label={isPlaying && currentlyPlayingId === 'all' ? "Stop All" : "Play All"}
+                            disabled={loading || error !== null || (!readingsToRender?.length)}
+                            style={{ opacity: (loading || error || (!readingsToRender?.length)) ? 0.3 : 1, width: '3.5rem', height: '3.5rem' }}
+                        >
+                            {isPlaying && currentlyPlayingId === 'all' ? (
+                                <Square size={20} fill="currentColor" />
+                            ) : (
+                                <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />
                             )}
-                        </div>
+                        </button>
                     </div>
-                )}
+                </header>
 
-                {!loading && !error && readingSource === 'usccb' && data?.readings.map((reading, index) => (
-                    <div key={index} className="reading-card">
-                        <div className="reading-header">
-                            <div className="reading-title-section">
-                                <h3 className="reading-title">{normalizeReadingTitle(reading.title)}</h3>
-                                {reading.citation && <div className="reading-citation">{reading.citation}</div>}
+                <main className="sacred-content">
+                    {loading && (
+                        <div className="loading-container">
+                            <div className="loading-spinner"></div>
+                            <div className="loading-text">Loading...</div>
+                        </div>
+                    )}
+
+                    {error && <div className="error-msg">{error}</div>}
+
+                    {!loading && !error && readingsToRender?.length === 0 && (
+                        <div style={{ textAlign: 'center', opacity: 0.6, marginTop: '2rem' }}>
+                            <p>No readings found for this date.</p>
+                        </div>
+                    )}
+
+                    {!loading && !error && readingsToRender && readingsToRender.map((reading, index) => {
+                        const readingId = `usccb-${index}`;
+                        const isActive = activeChapterId === readingId;
+                        const isExpanded = expandedSections[readingId];
+                        const isCompleted = completedItems.includes(readingId);
+
+                        return (
+                            <section key={index} className="reading-section-sacred fade-in">
+                                <div className="section-header-sacred">
+                                    <h2 className="section-title-sacred">{normalizeReadingTitle(reading.title)}</h2>
+                                    <button
+                                        className={`section-play-btn-small ${currentlyPlayingId === readingId ? 'active' : ''}`}
+                                        onClick={(e) => handlePlayContent(e, readingId, normalizeReadingTitle(reading.title), reading.text)}
+                                        aria-label={currentlyPlayingId === readingId ? "Stop" : "Play"}
+                                    >
+                                        {currentlyPlayingId === readingId ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
+                                    </button>
+                                </div>
+
+                                <div
+                                    className={`reading-card-sacred ${isActive ? 'active-playing-card' : ''}`}
+                                    onClick={() => toggleSection(readingId)}
+                                >
+                                    <div className="card-summary-row">
+                                        <div className="card-left">
+                                            {isCompleted ? (
+                                                <CheckCircle2
+                                                    size={16}
+                                                    color="var(--color-liturgical-green, #4ade80)"
+                                                    style={{ flexShrink: 0 }}
+                                                />
+                                            ) : (
+                                                <Play
+                                                    size={16}
+                                                    className="play-icon-primary"
+                                                    fill="currentColor"
+                                                    style={{ opacity: isActive ? 1 : 0.7 }}
+                                                />
+                                            )}
+                                            <span className="chapter-label">
+                                                {(reading.citation ? reading.citation.replace(/,/g, ',  ') : null) || (language === 'es' ? 'Lectura' : 'Reading')}
+                                            </span>
+                                        </div>
+                                        <ChevronDown
+                                            size={20}
+                                            className={`expand-chevron ${isExpanded ? 'expanded' : ''}`}
+                                        />
+                                    </div>
+
+                                    {isExpanded && (
+                                        <div
+                                            className="card-content-expanded"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            {renderReadingText(reading.text)}
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+                        );
+                    })}
+
+                    {/* Reflection Appended to the end */}
+                    {!loading && !error && reflection && (
+                        <section className="reading-section-sacred fade-in">
+                            <div className="section-header-sacred">
+                                <h2 className="section-title-sacred">{reflection.title}</h2>
+                                <button
+                                    className={`section-play-btn-small ${currentlyPlayingId === 'reflection' ? 'active' : ''}`}
+                                    onClick={(e) => handlePlayContent(e, 'reflection', reflection.title, reflection.content)}
+                                    aria-label={currentlyPlayingId === 'reflection' ? "Stop" : "Play"}
+                                >
+                                    {currentlyPlayingId === 'reflection' ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
+                                </button>
                             </div>
-                            <button
-                                className={`reading-play-btn ${isPlaying && currentlyPlayingId === `usccb-${index}` ? 'playing' : ''}`}
-                                onClick={() => handlePlayContent(`usccb-${index}`, normalizeReadingTitle(reading.title), reading.text)}
-                                aria-label={isPlaying && currentlyPlayingId === `usccb-${index}` ? "Stop" : "Play"}
-                            >
-                                {isPlaying && currentlyPlayingId === `usccb-${index}` ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-                            </button>
-                        </div>
-                        <div className="reading-text">
-                            {renderReadingText(reading.text, 'usccb')}
-                        </div>
-                    </div>
-                ))}
 
-                {!loading && !error && readingSource === 'vatican' && vaticanData?.readings.map((reading, index) => (
-                    <div key={`vatican-${index}`} className="reading-card">
-                        <div className="reading-header">
-                            <div className="reading-title-section">
-                                <h3 className="reading-title">{reading.title}</h3>
+                            <div
+                                className={`reading-card-sacred ${activeChapterId === 'reflection' ? 'active-playing-card' : ''}`}
+                                onClick={() => toggleSection('reflection')}
+                            >
+                                <div className="card-summary-row">
+                                    <div className="card-left">
+                                        {completedItems.includes('reflection') ? (
+                                            <CheckCircle2
+                                                size={16}
+                                                color="var(--color-liturgical-green, #4ade80)"
+                                                style={{ flexShrink: 0 }}
+                                            />
+                                        ) : (
+                                            <Play
+                                                size={16}
+                                                className="play-icon-primary"
+                                                fill="currentColor"
+                                                style={{ opacity: activeChapterId === 'reflection' ? 1 : 0.7 }}
+                                            />
+                                        )}
+                                        <span className="chapter-label">
+                                            {reflection.title}
+                                        </span>
+                                    </div>
+                                    <ChevronDown
+                                        size={20}
+                                        className={`expand-chevron ${expandedSections['reflection'] || activeChapterId === 'reflection' ? 'expanded' : ''}`}
+                                    />
+                                </div>
+
+                                {expandedSections['reflection'] && (
+                                    <div
+                                        className="card-content-expanded"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {reflection.content.split('\n\n').map((para, i) => (
+                                            <p key={i} style={{ margin: '0.3rem 0' }}>{para.replace(/<[^>]+>/g, '')}</p>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                            <button
-                                className={`reading-play-btn ${isPlaying && currentlyPlayingId === `vatican-${index}` ? 'playing' : ''}`}
-                                onClick={() => handlePlayContent(`vatican-${index}`, reading.title, reading.text)}
-                                aria-label={isPlaying && currentlyPlayingId === `vatican-${index}` ? "Stop" : "Play"}
-                            >
-                                {isPlaying && currentlyPlayingId === `vatican-${index}` ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-                            </button>
-                        </div>
-                        <div className="reading-text">
-                            {renderReadingText(reading.text, 'vatican')}
-                        </div>
-                    </div>
-                ))}
+                        </section>
+                    )}
 
-                {!loading && !error && reflection && (
-                    <div className="reading-card reflection-card">
-                        <div className="reading-header">
-                            <div className="reading-title-section">
-                                <h3 className="reading-title">
-                                    {reflection.title}
-                                </h3>
+                    {/* Footer Source and Settings */}
+                    {!loading && !error && readingsToRender && readingsToRender.length > 0 && (
+                        <>
+                            <div className="flourish-container">
+                                <div className="flourish-line" style={{ backgroundColor: liturgicalColor }}></div>
+                                <div className="flourish-text" style={{ color: liturgicalColor }}>
+                                    {language === 'es' ? 'Amén' : 'Amen'}
+                                </div>
+                                <div className="flourish-line" style={{ backgroundColor: liturgicalColor }}></div>
                             </div>
-                            <button
-                                className={`reading-play-btn ${isPlaying && currentlyPlayingId === 'reflection' ? 'playing' : ''}`}
-                                onClick={() => handlePlayContent('reflection', reflection.title, reflection.content)}
-                                aria-label={isPlaying && currentlyPlayingId === 'reflection' ? "Stop" : "Play"}
-                            >
-                                {isPlaying && currentlyPlayingId === 'reflection' ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-                            </button>
-                        </div>
-                        <div className="reading-text">
-                            {reflection.content.split('\n\n').map((para, i) => (
-                                <p key={i}>{para.replace(/<[^>]+>/g, '')}</p>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
-                {!loading && !error && data?.readings.length === 0 && (
-                    <div className="empty-state">
-                        <p>No readings found for this date.</p>
-                        <a href={data?.source} target="_blank" rel="noreferrer" className="external-link">
-                            View on USCCB Website
-                        </a>
-                    </div>
-                )}
+                            <div className="footer-scrollable">
+                                <div className="source-container-sacred">
+                                    <div className="source-row">
+                                        <a
+                                            href="https://bible.usccb.org/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="source-link-sacred"
+                                        >
+                                            <span>Source: USCCB & VATICAN</span>
+                                        </a>
+                                        <button
+                                            className="info-icon-btn"
+                                            onClick={() => setShowSourceInfo(!showSourceInfo)}
+                                            aria-label="Show source details"
+                                        >
+                                            <Info size={14} />
+                                        </button>
+                                    </div>
 
-                {!loading && !error && data && (
-                    <div className="sources-attribution">
-                        <p>
-                            {language === 'es' ? 'Fuentes' : 'Sources'}:{' '}
-                            <a href="https://bible.usccb.org/" target="_blank" rel="noopener noreferrer">
-                                {language === 'es' ? 'Lecturas Diarias' : 'Daily Readings'}
-                            </a>
-                            {' • '}
-                            <a href="https://www.vaticannews.va/" target="_blank" rel="noopener noreferrer">
-                                {language === 'es' ? 'Palabras de los Papas' : 'Words of the Popes'}
-                            </a>
-                        </p>
-                    </div>
-                )}
+                                    {showSourceInfo && (
+                                        <p className="source-details-text">
+                                            English: King James Version (KJV) • Spanish: Biblia en Español Sencillo (BES) • Both versions are Public Domain, served via GitHub CDN.
+                                            Daily Readings are fetched securely from USCCB and Vatican APIs.
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </main>
+
+                <SettingsModal
+                    isOpen={showSettings}
+                    onClose={() => setShowSettings(false)}
+                    onResetProgress={() => { }}
+                />
             </div>
-
-            <SettingsModal
-                isOpen={showSettings}
-                onClose={() => setShowSettings(false)}
-                onResetProgress={() => { }}
-            />
         </div>
     );
 }

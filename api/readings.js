@@ -25,8 +25,8 @@ export default async function handler(request) {
             targetUrl = `https://bible.usccb.org/es/bible/lecturas/${dateParam}.cfm`;
             sectionsConfig = [
                 { title: 'Primera Lectura', selector: 'h3:contains("Primera lectura"), h3:contains("Primera Lectura"), h3:contains("Lectura I"), h3:contains("Lectura 1")' },
-                { title: 'Segunda Lectura', selector: 'h3:contains("Segunda lectura"), h3:contains("Segunda Lectura"), h3:contains("Lectura II"), h3:contains("Lectura 2")' },
                 { title: 'Salmo Responsorial', selector: 'h3:contains("Salmo responsorial"), h3:contains("Salmo Responsorial"), h3:contains("Salmo")' },
+                { title: 'Segunda Lectura', selector: 'h3:contains("Segunda lectura"), h3:contains("Segunda Lectura"), h3:contains("Lectura II"), h3:contains("Lectura 2")' },
                 { title: 'Aclamación antes del Evangelio', selector: 'h3:contains("Aclamación antes del Evangelio"), h3:contains("Aclamación antes del evangelio"), h3:contains("Aclamación"), h3:contains("Aleluya")' },
                 { title: 'Evangelio', selector: 'h3:contains("Evangelio"):not(:contains("Aclamación")), h3:contains("evangelio"):not(:contains("Aclamación"))' },
             ];
@@ -34,10 +34,10 @@ export default async function handler(request) {
             targetUrl = `https://bible.usccb.org/bible/readings/${dateParam}.cfm`;
             sectionsConfig = [
                 { title: 'Reading I', selector: 'h3:contains("Reading I"), h3:contains("Reading 1"), h3:contains("reading I"), h3:contains("reading 1")' },
-                { title: 'Reading II', selector: 'h3:contains("Reading II"), h3:contains("Reading 2"), h3:contains("reading II"), h3:contains("reading 2")' },
                 { title: 'Responsorial Psalm', selector: 'h3:contains("Responsorial Psalm"), h3:contains("responsorial psalm"), h3:contains("Responsorial psalm")' },
-                { title: 'Alleluia', selector: 'h3:contains("Alleluia"), h3:contains("alleluia")' },
-                { title: 'Gospel', selector: 'h3:contains("Gospel"), h3:contains("gospel")' },
+                { title: 'Reading II', selector: 'h3:contains("Reading II"), h3:contains("Reading 2"), h3:contains("reading II"), h3:contains("reading 2")' },
+                { title: 'Alleluia', selector: 'h3:contains("Alleluia"), h3:contains("alleluia"), h3:contains("Verse Before the"), h3:contains("Verse before the")' },
+                { title: 'Gospel', selector: 'h3:contains("Gospel"):not(:contains("Verse")), h3:contains("gospel"):not(:contains("Verse"))' },
             ];
         }
 

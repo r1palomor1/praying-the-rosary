@@ -489,31 +489,34 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         </button>
                     </div>
 
-                    <div className="controls-row">
-                        <button
-                            className="play-all-btn-large"
-                            onClick={handlePlayAll}
-                            aria-label={isPlaying && currentlyPlayingId === 'all' ? "Stop All" : "Play All"}
-                        >
-                            {isPlaying && currentlyPlayingId === 'all' ? (
-                                <Square size={16} fill="currentColor" />
-                            ) : (
-                                <Play size={18} fill="currentColor" style={{ marginLeft: '2px' }} />
-                            )}
-                        </button>
-
+                    <div className="controls-row" style={{ justifyContent: 'center', position: 'relative' }}>
                         <div className="phase-tag">
                             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>church</span>
                             <span>{dayData.period}</span>
                         </div>
 
-                        <span className="day-counter-small" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="day-counter-small" style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'absolute', right: 0 }}>
                             {Math.round((completedDays.length / 365) * 100)}% <Flag size={14} />
                         </span>
                     </div>
 
-                    <div className="progress-container">
+                    <div className="progress-container" style={{ marginBottom: '1.5rem' }}>
                         <div className="progress-fill" style={{ width: `${(currentDay / 365) * 100}%` }}></div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0' }}>
+                        <button
+                            className="play-all-btn-large"
+                            onClick={handlePlayAll}
+                            aria-label={isPlaying && currentlyPlayingId === 'all' ? "Stop All" : "Play All"}
+                            style={{ width: '3.5rem', height: '3.5rem' }}
+                        >
+                            {isPlaying && currentlyPlayingId === 'all' ? (
+                                <Square size={20} fill="currentColor" />
+                            ) : (
+                                <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />
+                            )}
+                        </button>
                     </div>
                 </header>
 
