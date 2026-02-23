@@ -1,0 +1,25 @@
+| Date | Plan Day | 1st Reading | 2nd Reading | Raw JSON Citation | Rendered UI Title |
+|---|---|---|---|---|---|
+| Feb 01 | Day 1 | Genesis 1-2 | None | Psalm 19 | Psalm 19 |
+| Feb 02 | Day 2 | Genesis 3-4 | None | Psalm 104 | Psalm 104 |
+| Feb 03 | Day 3 | Genesis 5-6 | None | Psalm 136 | Psalm 136 |
+| Feb 04 | Day 4 | Genesis 7-9 | None | Psalm 1 | Psalm 1 |
+| Feb 05 | Day 5 | Genesis 10-11 | None | Psalm 2 | Psalm 2 |
+| Feb 06 | Day 6 | Genesis 12-13 | Job 1-2 | Proverbs 1:1-7 | Proverbs 1 |
+| Feb 07 | Day 7 | Genesis 14-15 | Job 3-4 | Proverbs 1:8-19 | Proverbs 1 |
+| Feb 08 | Day 8 | Genesis 16-17 | Job 5-6 | Proverbs 1:20-33 | Proverbs 1 |
+| Feb 09 | Day 9 | Genesis 18-19 | Job 7-8 | Proverbs 2:1-5 | Proverbs 2 |
+| Feb 10 | Day 10 | Genesis 20-21 | Job 9-10 | Proverbs 2:6-8 | Proverbs 2 |
+| Feb 11 | Day 11 | Genesis 22-23 | Job 11-12 | Proverbs 2:9-15 | Proverbs 2 |
+| Feb 12 | Day 12 | Genesis 24 | Job 13-14 | Proverbs 2:16-19 | Proverbs 2 |
+| Feb 13 | Day 13 | Genesis 25-26 | Job 15-16 | Proverbs 2:20-22 | Proverbs 2 |
+| Feb 14 | Day 14 | Genesis 27-28 | Job 17-18 | Proverbs 3:1-4 | Proverbs 3 |
+| Feb 15 | Day 15 | Genesis 29-30 | Job 19-20 | Proverbs 3:5-8 | Proverbs 3 |
+| Feb 16 | Day 16 | Genesis 31-32 | Job 21-22 | Proverbs 3:9-12 | Proverbs 3 |
+| Feb 17 | Day 17 | Genesis 33-34 | Job 23-24 | Proverbs 3:13-18 | Proverbs 3 |
+| Feb 18 | Day 18 | Genesis 35-36 | Job 25-26 | Proverbs 3:19-24 | Proverbs 3 |
+| Feb 19 | Day 19 | Genesis 37 | Job 27-28 | Proverbs 3:25-27 | Proverbs 3 |
+| Feb 20 | Day 20 | Genesis 38 | Job 29-30 | Proverbs 3:28-32 | Proverbs 3 |
+| Feb 21 | Day 21 | Genesis 39-40 | Job 31-32 | Proverbs 3:33-35 | Proverbs 3 |
+| Feb 22 | Day 22 | Genesis 41-42 | Job 33-34 | Proverbs 4:1-9 | Proverbs 4 |
+| Feb 23 | Day 23 | Genesis 43-44 | Job 35-36 | Proverbs 4:10-19 | Proverbs 4 |

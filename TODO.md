@@ -1231,4 +1231,4 @@ User
 All critical bugs resolved. App is stable and production-ready.
 
 ## Active Bugs / Follow-ups (Feb 22, 2026)
-- [ ] Fix: Green checkmarks on Daily Readings do not appear once a reading is completed during "Play All" playback.
+- [x] Fix: Green checkmarks on Daily Readings do not appear once a reading is completed during "Play All" playback.

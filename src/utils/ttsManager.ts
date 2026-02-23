@@ -7,6 +7,7 @@ interface TTSSegment {
     rate?: number;
     postPause?: number;
     onStart?: () => void;
+    onEnd?: () => void;
 }
 
 class UnifiedTTSManager {
@@ -138,6 +139,9 @@ class UnifiedTTSManager {
 
             utterance.onend = () => {
                 if (this.playbackId === playbackId) {
+                    if (segment.onEnd) {
+                        segment.onEnd();
+                    }
                     const nextStep = () => {
                         currentIndex++;
                         speakNext();
