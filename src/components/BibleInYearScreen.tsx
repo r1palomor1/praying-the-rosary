@@ -163,7 +163,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             // Helper to fetch single reading
             const fetchOne = async (citation: string, title: string) => {
                 try {
-                    const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(citation)}&lang=${language}&v=layout_v1`);
+                    const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(citation)}&lang=${language}&v=layout_v3`);
                     if (response.ok) {
                         const result = await response.json();
                         readingsToFetch.push({
@@ -289,6 +289,15 @@ export default function BibleInYearScreen({ onBack }: Props) {
             if (chapter.title !== readingTitle && chapter.title !== readingCitation) {
                 let pgTitle = chapter.title.replace(/(Chapter|Capítulo)\s*/gi, '').trim();
                 pgTitle = pgTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
+                
+                if (language === 'en') {
+                    pgTitle = pgTitle.replace(/:(\d+)-(\d+)/, ', verses $1 to $2');
+                    pgTitle = pgTitle.replace(/:(\d+)/, ', verse $1');
+                } else {
+                    pgTitle = pgTitle.replace(/:(\d+)-(\d+)/, ', versículos $1 al $2');
+                    pgTitle = pgTitle.replace(/:(\d+)/, ', versículo $1');
+                }
+
                 segments.push({
                     text: pgTitle,
                     gender: 'female' as const,

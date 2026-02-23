@@ -306,10 +306,18 @@ export default async function handler(request) {
                 displayBook.toLowerCase().includes('proverbios') ||
                 rawBook === 'psalms' || rawBook === 'proverbs';
 
+            let chapterLabel = `${chapter}`;
+            if (startVerse !== undefined) {
+                chapterLabel += `:${startVerse}`;
+                if (endVerse !== undefined && endVerse !== startVerse) {
+                    chapterLabel += `-${endVerse}`;
+                }
+            }
+
             // Note: Spanish BES uses "Salmos 1" not "Salmos Capítulo 1" usually, logic preserved
             const header = isPsalmOrProverb
-                ? `### ${displayBook} ${chapter}\n\n${text}`
-                : `### ${displayBook} ${lang === 'es' ? 'Capítulo' : 'Chapter'} ${chapter}\n\n${text}`;
+                ? `### ${displayBook} ${chapterLabel}\n\n${text}`
+                : `### ${displayBook} ${lang === 'es' ? 'Capítulo' : 'Chapter'} ${chapterLabel}\n\n${text}`;
 
             chaptersText.push(header);
         }
