@@ -129,13 +129,25 @@ export default async function handler(request) {
             });
         }
 
-        const match = citation.match(/^(.+?)\s+(\d+)(?:-(\d+))?/);
-        let rawBook, startChapter, endChapter;
+        // Format: Book Chapter(s) or Book Chapter:Verse(s)
+        // e.g., "John 1-3", "Psalm 119:1-88", "1 John 2:3", "Proverbs 2:20-22"
+        const match = citation.trim().match(/^(.+?)\s+(\d+)(?::(\d+)(?:-(\d+))?)?(?:-(\d+))?$/);
+        let rawBook, startChapter, endChapter, startVerse, endVerse;
 
         if (match) {
             rawBook = match[1].trim().toLowerCase();
             startChapter = parseInt(match[2]);
-            endChapter = match[3] ? parseInt(match[3]) : startChapter;
+            if (match[3]) {
+                // Formatting like Book X:Y or Book X:Y-Z
+                startVerse = parseInt(match[3]);
+                endVerse = match[4] ? parseInt(match[4]) : startVerse;
+                endChapter = startChapter;
+            } else if (match[5]) {
+                // Formatting like Book X-Y
+                endChapter = parseInt(match[5]);
+            } else {
+                endChapter = startChapter;
+            }
         } else {
             rawBook = citation.split(' ')[0].toLowerCase();
             startChapter = 1;
@@ -173,6 +185,14 @@ export default async function handler(request) {
                         // Deduplicate English Data first
                         enData = deduplicateVerses(json.data);
 
+                        // Filter by verse range if present
+                        if (startVerse !== undefined) {
+                            enData = enData.filter(v => {
+                                const num = parseInt(getVerseNumber(v));
+                                return num >= startVerse && (!endVerse || num <= endVerse);
+                            });
+                        }
+
                         // Extract Blueprint
                         enData.forEach((v, index) => {
                             // If verse text has '¶' OR it's the first verse, it marks a paragraph start
@@ -204,7 +224,15 @@ export default async function handler(request) {
                     if (res.ok) {
                         const json = await res.json();
                         if (json.data && Array.isArray(json.data)) {
-                            const esVerses = deduplicateVerses(json.data);
+                            let esVerses = deduplicateVerses(json.data);
+
+                            // Filter by verse range if present
+                            if (startVerse !== undefined) {
+                                esVerses = esVerses.filter(v => {
+                                    const num = parseInt(getVerseNumber(v));
+                                    return num >= startVerse && (!endVerse || num <= endVerse);
+                                });
+                            }
 
                             // Safety Guard: Verse Count Mismatch
                             // If verse counts differ, paragraph alignment might be wrong. Fallback to list.
