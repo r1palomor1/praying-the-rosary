@@ -55,8 +55,8 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
     const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
-    const blessingText = language === 'es' 
-        ? 'La lectura se ha completado. Que Dios te bendiga por tu fiel devoción.' 
+    const blessingText = language === 'es'
+        ? 'La lectura se ha completado. Que Dios te bendiga por tu fiel devoción.'
         : 'The reading is now complete. May God bless you for your faithful devotion.';
 
     const formatDateParam = (date: Date) => {
@@ -224,7 +224,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             setActiveChapterId(null);
         } else {
             const cleanText = text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-            const segments = [
+            const segments: any[] = [
                 { text: title, gender: 'female' as const, postPause: 800, onStart: () => setActiveChapterId(id) },
                 {
                     text: cleanText,
