@@ -262,73 +262,73 @@
     width: 100%;
     z-index: 1000;
 }
-/* Play All Large Button */
-.play-all-btn-large {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 50%;
-  background-color: var(--home-primary, #A06BBE);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: var(--shadow-gold, 0 4px 15px rgba(160, 107, 190, 0.4));
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s;
+
+/* Play All Large Button - scoped to .home-container to avoid bleeding into other screens */
+.home-container .play-all-btn-large {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background-color: var(--home-primary, #A06BBE);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 15px rgba(160, 107, 190, 0.4);
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
-[data-theme="dark"] .play-all-btn-large {
-    background-color: #C07CE0; /* slightly brighter for dark mode if needed */
+[data-theme="dark"] .home-container .play-all-btn-large {
+    background-color: #C07CE0;
     box-shadow: 0 4px 15px rgba(192, 124, 224, 0.4);
 }
 
-.play-all-btn-large:hover {
-  transform: scale(1.05);
+.home-container .play-all-btn-large:hover {
+    transform: scale(1.05);
 }
 
-.play-all-btn-large:active {
-  transform: scale(0.95);
+.home-container .play-all-btn-large:active {
+    transform: scale(0.95);
 }
 
-
-/* Dynamic Color Mappings for HomeScreen Play Button */
-.play-all-btn-joyful {
-   background-color: #3B5B8C !important;
-   box-shadow: 0 4px 15px rgba(59, 91, 140, 0.4) !important;
+/* Dynamic Mystery Color Mappings - scoped to .home-container */
+.home-container .play-all-btn-joyful {
+    background-color: #3B5B8C !important;
+    box-shadow: 0 4px 15px rgba(59, 91, 140, 0.4) !important;
 }
 
-.play-all-btn-luminous {
-   background-color: #6E4A8D !important;
-   box-shadow: 0 4px 15px rgba(110, 74, 141, 0.4) !important;
+.home-container .play-all-btn-luminous {
+    background-color: #6E4A8D !important;
+    box-shadow: 0 4px 15px rgba(110, 74, 141, 0.4) !important;
 }
 
-.play-all-btn-sorrowful {
-   background-color: #8B2A3D !important;
-   box-shadow: 0 4px 15px rgba(139, 42, 61, 0.4) !important;
+.home-container .play-all-btn-sorrowful {
+    background-color: #8B2A3D !important;
+    box-shadow: 0 4px 15px rgba(139, 42, 61, 0.4) !important;
 }
 
-.play-all-btn-glorious {
-   background-color: #C5A059 !important;
-   box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4) !important;
+.home-container .play-all-btn-glorious {
+    background-color: #C5A059 !important;
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4) !important;
 }
 
-[data-theme="dark"] .play-all-btn-joyful {
+[data-theme="dark"] .home-container .play-all-btn-joyful {
     background-color: #4B6E9C !important;
     box-shadow: 0 4px 15px rgba(75, 110, 156, 0.4) !important;
 }
 
-[data-theme="dark"] .play-all-btn-luminous {
+[data-theme="dark"] .home-container .play-all-btn-luminous {
     background-color: #8A64A9 !important;
     box-shadow: 0 4px 15px rgba(138, 100, 169, 0.4) !important;
 }
 
-[data-theme="dark"] .play-all-btn-sorrowful {
+[data-theme="dark"] .home-container .play-all-btn-sorrowful {
     background-color: #A33A4E !important;
     box-shadow: 0 4px 15px rgba(163, 58, 78, 0.4) !important;
 }
 
-[data-theme="dark"] .play-all-btn-glorious {
+[data-theme="dark"] .home-container .play-all-btn-glorious {
     background-color: #D6B36D !important;
     box-shadow: 0 4px 15px rgba(214, 179, 109, 0.4) !important;
 }
@@ -341,4 +341,3 @@
     margin-top: 1.25rem;
     margin-bottom: 0.25rem;
 }
-
