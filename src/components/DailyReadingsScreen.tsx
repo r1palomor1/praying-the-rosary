@@ -216,7 +216,8 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     };
 
     const chunkText = (text: string, maxLength: number = 200): string[] => {
-        const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+        // Broaden punctuation to include colons, semicolons, and newlines to prevent Safari cutoffs
+        const sentences = text.match(/[^.!?\n:;]+[.!?\n:;]+|[^.!?\n:;]+$/g) || [text];
         const chunks: string[] = [];
         let currentChunk = '';
 
@@ -229,7 +230,22 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             }
         });
         if (currentChunk) chunks.push(currentChunk.trim());
-        return chunks;
+        
+        // Final safety net: slice chunks strictly exceeding 250 characters if they lacked any delimiters
+        return chunks.flatMap(chunk => {
+            if (chunk.length <= 250) return [chunk];
+            return chunk.match(/.{1,250}(?:\s|$)|.{1,250}/g) || [chunk];
+        });
+    };
+
+    const getSpokenText = (rawText: string) => {
+        let clean = rawText.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        // Strip out verse numbers in brackets (e.g., [ 1 ])
+        clean = clean.replace(/\[\s*\d+\s*\]/g, '');
+        // Replace "R." or "R/." with Response
+        const responseWord = language === 'es' ? 'Respuesta.' : 'Response.';
+        clean = clean.replace(/R\.|R\/\./g, responseWord);
+        return clean;
     };
 
     const handlePlayContent = async (e: React.MouseEvent, id: string, title: string, text: string) => {
@@ -240,12 +256,12 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
         } else {
-            const cleanText = text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            const spokenText = getSpokenText(text);
             const segments: any[] = [
                 { text: title, gender: 'female' as const, postPause: 800, onStart: () => setActiveChapterId(id) }
             ];
 
-            const chunks = chunkText(cleanText);
+            const chunks = chunkText(spokenText);
             chunks.forEach((chunk, cIndex) => {
                 const isLast = cIndex === chunks.length - 1;
                 segments.push({
@@ -313,7 +329,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
         readingsToPlay.forEach((reading, index) => {
             const id = `usccb-${index}`;
-            const cleanText = reading.text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            const spokenText = getSpokenText(reading.text);
 
             segments.push({
                 text: normalizeReadingTitle(reading.title),
@@ -322,7 +338,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 onStart: () => setActiveChapterId(id)
             });
 
-            const chunks = chunkText(cleanText);
+            const chunks = chunkText(spokenText);
             chunks.forEach((chunk, cIndex) => {
                 const isLast = cIndex === chunks.length - 1;
                 segments.push({
@@ -341,7 +357,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
         if (reflection) {
             const id = 'reflection';
-            const cleanText = reflection.content.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            const spokenText = getSpokenText(reflection.content);
             segments.push({
                 text: reflection.title,
                 gender: 'female' as const,
@@ -349,7 +365,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 onStart: () => setActiveChapterId(id)
             });
             
-            const chunks = chunkText(cleanText);
+            const chunks = chunkText(spokenText);
             chunks.forEach((chunk, cIndex) => {
                 const isLast = cIndex === chunks.length - 1;
                 segments.push({
