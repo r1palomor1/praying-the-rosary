@@ -7,7 +7,7 @@
 
 ## 2. No Jumping the Gun
 *   Do not perform actions based on assumptions.
-*   Answer questions first.
+*   **MANDATORY:** Always explicitly answer chat questions *prior* to implementing any changes. Never ignore or disregard questions.
 *   Propose solution -> Get Approval -> Implement.
 *   Do not start implementation while answering a question.
 

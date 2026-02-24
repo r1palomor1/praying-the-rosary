@@ -103,7 +103,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
     // Initial Load Logic (Catch Up)
     useEffect(() => {
-        if (!bibleStartDate) return;
+        if (!bibleStartDate || isPlaying) return;
         if (missedDays.length > 0) {
             setCurrentDay(missedDays[0]);
         } else if (expectedDay > 1) {
@@ -111,7 +111,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 setCurrentDay(expectedDay);
             }
         }
-    }, [bibleStartDate, missedDays.length, expectedDay]);
+    }, [bibleStartDate, missedDays.length, expectedDay, isPlaying]);
 
     const dayData: BibleDay = (biblePlan as BibleDay[])[currentDay - 1];
 
@@ -229,7 +229,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
     // Audio Logic
     const chunkText = (text: string, maxLength: number = 200): string[] => {
-        const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+        // Broaden punctuation to include colons, semicolons, and newlines to prevent Safari cutoffs
+        const sentences = text.match(/[^.!?\n:;]+[.!?\n:;]+|[^.!?\n:;]+$/g) || [text];
         const chunks: string[] = [];
         let currentChunk = '';
 
@@ -242,7 +243,12 @@ export default function BibleInYearScreen({ onBack }: Props) {
             }
         });
         if (currentChunk) chunks.push(currentChunk.trim());
-        return chunks;
+        
+        // Final safety net: slice chunks strictly exceeding 250 characters if they lacked any delimiters
+        return chunks.flatMap(chunk => {
+            if (chunk.length <= 250) return [chunk];
+            return chunk.match(/.{1,250}(?:\s|$)|.{1,250}/g) || [chunk];
+        });
     };
 
     interface Chapter {

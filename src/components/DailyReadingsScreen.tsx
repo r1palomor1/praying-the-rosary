@@ -215,6 +215,23 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         return uncompleted.length > 0 && uncompleted.every(id => id === playingId);
     };
 
+    const chunkText = (text: string, maxLength: number = 200): string[] => {
+        const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+        const chunks: string[] = [];
+        let currentChunk = '';
+
+        sentences.forEach(sentence => {
+            if (currentChunk.length + sentence.length > maxLength) {
+                if (currentChunk) chunks.push(currentChunk.trim());
+                currentChunk = sentence;
+            } else {
+                currentChunk += sentence;
+            }
+        });
+        if (currentChunk) chunks.push(currentChunk.trim());
+        return chunks;
+    };
+
     const handlePlayContent = async (e: React.MouseEvent, id: string, title: string, text: string) => {
         e.stopPropagation();
         if (isPlaying && currentlyPlayingId === id) {
@@ -225,15 +242,24 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         } else {
             const cleanText = text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
             const segments: any[] = [
-                { text: title, gender: 'female' as const, postPause: 800, onStart: () => setActiveChapterId(id) },
-                {
-                    text: cleanText,
-                    gender: 'female' as const,
-                    postPause: 0,
-                    onStart: () => setActiveChapterId(id),
-                    onEnd: () => setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id])
-                }
+                { text: title, gender: 'female' as const, postPause: 800, onStart: () => setActiveChapterId(id) }
             ];
+
+            const chunks = chunkText(cleanText);
+            chunks.forEach((chunk, cIndex) => {
+                const isLast = cIndex === chunks.length - 1;
+                segments.push({
+                    text: chunk,
+                    gender: 'female' as const,
+                    postPause: isLast ? 0 : 300,
+                    onStart: () => setActiveChapterId(id),
+                    onEnd: () => {
+                        if (isLast) {
+                            setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id]);
+                        }
+                    }
+                });
+            });
 
             if (checkWillCompleteDaily(id)) {
                 segments.push({ text: blessingText, gender: 'female' as const, postPause: 1000 });
@@ -295,12 +321,21 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 postPause: 800,
                 onStart: () => setActiveChapterId(id)
             });
-            segments.push({
-                text: cleanText,
-                gender: 'female' as const,
-                postPause: 1500,
-                onStart: () => setActiveChapterId(id),
-                onEnd: () => setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id])
+
+            const chunks = chunkText(cleanText);
+            chunks.forEach((chunk, cIndex) => {
+                const isLast = cIndex === chunks.length - 1;
+                segments.push({
+                    text: chunk,
+                    gender: 'female' as const,
+                    postPause: isLast ? 1500 : 300,
+                    onStart: () => setActiveChapterId(id),
+                    onEnd: () => {
+                        if (isLast) {
+                            setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id]);
+                        }
+                    }
+                });
             });
         });
 
@@ -313,12 +348,21 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 postPause: 800,
                 onStart: () => setActiveChapterId(id)
             });
-            segments.push({
-                text: cleanText,
-                gender: 'female' as const,
-                postPause: 0,
-                onStart: () => setActiveChapterId(id),
-                onEnd: () => setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id])
+            
+            const chunks = chunkText(cleanText);
+            chunks.forEach((chunk, cIndex) => {
+                const isLast = cIndex === chunks.length - 1;
+                segments.push({
+                    text: chunk,
+                    gender: 'female' as const,
+                    postPause: isLast ? 0 : 300,
+                    onStart: () => setActiveChapterId(id),
+                    onEnd: () => {
+                        if (isLast) {
+                            setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id]);
+                        }
+                    }
+                });
             });
         }
 
