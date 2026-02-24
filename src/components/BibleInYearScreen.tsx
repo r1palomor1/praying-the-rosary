@@ -145,6 +145,25 @@ export default function BibleInYearScreen({ onBack }: Props) {
         }
     }[language];
 
+    // Period name translations (data source is English-only)
+    const periodTranslations: Record<string, string> = language === 'es' ? {
+        'Early World': 'El Mundo Antiguo',
+        'Patriarchs': 'Los Patriarcas',
+        'Egypt and Exodus': 'Egipto y el Éxodo',
+        'Desert Wanderings': 'Las Peregrinaciones por el Desierto',
+        'Conquest and Judges': 'La Conquista y los Jueces',
+        'Royal Kingdom': 'El Reino Real',
+        'Divided Kingdom': 'El Reino Dividido',
+        'Exile': 'El Exilio',
+        'Return': 'El Retorno',
+        'Maccabean Revolt': 'La Revuelta Macabea',
+        'Messianic Checkpoint': 'Control Mesiánico',
+        'Messianic Fulfillment': 'El Cumplimiento Mesiánico',
+        'The Church': 'La Iglesia'
+    } : {};
+
+    const translatePeriod = (p: string) => periodTranslations[p] ?? p;
+
     // Fetch Logic
     const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
@@ -243,7 +262,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             }
         });
         if (currentChunk) chunks.push(currentChunk.trim());
-        
+
         // Final safety net: slice chunks strictly exceeding 250 characters if they lacked any delimiters
         return chunks.flatMap(chunk => {
             if (chunk.length <= 250) return [chunk];
@@ -297,7 +316,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             if (chapter.title !== readingTitle && chapter.title !== readingCitation) {
                 let pgTitle = chapter.title.replace(/(Chapter|Capítulo)\s*/gi, '').trim();
                 pgTitle = pgTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
-                
+
                 if (language === 'en') {
                     pgTitle = pgTitle.replace(/:(\d+)-(\d+)/, ', verses $1 to $2');
                     pgTitle = pgTitle.replace(/:(\d+)/, ', verse $1');
@@ -343,9 +362,9 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const checkWillCompleteDay = (chaptersBeingPlayed: Chapter[]) => {
         const allChaptersInDay = readings.flatMap(r => parseChapters(r));
         const uncompleted = allChaptersInDay.filter(c => !isChapterComplete(currentDay, c.title));
-        
+
         if (uncompleted.length === 0) return false;
-        
+
         const playingTitles = chaptersBeingPlayed.map(c => c.title);
         return uncompleted.every(c => playingTitles.includes(c.title));
     };
@@ -370,11 +389,9 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
         // Add intro only if starting from the beginning (not all day completed)
         if (!allDayCompleted) {
-            const periodString = dayData?.period || '';
-            const introText = language === 'es' 
-                ? `${t.day} ${currentDay}. ${t.phase}: ${periodString}.` 
-                : `${t.day} ${currentDay}. ${t.phase}: ${periodString}.`;
-            
+            const periodString = translatePeriod(dayData?.period || '');
+            const introText = `${t.day} ${currentDay}. ${t.phase}: ${periodString}.`;
+
             segments.push({
                 text: introText,
                 gender: 'female' as const,
@@ -546,7 +563,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     <div className="controls-row" style={{ justifyContent: 'center', position: 'relative' }}>
                         <div className="phase-tag">
                             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>church</span>
-                            <span>{dayData.period}</span>
+                            <span>{translatePeriod(dayData.period)}</span>
                         </div>
 
                         <span className="day-counter-small" style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'absolute', right: 0 }}>
