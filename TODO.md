@@ -41,11 +41,9 @@ git push
 
 ## ✅ Completed Features
 
-### 🎯 Priority Items for Next Session
-
-### 🎨 Daily Readings: Unified "Bible in a Year" Layout Migration
-- [ ] **Redesign Daily Readings UI to match Bible in a Year**
-  - **Goal:** Transplant the exact layout, theme, and user experience we just built for the "Bible in a Year" screen to the "Daily Readings" screen.
+### 🎨 Daily Readings: Unified "Bible in a Year" Layout Migration (Completed)
+- [x] **Redesign Daily Readings UI to match Bible in a Year**
+  - **Goal:** Transplant the exact layout, theme, and user experience we built for the "Bible in a Year" screen to the "Daily Readings" screen.
   - **Structure:** Use the seamless dark background (`#191b1f`), "Section Cards" (for Reading 1, Psalm, Gospel, etc.) with "Expandable content rows" (hidden text by default).
   - **Audio Controls:** Replicate the same "Play All" logic at the top, and specific "Play Section / Chapter" logic on the cards.
   - **State & Logic Integration:** *Keep all the existing background logic* for Daily Readings (fetching USCCB/Vatican sources, offline fallbacks, liturgical coloring) but feed it into the new view layer.
@@ -276,7 +274,14 @@ git push
     - Responsive typesetting (Cinzel font)
   - **Status:** Deployed and working
 
-## 📋 OUTSTANDING ITEMS (Feb 13, 2026)
+## 📋 OUTSTANDING ITEMS (Feb 23, 2026)
+
+### Audio & Daily Readings Polish (Verified Feb 23, 2026)
+- [x] **TTS Safari iOS Crash Fix** - Engineered text chunker to prevent engine crashes on long verses without punctuation.
+- [x] **Race Condition Fix** - Prevent auto-advancing to tomorrow's reading while audio blessing is still playing.
+- [x] **Vatican Scrape Restoration** - Updated API Parser to detect "Santo Padre" headers due to Vatican webpage changes.
+- [x] **Audio Refinements** - Replaced "R." with spoken "Response" and stripped bracketed verse numbers from Daily Readings TTS payload.
+- [ ] **Daily Readings Source Links** - Fix the source citation at the bottom of the page; ensure both USCCB and Vatican News links are present (currently only shows USCCB).
 
 ### Bible in a Year Polish (Verified Feb 13, 2026)
 - [x] **Settings Integration** - Add Settings `cog` icon and modal to Bible screen

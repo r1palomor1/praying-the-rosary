@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Lightbulb, ArrowLeft, Play, Square } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, StopCircle, Lightbulb, ArrowLeft, Play, Square } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
@@ -244,7 +244,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                 <div className="glass-card">
                     <h2 className="mystery-card-title">{mysterySet ? mysterySet.name[language] : ''}</h2>
                     <p className="mystery-card-subtitle">{t.forDays} {getDaysText()}</p>
-                    <div className="devotion-play-wrapper">
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.25rem', marginBottom: '0.25rem' }}>
                         <button
                             className={`play-all-btn-large play-all-btn-${currentMysterySet}`}
                             onClick={handleContinuousStart}

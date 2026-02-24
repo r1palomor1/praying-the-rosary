@@ -121,7 +121,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             title: 'Bible in a Year',
             headerDate: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }),
             day: 'Day',
-            phase: 'Phase',
+            phase: 'Time Period',
             firstReading: 'First Reading',
             secondReading: 'Second Reading',
             psalmProverbs: 'Psalms & Proverbs',
@@ -134,7 +134,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             title: 'Biblia en un Año',
             headerDate: new Date().toLocaleDateString('es-ES', { month: 'long', day: 'numeric' }),
             day: 'Día',
-            phase: 'Fase',
+            phase: 'Etapa',
             firstReading: 'Primera Lectura',
             secondReading: 'Segunda Lectura',
             psalmProverbs: 'Salmos y Proverbios',
@@ -367,6 +367,20 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 allDayCompleted = false;
             }
         });
+
+        // Add intro only if starting from the beginning (not all day completed)
+        if (!allDayCompleted) {
+            const periodString = dayData?.period || '';
+            const introText = language === 'es' 
+                ? `${t.day} ${currentDay}. ${t.phase}: ${periodString}.` 
+                : `${t.day} ${currentDay}. ${t.phase}: ${periodString}.`;
+            
+            segments.push({
+                text: introText,
+                gender: 'female' as const,
+                postPause: 800
+            });
+        }
 
         readings.forEach(r => {
             const chapters = parseChapters(r);

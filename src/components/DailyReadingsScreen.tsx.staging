@@ -696,15 +696,27 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
                             <div className="footer-scrollable">
                                 <div className="source-container-sacred">
-                                    <div className="source-row">
-                                        <a
-                                            href="https://bible.usccb.org/"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="source-link-sacred"
-                                        >
-                                            <span>Source: USCCB & VATICAN</span>
-                                        </a>
+                                    <div className="source-row" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', gap: '12px' }}>
+                                            <a
+                                                href="https://bible.usccb.org/"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="source-link-sacred"
+                                            >
+                                                <span>Source: USCCB</span>
+                                            </a>
+                                            {reflection && (
+                                                <a
+                                                    href={language === 'es' ? "https://www.vaticannews.va/es/evangelio-de-hoy.html" : "https://www.vaticannews.va/en/word-of-the-day.html"}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="source-link-sacred"
+                                                >
+                                                    <span>Vatican News</span>
+                                                </a>
+                                            )}
+                                        </div>
                                         <button
                                             className="info-icon-btn"
                                             onClick={() => setShowSourceInfo(!showSourceInfo)}
