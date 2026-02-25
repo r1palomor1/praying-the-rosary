@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Lightbulb, ArrowLeft, Play, Square } from 'lucide-react';
+import { Settings as SettingsIcon, Lightbulb, Play, Square } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { mysterySets } from '../data/mysteries';
 import { hasActiveSession, loadPrayerProgress, hasValidPrayerProgress, clearPrayerProgress, clearSession } from '../utils/storage';
@@ -209,7 +209,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                                     onClick={onNavigateToSelection}
                                     aria-label={t.returnToMenu}
                                 >
-                                    <ArrowLeft size={21} />
+                                    <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>back_to_tab</span>
                                 </button>
                             )}
                         </div>

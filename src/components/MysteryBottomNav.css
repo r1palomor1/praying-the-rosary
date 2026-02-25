@@ -33,6 +33,11 @@
     transform: translateX(-50%);
 }
 
+/* Align Previous/Next bottoms with Home & Learn More */
+.mystery-nav-center .mystery-nav-btn:not(.nav-btn-audio) {
+    justify-content: flex-end;
+}
+
 .mystery-nav-btn {
     display: flex;
     flex-direction: column;

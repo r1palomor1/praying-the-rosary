@@ -78,6 +78,17 @@
   color: var(--color-primary);
 }
 
+/* Shaded circle variant — matches Rosary HomeScreen back button style */
+.icon-btn-ghost-circle {
+  background: var(--color-surface);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  color: white !important;
+}
+
+.icon-btn-ghost-circle:hover {
+  background-color: rgba(168, 125, 62, 0.15);
+}
+
 .header-title {
   font-family: var(--font-display);
   font-size: 1.25rem;

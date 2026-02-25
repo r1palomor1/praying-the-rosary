@@ -83,7 +83,7 @@ export function BottomNav({ activeTab, onTabChange, onStartPrayer, showProgress 
                 onClick={onStartPrayer}
                 aria-label={t.start}
             >
-                <span className="material-icons">play_arrow</span>
+                <span className="material-icons">start</span>
                 <span className="nav-label">{t.start}</span>
             </button>
         </nav>

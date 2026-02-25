@@ -4,7 +4,6 @@ import {
     ChevronDown,
     Play,
     Square,
-    ChevronLeft,
     Info,
     Calendar,
     CheckCircle
@@ -440,8 +439,8 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             <div className="readings-container">
                 <header className="sacred-header">
                     <div className="header-top-row">
-                        <button className="icon-btn-ghost" onClick={onBack} aria-label="Back">
-                            <ChevronLeft size={28} />
+                        <button className="icon-btn-ghost icon-btn-ghost-circle" onClick={onBack} aria-label="Back">
+                            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>back_to_tab</span>
                         </button>
                         <h1 className="header-title">
                             {language === 'es' ? 'Lecturas Diarias' : 'Daily Readings'}

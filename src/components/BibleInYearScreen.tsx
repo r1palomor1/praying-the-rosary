@@ -7,7 +7,6 @@ import {
     ChevronDown,
     CheckCircle,
     Square,
-    ChevronLeft,
     Info,
     Flag
 } from 'lucide-react';
@@ -509,11 +508,11 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 <header className="sacred-header">
                     <div className="header-top-row">
                         <button
-                            className="icon-btn-ghost"
+                            className="icon-btn-ghost icon-btn-ghost-circle"
                             onClick={onBack}
                             aria-label="Back"
                         >
-                            <ChevronLeft size={28} />
+                            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>back_to_tab</span>
                         </button>
 
                         <h1 className="header-title">{t.title}</h1>
