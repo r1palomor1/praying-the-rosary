@@ -158,6 +158,22 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers, onStartPr
         return sortMysteriesWithPriority(orderedMysteries, progressData);
     }, [progressData]);
 
+    // Mystery color map — matches play button theme colors
+    const mysteryColors: Record<string, string> = {
+        joyful: '#3B5B8C',
+        luminous: '#6E4A8D',
+        sorrowful: '#8B2A3D',
+        glorious: '#C5A059',
+    };
+
+    // Muted tint for the days label
+    const mysteryColorsMuted: Record<string, string> = {
+        joyful: 'rgba(59, 91, 140, 0.60)',
+        luminous: 'rgba(110, 74, 141, 0.60)',
+        sorrowful: 'rgba(139, 42, 61, 0.60)',
+        glorious: 'rgba(197, 160, 89, 0.60)',
+    };
+
     const handleTabChange = useNavigationHandler({
         onNavigateHome,
         onNavigateToPrayers
@@ -183,8 +199,15 @@ export function MysteriesScreen({ onNavigateHome, onNavigateToPrayers, onStartPr
                                     onClick={() => handleMysteryClick(mysterySet.type)}
                                 >
                                     <div className="mystery-card-content">
-                                        <h2 className="mystery-card-title">{mysterySet.name[language]}</h2>
-                                        <p className="mystery-card-days">{getDaysText(mysterySet.days)}</p>
+                                        <h2
+                                            className="mystery-card-title"
+                                            style={{ color: mysteryColors[mysterySet.type] }}
+                                        >
+                                            {mysterySet.name[language]}
+                                        </h2>
+                                        <p className="mystery-card-days" style={{ color: mysteryColorsMuted[mysterySet.type] }}>
+                                            {getDaysText(mysterySet.days)}
+                                        </p>
                                     </div>
                                 </button>
 

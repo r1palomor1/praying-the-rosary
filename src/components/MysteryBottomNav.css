@@ -109,44 +109,44 @@
         font-size: 10px;
     }
 }
+
 /* Dynamic Audio Button Wrapper */
 .nav-btn-audio .audio-icon-wrapper {
-   width: 48px;
-   height: 48px;
-   border-radius: 50%;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   color: white;
-   transition: transform 0.2s, background-color 0.3s;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: transform 0.2s, background-color 0.3s;
 }
 
 .mystery-nav-btn.nav-btn-audio:hover .audio-icon-wrapper {
-   transform: scale(1.1);
+    transform: scale(1.1);
 }
 
 .mystery-nav-btn.nav-btn-audio:active .audio-icon-wrapper {
-   transform: scale(0.95);
+    transform: scale(0.95);
 }
 
 /* Color Mappings for each Mystery */
 .nav-btn-audio-joyful .audio-icon-wrapper {
-   background-color: #3B5B8C;
-   box-shadow: 0 4px 10px rgba(59, 91, 140, 0.4);
+    background-color: rgba(59, 91, 140, 0.85);
+    box-shadow: 0 4px 10px rgba(59, 91, 140, 0.4);
 }
 
 .nav-btn-audio-luminous .audio-icon-wrapper {
-   background-color: #6E4A8D;
-   box-shadow: 0 4px 10px rgba(110, 74, 141, 0.4);
+    background-color: rgba(110, 74, 141, 0.85);
+    box-shadow: 0 4px 10px rgba(110, 74, 141, 0.4);
 }
 
 .nav-btn-audio-sorrowful .audio-icon-wrapper {
-   background-color: #8B2A3D;
-   box-shadow: 0 4px 10px rgba(139, 42, 61, 0.4);
+    background-color: rgba(139, 42, 61, 0.85);
+    box-shadow: 0 4px 10px rgba(139, 42, 61, 0.4);
 }
 
 .nav-btn-audio-glorious .audio-icon-wrapper {
-   background-color: #C5A059;
-   box-shadow: 0 4px 10px rgba(197, 160, 89, 0.4);
+    background-color: rgba(197, 160, 89, 0.85);
+    box-shadow: 0 4px 10px rgba(197, 160, 89, 0.4);
 }
-

@@ -230,7 +230,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             }
         });
         if (currentChunk) chunks.push(currentChunk.trim());
-        
+
         // Final safety net: slice chunks strictly exceeding 250 characters if they lacked any delimiters
         return chunks.flatMap(chunk => {
             if (chunk.length <= 250) return [chunk];
@@ -364,7 +364,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 postPause: 800,
                 onStart: () => setActiveChapterId(id)
             });
-            
+
             const chunks = chunkText(spokenText);
             chunks.forEach((chunk, cIndex) => {
                 const isLast = cIndex === chunks.length - 1;
@@ -422,7 +422,9 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.value) {
             const [y, m, d] = e.target.value.split('-').map(Number);
-            setCurrentDate(new Date(y, m - 1, d));
+            const newDate = new Date(y, m - 1, d);
+            setCurrentDate(newDate);
+            fetchReadings(newDate); // Fetch immediately — avoids iOS two-tap / "Set" button requirement
         }
     };
 

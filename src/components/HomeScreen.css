@@ -294,42 +294,42 @@
 
 /* Dynamic Mystery Color Mappings - scoped to .home-container */
 .home-container .play-all-btn-joyful {
-    background-color: #3B5B8C !important;
+    background-color: rgba(59, 91, 140, 0.85) !important;
     box-shadow: 0 4px 15px rgba(59, 91, 140, 0.4) !important;
 }
 
 .home-container .play-all-btn-luminous {
-    background-color: #6E4A8D !important;
+    background-color: rgba(110, 74, 141, 0.85) !important;
     box-shadow: 0 4px 15px rgba(110, 74, 141, 0.4) !important;
 }
 
 .home-container .play-all-btn-sorrowful {
-    background-color: #8B2A3D !important;
+    background-color: rgba(139, 42, 61, 0.85) !important;
     box-shadow: 0 4px 15px rgba(139, 42, 61, 0.4) !important;
 }
 
 .home-container .play-all-btn-glorious {
-    background-color: #C5A059 !important;
+    background-color: rgba(197, 160, 89, 0.85) !important;
     box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4) !important;
 }
 
 [data-theme="dark"] .home-container .play-all-btn-joyful {
-    background-color: #4B6E9C !important;
+    background-color: rgba(75, 110, 156, 0.85) !important;
     box-shadow: 0 4px 15px rgba(75, 110, 156, 0.4) !important;
 }
 
 [data-theme="dark"] .home-container .play-all-btn-luminous {
-    background-color: #8A64A9 !important;
+    background-color: rgba(138, 100, 169, 0.85) !important;
     box-shadow: 0 4px 15px rgba(138, 100, 169, 0.4) !important;
 }
 
 [data-theme="dark"] .home-container .play-all-btn-sorrowful {
-    background-color: #A33A4E !important;
+    background-color: rgba(163, 58, 78, 0.85) !important;
     box-shadow: 0 4px 15px rgba(163, 58, 78, 0.4) !important;
 }
 
 [data-theme="dark"] .home-container .play-all-btn-glorious {
-    background-color: #D6B36D !important;
+    background-color: rgba(214, 179, 109, 0.85) !important;
     box-shadow: 0 4px 15px rgba(214, 179, 109, 0.4) !important;
 }
 
