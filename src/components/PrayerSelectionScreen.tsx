@@ -1,24 +1,29 @@
-import { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, ChevronRight, Loader2 } from 'lucide-react'; // Added Loader2
+import { useState, useEffect, useRef } from 'react';
+import { Settings as SettingsIcon, ChevronRight, Loader2, Square } from 'lucide-react'; // Added Square
 import { useApp } from '../context/AppContext';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { getVersionInfo, type VersionInfo } from '../utils/version';
 import { LiturgicalCard } from './LiturgicalCard';
-import { fetchLiturgicalDay, type LiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar'; // Import fetcher
+import { fetchLiturgicalDay, type LiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar';
 import './PrayerSelectionScreen.css';
 import { hasCompletionOnDate } from '../utils/prayerHistory';
 import { useBibleProgress } from '../hooks/useBibleProgress';
+import { useRosaryPlayback } from '../hooks/useRosaryPlayback';
+import type { MysteryType } from '../utils/prayerFlowEngine';
+import { mysterySets } from '../data/mysteries';
+import { getTodaysDevotion } from '../data/devotions';
 
 interface PrayerSelectionScreenProps {
     onSelectRosary: () => void;
+    onStartRosaryWithContinuous?: () => void;
     onSelectSacredPrayers: () => void;
     onSelectDailyReadings: () => void;
     onSelectBibleInYear?: () => void;
     onResetProgress?: () => void;
 }
 
-export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, onSelectDailyReadings, onSelectBibleInYear, onResetProgress }: PrayerSelectionScreenProps) {
-    const { language } = useApp();
+export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinuous, onSelectSacredPrayers, onSelectDailyReadings, onSelectBibleInYear, onResetProgress }: PrayerSelectionScreenProps) {
+    const { language, currentMysterySet, playAudio } = useApp();
     const [showSettings, setShowSettings] = useState(false);
     const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
 
@@ -31,6 +36,21 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
 
     // Bible Progress
     const { missedDays, expectedDay, isDayComplete, bibleStartDate } = useBibleProgress();
+
+    // Rosary quick play from church icon
+    const rosaryPlayback = useRosaryPlayback(currentMysterySet as MysteryType, {
+        onComplete: () => {
+            // Optional: show completion toast or update UI
+        }
+    });
+    
+    // Track if quick play is active (including intro audio)
+    const [isQuickPlayActive, setIsQuickPlayActive] = useState(false);
+    const isQuickPlayActiveRef = useRef(false);
+    
+    useEffect(() => {
+        isQuickPlayActiveRef.current = isQuickPlayActive;
+    }, [isQuickPlayActive]);
 
     useEffect(() => {
         const initScreen = async () => {
@@ -89,6 +109,93 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
 
     // Determine if we should show the glow (Only if reminder ON and NOT completed)
     const showGlow = isReminderEnabled && !isRosaryCompleted;
+
+    // Get mystery color for visual feedback
+    const getMysteryColor = (): string => {
+        const colors = {
+            joyful: '#D4AF37',
+            sorrowful: '#4C6EF5',
+            glorious: '#E5E7EB',
+            luminous: '#FCD34D'
+        };
+        return colors[currentMysterySet] || '#D4AF37';
+    };
+
+    // Handle church icon click - play/stop rosary
+    const handleRosaryQuickPlay = () => {
+        if (isQuickPlayActive || rosaryPlayback.isPlaying) {
+            // Stop playback (works during intro or prayers)
+            setIsQuickPlayActive(false);
+            rosaryPlayback.stop();
+        } else {
+            // Set active immediately to show stop icon
+            setIsQuickPlayActive(true);
+            
+            // Check if this is initial start (at step 0)
+            const isInitialStart = rosaryPlayback.currentStepIndex === 0;
+            
+            if (isInitialStart) {
+                // Play HomeScreen intro first, then start prayers
+                const mysterySet = mysterySets.find(m => m.type === currentMysterySet);
+                const devotion = getTodaysDevotion();
+                
+                if (mysterySet && devotion) {
+                    const mysteryName = mysterySet.name[language];
+                    const daysText = mysterySet.days.map(day => {
+                        const dayNames = {
+                            en: {
+                                monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday',
+                                thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday'
+                            },
+                            es: {
+                                monday: 'Lunes', tuesday: 'Martes', wednesday: 'Miércoles',
+                                thursday: 'Jueves', friday: 'Viernes', saturday: 'Sábado', sunday: 'Domingo'
+                            }
+                        };
+                        return dayNames[language][day];
+                    }).join(' & ');
+                    
+                    const forDays = language === 'es' ? 'Para' : 'For';
+                    const dailyDevotionLabel = language === 'es' ? 'DEVOCIÓN DIARIA' : 'DAILY DEVOTION';
+                    const devotionTitle = devotion.title[language];
+                    const devotionText = devotion.fullText[language];
+                    
+                    const introAudioText = `${mysteryName}. ${forDays} ${daysText}. ${dailyDevotionLabel}. ${devotionTitle}. ${devotionText}`;
+                    
+                    // Play intro, then start prayers
+                    playAudio(introAudioText, () => {
+                        // Only continue if still active (user didn't stop during intro)
+                        if (isQuickPlayActiveRef.current) {
+                            rosaryPlayback.play();
+                        }
+                    });
+                } else {
+                    rosaryPlayback.play();
+                }
+            } else {
+                // Resume from where we left off
+                rosaryPlayback.play();
+            }
+        }
+    };
+
+    // Handle Rosary card click - navigate to appropriate screen
+    const handleRosaryCardClick = () => {
+        if (isQuickPlayActive || rosaryPlayback.isPlaying) {
+            // Stop the hook's playback and let MysteryScreen take over with continuous mode
+            setIsQuickPlayActive(false);
+            rosaryPlayback.stop();
+            // Navigate with continuous mode enabled
+            if (onStartRosaryWithContinuous) {
+                onStartRosaryWithContinuous();
+            } else {
+                onSelectRosary();
+            }
+        } else {
+            // Not playing - go to home or prayer screen based on progress
+            onSelectRosary();
+        }
+    };
 
     const handleReset = () => {
         localStorage.removeItem('rosary_last_completed');
@@ -249,16 +356,35 @@ export function PrayerSelectionScreen({ onSelectRosary, onSelectSacredPrayers, o
                     <ChevronRight className="card-chevron" size={24} />
                 </button>
 
-                {/* Divider */}
+                {/* Divider with clickable church icon for quick play */}
                 <div className="decorative-divider">
                     <div className="divider-line divider-line-left"></div>
-                    <span className="material-symbols-outlined divider-icon">church</span>
+                    <button 
+                        onClick={handleRosaryQuickPlay}
+                        className="divider-icon-button"
+                        aria-label={(isQuickPlayActive || rosaryPlayback.isPlaying) ? "Stop Rosary" : "Play Rosary"}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        {(isQuickPlayActive || rosaryPlayback.isPlaying) ? (
+                            <Square size={20} fill="currentColor" style={{ color: getMysteryColor() }} />
+                        ) : (
+                            <span className="material-symbols-outlined divider-icon">church</span>
+                        )}
+                    </button>
                     <div className="divider-line divider-line-right"></div>
                 </div>
 
                 {/* Rosary Card */}
                 <button
-                    onClick={onSelectRosary}
+                    onClick={handleRosaryCardClick}
                     className="prayer-card"
                     style={{
                         // When completed or disabled, use default border (undefined)

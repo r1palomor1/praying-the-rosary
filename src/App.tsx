@@ -244,6 +244,7 @@ function AppContent() {
         {currentScreen === 'prayer-selection' && (
           <PrayerSelectionScreen
             onSelectRosary={handleSelectRosary}
+            onStartRosaryWithContinuous={handleStartPrayerWithContinuous}
             onSelectSacredPrayers={handleSelectSacredPrayers}
             onSelectDailyReadings={() => setCurrentScreen('daily-readings')}
             onSelectBibleInYear={() => setCurrentScreen('bible-in-year')}
