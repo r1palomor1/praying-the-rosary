@@ -188,8 +188,12 @@ export function useDailyReadingsPlayback(
                     text: chunk,
                     pause: isLast ? 1500 : 300,
                     onComplete: isLast ? () => {
-                        setCompletedIds(prev => prev.includes(id) ? prev : [...prev, id]);
-                        localStorage.setItem(`dailyReadings_completed_${dateString}`, JSON.stringify([...completedIds, id]));
+                        setCompletedIds(prev => {
+                            if (prev.includes(id)) return prev;
+                            const updated = [...prev, id];
+                            localStorage.setItem(`dailyReadings_completed_${dateString}`, JSON.stringify(updated));
+                            return updated;
+                        });
                     } : undefined
                 });
             });
@@ -209,8 +213,12 @@ export function useDailyReadingsPlayback(
                         text: chunk, 
                         pause: 300,
                         onComplete: isLast ? () => {
-                            setCompletedIds(prev => prev.includes(id) ? prev : [...prev, id]);
-                            localStorage.setItem(`dailyReadings_completed_${dateString}`, JSON.stringify([...completedIds, id]));
+                            setCompletedIds(prev => {
+                                if (prev.includes(id)) return prev;
+                                const updated = [...prev, id];
+                                localStorage.setItem(`dailyReadings_completed_${dateString}`, JSON.stringify(updated));
+                                return updated;
+                            });
                         } : undefined
                     });
                 });
