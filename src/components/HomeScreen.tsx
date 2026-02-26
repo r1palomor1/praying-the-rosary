@@ -209,7 +209,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                                     onClick={onNavigateToSelection}
                                     aria-label={t.returnToMenu}
                                 >
-                                    <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>back_to_tab</span>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>family_home</span>
                                 </button>
                             )}
                         </div>

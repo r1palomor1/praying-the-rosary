@@ -508,11 +508,11 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 <header className="sacred-header">
                     <div className="header-top-row">
                         <button
-                            className="icon-btn-ghost icon-btn-ghost-circle"
+                            className="icon-btn-ghost"
                             onClick={onBack}
                             aria-label="Back"
                         >
-                            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>back_to_tab</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>family_home</span>
                         </button>
 
                         <h1 className="header-title">{t.title}</h1>

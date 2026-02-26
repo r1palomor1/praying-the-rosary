@@ -281,7 +281,7 @@ git push
 - [x] **Race Condition Fix** - Prevent auto-advancing to tomorrow's reading while audio blessing is still playing.
 - [x] **Vatican Scrape Restoration** - Updated API Parser to detect "Santo Padre" headers due to Vatican webpage changes.
 - [x] **Audio Refinements** - Replaced "R." with spoken "Response" and stripped bracketed verse numbers from Daily Readings TTS payload.
-- [ ] **Daily Readings Source Links** - Fix the source citation at the bottom of the page; ensure both USCCB and Vatican News links are present (currently only shows USCCB).
+- [x] **Daily Readings Source Links** - Fix the source citation at the bottom of the page; ensure both USCCB and Vatican News links are present (currently only shows USCCB).
 
 ### Bible in a Year Polish (Verified Feb 13, 2026)
 - [x] **Settings Integration** - Add Settings `cog` icon and modal to Bible screen
@@ -372,32 +372,53 @@ git push
 ---
 
 ### 🤖 AI-Powered Spiritual Companion (Not Started)
-**Priority:** Vision | **Time:** 30-40 hours | **Cost:** $0 (all free APIs)
+**Priority:** Vision | **Time:** 46-58 hours | **Cost:** $0 (100% free APIs)
 
-**Phase 1: Dynamic Mystery Explanations** (8-12 hours)
-- [ ] Replace static "Learn More" with AI chatbot
-- [ ] Mystery Q&A feature
-- [ ] Tech: Gemini API (1,500 free/day) + Groq fallback
+**Core Principle:** AI is 100% optional enhancement. All existing features remain fully functional if AI unavailable.
 
-**Phase 2: Liturgical Integration** (6-8 hours)
-- [ ] MCP server for Catholic data
-- [ ] Saint of the day with AI insights
-- [ ] Today's readings with context
+**Free API Strategy:**
+- Gemini: 1,500 requests/day free
+- Groq: 14,400 requests/day free
+- User-level rate limiting + queue system
+- Progressive enhancement pattern (AI enhances, never replaces)
 
-**Phase 3: Enhanced Features** (8-10 hours)
-- [ ] Podcast-style mystery dialogues
-- [ ] Bible verse search
-- [ ] Smart suggestions
+---
 
-**Phase 4: On-Device Mode** (6-8 hours)
-- [ ] Tiny Llama integration (483 MB)
-- [ ] Offline AI fallback
+#### **Phase 1: Mystery AI Chat** (8-10 hrs)
+- [ ] Replace static "Learn More" with Gemini API chatbot
+- [ ] Mystery Q&A and deeper theological explanations
+- [ ] Groq fallback for quota limits
+- [ ] **Fallback:** Keep existing static "Learn More" modal if AI unavailable
 
-**Phase 5: Complete Companion** (8-10 hours)
-- [ ] Spiritual journal
-- [ ] Progress tracking integration
-- [ ] Vatican document access
-- [ ] Catechism lookup
+#### **Phase 2: Scripture Intelligence** (6-8 hrs)
+- [ ] Bible verse search & lookup
+- [ ] Today's readings with AI context/commentary
+- [ ] Scripture cross-references and related passages
+- [ ] **Fallback:** Direct scripture text only (no AI context)
+
+#### **Phase 3: Liturgical Insights** (6-8 hrs)
+- [ ] Saint of the day with AI historical background
+- [ ] Liturgical season explanations and significance
+- [ ] Feast day context and traditions
+- [ ] **Fallback:** Show saint name/feast only (current behavior)
+
+#### **Phase 4: Advanced Features** (8-10 hrs)
+- [ ] Podcast-style mystery dialogues (TTS + AI narration)
+- [ ] Smart prayer suggestions based on user history
+- [ ] Vatican document search and summaries
+- [ ] **Fallback:** Features disabled/grayed out, core prayers unaffected
+
+#### **Phase 5: Personal Growth** (8-10 hrs)
+- [ ] Spiritual journal with AI-generated prompts
+- [ ] Progress insights and encouragement
+- [ ] Catechism lookup and explanations
+- [ ] **Fallback:** Basic manual journal (no AI prompts)
+
+#### **Phase 6: Offline Mode** (Optional, 10-12 hrs)
+- [ ] Tiny Llama on-device integration (483 MB)
+- [ ] Core AI features work offline
+- [ ] Background sync when online
+- [ ] **Fallback:** Ultimate offline solution when network unavailable
 
 ---
 
