@@ -557,12 +557,12 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                         onClick={handleBackWithReset}
                     >
                         {flowEngine.isFirstStep() ? (
-                            <ChevronLeft size={24} strokeWidth={3} />
+                            <span className="material-symbols-outlined">family_home</span>
                         ) : (
                             <span className="material-icons">home</span>
                         )}
                         <span className="mystery-nav-label">
-                            {flowEngine.isFirstStep() ? (language === 'es' ? 'Volver' : 'Back') : t.back}
+                            {language === 'es' ? 'Inicio' : 'Home'}
                         </span>
                     </button>
 
