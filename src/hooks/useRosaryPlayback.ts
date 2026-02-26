@@ -139,11 +139,31 @@ export function useRosaryPlayback(mysteryType: MysteryType, options: UseRosaryPl
     
     // Start playback
     const play = useCallback(() => {
+        const engine = engineRef.current;
+        engine.jumpToStep(currentStepIndex);
+        const step = engine.getCurrentStep();
+        
+        // If already at completion step, just play the blessing
+        if (step?.type === 'complete') {
+            setIsPlaying(true);
+            isPlayingRef.current = true;
+            const completionText = language === 'es' 
+                ? 'Has completado el Santo Rosario. Que Dios te bendiga por tu fiel devoción.'
+                : 'You have completed the Holy Rosary. May God bless you for your faithful devotion.';
+            
+            playAudio(completionText, () => {
+                setIsPlaying(false);
+                isPlayingRef.current = false;
+                onComplete?.();
+            });
+            return;
+        }
+        
         setIsPlaying(true);
         isPlayingRef.current = true;
         playbackIdRef.current++;
         playSequence(currentStepIndex);
-    }, [playSequence, currentStepIndex]);
+    }, [playSequence, currentStepIndex, playAudio, language, onComplete]);
     
     // Stop playback
     const stop = useCallback(() => {

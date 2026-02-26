@@ -1,6 +1,32 @@
 # Holy Rosary App - Feature To-Do List
 
 ## 🛑 URGENT FIXES (Next Session)
+
+### Church Icon Quick Play - Daily Readings
+- [ ] **Complete localStorage bridge for Daily Readings church icon**
+  - Hook (`useDailyReadingsPlayback`) saves completions to localStorage
+  - Need: DailyReadingsScreen to load completions from localStorage on mount
+  - Add: 7-day cleanup for old daily reading completion data
+  - Pattern: Match Rosary handoff (hook writes, screen reads)
+
+### Bible in a Year - Progress & Completion Improvements
+- [ ] **365-day completion celebration**
+  - Show toast when user completes all 365 days
+  - Offer "Start Again" button to reset with new start date
+- [ ] **Add "Reset Bible Progress" button in Settings**
+  - Separate from general "Clear Prayer Progress" 
+  - Confirmation dialog: "Are you sure? This will clear all completed days and chapters."
+- [ ] **Start date change warning**
+  - When user changes Bible start date in Settings, show warning
+  - Alert: "Changing the start date will reset your Bible progress. Continue?"
+  - If yes: Clear `completedDays` and `completedChapters` arrays
+  - Prevents conflict between old completions and new start date
+- [ ] **No automatic cleanup for Bible in a Year**
+  - Keep data forever (year-long progress tracking)
+  - Only clear on manual reset or start date change
+
+---
+
 - [x] **Floating Scroll Buttons** ✅ FIXED (Feb 16, 2026)
   - **Issue:** Buttons were not appearing due to scroll listener on window instead of container.
   - **Fix:** Attached listener to `.readings-content` using `useRef`.

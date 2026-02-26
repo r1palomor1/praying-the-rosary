@@ -50,13 +50,61 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const [liturgicalData, setLiturgicalData] = useState<any>(null);
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
     const [showSourceInfo, setShowSourceInfo] = useState(false);
-    const [completedItems, setCompletedItems] = useState<string[]>([]);
+    
+    // Initialize from localStorage with current date
+    const [completedItems, setCompletedItems] = useState<string[]>(() => {
+        const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+        const saved = localStorage.getItem(`dailyReadings_completed_${dateKey}`);
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch {
+                return [];
+            }
+        }
+        return [];
+    });
 
     const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
     const blessingText = language === 'es'
         ? 'La lectura se ha completado. Que Dios te bendiga por tu fiel devoción.'
         : 'The reading is now complete. May God bless you for your faithful devotion.';
+
+    // Load completedItems from localStorage when date changes
+    useEffect(() => {
+        const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+        const saved = localStorage.getItem(`dailyReadings_completed_${dateKey}`);
+        if (saved) {
+            try {
+                setCompletedItems(JSON.parse(saved));
+            } catch {
+                setCompletedItems([]);
+            }
+        } else {
+            setCompletedItems([]);
+        }
+
+        // Cleanup old completion data (older than 7 days)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('dailyReadings_completed_')) {
+                const dateStr = key.replace('dailyReadings_completed_', '');
+                try {
+                    const [year, month, day] = dateStr.split('-').map(Number);
+                    const itemDate = new Date(year, month - 1, day);
+                    if (itemDate < sevenDaysAgo) {
+                        localStorage.removeItem(key);
+                    }
+                } catch {
+                    // Invalid date format, remove it
+                    localStorage.removeItem(key);
+                }
+            }
+        });
+    }, [currentDate]);
 
     const formatDateParam = (date: Date) => {
         const mm = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -72,7 +120,6 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
         }
-        setCompletedItems([]);
 
         setLoading(true);
         setError(null);
@@ -270,7 +317,13 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     onStart: () => setActiveChapterId(id),
                     onEnd: () => {
                         if (isLast) {
-                            setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id]);
+                            setCompletedItems(prev => {
+                                if (prev.includes(id)) return prev;
+                                const updated = [...prev, id];
+                                const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+                                localStorage.setItem(`dailyReadings_completed_${dateKey}`, JSON.stringify(updated));
+                                return updated;
+                            });
                         }
                     }
                 });
@@ -328,6 +381,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
         readingsToPlay.forEach((reading, index) => {
             const id = `usccb-${index}`;
+            if (completedItems.includes(id)) return; // Skip if already completed
             const spokenText = getSpokenText(reading.text);
 
             segments.push({
@@ -347,14 +401,20 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     onStart: () => setActiveChapterId(id),
                     onEnd: () => {
                         if (isLast) {
-                            setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id]);
+                            setCompletedItems(prev => {
+                                if (prev.includes(id)) return prev;
+                                const updated = [...prev, id];
+                                const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+                                localStorage.setItem(`dailyReadings_completed_${dateKey}`, JSON.stringify(updated));
+                                return updated;
+                            });
                         }
                     }
                 });
             });
         });
 
-        if (reflection) {
+        if (reflection && !completedItems.includes('reflection')) {
             const id = 'reflection';
             const spokenText = getSpokenText(reflection.content);
             segments.push({
@@ -374,7 +434,13 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     onStart: () => setActiveChapterId(id),
                     onEnd: () => {
                         if (isLast) {
-                            setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id]);
+                            setCompletedItems(prev => {
+                                if (prev.includes(id)) return prev;
+                                const updated = [...prev, id];
+                                const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+                                localStorage.setItem(`dailyReadings_completed_${dateKey}`, JSON.stringify(updated));
+                                return updated;
+                            });
                         }
                     }
                 });

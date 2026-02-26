@@ -9,6 +9,8 @@ import './PrayerSelectionScreen.css';
 import { hasCompletionOnDate } from '../utils/prayerHistory';
 import { useBibleProgress } from '../hooks/useBibleProgress';
 import { useRosaryPlayback } from '../hooks/useRosaryPlayback';
+import { useDailyReadingsPlayback } from '../hooks/useDailyReadingsPlayback';
+import { useBiblePlayback } from '../hooks/useBiblePlayback';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { mysterySets } from '../data/mysteries';
 import { getTodaysDevotion } from '../data/devotions';
@@ -40,7 +42,21 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     // Rosary quick play from church icon
     const rosaryPlayback = useRosaryPlayback(currentMysterySet as MysteryType, {
         onComplete: () => {
-            // Optional: show completion toast or update UI
+            setIsQuickPlayActive(false);
+        }
+    });
+    
+    // Daily Readings quick play
+    const dailyReadingsPlayback = useDailyReadingsPlayback(new Date(), {
+        onComplete: () => {
+            setIsDailyReadingsQuickPlayActive(false);
+        }
+    });
+    
+    // Bible in Year quick play
+    const biblePlayback = useBiblePlayback(expectedDay, {
+        onComplete: () => {
+            setIsBibleQuickPlayActive(false);
         }
     });
     
@@ -48,9 +64,23 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     const [isQuickPlayActive, setIsQuickPlayActive] = useState(false);
     const isQuickPlayActiveRef = useRef(false);
     
+    const [isDailyReadingsQuickPlayActive, setIsDailyReadingsQuickPlayActive] = useState(false);
+    const isDailyReadingsQuickPlayActiveRef = useRef(false);
+    
+    const [isBibleQuickPlayActive, setIsBibleQuickPlayActive] = useState(false);
+    const isBibleQuickPlayActiveRef = useRef(false);
+    
     useEffect(() => {
         isQuickPlayActiveRef.current = isQuickPlayActive;
     }, [isQuickPlayActive]);
+    
+    useEffect(() => {
+        isDailyReadingsQuickPlayActiveRef.current = isDailyReadingsQuickPlayActive;
+    }, [isDailyReadingsQuickPlayActive]);
+    
+    useEffect(() => {
+        isBibleQuickPlayActiveRef.current = isBibleQuickPlayActive;
+    }, [isBibleQuickPlayActive]);
 
     useEffect(() => {
         const initScreen = async () => {
@@ -196,6 +226,28 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
             onSelectRosary();
         }
     };
+    
+    // Handle Daily Readings quick play
+    const handleDailyReadingsQuickPlay = () => {
+        if (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) {
+            setIsDailyReadingsQuickPlayActive(false);
+            dailyReadingsPlayback.stop();
+        } else {
+            setIsDailyReadingsQuickPlayActive(true);
+            dailyReadingsPlayback.play();
+        }
+    };
+    
+    // Handle Bible in Year quick play
+    const handleBibleQuickPlay = () => {
+        if (isBibleQuickPlayActive || biblePlayback.isPlaying) {
+            setIsBibleQuickPlayActive(false);
+            biblePlayback.stop();
+        } else {
+            setIsBibleQuickPlayActive(true);
+            biblePlayback.play();
+        }
+    };
 
     const handleReset = () => {
         localStorage.removeItem('rosary_last_completed');
@@ -295,14 +347,47 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                 </h1>
 
                 {/* 3. Helper Divider (Below Title) - Reduced spacing */}
-                <div className="decorative-divider" style={{ opacity: 0.6 }}>
+                <div className="decorative-divider" style={{ opacity: 0.6, position: 'relative' }}>
                     <div className="divider-line divider-line-left"></div>
-                    <span className="material-symbols-outlined divider-icon">church</span>
+                    <button
+                        onClick={handleDailyReadingsQuickPlay}
+                        disabled={dailyReadingsPlayback.loading || !dailyReadingsPlayback.hasReadings}
+                        className="church-icon-button"
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            cursor: dailyReadingsPlayback.loading || !dailyReadingsPlayback.hasReadings ? 'not-allowed' : 'pointer',
+                            opacity: dailyReadingsPlayback.loading || !dailyReadingsPlayback.hasReadings ? 0.3 : 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                        aria-label={isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying ? 'Stop Daily Readings' : 'Play All Daily Readings'}
+                    >
+                        {isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying ? (
+                            <Square 
+                                size={20} 
+                                fill={dailyReadingsPlayback.liturgicalColor} 
+                                stroke={dailyReadingsPlayback.liturgicalColor}
+                            />
+                        ) : (
+                            <span className="material-symbols-outlined divider-icon">church</span>
+                        )}
+                    </button>
                     <div className="divider-line divider-line-right"></div>
                 </div>
 
                 {/* Daily Readings Card */}
-                <button onClick={onSelectDailyReadings} className="prayer-card">
+                <button 
+                    onClick={onSelectDailyReadings} 
+                    className="prayer-card"
+                    style={{
+                        border: (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) ? `1px solid ${dailyReadingsPlayback.liturgicalColor}` : undefined,
+                        boxShadow: (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) ? `0 0 15px ${dailyReadingsPlayback.liturgicalColor}40` : 'none',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
                     <div className="card-image-container">
                         <div className="card-image">
                             <img src="/daily_readings_icon.png" alt={t.dailyReadings} />
@@ -315,15 +400,48 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     <ChevronRight className="card-chevron" size={24} />
                 </button>
 
-                {/* Divider */}
-                <div className="decorative-divider">
+                {/* Divider with clickable church icon for Bible in Year quick play */}
+                <div className="decorative-divider" style={{ position: 'relative' }}>
                     <div className="divider-line divider-line-left"></div>
-                    <span className="material-symbols-outlined divider-icon">church</span>
+                    <button
+                        onClick={handleBibleQuickPlay}
+                        disabled={biblePlayback.loading || !biblePlayback.hasReadings}
+                        className="church-icon-button"
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            cursor: biblePlayback.loading || !biblePlayback.hasReadings ? 'not-allowed' : 'pointer',
+                            opacity: biblePlayback.loading || !biblePlayback.hasReadings ? 0.3 : 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                        aria-label={isBibleQuickPlayActive || biblePlayback.isPlaying ? 'Stop Bible Reading' : 'Play Bible Reading'}
+                    >
+                        {isBibleQuickPlayActive || biblePlayback.isPlaying ? (
+                            <Square 
+                                size={20} 
+                                fill={dailyReadingsPlayback.liturgicalColor} 
+                                stroke={dailyReadingsPlayback.liturgicalColor}
+                            />
+                        ) : (
+                            <span className="material-symbols-outlined divider-icon">church</span>
+                        )}
+                    </button>
                     <div className="divider-line divider-line-right"></div>
                 </div>
 
                 {/* Bible in a Year Card */}
-                <button onClick={() => onSelectBibleInYear?.()} className="prayer-card">
+                <button 
+                    onClick={() => onSelectBibleInYear?.()} 
+                    className="prayer-card"
+                    style={{
+                        border: (isBibleQuickPlayActive || biblePlayback.isPlaying) ? `1px solid ${dailyReadingsPlayback.liturgicalColor}` : undefined,
+                        boxShadow: (isBibleQuickPlayActive || biblePlayback.isPlaying) ? `0 0 15px ${dailyReadingsPlayback.liturgicalColor}40` : 'none',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
                     <div className="card-image-container">
                         <div className="card-image">
                             <img src="/bible_year_icon.png" alt={t.bibleInAYear} />
