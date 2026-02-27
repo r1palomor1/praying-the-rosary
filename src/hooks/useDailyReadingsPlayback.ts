@@ -24,8 +24,13 @@ export function useDailyReadingsPlayback(
     const { language, playAudio, stopAudio } = useApp();
     const { onComplete } = options;
     
-    // Stabilize the date - convert to string for comparison
-    const dateString = useMemo(() => currentDate.toISOString().split('T')[0], [currentDate]);
+    // Stabilize the date - convert to string for comparison (use local time, not UTC)
+    const dateString = useMemo(() => {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }, [currentDate]);
     
     const [isPlaying, setIsPlaying] = useState(false);
     const [readings, setReadings] = useState<Reading[]>([]);
@@ -110,6 +115,20 @@ export function useDailyReadingsPlayback(
         fetchData();
     }, [dateString, language]);
     
+    // Reload completedIds when date changes
+    useEffect(() => {
+        const saved = localStorage.getItem(`dailyReadings_completed_${dateString}`);
+        if (saved) {
+            try {
+                setCompletedIds(JSON.parse(saved));
+            } catch {
+                setCompletedIds([]);
+            }
+        } else {
+            setCompletedIds([]);
+        }
+    }, [dateString]);
+    
     const chunkText = (text: string, maxLength: number = 200): string[] => {
         const sentences = text.match(/[^.!?\n:;]+[.!?\n:;]+|[^.!?\n:;]+$/g) || [text];
         const chunks: string[] = [];
@@ -160,6 +179,25 @@ export function useDailyReadingsPlayback(
     
     const play = useCallback(() => {
         if (isPlayingRef.current || readings.length === 0) return;
+        
+        // Check if all readings are already complete
+        const allReadingIds = readings.map((_, i) => `usccb-${i}`);
+        const allIds = reflection ? [...allReadingIds, 'reflection'] : allReadingIds;
+        const allComplete = allIds.length > 0 && allIds.every(id => completedIds.includes(id));
+        
+        // If everything is complete, just play the blessing
+        if (allComplete) {
+            playbackIdRef.current++;
+            isPlayingRef.current = true;
+            setIsPlaying(true);
+            
+            playAudio(blessingText, () => {
+                setIsPlaying(false);
+                isPlayingRef.current = false;
+                onComplete?.();
+            });
+            return;
+        }
         
         playbackIdRef.current++;
         const currentPlaybackId = playbackIdRef.current;
@@ -258,12 +296,20 @@ export function useDailyReadingsPlayback(
         stopAudio();
     }, [stopAudio]);
     
+    // Check if all readings are complete
+    // Only consider complete if we have data loaded (not during initial load)
+    const allReadingIds = readings.map((_, i) => `usccb-${i}`);
+    const allIds = reflection ? [...allReadingIds, 'reflection'] : allReadingIds;
+    const hasData = readings.length > 0;
+    const isComplete = hasData && allIds.every(id => completedIds.includes(id));
+    
     return {
         isPlaying,
         play,
         stop,
         loading,
         hasReadings: readings.length > 0,
-        liturgicalColor
+        liturgicalColor,
+        isComplete
     };
 }

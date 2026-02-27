@@ -9,6 +9,20 @@
   - Add: 7-day cleanup for old daily reading completion data
   - Pattern: Match Rosary handoff (hook writes, screen reads)
 
+### Progressive Glow Outline (Card Progress Indicator) - IDEA ONLY
+- [ ] **Visual progress indication on card glow outline**
+  - Current: Card outline glows solid color when church icon playing
+  - Idea: As each reading/prayer completes, portion of outline turns green
+  - Example: Daily Readings has 4 sections → 25% green per completed section
+  - When all complete: Full green outline
+  - After completion blessing: Revert to normal color
+  - Could apply to all three cards:
+    - Daily Readings: Based on number of readings (First Reading, Psalm, Gospel, Reflection)
+    - Rosary: Based on prayer sections (Intro, Decades 1-5, Closing)
+    - Bible in Year: Based on chapters in today's reading
+  - Implementation: CSS conic-gradient or SVG stroke-dasharray
+  - Note: Figure out technical approach before implementing
+
 ### Bible in a Year - Progress & Completion Improvements
 - [ ] **365-day completion celebration**
   - Show toast when user completes all 365 days

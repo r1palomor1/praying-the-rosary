@@ -38,6 +38,9 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
 
     // Bible Progress
     const { missedDays, expectedDay, isDayComplete, bibleStartDate } = useBibleProgress();
+    
+    // Determine which Bible day to play (same logic as BibleInYearScreen)
+    const bibleDayToPlay = missedDays.length > 0 ? missedDays[0] : expectedDay;
 
     // Rosary quick play from church icon
     const rosaryPlayback = useRosaryPlayback(currentMysterySet as MysteryType, {
@@ -54,7 +57,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     });
     
     // Bible in Year quick play
-    const biblePlayback = useBiblePlayback(expectedDay, {
+    const biblePlayback = useBiblePlayback(bibleDayToPlay, {
         onComplete: () => {
             setIsBibleQuickPlayActive(false);
         }
@@ -397,7 +400,31 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                         <h2 className="card-title">{t.dailyReadings.toUpperCase()}</h2>
                         <p className="card-subtitle">{t.dailyReadingsSubtitle}</p>
                     </div>
-                    <ChevronRight className="card-chevron" size={24} />
+                    {dailyReadingsPlayback.isComplete ? (
+                        <div style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            border: `1px solid ${dailyReadingsPlayback.liturgicalColor}`,
+                            borderRadius: '50%',
+                            width: '28px',
+                            height: '28px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: `0 0 10px ${dailyReadingsPlayback.liturgicalColor}30`
+                        }}>
+                            <span
+                                className="material-symbols-outlined"
+                                style={{
+                                    fontSize: '20px',
+                                    color: dailyReadingsPlayback.liturgicalColor
+                                }}
+                            >
+                                check
+                            </span>
+                        </div>
+                    ) : (
+                        <ChevronRight className="card-chevron" size={24} />
+                    )}
                 </button>
 
                 {/* Divider with clickable church icon for Bible in Year quick play */}
@@ -422,8 +449,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                         {isBibleQuickPlayActive || biblePlayback.isPlaying ? (
                             <Square 
                                 size={20} 
-                                fill={dailyReadingsPlayback.liturgicalColor} 
-                                stroke={dailyReadingsPlayback.liturgicalColor}
+                                fill={biblePlayback.liturgicalColor} 
+                                stroke={biblePlayback.liturgicalColor}
                             />
                         ) : (
                             <span className="material-symbols-outlined divider-icon">church</span>
@@ -437,8 +464,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     onClick={() => onSelectBibleInYear?.()} 
                     className="prayer-card"
                     style={{
-                        border: (isBibleQuickPlayActive || biblePlayback.isPlaying) ? `1px solid ${dailyReadingsPlayback.liturgicalColor}` : undefined,
-                        boxShadow: (isBibleQuickPlayActive || biblePlayback.isPlaying) ? `0 0 15px ${dailyReadingsPlayback.liturgicalColor}40` : 'none',
+                        border: (isBibleQuickPlayActive || biblePlayback.isPlaying) ? `1px solid ${biblePlayback.liturgicalColor}` : undefined,
+                        boxShadow: (isBibleQuickPlayActive || biblePlayback.isPlaying) ? `0 0 15px ${biblePlayback.liturgicalColor}40` : 'none',
                         transition: 'all 0.3s ease'
                     }}
                 >
@@ -471,7 +498,31 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                             })()}
                         </p>
                     </div>
-                    <ChevronRight className="card-chevron" size={24} />
+                    {missedDays.length === 0 && isDayComplete(expectedDay) ? (
+                        <div style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            border: `1px solid ${biblePlayback.liturgicalColor}`,
+                            borderRadius: '50%',
+                            width: '28px',
+                            height: '28px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: `0 0 10px ${biblePlayback.liturgicalColor}30`
+                        }}>
+                            <span
+                                className="material-symbols-outlined"
+                                style={{
+                                    fontSize: '20px',
+                                    color: biblePlayback.liturgicalColor
+                                }}
+                            >
+                                check
+                            </span>
+                        </div>
+                    ) : (
+                        <ChevronRight className="card-chevron" size={24} />
+                    )}
                 </button>
 
                 {/* Divider with clickable church icon for quick play */}
