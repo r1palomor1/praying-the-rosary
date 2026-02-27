@@ -84,6 +84,16 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     useEffect(() => {
         isBibleQuickPlayActiveRef.current = isBibleQuickPlayActive;
     }, [isBibleQuickPlayActive]);
+    
+    // Church icon hint (shows on first load each session, hides when any icon clicked)
+    const [showChurchHint, setShowChurchHint] = useState(() => {
+        return sessionStorage.getItem('church_hint_dismissed') !== 'true';
+    });
+    
+    const hideChurchHint = () => {
+        setShowChurchHint(false);
+        sessionStorage.setItem('church_hint_dismissed', 'true');
+    };
 
     useEffect(() => {
         const initScreen = async () => {
@@ -156,6 +166,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
 
     // Handle church icon click - play/stop rosary
     const handleRosaryQuickPlay = () => {
+        hideChurchHint();
         if (isQuickPlayActive || rosaryPlayback.isPlaying) {
             // Stop playback (works during intro or prayers)
             setIsQuickPlayActive(false);
@@ -232,6 +243,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     
     // Handle Daily Readings quick play
     const handleDailyReadingsQuickPlay = () => {
+        hideChurchHint();
         if (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) {
             setIsDailyReadingsQuickPlayActive(false);
             dailyReadingsPlayback.stop();
@@ -243,6 +255,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     
     // Handle Bible in Year quick play
     const handleBibleQuickPlay = () => {
+        hideChurchHint();
         if (isBibleQuickPlayActive || biblePlayback.isPlaying) {
             setIsBibleQuickPlayActive(false);
             biblePlayback.stop();
@@ -644,6 +657,22 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                         const minutes = d.getMinutes().toString().padStart(2, '0');
                         return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
                     })()}
+                </div>
+            )}
+            
+            {/* Church Icon Hint */}
+            {showChurchHint && (
+                <div style={{
+                    position: 'fixed',
+                    bottom: '0.5rem',
+                    right: '1rem',
+                    fontSize: '0.7rem',
+                    color: 'rgba(255, 255, 255, 0.3)',
+                    zIndex: 10,
+                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
+                    fontFamily: 'monospace'
+                }}>
+                    Tap ⛪ to play
                 </div>
             )}
         </div>
