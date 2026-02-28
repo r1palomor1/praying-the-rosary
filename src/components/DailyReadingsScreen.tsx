@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
+import { killDailyReadingsPlayback } from '../hooks/useDailyReadingsPlayback';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { fetchLiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar';
 import './DailyReadingsScreen.css';
@@ -114,7 +115,10 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     };
 
     const fetchReadings = async (date: Date) => {
-        if (isPlaying || ttsManager.isSpeaking()) {
+        // Only kill audio the screen itself started (isPlaying = screen's Play All / individual player).
+        // Church icon audio is tracked by the hook, not this screen's isPlaying state,
+        // so it is intentionally preserved when user navigates in or changes date.
+        if (isPlaying) {
             ttsManager.stop();
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
@@ -171,11 +175,23 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         return () => clearTimeout(timer);
     }, [currentDate, language]);
 
+    // Audio lifecycle is owned by ttsManager singleton — no cleanup needed here.
+
+    // Listen for church icon playback events (hook running in background after navigation)
     useEffect(() => {
+        const handleReadingActive = (e: Event) => {
+            const id = (e as CustomEvent).detail.id as string | null;
+            setActiveChapterId(id);
+        };
+        const handleReadingComplete = (e: Event) => {
+            const id = (e as CustomEvent).detail.id as string;
+            setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id]);
+        };
+        window.addEventListener('dailyReading:readingActive', handleReadingActive);
+        window.addEventListener('dailyReading:readingComplete', handleReadingComplete);
         return () => {
-            if (ttsManager.isSpeaking()) {
-                ttsManager.stop();
-            }
+            window.removeEventListener('dailyReading:readingActive', handleReadingActive);
+            window.removeEventListener('dailyReading:readingComplete', handleReadingComplete);
         };
     }, []);
 
@@ -355,6 +371,9 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     };
 
     const handlePlayAll = async () => {
+        // Kill any in-flight church icon audio before toggling Play All
+        killDailyReadingsPlayback();
+
         if (isPlaying && currentlyPlayingId === 'all') {
             ttsManager.stop();
             setIsPlaying(false);

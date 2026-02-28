@@ -11,6 +11,7 @@ import { useBibleProgress } from '../hooks/useBibleProgress';
 import { useRosaryPlayback } from '../hooks/useRosaryPlayback';
 import { useDailyReadingsPlayback } from '../hooks/useDailyReadingsPlayback';
 import { useBiblePlayback } from '../hooks/useBiblePlayback';
+import { getDailyReadingsPlaying } from '../hooks/useDailyReadingsPlayback';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { mysterySets } from '../data/mysteries';
 import { getTodaysDevotion } from '../data/devotions';
@@ -69,6 +70,15 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     
     const [isDailyReadingsQuickPlayActive, setIsDailyReadingsQuickPlayActive] = useState(false);
     const isDailyReadingsQuickPlayActiveRef = useRef(false);
+
+    // Event-driven: tracks Daily Readings audio that outlives this component (after navigation)
+    const [isDailyReadingsGlobalActive, setIsDailyReadingsGlobalActive] = useState(() => getDailyReadingsPlaying());
+    useEffect(() => {
+        const handler = (e: Event) =>
+            setIsDailyReadingsGlobalActive((e as CustomEvent).detail.playing);
+        window.addEventListener('dailyReading:playState', handler);
+        return () => window.removeEventListener('dailyReading:playState', handler);
+    }, []);
     
     const [isBibleQuickPlayActive, setIsBibleQuickPlayActive] = useState(false);
     const isBibleQuickPlayActiveRef = useRef(false);
@@ -244,7 +254,9 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     // Handle Daily Readings quick play
     const handleDailyReadingsQuickPlay = () => {
         hideChurchHint();
-        if (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) {
+        const isActive = isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying || isDailyReadingsGlobalActive;
+        if (isActive) {
+            // stop() fires killDailyReadingsPlayback internally (increments _playVersion + events)
             setIsDailyReadingsQuickPlayActive(false);
             dailyReadingsPlayback.stop();
         } else {
@@ -379,9 +391,9 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                             alignItems: 'center',
                             justifyContent: 'center'
                         }}
-                        aria-label={isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying ? 'Stop Daily Readings' : 'Play All Daily Readings'}
+                        aria-label={(isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying || isDailyReadingsGlobalActive) ? 'Stop Daily Readings' : 'Play All Daily Readings'}
                     >
-                        {isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying ? (
+                        {(isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying || isDailyReadingsGlobalActive) ? (
                             <Square 
                                 size={20} 
                                 fill={dailyReadingsPlayback.liturgicalColor} 
@@ -399,8 +411,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     onClick={onSelectDailyReadings} 
                     className="prayer-card"
                     style={{
-                        border: (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) ? `1px solid ${dailyReadingsPlayback.liturgicalColor}` : undefined,
-                        boxShadow: (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) ? `0 0 15px ${dailyReadingsPlayback.liturgicalColor}40` : 'none',
+                        border: (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying || isDailyReadingsGlobalActive) ? `1px solid ${dailyReadingsPlayback.liturgicalColor}` : undefined,
+                        boxShadow: (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying || isDailyReadingsGlobalActive) ? `0 0 15px ${dailyReadingsPlayback.liturgicalColor}40` : 'none',
                         transition: 'all 0.3s ease'
                     }}
                 >

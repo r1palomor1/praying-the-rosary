@@ -3,6 +3,9 @@
 ## 🛑 URGENT FIXES (Next Session)
 
 ### Church Icon Quick Play - Daily Readings
+- [ ] **Fix Word of the Pope highlighting during church/card playback**
+  - Bug: "Word of the Pope" (Reflection) doesn't highlight when playing from church icon and entering card
+  - Note: Appears to complete checkmark correctly now, but highlight UI needs fixing
 - [ ] **Complete localStorage bridge for Daily Readings church icon**
   - Hook (`useDailyReadingsPlayback`) saves completions to localStorage
   - Need: DailyReadingsScreen to load completions from localStorage on mount

@@ -1,6 +1,25 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 
+// ─── Module-level state (survives React component lifecycle / navigation) ────
+let _isPlaying = false;
+let _playVersion = 0;
+
+/** True if Daily Readings audio is active anywhere in the app. */
+export const getDailyReadingsPlaying = () => _isPlaying;
+
+/**
+ * Kill any in-flight Daily Readings audio (hook closures + ttsManager).
+ * Safe to call from any component/screen.
+ */
+export const killDailyReadingsPlayback = () => {
+    _playVersion++;
+    _isPlaying = false;
+    window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
+    window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface Reading {
     title: string;
     citation?: string;
@@ -23,7 +42,7 @@ export function useDailyReadingsPlayback(
 ) {
     const { language, playAudio, stopAudio } = useApp();
     const { onComplete } = options;
-    
+
     // Stabilize the date - convert to string for comparison (use local time, not UTC)
     const dateString = useMemo(() => {
         const year = currentDate.getFullYear();
@@ -31,14 +50,14 @@ export function useDailyReadingsPlayback(
         const day = String(currentDate.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }, [currentDate]);
-    
+
     const [isPlaying, setIsPlaying] = useState(false);
     const [readings, setReadings] = useState<Reading[]>([]);
     const [reflection, setReflection] = useState<DailyReflection | null>(null);
     const [title, setTitle] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const [liturgicalColor, setLiturgicalColor] = useState('#a87d3e');
-    
+
     // Initialize completedIds from localStorage
     const [completedIds, setCompletedIds] = useState<string[]>(() => {
         const saved = localStorage.getItem(`dailyReadings_completed_${dateString}`);
@@ -51,23 +70,23 @@ export function useDailyReadingsPlayback(
         }
         return [];
     });
-    
+
     const isPlayingRef = useRef(false);
     const playbackIdRef = useRef(0);
-    
+
     const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
-    
+
     const blessingText = language === 'es'
         ? 'La lectura se ha completado. Que Dios te bendiga por tu fiel devoción.'
         : 'The reading is now complete. May God bless you for your faithful devotion.';
-    
+
     const formatDateParam = (date: Date) => {
         const mm = (date.getMonth() + 1).toString().padStart(2, '0');
         const dd = date.getDate().toString().padStart(2, '0');
         const yy = date.getFullYear().toString().slice(-2);
         return `${mm}${dd}${yy}`;
     };
-    
+
     // Fetch readings data
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -77,11 +96,11 @@ export function useDailyReadingsPlayback(
             const liturgy = await fetchLiturgicalDay(currentDate, language);
             const color = getLiturgicalColorHex(liturgy.celebrations[0].colour);
             setLiturgicalColor(color);
-            
+
             // Fetch readings
             const dateStr = formatDateParam(currentDate);
             const usccbResponse = await fetch(`${API_BASE}/api/readings?date=${dateStr}&lang=${language}`);
-            
+
             if (usccbResponse.ok) {
                 const usccbData = await usccbResponse.json();
                 setReadings(usccbData.readings || []);
@@ -90,14 +109,14 @@ export function useDailyReadingsPlayback(
                 setReadings([]);
                 setTitle('');
             }
-            
+
             // Fetch reflection
             const year = currentDate.getFullYear();
             const month = String(currentDate.getMonth() + 1).padStart(2, '0');
             const day = String(currentDate.getDate()).padStart(2, '0');
             const vaticanDate = `${year}-${month}-${day}`;
             const vaticanResponse = await fetch(`${API_BASE}/api/vatican-reflection?date=${vaticanDate}&lang=${language}`);
-            
+
             if (vaticanResponse.ok) {
                 const vatican = await vaticanResponse.json();
                 setReflection(vatican.reflection);
@@ -110,12 +129,12 @@ export function useDailyReadingsPlayback(
             setLoading(false);
         }
     }, [currentDate, language, API_BASE]);
-    
+
     useEffect(() => {
         fetchData();
     }, [dateString, language]);
-    
-    // Reload completedIds when date changes
+
+    // Reload completedIds when date changes, and listen for external completions
     useEffect(() => {
         const saved = localStorage.getItem(`dailyReadings_completed_${dateString}`);
         if (saved) {
@@ -127,8 +146,15 @@ export function useDailyReadingsPlayback(
         } else {
             setCompletedIds([]);
         }
+
+        const handleReadingComplete = (e: Event) => {
+            const id = (e as CustomEvent).detail.id as string;
+            setCompletedIds(prev => prev.includes(id) ? prev : [...prev, id]);
+        };
+        window.addEventListener('dailyReading:readingComplete', handleReadingComplete);
+        return () => window.removeEventListener('dailyReading:readingComplete', handleReadingComplete);
     }, [dateString]);
-    
+
     // Wake Lock: Keep screen on during playback
     useEffect(() => {
         let wakeLock: any = null;
@@ -155,12 +181,12 @@ export function useDailyReadingsPlayback(
             }
         };
     }, [isPlaying]);
-    
+
     const chunkText = (text: string, maxLength: number = 200): string[] => {
         const sentences = text.match(/[^.!?\n:;]+[.!?\n:;]+|[^.!?\n:;]+$/g) || [text];
         const chunks: string[] = [];
         let currentChunk = '';
-        
+
         sentences.forEach(sentence => {
             if (currentChunk.length + sentence.length > maxLength) {
                 if (currentChunk) chunks.push(currentChunk.trim());
@@ -170,13 +196,13 @@ export function useDailyReadingsPlayback(
             }
         });
         if (currentChunk) chunks.push(currentChunk.trim());
-        
+
         return chunks.flatMap(chunk => {
             if (chunk.length <= 250) return [chunk];
             return chunk.match(/.{1,250}(?:\s|$)|.{1,250}/g) || [chunk];
         });
     };
-    
+
     const getSpokenText = (rawText: string) => {
         let clean = rawText
             .replace(/<[^>]+>/g, '')
@@ -189,35 +215,42 @@ export function useDailyReadingsPlayback(
         clean = clean.replace(/R\.|R\/\./g, responseWord);
         return clean;
     };
-    
+
     const normalizeReadingTitle = (title: string): string => {
         const romanToOrdinal: Record<string, string> = {
             'I': language === 'es' ? 'Primera Lectura' : 'First Reading',
             'II': language === 'es' ? 'Segunda Lectura' : 'Second Reading',
             'III': language === 'es' ? 'Tercera Lectura' : 'Third Reading'
         };
-        
+
         const match = title.match(/Reading\s+([IVX]+)/i);
         if (match && romanToOrdinal[match[1]]) {
             return romanToOrdinal[match[1]];
         }
         return title;
     };
-    
+
     const play = useCallback(() => {
         if (isPlayingRef.current || readings.length === 0) return;
-        
+
+        // Increment module-level version — invalidates any orphaned closures from previous session
+        _playVersion++;
+        const capturedVersion = _playVersion;
+
+        _isPlaying = true;
+        window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: true } }));
+
         // Check if all readings are already complete
         const allReadingIds = readings.map((_, i) => `usccb-${i}`);
         const allIds = reflection ? [...allReadingIds, 'reflection'] : allReadingIds;
         const allComplete = allIds.length > 0 && allIds.every(id => completedIds.includes(id));
-        
+
         // If everything is complete, just play the blessing
         if (allComplete) {
             playbackIdRef.current++;
             isPlayingRef.current = true;
             setIsPlaying(true);
-            
+
             playAudio(blessingText, () => {
                 setIsPlaying(false);
                 isPlayingRef.current = false;
@@ -225,27 +258,28 @@ export function useDailyReadingsPlayback(
             });
             return;
         }
-        
+
         playbackIdRef.current++;
         const currentPlaybackId = playbackIdRef.current;
         isPlayingRef.current = true;
         setIsPlaying(true);
-        
+
         const segments: any[] = [];
-        
+
         // Add title
         if (title) {
             segments.push({ text: title, pause: 1000 });
         }
-        
+
         // Add readings (skip completed)
         readings.forEach((reading, readingIndex) => {
             const id = `usccb-${readingIndex}`;
             if (completedIds.includes(id)) return; // Skip if already completed
-            
+
             const spokenText = getSpokenText(reading.text);
-            segments.push({ text: normalizeReadingTitle(reading.title), pause: 800 });
-            
+            // Tag the title segment with readingId so DailyReadingsScreen can highlight
+            segments.push({ text: normalizeReadingTitle(reading.title), pause: 800, readingId: id });
+
             const chunks = chunkText(spokenText);
             chunks.forEach((chunk, chunkIndex) => {
                 const isLast = chunkIndex === chunks.length - 1;
@@ -259,23 +293,26 @@ export function useDailyReadingsPlayback(
                             localStorage.setItem(`dailyReadings_completed_${dateString}`, JSON.stringify(updated));
                             return updated;
                         });
+                        // Notify DailyReadingsScreen to show checkmark
+                        window.dispatchEvent(new CustomEvent('dailyReading:readingComplete', { detail: { id } }));
                     } : undefined
                 });
             });
         });
-        
+
         // Add reflection (skip if completed)
         if (reflection) {
             const id = 'reflection';
             if (!completedIds.includes(id)) {
                 const spokenText = getSpokenText(reflection.content);
-                segments.push({ text: reflection.title, pause: 800 });
-                
+                // Tag the title segment with readingId so DailyReadingsScreen can highlight
+                segments.push({ text: reflection.title, pause: 800, readingId: id });
+
                 const chunks = chunkText(spokenText);
                 chunks.forEach((chunk, index) => {
                     const isLast = index === chunks.length - 1;
-                    segments.push({ 
-                        text: chunk, 
+                    segments.push({
+                        text: chunk,
                         pause: 300,
                         onComplete: isLast ? () => {
                             setCompletedIds(prev => {
@@ -284,27 +321,38 @@ export function useDailyReadingsPlayback(
                                 localStorage.setItem(`dailyReadings_completed_${dateString}`, JSON.stringify(updated));
                                 return updated;
                             });
+                            // Notify DailyReadingsScreen to show checkmark
+                            window.dispatchEvent(new CustomEvent('dailyReading:readingComplete', { detail: { id } }));
                         } : undefined
                     });
                 });
             }
         }
-        
+
         // Add blessing
         segments.push({ text: blessingText, pause: 1000 });
-        
+
         // Play sequence
         const playNext = (index: number) => {
             if (playbackIdRef.current !== currentPlaybackId) return;
             if (!isPlayingRef.current) return;
+            if (_playVersion !== capturedVersion) return; // Killed externally (e.g. Play All took over)
+
             if (index >= segments.length) {
                 setIsPlaying(false);
                 isPlayingRef.current = false;
+                _isPlaying = false;
+                window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
+                window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
                 onComplete?.();
                 return;
             }
-            
+
             const segment = segments[index];
+            // Fire readingActive event so DailyReadingsScreen can highlight current reading
+            if (segment.readingId) {
+                window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: segment.readingId } }));
+            }
             playAudio(segment.text, () => {
                 if (playbackIdRef.current !== currentPlaybackId) return;
                 if (!isPlayingRef.current) return;
@@ -312,24 +360,28 @@ export function useDailyReadingsPlayback(
                 setTimeout(() => playNext(index + 1), segment.pause || 500);
             });
         };
-        
+
         playNext(0);
     }, [readings, reflection, title, blessingText, language, playAudio, onComplete]);
-    
+
     const stop = useCallback(() => {
+        _playVersion++;          // Invalidate all in-flight closures
+        _isPlaying = false;
         playbackIdRef.current++;
         isPlayingRef.current = false;
         setIsPlaying(false);
         stopAudio();
+        window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
+        window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
     }, [stopAudio]);
-    
+
     // Check if all readings are complete
     // Only consider complete if we have data loaded (not during initial load)
     const allReadingIds = readings.map((_, i) => `usccb-${i}`);
     const allIds = reflection ? [...allReadingIds, 'reflection'] : allReadingIds;
     const hasData = readings.length > 0;
     const isComplete = hasData && allIds.every(id => completedIds.includes(id));
-    
+
     return {
         isPlaying,
         play,
