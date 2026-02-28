@@ -125,6 +125,33 @@ export function useBiblePlayback(
         fetchData();
     }, [currentDay, language]);
     
+    // Wake Lock: Keep screen on during playback
+    useEffect(() => {
+        let wakeLock: any = null;
+
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator) {
+                try {
+                    // @ts-ignore - Navigator type might not include wakeLock yet
+                    wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) {
+                    console.log('Wake Lock denied/error:', err);
+                }
+            }
+        };
+
+        if (isPlaying) {
+            requestWakeLock();
+        }
+
+        return () => {
+            if (wakeLock) {
+                wakeLock.release().catch(console.error);
+                wakeLock = null;
+            }
+        };
+    }, [isPlaying]);
+    
     const chunkText = (text: string, maxLength: number = 200): string[] => {
         const sentences = text.match(/[^.!?\n:;]+[.!?\n:;]+|[^.!?\n:;]+$/g) || [text];
         const chunks: string[] = [];
