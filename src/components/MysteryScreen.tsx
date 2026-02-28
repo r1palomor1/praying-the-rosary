@@ -613,6 +613,15 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         onBack();
     };
 
+    // Intentional back: stop audio cleanly before navigating
+    const handleBack = () => {
+        setContinuousMode(false);
+        continuousModeRef.current = false;
+        playbackIdRef.current++;
+        stopAudio();
+        onBack();
+    };
+
     const handleToggleContinuous = () => {
         if (continuousMode) {
             setContinuousMode(false);
@@ -753,7 +762,7 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
 
             {/* NEW: Use shared MysteryNavigation component */}
             <MysteryNavigation
-                onHome={onBack}
+                onHome={handleBack}
                 onPrevious={handlePrevious}
                 onNext={handleNext}
                 onLearnMore={() => setShowLearnMore(true)}
