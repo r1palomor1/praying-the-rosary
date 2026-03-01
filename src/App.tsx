@@ -7,6 +7,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import { LanguageSelector } from './components/LanguageSelector';
 import { loadPrayerProgress, hasValidPrayerProgress, savePrayerProgress } from './utils/storage';
 import { PrayerFlowEngine } from './utils/prayerFlowEngine';
+import { SacredPrayerFlowEngine } from './utils/SacredPrayerFlowEngine';
 import { cleanupPrayerHistory } from './utils/cleanupHistory';
 
 // Lazy load screen components for code splitting
@@ -144,6 +145,28 @@ function AppContent() {
     handleCompletePrayer();
   };
 
+  const handleStartSacredWithContinuous = () => {
+    // Check if today's sacred prayers are already complete before starting
+    const savedProgress = loadPrayerProgress('sacred_prayers');
+    if (savedProgress && hasValidPrayerProgress('sacred_prayers')) {
+      const engine = new SacredPrayerFlowEngine(language);
+      engine.jumpToStep(savedProgress.currentStepIndex);
+      const progress = engine.getProgress();
+
+      if (progress >= 99) {
+        // Already complete - handle completion (just go to home or similar)
+        handleCompleteSacredPrayers();
+        return;
+      }
+    }
+
+    // Not complete - proceed to prayer screen with continuous mode
+    setStartWithContinuous(true);
+    // Save to localStorage so it persists across sessions
+    localStorage.setItem('continuous_mode_active', 'true');
+    setCurrentScreen('sacred-prayers');
+  };
+
   const handleBackToHome = () => {
     clearSession();
     localStorage.removeItem('continuous_mode_active'); // Clear continuous mode flag
@@ -181,16 +204,24 @@ function AppContent() {
   };
 
   const handleSelectSacredPrayers = () => {
+    setStartWithContinuous(false);
     setCurrentScreen('sacred-prayers');
   };
 
   const handleCompleteSacredPrayers = () => {
-    // Logic for completing sacred prayers
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('sacred_last_completed', dateStr);
+
+    // Clear the continuous mode flag now that prayer is complete
+    localStorage.removeItem('continuous_mode_active');
+
     setCurrentScreen('sacred-complete');
   };
 
   const handleResetProgress = () => {
     clearSession();
+    localStorage.removeItem('sacred_last_completed');
     // This will reset both Rosary and Sacred Prayers progress
   };
 
@@ -246,6 +277,7 @@ function AppContent() {
             onSelectRosary={handleSelectRosary}
             onStartRosaryWithContinuous={handleStartPrayerWithContinuous}
             onSelectSacredPrayers={handleSelectSacredPrayers}
+            onStartSacredWithContinuous={handleStartSacredWithContinuous}
             onSelectDailyReadings={() => setCurrentScreen('daily-readings')}
             onSelectBibleInYear={() => setCurrentScreen('bible-in-year')}
             onResetProgress={handleResetProgress}
@@ -255,6 +287,7 @@ function AppContent() {
           <SacredPrayersScreen
             onComplete={handleCompleteSacredPrayers}
             onBack={handleBackToSelection}
+            startWithContinuous={startWithContinuous}
           />
         )}
         {currentScreen === 'daily-readings' && (

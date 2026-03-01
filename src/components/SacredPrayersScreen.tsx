@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, CalendarCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, StopCircle, Settings as SettingsIcon, CalendarCheck, Play, Square } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
@@ -21,6 +21,7 @@ import './SacredPrayersScreen.css';
 interface SacredPrayersScreenProps {
     onComplete: () => void;
     onBack: () => void;
+    startWithContinuous?: boolean;
 }
 
 // Reuse Icon Components from MysteryScreen
@@ -78,7 +79,7 @@ const HighlighterIcon = ({ size = 20, className = '', enabled = false }: { size?
     </svg>
 );
 
-export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayersScreenProps) {
+export default function SacredPrayersScreen({ onComplete, onBack, startWithContinuous = false }: SacredPrayersScreenProps) {
     const {
         language,
         isPlaying,
@@ -160,6 +161,13 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
     useEffect(() => {
         setShowPrayerText(!userWantsTextHidden);
     }, [userWantsTextHidden]);
+
+    // Optional prop for auto-start
+    useEffect(() => {
+        if (startWithContinuous && !continuousMode) {
+            handleToggleContinuous();
+        }
+    }, [startWithContinuous]);
 
     // Scroll to top on step change
     useEffect(() => {
@@ -321,6 +329,7 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
     const handleNext = () => {
         setContinuousMode(false);
         continuousModeRef.current = false;
+        playbackIdRef.current++;
         stopAudio();
         const nextStep = flowEngine.getNextStep();
         if (nextStep) {
@@ -336,6 +345,7 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
     const handlePrevious = () => {
         setContinuousMode(false);
         continuousModeRef.current = false;
+        playbackIdRef.current++;
         stopAudio();
         const prevStep = flowEngine.getPreviousStep();
         if (prevStep) {
@@ -343,18 +353,13 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
         }
     };
 
-    const handleBackWithReset = () => {
-        // If on first page, go back to Prayer Selection
-        if (flowEngine.isFirstStep()) {
-            onBack();
-        } else {
-            // If on sub-prayer, go back to first page (Sacred Prayers menu)
-            setContinuousMode(false);
-            continuousModeRef.current = false;
-            stopAudio();
-            flowEngine.jumpToStep(0);
-            setCurrentStep(flowEngine.getCurrentStep());
-        }
+    // Intentional back: stop audio cleanly before navigating
+    const handleBack = () => {
+        setContinuousMode(false);
+        continuousModeRef.current = false;
+        playbackIdRef.current++;
+        stopAudio();
+        onBack();
     };
 
     const handleReset = () => {
@@ -404,7 +409,9 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
         reflection: 'Reflexión',
         menu: 'Menú',
         settings: 'Configuración',
-        progress: 'Progreso'
+        progress: 'Progreso',
+        play: 'Reproducir',
+        stop: 'Detener'
     } : {
         back: 'Home',
         step: 'Step',
@@ -420,7 +427,9 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
         reflection: 'Reflection',
         menu: 'Menu',
         settings: 'Settings',
-        progress: 'Progress'
+        progress: 'Progress',
+        play: 'Play',
+        stop: 'Stop'
     };
 
     if (!currentStep) {
@@ -554,13 +563,9 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                 <div className="mystery-bottom-nav">
                     <button
                         className="mystery-nav-btn"
-                        onClick={handleBackWithReset}
+                        onClick={handleBack}
                     >
-                        {flowEngine.isFirstStep() ? (
-                            <span className="material-symbols-outlined">family_home</span>
-                        ) : (
-                            <span className="material-icons">home</span>
-                        )}
+                        <span className="material-symbols-outlined">family_home</span>
                         <span className="mystery-nav-label">
                             {language === 'es' ? 'Inicio' : 'Home'}
                         </span>
@@ -571,6 +576,23 @@ export default function SacredPrayersScreen({ onComplete, onBack }: SacredPrayer
                             <ChevronLeft size={24} strokeWidth={3} />
                             <span className="mystery-nav-label">{t.previous}</span>
                         </button>
+
+                        <button
+                            className={`mystery-nav-btn nav-btn-audio nav-btn-audio-sacred`}
+                            onClick={handleToggleContinuous}
+                            aria-label={(continuousMode || isPlaying) ? t.stop : t.play}
+                            title={(continuousMode || isPlaying) ? t.stop : t.play}
+                        >
+                            <div className="audio-icon-wrapper">
+                                {(continuousMode || isPlaying) ? (
+                                    <Square size={24} fill="currentColor" strokeWidth={0} />
+                                ) : (
+                                    <Play size={24} strokeWidth={2.5} className="ml-0.5" />
+                                )}
+                            </div>
+                            <span className="mystery-nav-label">{(continuousMode || isPlaying) ? t.stop : t.play}</span>
+                        </button>
+
                         <button className="mystery-nav-btn" onClick={handleNext}>
                             <ChevronRight size={24} strokeWidth={3} />
                             <span className="mystery-nav-label">{flowEngine.isLastStep() ? t.finish : t.next}</span>
