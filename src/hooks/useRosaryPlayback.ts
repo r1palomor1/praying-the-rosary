@@ -13,6 +13,7 @@ export function useRosaryPlayback(mysteryType: MysteryType, options: UseRosaryPl
     const { onComplete, autoStart = false } = options;
 
     const [isPlaying, setIsPlaying] = useState(false);
+    const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null);
     const [currentStepIndex, setCurrentStepIndex] = useState(() => {
         // Load saved progress on init
         const saved = loadPrayerProgress(mysteryType);
@@ -74,6 +75,18 @@ export function useRosaryPlayback(mysteryType: MysteryType, options: UseRosaryPl
             return parts.join('. ');
         }
 
+        // Check for Hail Mary fruit announcement in audio (every other Hail Mary)
+        const isEnabled = localStorage.getItem('announce_fruit_in_decades') === 'true';
+        const stepContext = step as any;
+        if (isEnabled && step.type === 'decade_hail_mary' && stepContext.hailMaryNumber && stepContext.hailMaryNumber % 2 === 1) {
+            const engine = engineRef.current;
+            const currentDecadeInfo = engine.getCurrentDecadeInfo();
+            if (currentDecadeInfo?.fruit) {
+                const prefix = language === 'es' ? 'Meditando en' : 'Meditating on';
+                return `${prefix} ${currentDecadeInfo.fruit}. ${step.text}`;
+            }
+        }
+
         // For all other prayers, just use the text as-is
         // (We don't split into call/response for background playback - simpler)
         return step.text;
@@ -110,6 +123,7 @@ export function useRosaryPlayback(mysteryType: MysteryType, options: UseRosaryPl
 
         // Check if complete
         if (step.type === 'complete') {
+            setCurrentSubtitle(null);
             const completionText = language === 'es'
                 ? 'Has completado el Santo Rosario. Que Dios te bendiga por tu fiel devoción.'
                 : 'You have completed the Holy Rosary. May God bless you for your faithful devotion.';
@@ -123,6 +137,19 @@ export function useRosaryPlayback(mysteryType: MysteryType, options: UseRosaryPl
         }
 
         const audioText = getAudioText(step);
+
+        let subtitleText = step.title || '';
+        const stepContext = step as any;
+        const decadeInfo = engine.getCurrentDecadeInfo();
+        const fruitText = decadeInfo?.fruit ? ` • ${language === 'es' ? 'Fruto' : 'Fruit'}: ${decadeInfo.fruit}` : '';
+
+        if (step.type === 'decade_announcement') {
+            const reflectionLabel = language === 'es' ? 'Reflexión' : 'Reflection';
+            subtitleText = `${step.title} • ${reflectionLabel}${fruitText}`;
+        } else if (stepContext.hailMaryNumber !== undefined && stepContext.hailMaryNumber > 0) {
+            subtitleText = `${step.title} • ${stepContext.hailMaryNumber} of 10${fruitText}`;
+        }
+        setCurrentSubtitle(subtitleText);
 
         playAudio(audioText, () => {
             // Check if playback was cancelled
@@ -138,6 +165,7 @@ export function useRosaryPlayback(mysteryType: MysteryType, options: UseRosaryPl
             } else {
                 setIsPlaying(false);
                 isPlayingRef.current = false;
+                setCurrentSubtitle(null);
                 onComplete?.();
             }
         });
@@ -175,6 +203,7 @@ export function useRosaryPlayback(mysteryType: MysteryType, options: UseRosaryPl
     const stop = useCallback(() => {
         setIsPlaying(false);
         isPlayingRef.current = false;
+        setCurrentSubtitle(null);
         playbackIdRef.current++;
         saveProgress(currentStepIndex); // Save position when stopped
         stopAudio();
@@ -190,6 +219,7 @@ export function useRosaryPlayback(mysteryType: MysteryType, options: UseRosaryPl
     return {
         isPlaying,
         currentStepIndex,
+        currentSubtitle,
         play,
         stop,
         engine: engineRef.current

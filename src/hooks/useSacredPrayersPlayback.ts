@@ -15,6 +15,7 @@ export function useSacredPrayersPlayback(options: UseSacredPrayersPlaybackOption
     const { onComplete, autoStart = false } = options;
 
     const [isPlaying, setIsPlaying] = useState(false);
+    const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null);
     const [currentStepIndex, setCurrentStepIndex] = useState(() => {
         // Load saved progress on init
         const saved = loadPrayerProgress(SACRED_MYSTERY_KEY);
@@ -133,6 +134,7 @@ export function useSacredPrayersPlayback(options: UseSacredPrayersPlaybackOption
 
         // Check if complete
         if (step.type === 'complete') {
+            setCurrentSubtitle(null);
             const completionText = language === 'es'
                 ? 'Has completado las Oraciones Sagradas. Que Dios te bendiga por tu fiel devoción.'
                 : 'You have completed the Sacred Prayers. May God bless you for your faithful devotion.';
@@ -146,6 +148,13 @@ export function useSacredPrayersPlayback(options: UseSacredPrayersPlaybackOption
         }
 
         const segments = getAudioSegments(step);
+
+        let subtitleText = step.title || '';
+        const stepContext = step as any;
+        if (stepContext.beadIndex !== undefined && stepContext.beadIndex > 0) {
+            subtitleText = `${step.title} • ${stepContext.beadIndex} of 10`;
+        }
+        setCurrentSubtitle(subtitleText);
 
         playAudio(segments, () => {
             // Check if playback was cancelled
@@ -161,6 +170,7 @@ export function useSacredPrayersPlayback(options: UseSacredPrayersPlaybackOption
             } else {
                 setIsPlaying(false);
                 isPlayingRef.current = false;
+                setCurrentSubtitle(null);
                 onComplete?.();
             }
         });
@@ -197,8 +207,9 @@ export function useSacredPrayersPlayback(options: UseSacredPrayersPlaybackOption
     const stop = useCallback(() => {
         setIsPlaying(false);
         isPlayingRef.current = false;
+        setCurrentSubtitle(null);
         playbackIdRef.current++;
-        saveProgress(currentStepIndex); // Save position when stopped
+        saveProgress(currentStepIndex);
         stopAudio();
     }, [stopAudio, saveProgress, currentStepIndex]);
 
@@ -215,6 +226,7 @@ export function useSacredPrayersPlayback(options: UseSacredPrayersPlaybackOption
     return {
         isPlaying,
         currentStepIndex,
+        currentSubtitle,
         play,
         stop,
         isComplete,

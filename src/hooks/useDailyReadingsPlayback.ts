@@ -56,6 +56,7 @@ export function useDailyReadingsPlayback(
     const [reflection, setReflection] = useState<DailyReflection | null>(null);
     const [title, setTitle] = useState<string>('');
     const [loading, setLoading] = useState(false);
+    const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null);
     const [liturgicalColor, setLiturgicalColor] = useState('#a87d3e');
 
     // Initialize completedIds from localStorage
@@ -256,7 +257,7 @@ export function useDailyReadingsPlayback(
 
         // Add title
         if (title) {
-            segments.push({ text: title, pause: 1000 });
+            segments.push({ text: title, pause: 1000, subtitle: title });
         }
 
         // Add readings (skip completed unless we are replaying all)
@@ -264,10 +265,15 @@ export function useDailyReadingsPlayback(
             const id = `usccb-${readingIndex}`;
             if (!allComplete && completedIds.includes(id)) return; // Skip if already completed
 
-            const spokenText = getSpokenText(reading.text);
-            // Tag the title segment with readingId so DailyReadingsScreen can highlight
-            segments.push({ text: normalizeReadingTitle(reading.title), pause: 800, readingId: id });
+            const normTitle = normalizeReadingTitle(reading.title);
+            segments.push({
+                text: normTitle,
+                pause: 800,
+                readingId: id,
+                subtitle: `${normTitle}: ${reading.citation}`
+            });
 
+            const spokenText = getSpokenText(reading.text);
             const chunks = chunkText(spokenText);
             chunks.forEach((chunk, chunkIndex) => {
                 const isLast = chunkIndex === chunks.length - 1;
@@ -294,7 +300,12 @@ export function useDailyReadingsPlayback(
             if (allComplete || !completedIds.includes(id)) {
                 const spokenText = getSpokenText(reflection.content);
                 // Tag the title segment with readingId so DailyReadingsScreen can highlight
-                segments.push({ text: reflection.title, pause: 800, readingId: id });
+                segments.push({
+                    text: reflection.title,
+                    pause: 800,
+                    readingId: id,
+                    subtitle: reflection.title
+                });
 
                 const chunks = chunkText(spokenText);
                 chunks.forEach((chunk, index) => {
@@ -318,7 +329,7 @@ export function useDailyReadingsPlayback(
         }
 
         // Add blessing
-        segments.push({ text: blessingText, pause: 1000 });
+        segments.push({ text: blessingText, pause: 1000, subtitle: blessingText });
 
         // Play sequence
         const playNext = (index: number) => {
@@ -330,6 +341,7 @@ export function useDailyReadingsPlayback(
                 setIsPlaying(false);
                 isPlayingRef.current = false;
                 _isPlaying = false;
+                setCurrentSubtitle(null);
                 window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
                 window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
                 onComplete?.();
@@ -337,6 +349,9 @@ export function useDailyReadingsPlayback(
             }
 
             const segment = segments[index];
+            if (segment.subtitle) {
+                setCurrentSubtitle(segment.subtitle);
+            }
             // Fire readingActive event so DailyReadingsScreen can highlight current reading
             if (segment.readingId) {
                 window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: segment.readingId } }));
@@ -357,6 +372,7 @@ export function useDailyReadingsPlayback(
         _isPlaying = false;
         playbackIdRef.current++;
         isPlayingRef.current = false;
+        setCurrentSubtitle(null);
         setIsPlaying(false);
         stopAudio();
         window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
@@ -372,6 +388,7 @@ export function useDailyReadingsPlayback(
 
     return {
         isPlaying,
+        currentSubtitle,
         play,
         stop,
         loading,

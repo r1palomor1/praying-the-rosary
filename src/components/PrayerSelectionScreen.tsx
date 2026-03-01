@@ -88,8 +88,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
         }
     });
 
-    // Track if quick play is active (including intro audio)
     const [isQuickPlayActive, setIsQuickPlayActive] = useState(false);
+    const [rosaryIntroSubtitle, setRosaryIntroSubtitle] = useState<string | null>(null);
     const isQuickPlayActiveRef = useRef(false);
 
     const [isDailyReadingsQuickPlayActive, setIsDailyReadingsQuickPlayActive] = useState(false);
@@ -223,6 +223,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
         if (isQuickPlayActive || rosaryPlayback.isPlaying) {
             // Stop playback (works during intro or prayers)
             setIsQuickPlayActive(false);
+            setRosaryIntroSubtitle(null);
             rosaryPlayback.stop();
         } else {
             // Set active immediately to show stop icon
@@ -259,8 +260,11 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
 
                     const introAudioText = `${mysteryName}. ${forDays} ${daysText}. ${dailyDevotionLabel}. ${devotionTitle}. ${devotionText}`;
 
+                    setRosaryIntroSubtitle(mysteryName);
+
                     // Play intro, then start prayers
                     playAudio(introAudioText, () => {
+                        setRosaryIntroSubtitle(null);
                         // Only continue if still active (user didn't stop during intro)
                         if (isQuickPlayActiveRef.current) {
                             rosaryPlayback.play();
@@ -281,6 +285,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
         if (isQuickPlayActive || rosaryPlayback.isPlaying) {
             // Stop the hook's playback and let MysteryScreen take over with continuous mode
             setIsQuickPlayActive(false);
+            setRosaryIntroSubtitle(null);
             rosaryPlayback.stop();
             // Navigate with continuous mode enabled
             if (onStartRosaryWithContinuous) {
@@ -482,7 +487,11 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     </div>
                     <div className="card-content">
                         <h2 className="card-title">{t.dailyReadings.toUpperCase()}</h2>
-                        <p className="card-subtitle">{t.dailyReadingsSubtitle}</p>
+                        <p className="card-subtitle" style={((isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) && dailyReadingsPlayback.currentSubtitle) ? { color: dailyReadingsPlayback.liturgicalColor, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' } : undefined}>
+                            {((isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) && dailyReadingsPlayback.currentSubtitle)
+                                ? dailyReadingsPlayback.currentSubtitle
+                                : t.dailyReadingsSubtitle}
+                        </p>
                     </div>
                     {dailyReadingsPlayback.isComplete ? (
                         <div style={{
@@ -560,26 +569,28 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     </div>
                     <div className="card-content">
                         <h2 className="card-title">{t.bibleInAYear.toUpperCase()}</h2>
-                        <p className="card-subtitle">
-                            {(() => {
-                                if (!bibleStartDate) return t.bibleInAYearSubtitle.replace('{day}', '1');
+                        <p className="card-subtitle" style={((isBibleQuickPlayActive || biblePlayback.isPlaying) && biblePlayback.currentSubtitle) ? { color: biblePlayback.liturgicalColor, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' } : undefined}>
+                            {((isBibleQuickPlayActive || biblePlayback.isPlaying) && biblePlayback.currentSubtitle)
+                                ? biblePlayback.currentSubtitle
+                                : (() => {
+                                    if (!bibleStartDate) return t.bibleInAYearSubtitle.replace('{day}', '1');
 
-                                // Logic:
-                                // 1. If missed days exist -> Show first missed day + "X missed"
-                                // 2. If expected day is complete -> Show "Day X • Complete"
-                                // 3. Else -> Show "Day X of 365"
+                                    // Logic:
+                                    // 1. If missed days exist -> Show first missed day + "X missed"
+                                    // 2. If expected day is complete -> Show "Day X • Complete"
+                                    // 3. Else -> Show "Day X of 365"
 
-                                if (missedDays.length > 0) {
-                                    const resumeDay = missedDays[0];
-                                    return `Resume Day ${resumeDay} (${missedDays.length} missed)`;
-                                }
+                                    if (missedDays.length > 0) {
+                                        const resumeDay = missedDays[0];
+                                        return `Resume Day ${resumeDay} (${missedDays.length} missed)`;
+                                    }
 
-                                if (isDayComplete(expectedDay)) {
-                                    return `Day ${expectedDay} • Complete`;
-                                }
+                                    if (isDayComplete(expectedDay)) {
+                                        return `Day ${expectedDay} • Complete`;
+                                    }
 
-                                return t.bibleInAYearSubtitle.replace('{day}', expectedDay.toString());
-                            })()}
+                                    return t.bibleInAYearSubtitle.replace('{day}', expectedDay.toString());
+                                })()}
                         </p>
                     </div>
                     {missedDays.length === 0 && isDayComplete(expectedDay) ? (
@@ -656,7 +667,11 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                         <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             {t.rosary.toUpperCase()}
                         </h2>
-                        <p className="card-subtitle">{t.rosarySubtitle}</p>
+                        <p className="card-subtitle" style={((isQuickPlayActive || rosaryPlayback.isPlaying) && (rosaryPlayback.currentSubtitle || rosaryIntroSubtitle)) ? { color: rosaryColorHex, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' } : undefined}>
+                            {((isQuickPlayActive || rosaryPlayback.isPlaying) && (rosaryPlayback.currentSubtitle || rosaryIntroSubtitle))
+                                ? (rosaryPlayback.currentSubtitle || rosaryIntroSubtitle)
+                                : t.rosarySubtitle}
+                        </p>
                     </div>
                     {isRosaryCompleted ? (
                         <div style={{
@@ -751,7 +766,11 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                         <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             {t.sacredPrayers.toUpperCase()}
                         </h2>
-                        <p className="card-subtitle">{t.sacredPrayersSubtitle}</p>
+                        <p className="card-subtitle" style={((isSacredQuickPlayActive || sacredPlayback.isPlaying) && sacredPlayback.currentSubtitle) ? { color: rosaryColorHex, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' } : undefined}>
+                            {((isSacredQuickPlayActive || sacredPlayback.isPlaying) && sacredPlayback.currentSubtitle)
+                                ? sacredPlayback.currentSubtitle
+                                : t.sacredPrayersSubtitle}
+                        </p>
                     </div>
                     {isSacredCompleted ? (
                         <div style={{

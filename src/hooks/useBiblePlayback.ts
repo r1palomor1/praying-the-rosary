@@ -54,6 +54,7 @@ export function useBiblePlayback(
     const { markChapterComplete, isChapterComplete } = useBibleProgress();
 
     const [isPlaying, setIsPlaying] = useState(false);
+    const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null);
     const [readings, setReadings] = useState<Reading[]>([]);
     const [dayData, setDayData] = useState<BibleDay | null>(null);
     const [loading, setLoading] = useState(false);
@@ -225,6 +226,7 @@ export function useBiblePlayback(
 
         _isPlaying = true;
         window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: true } }));
+        setCurrentSubtitle(null); // Reset subtitle on start
 
         // Parse all chapters to check completion
         const allChapters: Chapter[] = [];
@@ -251,7 +253,7 @@ export function useBiblePlayback(
         if (dayData) {
             const periodString = translatePeriod(dayData.period);
             const introText = `${t.day} ${currentDay}. ${t.phase}: ${periodString}.`;
-            segments.push({ text: introText, pause: 800 });
+            segments.push({ text: introText, pause: 800, subtitle: `${t.day} ${currentDay} • ${periodString}` });
         }
 
         // Process each reading
@@ -265,7 +267,7 @@ export function useBiblePlayback(
             // Reading title (only if reading has incomplete chapters)
             let cleanTitle = reading.title.replace(/\//g, ' ').replace(/(Chapter|Capítulo)\s*/gi, '').trim();
             cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
-            segments.push({ text: cleanTitle, pause: 500 });
+            segments.push({ text: cleanTitle, pause: 500, subtitle: reading.title });
 
             // Each chapter
             chapters.forEach(chapter => {
@@ -285,7 +287,12 @@ export function useBiblePlayback(
                         chTitle = chTitle.replace(/:(\d+)/, ', versículo $1');
                     }
 
-                    segments.push({ text: chTitle, pause: 400, chapterTitle: chapter.title });
+                    segments.push({
+                        text: chTitle,
+                        pause: 400,
+                        chapterTitle: chapter.title,
+                        subtitle: `${reading.title} • ${chapter.title}`
+                    });
                 }
 
                 // Chapter text
@@ -303,6 +310,7 @@ export function useBiblePlayback(
                         text: chunk,
                         pause: isLast ? 800 : 300,
                         chapterTitle: chapter.title,
+                        subtitle: `${reading.title} • ${chapter.title}`,
                         onComplete: isLast ? () => {
                             markChapterComplete(currentDay, chapter.title);
                         } : undefined
@@ -315,7 +323,7 @@ export function useBiblePlayback(
         });
 
         // Add blessing
-        segments.push({ text: blessingText, pause: 1000 });
+        segments.push({ text: blessingText, pause: 1000, subtitle: blessingText });
 
         // Play sequence
         const playNext = (index: number) => {
@@ -327,6 +335,7 @@ export function useBiblePlayback(
                 setIsPlaying(false);
                 isPlayingRef.current = false;
                 _isPlaying = false;
+                setCurrentSubtitle(null);
                 window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
                 window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
                 onComplete?.();
@@ -334,6 +343,9 @@ export function useBiblePlayback(
             }
 
             const segment = segments[index];
+            if (segment.subtitle) {
+                setCurrentSubtitle(segment.subtitle);
+            }
             if (segment.chapterTitle) {
                 window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: segment.chapterTitle } }));
             }
@@ -359,6 +371,7 @@ export function useBiblePlayback(
         _isPlaying = false;
         playbackIdRef.current++;
         isPlayingRef.current = false;
+        setCurrentSubtitle(null);
         setIsPlaying(false);
         stopAudio();
         window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
@@ -367,6 +380,7 @@ export function useBiblePlayback(
 
     return {
         isPlaying,
+        currentSubtitle,
         play,
         stop,
         loading,
