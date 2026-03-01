@@ -13,6 +13,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { useBibleProgress } from '../hooks/useBibleProgress';
+import { killBiblePlayback, getBiblePlaying } from '../hooks/useBiblePlayback';
 import biblePlan from '../data/bibleInYearPlan.json';
 import { BibleProgressModal } from './BibleProgressModal';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
@@ -45,6 +46,21 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
     const [activeChapterId, setActiveChapterId] = useState<string | null>(null);
+
+    const [isBibleGlobalActive, setIsBibleGlobalActive] = useState(() => getBiblePlaying());
+
+    useEffect(() => {
+        const handlePlayState = (e: Event) => setIsBibleGlobalActive((e as CustomEvent).detail.playing);
+        const handleChapterActive = (e: Event) => setActiveChapterId((e as CustomEvent).detail.id);
+
+        window.addEventListener('bible:playState', handlePlayState);
+        window.addEventListener('bible:chapterActive', handleChapterActive);
+
+        return () => {
+            window.removeEventListener('bible:playState', handlePlayState);
+            window.removeEventListener('bible:chapterActive', handleChapterActive);
+        };
+    }, []);
 
     // Expanded sections state (keyed by citation or title)
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -167,7 +183,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
     const fetchReadings = async (day: number) => {
-        if (isPlaying || ttsManager.isSpeaking()) {
+        // Only stop if this screen itself started audio. Support background global handoff.
+        if (isPlaying) {
             ttsManager.stop();
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
@@ -369,6 +386,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
     };
 
     const handlePlayAll = async () => {
+        killBiblePlayback();
+
         if (isPlaying && currentlyPlayingId === 'all') {
             ttsManager.stop();
             setIsPlaying(false);
@@ -424,6 +443,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
     const handlePlaySection = async (e: React.MouseEvent, id: string, reading: Reading) => {
         e.stopPropagation();
+        killBiblePlayback();
+        
         if (isPlaying && currentlyPlayingId === id) {
             ttsManager.stop();
             setIsPlaying(false);
@@ -457,6 +478,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
     const handlePlayChapter = async (e: React.MouseEvent, id: string, reading: Reading, chapter: Chapter) => {
         e.stopPropagation();
+        killBiblePlayback();
+        
         if (isPlaying && currentlyPlayingId === id) {
             ttsManager.stop();
             setIsPlaying(false);
@@ -628,7 +651,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                     {/* Render Each Parsed Chapter as a separate Card */}
                                     {chapters.map((chapter, chIdx) => {
                                         const rowKey = `${idx}-${chIdx}`;
-                                        const isActivePlayingCard = isPlaying && activeChapterId === chapter.title;
+                                        const isActivePlayingCard = (isPlaying || isBibleGlobalActive) && activeChapterId === chapter.title;
                                         return (
                                             <div
                                                 key={chIdx}

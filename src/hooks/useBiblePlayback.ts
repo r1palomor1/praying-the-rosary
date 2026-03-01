@@ -3,6 +3,25 @@ import { useApp } from '../context/AppContext';
 import { useBibleProgress } from './useBibleProgress';
 import biblePlan from '../data/bibleInYearPlan.json';
 
+// ─── Module-level state (survives React component lifecycle / navigation) ────
+let _isPlaying = false;
+let _playVersion = 0;
+
+/** True if Bible audio is active anywhere in the app via the hook. */
+export const getBiblePlaying = () => _isPlaying;
+
+/**
+ * Kill any in-flight Bible hook audio.
+ * Safe to call from any component/screen.
+ */
+export const killBiblePlayback = () => {
+    _playVersion++;
+    _isPlaying = false;
+    window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
+    window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface BibleDay {
     day: number;
     period: string;
@@ -200,6 +219,13 @@ export function useBiblePlayback(
     const play = useCallback(() => {
         if (isPlayingRef.current || readings.length === 0) return;
         
+        // Increment module-level version — invalidates any orphaned closures
+        _playVersion++;
+        const capturedVersion = _playVersion;
+
+        _isPlaying = true;
+        window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: true } }));
+        
         // Parse all chapters to check completion
         const allChapters: Chapter[] = [];
         readings.forEach(reading => {
@@ -271,7 +297,7 @@ export function useBiblePlayback(
                         chTitle = chTitle.replace(/:(\d+)/, ', versículo $1');
                     }
                     
-                    segments.push({ text: chTitle, pause: 400 });
+                    segments.push({ text: chTitle, pause: 400, chapterTitle: chapter.title });
                 }
                 
                 // Chapter text
@@ -288,6 +314,7 @@ export function useBiblePlayback(
                     segments.push({
                         text: chunk,
                         pause: isLast ? 800 : 300,
+                        chapterTitle: chapter.title,
                         onComplete: isLast ? () => {
                             markChapterComplete(currentDay, chapter.title);
                         } : undefined
@@ -306,14 +333,23 @@ export function useBiblePlayback(
         const playNext = (index: number) => {
             if (playbackIdRef.current !== currentPlaybackId) return;
             if (!isPlayingRef.current) return;
+            if (_playVersion !== capturedVersion) return; // Killed externally
+
             if (index >= segments.length) {
                 setIsPlaying(false);
                 isPlayingRef.current = false;
+                _isPlaying = false;
+                window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
+                window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
                 onComplete?.();
                 return;
             }
             
             const segment = segments[index];
+            if (segment.chapterTitle) {
+                window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: segment.chapterTitle } }));
+            }
+
             if (!segment.text.trim()) {
                 setTimeout(() => playNext(index + 1), segment.pause || 500);
                 return;
@@ -331,10 +367,14 @@ export function useBiblePlayback(
     }, [readings, dayData, currentDay, blessingText, language, playAudio, onComplete, t, translatePeriod, isChapterComplete, markChapterComplete]);
     
     const stop = useCallback(() => {
+        _playVersion++;
+        _isPlaying = false;
         playbackIdRef.current++;
         isPlayingRef.current = false;
         setIsPlaying(false);
         stopAudio();
+        window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
+        window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
     }, [stopAudio]);
     
     return {

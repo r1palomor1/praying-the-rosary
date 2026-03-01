@@ -10,7 +10,7 @@ import { hasCompletionOnDate } from '../utils/prayerHistory';
 import { useBibleProgress } from '../hooks/useBibleProgress';
 import { useRosaryPlayback } from '../hooks/useRosaryPlayback';
 import { useDailyReadingsPlayback } from '../hooks/useDailyReadingsPlayback';
-import { useBiblePlayback } from '../hooks/useBiblePlayback';
+import { useBiblePlayback, getBiblePlaying } from '../hooks/useBiblePlayback';
 import { getDailyReadingsPlaying } from '../hooks/useDailyReadingsPlayback';
 import type { MysteryType } from '../utils/prayerFlowEngine';
 import { mysterySets } from '../data/mysteries';
@@ -82,6 +82,14 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     
     const [isBibleQuickPlayActive, setIsBibleQuickPlayActive] = useState(false);
     const isBibleQuickPlayActiveRef = useRef(false);
+
+    // Event-driven tracks Bible audio that outlives component
+    const [isBibleGlobalActive, setIsBibleGlobalActive] = useState(() => getBiblePlaying());
+    useEffect(() => {
+        const handler = (e: Event) => setIsBibleGlobalActive((e as CustomEvent).detail.playing);
+        window.addEventListener('bible:playState', handler);
+        return () => window.removeEventListener('bible:playState', handler);
+    }, []);
     
     useEffect(() => {
         isQuickPlayActiveRef.current = isQuickPlayActive;
@@ -268,7 +276,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     // Handle Bible in Year quick play
     const handleBibleQuickPlay = () => {
         hideChurchHint();
-        if (isBibleQuickPlayActive || biblePlayback.isPlaying) {
+        const isActive = isBibleQuickPlayActive || biblePlayback.isPlaying || isBibleGlobalActive;
+        if (isActive) {
             setIsBibleQuickPlayActive(false);
             biblePlayback.stop();
         } else {
@@ -469,9 +478,9 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                             alignItems: 'center',
                             justifyContent: 'center'
                         }}
-                        aria-label={isBibleQuickPlayActive || biblePlayback.isPlaying ? 'Stop Bible Reading' : 'Play Bible Reading'}
+                        aria-label={(isBibleQuickPlayActive || biblePlayback.isPlaying || isBibleGlobalActive) ? 'Stop Bible Reading' : 'Play Bible Reading'}
                     >
-                        {isBibleQuickPlayActive || biblePlayback.isPlaying ? (
+                        {(isBibleQuickPlayActive || biblePlayback.isPlaying || isBibleGlobalActive) ? (
                             <Square 
                                 size={20} 
                                 fill={biblePlayback.liturgicalColor} 
@@ -489,8 +498,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     onClick={() => onSelectBibleInYear?.()} 
                     className="prayer-card"
                     style={{
-                        border: (isBibleQuickPlayActive || biblePlayback.isPlaying) ? `1px solid ${biblePlayback.liturgicalColor}` : undefined,
-                        boxShadow: (isBibleQuickPlayActive || biblePlayback.isPlaying) ? `0 0 15px ${biblePlayback.liturgicalColor}40` : 'none',
+                        border: (isBibleQuickPlayActive || biblePlayback.isPlaying || isBibleGlobalActive) ? `1px solid ${biblePlayback.liturgicalColor}` : undefined,
+                        boxShadow: (isBibleQuickPlayActive || biblePlayback.isPlaying || isBibleGlobalActive) ? `0 0 15px ${biblePlayback.liturgicalColor}40` : 'none',
                         transition: 'all 0.3s ease'
                     }}
                 >
