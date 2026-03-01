@@ -205,7 +205,6 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
 
     // Determine if we should show the glow (Only if reminder ON and NOT completed)
     const showGlow = isReminderEnabled && !isRosaryCompleted;
-    const showSacredGlow = isReminderEnabled && !isSacredCompleted;
 
     // Get mystery color for visual feedback
     const getMysteryColor = (): string => {
@@ -738,8 +737,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     }}
                     className="prayer-card"
                     style={{
-                        border: (showSacredGlow || isSacredQuickPlayActive || sacredPlayback.isPlaying) ? `1px solid ${rosaryColorHex}` : undefined,
-                        boxShadow: (showSacredGlow || isSacredQuickPlayActive || sacredPlayback.isPlaying) ? `0 0 15px ${rosaryColorHex}40` : 'none',
+                        border: (isSacredQuickPlayActive || sacredPlayback.isPlaying) ? `1px solid ${rosaryColorHex}` : undefined,
+                        boxShadow: (isSacredQuickPlayActive || sacredPlayback.isPlaying) ? `0 0 15px ${rosaryColorHex}40` : 'none',
                         transition: 'all 0.3s ease'
                     }}
                 >
