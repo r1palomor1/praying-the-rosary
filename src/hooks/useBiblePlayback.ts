@@ -70,24 +70,25 @@ export function useBiblePlayback(
         : 'The reading for the day is now complete. May God bless you for your faithful devotion to his word.';
 
     const t = language === 'es'
-        ? { day: 'Día', phase: 'Fase', firstReading: 'Primera Lectura', secondReading: 'Segunda Lectura', psalmProverbs: 'Salmo o Proverbio' }
+        ? { day: 'Día', phase: 'Etapa', firstReading: 'Primera Lectura', secondReading: 'Segunda Lectura', psalmProverbs: 'Salmo o Proverbio' }
         : { day: 'Day', phase: 'Phase', firstReading: 'First Reading', secondReading: 'Second Reading', psalmProverbs: 'Psalm or Proverbs' };
 
     const translatePeriod = (period: string): string => {
         if (language === 'es') {
             const periodMap: Record<string, string> = {
-                'Creation and Patriarchs': 'Creación y Patriarcas',
-                'Exodus and Law': 'Éxodo y Ley',
-                'Conquest and Judges': 'Conquista y Jueces',
-                'Kingdom United': 'Reino Unido',
-                'Kingdom Divided': 'Reino Dividido',
-                'Exile and Return': 'Exilio y Retorno',
-                'Wisdom': 'Sabiduría',
-                'Prophets': 'Profetas',
-                'Life of Jesus': 'Vida de Jesús',
-                'Early Church': 'Iglesia Primitiva',
-                'Epistles': 'Epístolas',
-                'Final Letters and Revelation': 'Cartas Finales y Apocalipsis'
+                'Early World': 'El Mundo Antiguo',
+                'Patriarchs': 'Los Patriarcas',
+                'Egypt and Exodus': 'Egipto y el Éxodo',
+                'Desert Wanderings': 'Las Peregrinaciones por el Desierto',
+                'Conquest and Judges': 'La Conquista y los Jueces',
+                'Royal Kingdom': 'El Reino Real',
+                'Divided Kingdom': 'El Reino Dividido',
+                'Exile': 'El Exilio',
+                'Return': 'El Retorno',
+                'Maccabean Revolt': 'La Revuelta Macabea',
+                'Messianic Checkpoint': 'Control Mesiánico',
+                'Messianic Fulfillment': 'El Cumplimiento Mesiánico',
+                'The Church': 'La Iglesia'
             };
             return periodMap[period] || period;
         }

@@ -593,7 +593,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     </div>
 
                     <div className="progress-container" style={{ marginBottom: '1.5rem' }}>
-                        <div className="progress-fill" style={{ width: `${(currentDay / 365) * 100}%` }}></div>
+                        <div className="progress-fill" style={{ width: `${(completedDays.length / 365) * 100}%` }}></div>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0' }}>

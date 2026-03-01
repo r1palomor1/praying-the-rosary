@@ -1,4 +1,4 @@
-import { Volume2, StopCircle, Settings as SettingsIcon } from 'lucide-react';
+import { Volume2, StopCircle, Settings as SettingsIcon, Flag } from 'lucide-react';
 import './MysteryHeader.css';
 
 interface MysteryHeaderProps {
@@ -218,9 +218,11 @@ export function MysteryHeader({
                         {currentDecadeTitle}
                     </div>
                 )}
-                {/* Progress info */}
-                <div className="progress-info progress-info-small">
-                    {Math.round(progress)}% {t.complete}
+                {/* Progress info - Moved to dedicated spacer container to avoid text overlap */}
+                <div style={{ width: '100%', height: '20px', position: 'relative', marginTop: '8px' }}>
+                    <div style={{ position: 'absolute', right: 0, bottom: 0, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.875rem', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--color-text-muted)' }}>
+                        {Math.round(progress)}% <Flag size={14} />
+                    </div>
                 </div>
             </div>
         </div>

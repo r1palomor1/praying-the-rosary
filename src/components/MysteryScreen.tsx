@@ -698,6 +698,14 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
         }
     };
 
+    // Mystery color map for progress bar
+    const mysteryColors: Record<string, string> = {
+        joyful: '#3B5B8C',
+        luminous: '#6E4A8D',
+        sorrowful: '#8B2A3D',
+        glorious: '#C5A059',
+    };
+
     return (
         <div className={`mystery-screen-container ${!showPrayerText ? 'prayer-text-hidden' : ''}`}>
             {/* NEW: Use shared MysteryHeader component */}
@@ -724,8 +732,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                 progress={flowEngine.getProgress()}
             />
 
-            {/* NEW: Use shared ProgressBar component */}
-            <ProgressBar progress={flowEngine.getProgress()} />
+            {/* NEW: Use shared ProgressBar component with mystery color */}
+            <ProgressBar progress={flowEngine.getProgress()} color={mysteryColors[currentMysterySet as string]} />
 
             <HighlightErrorBoundary>
                 {/* NEW: ROUTER PATTERN - Switch between Classic and Cinematic views */}

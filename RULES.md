@@ -19,3 +19,9 @@
 *   **Background Processes:** Use `isBackground: true` for long-running terminal commands (dev servers, watch modes, continuous processes). Do NOT use background mode for build commands or git operations.
 *   **Parallel Tool Calls:** Batch independent read operations (multiple `read_file`, `grep_search`) in a single parallel execution block. Execute them together instead of sequentially to reduce round trips.
 *   **Avoid Verbose Explanations:** When actions are self-explanatory (like staging files, running builds), do NOT explain what the command does. Just run it. Only explain when commands are complex, destructive, or non-obvious.
+
+## 5. 🛑 Zero Assumptions & Anti-Rogue Execution Protocol
+*   **NEVER perform "Rogue Execution":** If asked to "review," "check," or "evaluate" logic or UI, **you must only review and report your findings.**
+*   **DO NOT** preemptively write code, patch files, or execute fixes unless explicitly instructed to do so.
+*   Present your analysis first, then clearly ask the user for approval to proceed with any proposed changes.
+*   Violating this rule and making unapproved changes is considered a complete failure of protocol.

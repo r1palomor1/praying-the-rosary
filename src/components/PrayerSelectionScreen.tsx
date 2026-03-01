@@ -582,11 +582,11 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
 
                                     if (missedDays.length > 0) {
                                         const resumeDay = missedDays[0];
-                                        return `Resume Day ${resumeDay} (${missedDays.length} missed)`;
+                                        return language === 'es' ? `Continuar Día ${resumeDay} (${missedDays.length} perdidos)` : `Resume Day ${resumeDay} (${missedDays.length} missed)`;
                                     }
 
                                     if (isDayComplete(expectedDay)) {
-                                        return `Day ${expectedDay} • Complete`;
+                                        return language === 'es' ? `Día ${expectedDay} • Completado` : `Day ${expectedDay} • Complete`;
                                     }
 
                                     return t.bibleInAYearSubtitle.replace('{day}', expectedDay.toString());
