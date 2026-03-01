@@ -245,19 +245,7 @@ export function useDailyReadingsPlayback(
         const allIds = reflection ? [...allReadingIds, 'reflection'] : allReadingIds;
         const allComplete = allIds.length > 0 && allIds.every(id => completedIds.includes(id));
 
-        // If everything is complete, just play the blessing
-        if (allComplete) {
-            playbackIdRef.current++;
-            isPlayingRef.current = true;
-            setIsPlaying(true);
-
-            playAudio(blessingText, () => {
-                setIsPlaying(false);
-                isPlayingRef.current = false;
-                onComplete?.();
-            });
-            return;
-        }
+        // If all readings are complete, allow a full replay by bypassing the skip check.
 
         playbackIdRef.current++;
         const currentPlaybackId = playbackIdRef.current;
@@ -271,10 +259,10 @@ export function useDailyReadingsPlayback(
             segments.push({ text: title, pause: 1000 });
         }
 
-        // Add readings (skip completed)
+        // Add readings (skip completed unless we are replaying all)
         readings.forEach((reading, readingIndex) => {
             const id = `usccb-${readingIndex}`;
-            if (completedIds.includes(id)) return; // Skip if already completed
+            if (!allComplete && completedIds.includes(id)) return; // Skip if already completed
 
             const spokenText = getSpokenText(reading.text);
             // Tag the title segment with readingId so DailyReadingsScreen can highlight
@@ -300,10 +288,10 @@ export function useDailyReadingsPlayback(
             });
         });
 
-        // Add reflection (skip if completed)
+        // Add reflection (skip if completed unless we are replaying all)
         if (reflection) {
             const id = 'reflection';
-            if (!completedIds.includes(id)) {
+            if (allComplete || !completedIds.includes(id)) {
                 const spokenText = getSpokenText(reflection.content);
                 // Tag the title segment with readingId so DailyReadingsScreen can highlight
                 segments.push({ text: reflection.title, pause: 800, readingId: id });

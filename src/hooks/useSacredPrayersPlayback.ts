@@ -178,19 +178,12 @@ export function useSacredPrayersPlayback(options: UseSacredPrayersPlaybackOption
         engine.jumpToStep(latestStepIndex);
         const step = engine.getCurrentStep();
 
-        // If already at completion step, just play the blessing
+        // If already at completion step, RESTART from the beginning (Full Replay)
         if (step?.type === 'complete') {
-            setIsPlaying(true);
-            isPlayingRef.current = true;
-            const completionText = language === 'es'
-                ? 'Has completado las Oraciones Sagradas. Que Dios te bendiga por tu fiel devoción.'
-                : 'You have completed the Sacred Prayers. May God bless you for your faithful devotion.';
-
-            playAudio(completionText, () => {
-                setIsPlaying(false);
-                isPlayingRef.current = false;
-                onComplete?.();
-            });
+            const startStepIndex = 0;
+            setCurrentStepIndex(startStepIndex);
+            engine.jumpToStep(startStepIndex);
+            playSequence(startStepIndex);
             return;
         }
 

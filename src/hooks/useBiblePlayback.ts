@@ -52,26 +52,26 @@ export function useBiblePlayback(
     const { language, playAudio, stopAudio } = useApp();
     const { onComplete } = options;
     const { markChapterComplete, isChapterComplete } = useBibleProgress();
-    
+
     const [isPlaying, setIsPlaying] = useState(false);
     const [readings, setReadings] = useState<Reading[]>([]);
     const [dayData, setDayData] = useState<BibleDay | null>(null);
     const [loading, setLoading] = useState(false);
     const [liturgicalColor, setLiturgicalColor] = useState('#a87d3e');
-    
+
     const isPlayingRef = useRef(false);
     const playbackIdRef = useRef(0);
-    
+
     const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
-    
+
     const blessingText = language === 'es'
         ? 'La lectura del día se ha completado. Que Dios te bendiga por tu fiel devoción a su palabra.'
         : 'The reading for the day is now complete. May God bless you for your faithful devotion to his word.';
-    
+
     const t = language === 'es'
         ? { day: 'Día', phase: 'Fase', firstReading: 'Primera Lectura', secondReading: 'Segunda Lectura', psalmProverbs: 'Salmo o Proverbio' }
         : { day: 'Day', phase: 'Phase', firstReading: 'First Reading', secondReading: 'Second Reading', psalmProverbs: 'Psalm or Proverbs' };
-    
+
     const translatePeriod = (period: string): string => {
         if (language === 'es') {
             const periodMap: Record<string, string> = {
@@ -92,7 +92,7 @@ export function useBiblePlayback(
         }
         return period;
     };
-    
+
     // Fetch readings data
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -103,17 +103,17 @@ export function useBiblePlayback(
             const liturgy = await fetchLiturgicalDay(today, language);
             const color = getLiturgicalColorHex(liturgy.celebrations[0].colour);
             setLiturgicalColor(color);
-            
+
             const data = biblePlan.find((d: BibleDay) => d.day === currentDay);
             if (!data) {
                 setLoading(false);
                 return;
             }
-            
+
             setDayData(data);
-            
+
             const readingsToFetch: Reading[] = [];
-            
+
             const fetchOne = async (citation: string, title: string) => {
                 try {
                     const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(citation)}&lang=${language}`);
@@ -127,11 +127,11 @@ export function useBiblePlayback(
                     readingsToFetch.push({ title, citation, text: `📖 ${citation}\n\n[Error]` });
                 }
             };
-            
+
             await fetchOne(data.first_reading, t.firstReading);
             if (data.second_reading) await fetchOne(data.second_reading, t.secondReading);
             await fetchOne(data.psalm_proverbs, t.psalmProverbs);
-            
+
             setReadings(readingsToFetch);
         } catch (err) {
             console.error('Error fetching Bible readings:', err);
@@ -139,11 +139,11 @@ export function useBiblePlayback(
             setLoading(false);
         }
     }, [currentDay, language, API_BASE, t]);
-    
+
     useEffect(() => {
         fetchData();
     }, [currentDay, language]);
-    
+
     // Wake Lock: Keep screen on during playback
     useEffect(() => {
         let wakeLock: any = null;
@@ -170,12 +170,12 @@ export function useBiblePlayback(
             }
         };
     }, [isPlaying]);
-    
+
     const chunkText = (text: string, maxLength: number = 200): string[] => {
         const sentences = text.match(/[^.!?\n:;]+[.!?\n:;]+|[^.!?\n:;]+$/g) || [text];
         const chunks: string[] = [];
         let currentChunk = '';
-        
+
         sentences.forEach(sentence => {
             if (currentChunk.length + sentence.length > maxLength) {
                 if (currentChunk) chunks.push(currentChunk.trim());
@@ -185,13 +185,13 @@ export function useBiblePlayback(
             }
         });
         if (currentChunk) chunks.push(currentChunk.trim());
-        
+
         return chunks.flatMap(chunk => {
             if (chunk.length <= 250) return [chunk];
             return chunk.match(/.{1,250}(?:\s|$)|.{1,250}/g) || [chunk];
         });
     };
-    
+
     const parseChapters = (reading: Reading): Chapter[] => {
         const chapters: Chapter[] = [];
         if (reading.text.includes('###')) {
@@ -208,87 +208,75 @@ export function useBiblePlayback(
                 }
             });
         }
-        
+
         if (chapters.length === 0) {
             chapters.push({ title: reading.citation || reading.title, text: reading.text });
         }
-        
+
         return chapters;
     };
-    
+
     const play = useCallback(() => {
         if (isPlayingRef.current || readings.length === 0) return;
-        
+
         // Increment module-level version — invalidates any orphaned closures
         _playVersion++;
         const capturedVersion = _playVersion;
 
         _isPlaying = true;
         window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: true } }));
-        
+
         // Parse all chapters to check completion
         const allChapters: Chapter[] = [];
         readings.forEach(reading => {
             const chapters = parseChapters(reading);
             allChapters.push(...chapters);
         });
-        
+
         // Check if all chapters are complete
-        const allComplete = allChapters.length > 0 && allChapters.every(ch => 
+        const allComplete = allChapters.length > 0 && allChapters.every(ch =>
             isChapterComplete(currentDay, ch.title)
         );
-        
-        // If everything is complete, just play the blessing
-        if (allComplete) {
-            playbackIdRef.current++;
-            isPlayingRef.current = true;
-            setIsPlaying(true);
-            
-            playAudio(blessingText, () => {
-                setIsPlaying(false);
-                isPlayingRef.current = false;
-                onComplete?.();
-            });
-            return;
-        }
-        
+
+        // If everything is complete, allow a full replay by bypassing the skip check.
+
         playbackIdRef.current++;
         const currentPlaybackId = playbackIdRef.current;
         isPlayingRef.current = true;
         setIsPlaying(true);
-        
+
         const segments: any[] = [];
-        
+
         // Add intro
         if (dayData) {
             const periodString = translatePeriod(dayData.period);
             const introText = `${t.day} ${currentDay}. ${t.phase}: ${periodString}.`;
             segments.push({ text: introText, pause: 800 });
         }
-        
+
         // Process each reading
         readings.forEach(reading => {
             const chapters = parseChapters(reading);
-            
+
             // Check if all chapters in this reading are complete
             const allChaptersComplete = chapters.every(ch => isChapterComplete(currentDay, ch.title));
-            if (allChaptersComplete) return; // Skip entire reading if all chapters done
-            
+            if (!allComplete && allChaptersComplete) return; // Skip entire reading if all chapters done unless replaying
+
             // Reading title (only if reading has incomplete chapters)
             let cleanTitle = reading.title.replace(/\//g, ' ').replace(/(Chapter|Capítulo)\s*/gi, '').trim();
             cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
             segments.push({ text: cleanTitle, pause: 500 });
-            
+
             // Each chapter
             chapters.forEach(chapter => {
-                // Skip if already completed
-                if (isChapterComplete(currentDay, chapter.title)) return;
-                
+                // Skip if already completed unless replaying
+                if (!allComplete && isChapterComplete(currentDay, chapter.title)) return;
+
                 // Chapter title (if different from reading title)
                 if (chapter.title !== reading.title && chapter.title !== reading.citation) {
                     let chTitle = chapter.title.replace(/(Chapter|Capítulo)\s*/gi, '').trim();
                     chTitle = chTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
-                    
+
                     if (language === 'en') {
                         chTitle = chTitle.replace(/:(\d+)-(\d+)/, ', verses $1 to $2');
                         chTitle = chTitle.replace(/:(\d+)/, ', verse $1');
@@ -296,10 +284,10 @@ export function useBiblePlayback(
                         chTitle = chTitle.replace(/:(\d+)-(\d+)/, ', versículos $1 al $2');
                         chTitle = chTitle.replace(/:(\d+)/, ', versículo $1');
                     }
-                    
+
                     segments.push({ text: chTitle, pause: 400, chapterTitle: chapter.title });
                 }
-                
+
                 // Chapter text
                 let spokenText = chapter.text
                     .replace(/###\s*/g, '')
@@ -307,7 +295,7 @@ export function useBiblePlayback(
                     .replace(/\//g, ' ')
                     .replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
                 spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
-                
+
                 const chunks = chunkText(spokenText);
                 chunks.forEach((chunk, index) => {
                     const isLast = index === chunks.length - 1;
@@ -321,14 +309,14 @@ export function useBiblePlayback(
                     });
                 });
             });
-            
+
             // Pause between readings
             segments.push({ text: ' ', pause: 1000 });
         });
-        
+
         // Add blessing
         segments.push({ text: blessingText, pause: 1000 });
-        
+
         // Play sequence
         const playNext = (index: number) => {
             if (playbackIdRef.current !== currentPlaybackId) return;
@@ -344,7 +332,7 @@ export function useBiblePlayback(
                 onComplete?.();
                 return;
             }
-            
+
             const segment = segments[index];
             if (segment.chapterTitle) {
                 window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: segment.chapterTitle } }));
@@ -354,7 +342,7 @@ export function useBiblePlayback(
                 setTimeout(() => playNext(index + 1), segment.pause || 500);
                 return;
             }
-            
+
             playAudio(segment.text, () => {
                 if (playbackIdRef.current !== currentPlaybackId) return;
                 if (!isPlayingRef.current) return;
@@ -362,10 +350,10 @@ export function useBiblePlayback(
                 setTimeout(() => playNext(index + 1), segment.pause || 500);
             });
         };
-        
+
         playNext(0);
     }, [readings, dayData, currentDay, blessingText, language, playAudio, onComplete, t, translatePeriod, isChapterComplete, markChapterComplete]);
-    
+
     const stop = useCallback(() => {
         _playVersion++;
         _isPlaying = false;
@@ -376,7 +364,7 @@ export function useBiblePlayback(
         window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
         window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
     }, [stopAudio]);
-    
+
     return {
         isPlaying,
         play,

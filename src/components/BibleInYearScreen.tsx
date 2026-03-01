@@ -8,7 +8,8 @@ import {
     CheckCircle,
     Square,
     Info,
-    Flag
+    Flag,
+    RotateCcw
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
@@ -405,17 +406,15 @@ export default function BibleInYearScreen({ onBack }: Props) {
             }
         });
 
-        // Add intro only if starting from the beginning (not all day completed)
-        if (!allDayCompleted) {
-            const periodString = translatePeriod(dayData?.period || '');
-            const introText = `${t.day} ${currentDay}. ${t.phase}: ${periodString}.`;
+        // Add intro (play it for standard play and replays)
+        const periodString = translatePeriod(dayData?.period || '');
+        const introText = `${t.day} ${currentDay}. ${t.phase}: ${periodString}.`;
 
-            segments.push({
-                text: introText,
-                gender: 'female' as const,
-                postPause: 800
-            });
-        }
+        segments.push({
+            text: introText,
+            gender: 'female' as const,
+            postPause: 800
+        });
 
         readings.forEach(r => {
             const chapters = parseChapters(r);
@@ -444,7 +443,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const handlePlaySection = async (e: React.MouseEvent, id: string, reading: Reading) => {
         e.stopPropagation();
         killBiblePlayback();
-        
+
         if (isPlaying && currentlyPlayingId === id) {
             ttsManager.stop();
             setIsPlaying(false);
@@ -479,7 +478,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const handlePlayChapter = async (e: React.MouseEvent, id: string, reading: Reading, chapter: Chapter) => {
         e.stopPropagation();
         killBiblePlayback();
-        
+
         if (isPlaying && currentlyPlayingId === id) {
             ttsManager.stop();
             setIsPlaying(false);
@@ -601,11 +600,13 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         <button
                             className="play-all-btn-large"
                             onClick={handlePlayAll}
-                            aria-label={isPlaying && currentlyPlayingId === 'all' ? "Stop All" : "Play All"}
+                            aria-label={isPlaying && currentlyPlayingId === 'all' ? "Stop All" : (isCompleted ? "Replay All" : "Play All")}
                             style={{ width: '3.5rem', height: '3.5rem' }}
                         >
                             {isPlaying && currentlyPlayingId === 'all' ? (
                                 <Square size={20} fill="currentColor" />
+                            ) : isCompleted ? (
+                                <RotateCcw size={24} fill="none" strokeWidth={2.5} style={{ marginLeft: '1px' }} />
                             ) : (
                                 <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />
                             )}

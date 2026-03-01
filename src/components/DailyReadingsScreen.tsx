@@ -6,7 +6,8 @@ import {
     Square,
     Info,
     Calendar,
-    CheckCircle
+    CheckCircle,
+    RotateCcw
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
@@ -51,7 +52,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const [liturgicalData, setLiturgicalData] = useState<any>(null);
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
     const [showSourceInfo, setShowSourceInfo] = useState(false);
-    
+
     // Initialize from localStorage with current date
     const [completedItems, setCompletedItems] = useState<string[]>(() => {
         const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
@@ -89,7 +90,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         // Cleanup old completion data (older than 7 days)
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
+
         Object.keys(localStorage).forEach(key => {
             if (key.startsWith('dailyReadings_completed_')) {
                 const dateStr = key.replace('dailyReadings_completed_', '');
@@ -398,9 +399,13 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             segments.push({ text: titleFallback, gender: 'female' as const, postPause: 1000 });
         }
 
+        const allReadingIds = readingsToPlay.map((_, i) => `usccb-${i}`);
+        const allIds = reflection ? [...allReadingIds, 'reflection'] : allReadingIds;
+        const isAllComplete = allIds.length > 0 && allIds.every(id => completedItems.includes(id));
+
         readingsToPlay.forEach((reading, index) => {
             const id = `usccb-${index}`;
-            if (completedItems.includes(id)) return; // Skip if already completed
+            if (!isAllComplete && completedItems.includes(id)) return; // Skip if already completed unless replaying
             const spokenText = getSpokenText(reading.text);
 
             segments.push({
@@ -433,7 +438,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             });
         });
 
-        if (reflection && !completedItems.includes('reflection')) {
+        if (reflection && (isAllComplete || !completedItems.includes('reflection'))) {
             const id = 'reflection';
             const spokenText = getSpokenText(reflection.content);
             segments.push({
@@ -615,19 +620,29 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0' }}>
-                        <button
-                            className="play-all-btn-large"
-                            onClick={handlePlayAll}
-                            aria-label={isPlaying && currentlyPlayingId === 'all' ? "Stop All" : "Play All"}
-                            disabled={loading || error !== null || (!readingsToRender?.length)}
-                            style={{ opacity: (loading || error || (!readingsToRender?.length)) ? 0.3 : 1, width: '3.5rem', height: '3.5rem' }}
-                        >
-                            {isPlaying && currentlyPlayingId === 'all' ? (
-                                <Square size={20} fill="currentColor" />
-                            ) : (
-                                <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />
-                            )}
-                        </button>
+                        {(() => {
+                            const allReadingIds = readingsToRender ? readingsToRender.map((_, i) => `usccb-${i}`) : [];
+                            const allIds = reflection ? [...allReadingIds, 'reflection'] : allReadingIds;
+                            const isAllComplete = allIds.length > 0 && allIds.every(id => completedItems.includes(id));
+
+                            return (
+                                <button
+                                    className="play-all-btn-large"
+                                    onClick={handlePlayAll}
+                                    aria-label={isPlaying && currentlyPlayingId === 'all' ? "Stop All" : (isAllComplete ? "Replay All" : "Play All")}
+                                    disabled={loading || error !== null || (!readingsToRender?.length)}
+                                    style={{ opacity: (loading || error || (!readingsToRender?.length)) ? 0.3 : 1, width: '3.5rem', height: '3.5rem' }}
+                                >
+                                    {isPlaying && currentlyPlayingId === 'all' ? (
+                                        <Square size={20} fill="currentColor" />
+                                    ) : isAllComplete ? (
+                                        <RotateCcw size={24} fill="none" strokeWidth={2.5} style={{ marginLeft: '1px' }} />
+                                    ) : (
+                                        <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />
+                                    )}
+                                </button>
+                            );
+                        })()}
                     </div>
                 </header>
 
