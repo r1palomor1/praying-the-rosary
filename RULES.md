@@ -25,3 +25,8 @@
 *   **DO NOT** preemptively write code, patch files, or execute fixes unless explicitly instructed to do so.
 *   Present your analysis first, then clearly ask the user for approval to proceed with any proposed changes.
 *   Violating this rule and making unapproved changes is considered a complete failure of protocol.
+
+## 6. 🚨 STRICT GIT & QUESTION-ANSWERING PROTOCOL
+*   **NEVER** automatically perform `git add`, `git commit`, or `git push` after writing code or running a build unless the user explicitly commands it for that exact turn.
+*   If the user asks a direct question (e.g., "what are you doing??", "why did you do this?"), **STOP EVERYTHING**. Your ONLY task is to answer that question. Do NOT combine answering a question with staging files, making commits, or running tool chains.
+*   Wait for the user to declare they have tested the code in development before attempting to version control it.

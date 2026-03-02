@@ -3,10 +3,10 @@
 ## 🛑 URGENT FIXES (Next Session)
 
 ### Church Icon Quick Play - Daily Readings
-- [ ] **Fix Word of the Pope highlighting during church/card playback**
+- [x] **Fix Word of the Pope highlighting during church/card playback**
   - Bug: "Word of the Pope" (Reflection) doesn't highlight when playing from church icon and entering card
   - Note: Appears to complete checkmark correctly now, but highlight UI needs fixing
-- [ ] **Complete localStorage bridge for Daily Readings church icon**
+- [x] **Complete localStorage bridge for Daily Readings church icon**
   - Hook (`useDailyReadingsPlayback`) saves completions to localStorage
   - Need: DailyReadingsScreen to load completions from localStorage on mount
   - Add: 7-day cleanup for old daily reading completion data
@@ -29,15 +29,14 @@
 - [ ] **Add "Reset Bible Progress" button in Settings**
   - Separate from general "Clear Prayer Progress" 
   - Confirmation dialog: "Are you sure? This will clear all completed days and chapters."
-- [ ] **Start date change warning**
-  - When user changes Bible start date in Settings, show warning
-  - Alert: "Changing the start date will reset your Bible progress. Continue?"
-  - If yes: Clear `completedDays` and `completedChapters` arrays
-  - Prevents conflict between old completions and new start date
-- [ ] **No automatic cleanup for Bible in a Year**
+  - **CRITICAL**: Create an automatic backup of the progress data before performing the wipe, allowing users to restore in case of an accidental reset.
+- [ ] **Allow Start Date changes without wiping data**
+  - When the user changes the Bible start date in Settings, **do not clear progress**.
+  - Changing the date simply "moves the goal posts" (e.g. changing from Feb 1 to Jan 1 to catch up).
+  - The ONLY way to erase stats is through the explicit manual "Reset Bible Progress" button.
 - [ ] **No automatic cleanup for Bible in a Year**
   - Keep data forever (year-long progress tracking)
-  - Only clear on manual reset or start date change
+  - Only clear on explicit manual reset via the "Reset Bible Progress" button.
 
 ### Backup & Restore Data Sync (Urgent, Non-Critical)
 - [ ] **Export & Import Tracking Stats**

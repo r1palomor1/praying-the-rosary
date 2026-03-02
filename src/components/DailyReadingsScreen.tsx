@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
-import { killDailyReadingsPlayback } from '../hooks/useDailyReadingsPlayback';
+import { killDailyReadingsPlayback, getDailyReadingsActiveId } from '../hooks/useDailyReadingsPlayback';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { fetchLiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar';
 import './DailyReadingsScreen.css';
@@ -46,7 +46,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
-    const [activeChapterId, setActiveChapterId] = useState<string | null>(null);
+    const [activeChapterId, setActiveChapterId] = useState<string | null>(getDailyReadingsActiveId());
     const [showSettings, setShowSettings] = useState(false);
     const [liturgicalColor, setLiturgicalColor] = useState('#a87d3e');
     const [liturgicalData, setLiturgicalData] = useState<any>(null);

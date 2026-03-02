@@ -168,7 +168,6 @@ export const fetchLiturgicalDay = async (date?: Date, language: string = 'en'): 
             url += `?${params.toString()}`;
         }
 
-        console.log('Fetching liturgical data from proxy:', url);
         const response = await fetch(url);
 
         if (!response.ok) {

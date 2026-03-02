@@ -4,9 +4,12 @@ import { useApp } from '../context/AppContext';
 // ─── Module-level state (survives React component lifecycle / navigation) ────
 let _isPlaying = false;
 let _playVersion = 0;
+let _activeReadingId: string | null = null;
 
 /** True if Daily Readings audio is active anywhere in the app. */
 export const getDailyReadingsPlaying = () => _isPlaying;
+
+export const getDailyReadingsActiveId = () => _activeReadingId;
 
 /**
  * Kill any in-flight Daily Readings audio (hook closures + ttsManager).
@@ -15,6 +18,7 @@ export const getDailyReadingsPlaying = () => _isPlaying;
 export const killDailyReadingsPlayback = () => {
     _playVersion++;
     _isPlaying = false;
+    _activeReadingId = null;
     window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
     window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
 };
@@ -279,6 +283,7 @@ export function useDailyReadingsPlayback(
                 const isLast = chunkIndex === chunks.length - 1;
                 segments.push({
                     text: chunk,
+                    readingId: id,
                     pause: isLast ? 1500 : 300,
                     onComplete: isLast ? () => {
                         const saved = localStorage.getItem(`dailyReadings_completed_${dateString}`);
@@ -313,6 +318,7 @@ export function useDailyReadingsPlayback(
                     const isLast = index === chunks.length - 1;
                     segments.push({
                         text: chunk,
+                        readingId: id,
                         pause: 300,
                         onComplete: isLast ? () => {
                             const saved = localStorage.getItem(`dailyReadings_completed_${dateString}`);
@@ -343,6 +349,7 @@ export function useDailyReadingsPlayback(
                 setIsPlaying(false);
                 isPlayingRef.current = false;
                 _isPlaying = false;
+                _activeReadingId = null;
                 setCurrentSubtitle(null);
                 window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
                 window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
@@ -356,6 +363,7 @@ export function useDailyReadingsPlayback(
             }
             // Fire readingActive event so DailyReadingsScreen can highlight current reading
             if (segment.readingId) {
+                _activeReadingId = segment.readingId;
                 window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: segment.readingId } }));
             }
             playAudio(segment.text, () => {
@@ -377,6 +385,7 @@ export function useDailyReadingsPlayback(
         setCurrentSubtitle(null);
         setIsPlaying(false);
         stopAudio();
+        _activeReadingId = null;
         window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
         window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
     }, [stopAudio]);
