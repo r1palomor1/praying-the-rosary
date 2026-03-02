@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     Settings,
     Calendar,
@@ -16,6 +15,7 @@ import { ttsManager } from '../utils/ttsManager';
 import { useBibleProgress } from '../hooks/useBibleProgress';
 import { killBiblePlayback, getBiblePlaying } from '../hooks/useBiblePlayback';
 import biblePlan from '../data/bibleInYearPlan.json';
+import { parseBibleChapters, chunkBibleText, type Reading, type Chapter } from '../utils/bibleParser';
 import { BibleProgressModal } from './BibleProgressModal';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import './BibleInYearScreen.css';
@@ -28,11 +28,7 @@ interface BibleDay {
     psalm_proverbs: string;
 }
 
-interface Reading {
-    title: string;
-    citation: string;
-    text: string;
-}
+// Interface Reading imported from bibleParser
 
 interface Props {
     onBack: () => void;
@@ -89,21 +85,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
         let allCompleted = true;
         readings.forEach(r => {
-            // Must use parseChapters locally to know chapters
-            // We can define it above if needed, but it's pure logic
-            let chaps: any[] = [];
-            if (r.text.includes('###')) {
-                const segments = r.text.split('###');
-                segments.forEach((seg: string) => {
-                    const clean = seg.trim();
-                    if (!clean) return;
-                    const lines = clean.split('\n');
-                    let title = lines[0].trim().replace(/(Chapter|Capítulo)\s+/i, '');
-                    const body = lines.slice(1).join('\n').trim();
-                    if (title && body) chaps.push({ title });
-                });
-            }
-            if (chaps.length === 0) chaps.push({ title: r.citation || r.title });
+            // Must use parseBibleChapters locally to know chapters
+            const chaps = parseBibleChapters(r);
 
             if (!chaps.every(c => isChapterComplete(currentDay, c.title))) {
                 allCompleted = false;
@@ -131,8 +114,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
     const dayData: BibleDay = (biblePlan as BibleDay[])[currentDay - 1];
 
-    // Translations
-    const t = {
+    const translationsObj = useMemo(() => ({
         en: {
             title: 'Bible in a Year',
             headerDate: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }),
@@ -159,7 +141,9 @@ export default function BibleInYearScreen({ onBack }: Props) {
             amen: 'Amén',
             blessing: 'La lectura se ha completado. Que Dios te bendiga por tu fiel devoción.'
         }
-    }[language];
+    }), []);
+
+    const t = translationsObj[language as keyof typeof translationsObj];
 
     // Period name translations (data source is English-only)
     const periodTranslations: Record<string, string> = language === 'es' ? {
@@ -264,61 +248,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
     }, [isPlaying]);
 
     // Audio Logic
-    const chunkText = (text: string, maxLength: number = 200): string[] => {
-        // Broaden punctuation to include colons, semicolons, and newlines to prevent Safari cutoffs
-        const sentences = text.match(/[^.!?\n:;]+[.!?\n:;]+|[^.!?\n:;]+$/g) || [text];
-        const chunks: string[] = [];
-        let currentChunk = '';
-
-        sentences.forEach(sentence => {
-            if (currentChunk.length + sentence.length > maxLength) {
-                if (currentChunk) chunks.push(currentChunk.trim());
-                currentChunk = sentence;
-            } else {
-                currentChunk += sentence;
-            }
-        });
-        if (currentChunk) chunks.push(currentChunk.trim());
-
-        // Final safety net: slice chunks strictly exceeding 250 characters if they lacked any delimiters
-        return chunks.flatMap(chunk => {
-            if (chunk.length <= 250) return [chunk];
-            return chunk.match(/.{1,250}(?:\s|$)|.{1,250}/g) || [chunk];
-        });
-    };
-
-    interface Chapter {
-        title: string;
-        text: string;
-    }
-
-    const parseChapters = (reading: Reading): Chapter[] => {
-        const chapters: Chapter[] = [];
-        // Check if text has markdown headers
-        if (reading.text.includes('###')) {
-            const segments = reading.text.split('###');
-            segments.forEach(seg => {
-                const clean = seg.trim();
-                if (!clean) return;
-                const lines = clean.split('\n');
-                let title = lines[0].trim();
-                // Strip "Chapter" or "Capítulo" to match design request
-                title = title.replace(/(Chapter|Capítulo)\s+/i, '');
-
-                const body = lines.slice(1).join('\n').trim();
-                if (title && body) {
-                    chapters.push({ title, text: body });
-                }
-            });
-        }
-
-        // Fallback if no chapters found
-        if (chapters.length === 0) {
-            chapters.push({ title: reading.citation || reading.title, text: reading.text });
-        }
-
-        return chapters;
-    };
+    // ChunkText and ParseChapters removed and imported instead
 
     const buildSegmentsForChapters = (readingTitle: string, readingCitation: string, chapters: Chapter[]) => {
         const segments: any[] = [];
@@ -353,7 +283,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             // Body
             let spokenText = chapter.text.replace(/###\s*/g, '').replace(/\[\s*\d+\s*\]/g, '').replace(/\//g, ' ').replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
             spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
-            const chunks = chunkText(spokenText);
+            const chunks = chunkBibleText(spokenText);
 
             chunks.forEach((chunk, chunkIndex) => {
                 const isLastChunk = chunkIndex === chunks.length - 1;
@@ -377,7 +307,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
     };
 
     const checkWillCompleteDay = (chaptersBeingPlayed: Chapter[]) => {
-        const allChaptersInDay = readings.flatMap(r => parseChapters(r));
+        const allChaptersInDay = readings.flatMap(r => parseBibleChapters(r));
         const uncompleted = allChaptersInDay.filter(c => !isChapterComplete(currentDay, c.title));
 
         if (uncompleted.length === 0) return false;
@@ -401,7 +331,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
         let allDayCompleted = true;
 
         readings.forEach(r => {
-            if (!parseChapters(r).every(c => isChapterComplete(currentDay, c.title))) {
+            if (!parseBibleChapters(r).every(c => isChapterComplete(currentDay, c.title))) {
                 allDayCompleted = false;
             }
         });
@@ -417,7 +347,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
         });
 
         readings.forEach(r => {
-            const chapters = parseChapters(r);
+            const chapters = parseBibleChapters(r);
             const chaptersToPlay = allDayCompleted ? chapters : chapters.filter(c => !isChapterComplete(currentDay, c.title));
             if (chaptersToPlay.length > 0) {
                 segments.push(...buildSegmentsForChapters(r.title, r.citation, chaptersToPlay));
@@ -452,7 +382,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             return;
         }
 
-        const chapters = parseChapters(reading);
+        const chapters = parseBibleChapters(reading);
         let allSectionCompleted = chapters.every(c => isChapterComplete(currentDay, c.title));
         const chaptersToPlay = allSectionCompleted ? chapters : chapters.filter(c => !isChapterComplete(currentDay, c.title));
 
@@ -634,7 +564,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         </div>
                     ) : (
                         readings.map((reading, idx) => {
-                            const chapters = parseChapters(reading);
+                            const chapters = parseBibleChapters(reading);
 
                             return (
                                 <section key={idx} className="reading-section-sacred">

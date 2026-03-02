@@ -12,19 +12,15 @@
   - Add: 7-day cleanup for old daily reading completion data
   - Pattern: Match Rosary handoff (hook writes, screen reads)
 
-### Progressive Glow Outline (Card Progress Indicator) - IDEA ONLY
-- [ ] **Visual progress indication on card glow outline**
-  - Current: Card outline glows solid color when church icon playing
-  - Idea: As each reading/prayer completes, portion of outline turns green
-  - Example: Daily Readings has 4 sections → 25% green per completed section
-  - When all complete: Full green outline
-  - After completion blessing: Revert to normal color
-  - Could apply to all three cards:
-    - Daily Readings: Based on number of readings (First Reading, Psalm, Gospel, Reflection)
-    - Rosary: Based on prayer sections (Intro, Decades 1-5, Closing)
-    - Bible in Year: Based on chapters in today's reading
-  - Implementation: CSS conic-gradient or SVG stroke-dasharray
-  - Note: Figure out technical approach before implementing
+### 🎨 Card Progress Indicator (Completed)
+- [x] **Visual progress indication on cards**
+  - **Implemented:** Added unified *inline progress bars* inside the card content across all 4 major sections (Daily Readings, Bible in a Year, Rosary, Sacred Prayers).
+  - **Features:** 
+    - Thin Gold (`#D4AF37`) progress track below the card title.
+    - Gold percentage text and flag icon on the right side.
+    - Progress is synchronized accurately to the internal playback/completion state hooks.
+    - The progress bar naturally mounts/unmounts (`display: none`) when the card reaches 100% completion or is fully checked.
+    - Erased old bottom-edge progress lines to clean up the design.
 
 ### Bible in a Year - Progress & Completion Improvements
 - [ ] **365-day completion celebration**
@@ -39,8 +35,16 @@
   - If yes: Clear `completedDays` and `completedChapters` arrays
   - Prevents conflict between old completions and new start date
 - [ ] **No automatic cleanup for Bible in a Year**
+- [ ] **No automatic cleanup for Bible in a Year**
   - Keep data forever (year-long progress tracking)
   - Only clear on manual reset or start date change
+
+### Backup & Restore Data Sync (Urgent, Non-Critical)
+- [ ] **Export & Import Tracking Stats**
+  - Export all `localStorage` tracking stats into a single downloadable JSON backup file.
+  - Import function to populate the respective `localStorage` keys from a backup file.
+  - **Crucial Constraint:** During import, the app MUST compare the timestamp/version of the imported data against the device's existing local data. It must safely merge or prevent overriding more recent stats with older stats.
+  - **Use Case:** Creating safe backups and syncing progress across multiple devices (e.g., migrating 6+ months of Rosary and Bible in a Year data from an Android phone to a tablet or iPhone).
 
 ---
 

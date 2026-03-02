@@ -1,7 +1,8 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { useBibleProgress } from './useBibleProgress';
 import biblePlan from '../data/bibleInYearPlan.json';
+import { parseBibleChapters, chunkBibleText, type Reading, type Chapter } from '../utils/bibleParser';
 
 // ─── Module-level state (survives React component lifecycle / navigation) ────
 let _isPlaying = false;
@@ -30,16 +31,7 @@ interface BibleDay {
     psalm_proverbs: string;
 }
 
-interface Reading {
-    title: string;
-    citation: string;
-    text: string;
-}
-
-interface Chapter {
-    title: string;
-    text: string;
-}
+// Removed internal Reading and Chapter interfaces from here
 
 interface UseBiblePlaybackOptions {
     onComplete?: () => void;
@@ -51,7 +43,7 @@ export function useBiblePlayback(
 ) {
     const { language, playAudio, stopAudio } = useApp();
     const { onComplete } = options;
-    const { markChapterComplete, isChapterComplete, isDayComplete } = useBibleProgress();
+    const { markChapterComplete, isChapterComplete, isDayComplete, markDayComplete } = useBibleProgress();
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null);
@@ -65,15 +57,15 @@ export function useBiblePlayback(
 
     const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
-    const blessingText = language === 'es'
+    const blessingText = useMemo(() => language === 'es'
         ? 'La lectura del día se ha completado. Que Dios te bendiga por tu fiel devoción a su palabra.'
-        : 'The reading for the day is now complete. May God bless you for your faithful devotion to his word.';
+        : 'The reading for the day is now complete. May God bless you for your faithful devotion to his word.', [language]);
 
-    const t = language === 'es'
+    const t = useMemo(() => language === 'es'
         ? { day: 'Día', phase: 'Etapa', firstReading: 'Primera Lectura', secondReading: 'Segunda Lectura', psalmProverbs: 'Salmo o Proverbio' }
-        : { day: 'Day', phase: 'Phase', firstReading: 'First Reading', secondReading: 'Second Reading', psalmProverbs: 'Psalm or Proverbs' };
+        : { day: 'Day', phase: 'Phase', firstReading: 'First Reading', secondReading: 'Second Reading', psalmProverbs: 'Psalm or Proverbs' }, [language]);
 
-    const translatePeriod = (period: string): string => {
+    const translatePeriod = useCallback((period: string): string => {
         if (language === 'es') {
             const periodMap: Record<string, string> = {
                 'Early World': 'El Mundo Antiguo',
@@ -93,58 +85,74 @@ export function useBiblePlayback(
             return periodMap[period] || period;
         }
         return period;
-    };
+    }, [language]);
 
     // Fetch readings data
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        try {
-            // Fetch liturgical color
-            const { fetchLiturgicalDay, getLiturgicalColorHex } = await import('../utils/liturgicalCalendar');
-            const today = new Date();
-            const liturgy = await fetchLiturgicalDay(today, language);
-            const color = getLiturgicalColorHex(liturgy.celebrations[0].colour);
-            setLiturgicalColor(color);
+    useEffect(() => {
+        let isCurrent = true;
 
-            const data = biblePlan.find((d: BibleDay) => d.day === currentDay);
-            if (!data) {
-                setLoading(false);
-                return;
-            }
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // Fetch liturgical color
+                const { fetchLiturgicalDay, getLiturgicalColorHex } = await import('../utils/liturgicalCalendar');
+                const today = new Date();
+                const liturgy = await fetchLiturgicalDay(today, language);
+                if (!isCurrent) return;
+                const color = getLiturgicalColorHex(liturgy.celebrations[0].colour);
+                setLiturgicalColor(color);
 
-            setDayData(data);
+                const data = biblePlan.find((d: BibleDay) => d.day === currentDay);
+                if (!data) {
+                    setLoading(false);
+                    return;
+                }
 
-            const readingsToFetch: Reading[] = [];
+                setDayData(data);
 
-            const fetchOne = async (citation: string, title: string) => {
-                try {
-                    const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(citation)}&lang=${language}`);
-                    if (response.ok) {
-                        const json = await response.json();
-                        readingsToFetch.push({ title, citation, text: json.text || '' });
-                    } else {
+                const readingsToFetch: Reading[] = [];
+
+                const fetchOne = async (citation: string, title: string) => {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/bible?citation=${encodeURIComponent(citation)}&lang=${language}&v=layout_v3`);
+                        if (response.ok) {
+                            const json = await response.json();
+                            readingsToFetch.push({ title, citation, text: json.text || '' });
+                        } else {
+                            readingsToFetch.push({ title, citation, text: `📖 ${citation}\n\n[Error]` });
+                        }
+                    } catch (e) {
                         readingsToFetch.push({ title, citation, text: `📖 ${citation}\n\n[Error]` });
                     }
-                } catch (e) {
-                    readingsToFetch.push({ title, citation, text: `📖 ${citation}\n\n[Error]` });
-                }
-            };
+                };
 
-            await fetchOne(data.first_reading, t.firstReading);
-            if (data.second_reading) await fetchOne(data.second_reading, t.secondReading);
-            await fetchOne(data.psalm_proverbs, t.psalmProverbs);
+                await fetchOne(data.first_reading, t.firstReading);
+                if (data.second_reading) await fetchOne(data.second_reading, t.secondReading);
+                await fetchOne(data.psalm_proverbs, t.psalmProverbs);
 
-            setReadings(readingsToFetch);
-        } catch (err) {
-            console.error('Error fetching Bible readings:', err);
-        } finally {
-            setLoading(false);
-        }
+                if (!isCurrent) return;
+
+                console.log(`[useBiblePlayback] Fetched data for Day ${currentDay}:`, {
+                    period: data.period,
+                    readingsCount: readingsToFetch.length,
+                    readings: readingsToFetch.map(r => ({ title: r.title, citation: r.citation }))
+                });
+
+                setReadings(readingsToFetch);
+            } catch (err) {
+                if (isCurrent) console.error('[useBiblePlayback] Error fetching Bible readings:', err);
+            } finally {
+                if (isCurrent) setLoading(false);
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            isCurrent = false;
+        };
     }, [currentDay, language, API_BASE, t]);
 
-    useEffect(() => {
-        fetchData();
-    }, [currentDay, language]);
 
     // Wake Lock: Keep screen on during playback
     useEffect(() => {
@@ -173,50 +181,7 @@ export function useBiblePlayback(
         };
     }, [isPlaying]);
 
-    const chunkText = (text: string, maxLength: number = 200): string[] => {
-        const sentences = text.match(/[^.!?\n:;]+[.!?\n:;]+|[^.!?\n:;]+$/g) || [text];
-        const chunks: string[] = [];
-        let currentChunk = '';
-
-        sentences.forEach(sentence => {
-            if (currentChunk.length + sentence.length > maxLength) {
-                if (currentChunk) chunks.push(currentChunk.trim());
-                currentChunk = sentence;
-            } else {
-                currentChunk += sentence;
-            }
-        });
-        if (currentChunk) chunks.push(currentChunk.trim());
-
-        return chunks.flatMap(chunk => {
-            if (chunk.length <= 250) return [chunk];
-            return chunk.match(/.{1,250}(?:\s|$)|.{1,250}/g) || [chunk];
-        });
-    };
-
-    const parseChapters = (reading: Reading): Chapter[] => {
-        const chapters: Chapter[] = [];
-        if (reading.text.includes('###')) {
-            const segments = reading.text.split('###');
-            segments.forEach(seg => {
-                const clean = seg.trim();
-                if (!clean) return;
-                const lines = clean.split('\n');
-                let title = lines[0].trim();
-                title = title.replace(/(Chapter|Capítulo)\s+/i, '');
-                const body = lines.slice(1).join('\n').trim();
-                if (title && body) {
-                    chapters.push({ title, text: body });
-                }
-            });
-        }
-
-        if (chapters.length === 0) {
-            chapters.push({ title: reading.citation || reading.title, text: reading.text });
-        }
-
-        return chapters;
-    };
+    // Replaced chunkText and parseChapters with imported unifed versions
 
     const play = useCallback(() => {
         if (isPlayingRef.current || readings.length === 0) return;
@@ -232,7 +197,7 @@ export function useBiblePlayback(
         // Parse all chapters to check completion
         const allChapters: Chapter[] = [];
         readings.forEach(reading => {
-            const chapters = parseChapters(reading);
+            const chapters = parseBibleChapters(reading);
             allChapters.push(...chapters);
         });
 
@@ -248,6 +213,8 @@ export function useBiblePlayback(
         isPlayingRef.current = true;
         setIsPlaying(true);
 
+        console.log(`[useBiblePlayback] Playing Day ${currentDay}. AllComplete? ${allComplete}`);
+
         const segments: any[] = [];
 
         // Add intro
@@ -259,7 +226,7 @@ export function useBiblePlayback(
 
         // Process each reading
         readings.forEach(reading => {
-            const chapters = parseChapters(reading);
+            const chapters = parseBibleChapters(reading);
 
             // Check if all chapters in this reading are complete
             const allChaptersComplete = chapters.every(ch => isChapterComplete(currentDay, ch.title));
@@ -273,7 +240,12 @@ export function useBiblePlayback(
             // Each chapter
             chapters.forEach(chapter => {
                 // Skip if already completed unless replaying
-                if (!allComplete && isChapterComplete(currentDay, chapter.title)) return;
+                const isComplete = isChapterComplete(currentDay, chapter.title);
+                console.log(`[useBiblePlayback] Evaluating Chapter: ${chapter.title}, isComplete: ${isComplete}, allComplete: ${allComplete}`);
+                if (!allComplete && isComplete) {
+                    console.log(`[useBiblePlayback] Skipping completed chapter: ${chapter.title}`);
+                    return;
+                }
 
                 // Chapter title (if different from reading title)
                 if (chapter.title !== reading.title && chapter.title !== reading.citation) {
@@ -304,7 +276,7 @@ export function useBiblePlayback(
                     .replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
                 spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
 
-                const chunks = chunkText(spokenText);
+                const chunks = chunkBibleText(spokenText);
                 chunks.forEach((chunk, index) => {
                     const isLast = index === chunks.length - 1;
                     segments.push({
@@ -323,8 +295,15 @@ export function useBiblePlayback(
             segments.push({ text: ' ', pause: 1000 });
         });
 
-        // Add blessing
-        segments.push({ text: blessingText, pause: 1000, subtitle: blessingText });
+        // Add blessing and mark day complete structural fix here
+        segments.push({
+            text: blessingText,
+            pause: 1000,
+            subtitle: blessingText,
+            onComplete: () => {
+                markDayComplete(currentDay);
+            }
+        });
 
         // Play sequence
         const playNext = (index: number) => {
@@ -382,7 +361,7 @@ export function useBiblePlayback(
     // Parse all chapters to check progress
     const allChapters: Chapter[] = [];
     readings.forEach(reading => {
-        const chapters = parseChapters(reading);
+        const chapters = parseBibleChapters(reading);
         allChapters.push(...chapters);
     });
 
@@ -391,6 +370,8 @@ export function useBiblePlayback(
     if (isDayComplete(currentDay)) {
         progressPercentage = 100;
     }
+
+    // Auto-mark day complete removed as it's correctly handled structurally by onComplete now
 
     return {
         isPlaying,

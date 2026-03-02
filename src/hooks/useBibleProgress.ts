@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 // Key for localStorage
 export const BIBLE_START_DATE_KEY = 'bible_start_date';
@@ -28,16 +28,41 @@ export function useBibleProgress(): BibleProgress {
 
     const [completedDays, setCompletedDays] = useState<number[]>(() => {
         const saved = localStorage.getItem(BIBLE_COMPLETED_DAYS_KEY);
-        return saved ? JSON.parse(saved) : [];
+        const parsed = saved ? JSON.parse(saved) : [];
+        return parsed;
     });
 
     const [completedChapters, setCompletedChaptersState] = useState<Record<number, string[]>>(() => {
         const saved = localStorage.getItem(BIBLE_COMPLETED_CHAPTERS_KEY);
-        return saved ? JSON.parse(saved) : {};
+        const parsed = saved ? JSON.parse(saved) : {};
+        return parsed;
     });
 
-    const [missedDays, setMissedDays] = useState<number[]>([]);
-    const [expectedDay, setExpectedDay] = useState<number>(1);
+    // Calculate Expected Day
+    const expectedDay = useMemo(() => {
+        if (!bibleStartDate) return 1;
+        const [y, m, d] = bibleStartDate.split('-').map(Number);
+        const start = new Date(y, m - 1, d);
+        const today = new Date();
+        start.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        const diffTime = today.getTime() - start.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        return Math.max(1, diffDays + 1);
+    }, [bibleStartDate]);
+
+    // Calculate Missed Days
+    const missedDays = useMemo(() => {
+        if (!bibleStartDate) return [];
+        const missed: number[] = [];
+        const checkLimit = Math.min(expectedDay, 366);
+        for (let d = 1; d < checkLimit; d++) {
+            if (!completedDays.includes(d)) {
+                missed.push(d);
+            }
+        }
+        return missed;
+    }, [bibleStartDate, expectedDay, completedDays]);
 
     // --- Effects ---
 
@@ -58,87 +83,89 @@ export function useBibleProgress(): BibleProgress {
         };
     }, []);
 
-    // 1. Calculate Missed Days whenever Start Date or Completed Days change
+    // 0.5. Sync cross-component state and focus state for completions
     useEffect(() => {
-        if (!bibleStartDate) {
-            setMissedDays([]);
-            setExpectedDay(1);
-            return;
-        }
-
-        // Parse start date explicitly as local time to avoid UTC shifts
-        const [y, m, d] = bibleStartDate.split('-').map(Number);
-        const start = new Date(y, m - 1, d); // Month is 0-indexed
-
-        const today = new Date();
-
-        // Normalize to midnight to avoid time issues
-        start.setHours(0, 0, 0, 0);
-        today.setHours(0, 0, 0, 0);
-
-        // Calculate diff in days
-        const diffTime = today.getTime() - start.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 0-based index from start
-
-        // If start date is in future, expected day is 1 (or 0/negative logic)
-        // We treat "Day 1" as index 0 in calculation terms, but 1-based for UI
-        // So if today == start date, expectedDay is 1.
-        const currentExpected = Math.max(1, diffDays + 1);
-
-        // Build list of missed days
-        // Logic: Loop from Day 1 to currentExpected - 1
-        // (We don't count "Today" as missed until tomorrow)
-        const missed: number[] = [];
-
-        // Cap at 365 (plan limit)
-        const checkLimit = Math.min(currentExpected, 366);
-
-        for (let d = 1; d < checkLimit; d++) {
-            if (!completedDays.includes(d)) {
-                missed.push(d);
+        const syncCompletions = () => {
+            const savedDays = localStorage.getItem(BIBLE_COMPLETED_DAYS_KEY);
+            if (savedDays) {
+                setCompletedDays(JSON.parse(savedDays));
             }
-        }
 
-        setExpectedDay(currentExpected);
-        setMissedDays(missed);
+            const savedChapters = localStorage.getItem(BIBLE_COMPLETED_CHAPTERS_KEY);
+            if (savedChapters) {
+                setCompletedChaptersState(JSON.parse(savedChapters));
+            }
+        };
 
-    }, [bibleStartDate, completedDays]);
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                syncCompletions();
+            }
+        };
+
+        window.addEventListener('bible-progress-updated', syncCompletions);
+        window.addEventListener('focus', syncCompletions);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener('bible-progress-updated', syncCompletions);
+            window.removeEventListener('focus', syncCompletions);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
+
+
 
 
     // --- Actions ---
 
     const markDayComplete = (day: number) => {
-        if (completedDays.includes(day)) return; // Already complete
+        const saved = localStorage.getItem(BIBLE_COMPLETED_DAYS_KEY);
+        const prev = saved ? JSON.parse(saved) : [];
+        if (prev.includes(day)) return; // Already complete
 
-        const newCompleted = [...completedDays, day].sort((a, b) => a - b);
-        setCompletedDays(newCompleted);
+        const newCompleted = [...prev, day].sort((a, b) => a - b);
+        console.log(`[useBibleProgress] markDayComplete: ${day}. New Array:`, newCompleted);
+
         localStorage.setItem(BIBLE_COMPLETED_DAYS_KEY, JSON.stringify(newCompleted));
+        setCompletedDays(newCompleted);
+        window.dispatchEvent(new Event('bible-progress-updated'));
     };
 
     const unmarkDay = (day: number) => {
-        const newCompleted = completedDays.filter(d => d !== day);
-        setCompletedDays(newCompleted);
+        const saved = localStorage.getItem(BIBLE_COMPLETED_DAYS_KEY);
+        const prev = saved ? JSON.parse(saved) : [];
+        const newCompleted = prev.filter((d: number) => d !== day);
+
         localStorage.setItem(BIBLE_COMPLETED_DAYS_KEY, JSON.stringify(newCompleted));
+        setCompletedDays(newCompleted);
+        window.dispatchEvent(new Event('bible-progress-updated'));
     };
 
     const markChapterComplete = (day: number, chapterId: string) => {
-        setCompletedChaptersState(prev => {
-            const dayChapters = prev[day] || [];
-            if (dayChapters.includes(chapterId)) return prev;
-            const updated = { ...prev, [day]: [...dayChapters, chapterId] };
-            localStorage.setItem(BIBLE_COMPLETED_CHAPTERS_KEY, JSON.stringify(updated));
-            return updated;
-        });
+        const saved = localStorage.getItem(BIBLE_COMPLETED_CHAPTERS_KEY);
+        const prev = saved ? JSON.parse(saved) : {};
+        const dayChapters = prev[day] || [];
+        if (dayChapters.includes(chapterId)) return;
+
+        const updated = { ...prev, [day]: [...dayChapters, chapterId] };
+        console.log(`[useBibleProgress] markChapterComplete for Day ${day}: ${chapterId}. Updated:`, updated);
+
+        localStorage.setItem(BIBLE_COMPLETED_CHAPTERS_KEY, JSON.stringify(updated));
+        setCompletedChaptersState(updated);
+        window.dispatchEvent(new Event('bible-progress-updated'));
     };
 
     const unmarkChapter = (day: number, chapterId: string) => {
-        setCompletedChaptersState(prev => {
-            const dayChapters = prev[day] || [];
-            if (!dayChapters.includes(chapterId)) return prev;
-            const updated = { ...prev, [day]: dayChapters.filter(id => id !== chapterId) };
-            localStorage.setItem(BIBLE_COMPLETED_CHAPTERS_KEY, JSON.stringify(updated));
-            return updated;
-        });
+        const saved = localStorage.getItem(BIBLE_COMPLETED_CHAPTERS_KEY);
+        const prev = saved ? JSON.parse(saved) : {};
+        const dayChapters = prev[day] || [];
+        if (!dayChapters.includes(chapterId)) return;
+
+        const updated = { ...prev, [day]: dayChapters.filter((id: string) => id !== chapterId) };
+        localStorage.setItem(BIBLE_COMPLETED_CHAPTERS_KEY, JSON.stringify(updated));
+        setCompletedChaptersState(updated);
+        window.dispatchEvent(new Event('bible-progress-updated'));
     };
 
     const isDayComplete = (day: number) => completedDays.includes(day);

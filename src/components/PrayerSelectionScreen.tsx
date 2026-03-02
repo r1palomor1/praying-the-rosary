@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Settings as SettingsIcon, ChevronRight, Loader2, Square } from 'lucide-react'; // Added Square
 import { useApp } from '../context/AppContext';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
@@ -44,7 +44,9 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     const { missedDays, expectedDay, isDayComplete, bibleStartDate } = useBibleProgress();
 
     // Determine which Bible day to play (same logic as BibleInYearScreen)
-    const bibleDayToPlay = missedDays.length > 0 ? missedDays[0] : expectedDay;
+    const bibleDayToPlay = useMemo(() => {
+        return missedDays.length > 0 ? missedDays[0] : expectedDay;
+    }, [missedDays, expectedDay]);
 
     // Rosary quick play from church icon
     const rosaryPlayback = useRosaryPlayback(currentMysterySet as MysteryType, {
@@ -82,11 +84,12 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
     });
 
     // Bible in Year quick play
-    const biblePlayback = useBiblePlayback(bibleDayToPlay, {
+    const biblePlaybackOptions = useMemo(() => ({
         onComplete: () => {
             setIsBibleQuickPlayActive(false);
         }
-    });
+    }), []);
+    const biblePlayback = useBiblePlayback(bibleDayToPlay, biblePlaybackOptions);
 
     const [isQuickPlayActive, setIsQuickPlayActive] = useState(false);
     const [rosaryIntroSubtitle, setRosaryIntroSubtitle] = useState<string | null>(null);
@@ -489,7 +492,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
                         {/* Title Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                             <h2 className="card-title" style={{ margin: 0 }}>{t.dailyReadings.toUpperCase()}</h2>
                             {/* Percentage / Flag (Only show if not complete and progress > 0) */}
                             {(!dailyReadingsPlayback.isComplete && dailyReadingsPlayback.progressPercentage > 0) && (
@@ -618,11 +621,11 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
                         {/* Title Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
                             <h2 className="card-title" style={{ margin: 0 }}>{t.bibleInAYear.toUpperCase()}</h2>
 
                             {/* Percentage / Flag (Only show if not complete and progress > 0) */}
-                            {(!isDayComplete(expectedDay) && biblePlayback.progressPercentage > 0) && (
+                            {(!isDayComplete(bibleDayToPlay) && biblePlayback.progressPercentage > 0) && (
                                 <div style={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -640,7 +643,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                         </div>
 
                         {/* Inline Progress Bar */}
-                        {!isDayComplete(expectedDay) && (
+                        {!isDayComplete(bibleDayToPlay) && (
                             <div style={{
                                 width: '100%',
                                 height: '2px',
@@ -672,7 +675,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
 
                                     if (missedDays.length > 0) {
                                         const resumeDay = missedDays[0];
-                                        return language === 'es' ? `Continuar Día ${resumeDay} (${missedDays.length} perdidos)` : `Resume Day ${resumeDay} (${missedDays.length} missed)`;
+                                        return language === 'es' ? `Continuar Día ${resumeDay} ( ${missedDays.length} días perdidos )` : `Resume Day ${resumeDay} ( ${missedDays.length} days missed )`;
                                     }
 
                                     if (isDayComplete(expectedDay)) {
@@ -757,7 +760,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
                         {/* Title Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
                             <h2 className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 {t.rosary.toUpperCase()}
                             </h2>
@@ -902,7 +905,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
                         {/* Title Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                             <h2 className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 {t.sacredPrayers.toUpperCase()}
                             </h2>
