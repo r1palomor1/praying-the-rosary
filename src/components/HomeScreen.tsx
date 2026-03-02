@@ -272,7 +272,7 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             {/* Sticky Bottom Section */}
             <div className="bottom-section">
                 <BottomNav
-                    activeTab="progress"
+                    activeTab="home"
                     onTabChange={handleTabChange}
                     onStartPrayer={handleStart}
                     showProgress={true}

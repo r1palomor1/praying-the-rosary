@@ -155,3 +155,9 @@
     background-color: rgba(197, 160, 89, 0.85);
     box-shadow: 0 4px 10px rgba(197, 160, 89, 0.4);
 }
+
+.nav-btn-audio-sacred .audio-icon-wrapper {
+    background-color: rgba(91, 33, 182, 0.85);
+    /* Deep Purple var(--color-primary) */
+    box-shadow: 0 4px 10px rgba(91, 33, 182, 0.4);
+}

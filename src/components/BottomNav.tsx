@@ -10,7 +10,15 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ activeTab, onTabChange, onStartPrayer, showProgress = false }: BottomNavProps) {
-    const { language } = useApp();
+    const { language, currentMysterySet } = useApp();
+
+    const mysteryColors: Record<string, string> = {
+        joyful: '#3B5B8C',
+        luminous: '#6E4A8D',
+        sorrowful: '#8B2A3D',
+        glorious: '#C5A059',
+    };
+    const activeColor = mysteryColors[currentMysterySet as string] || 'var(--color-primary)';
 
     const translations = {
         en: {
@@ -38,11 +46,11 @@ export function BottomNav({ activeTab, onTabChange, onStartPrayer, showProgress 
     };
 
     return (
-        <nav className="bottom-nav">
+        <nav className="bottom-nav" style={{ '--active-nav-color': activeColor } as React.CSSProperties}>
             {/* First tab: Either Progress (on Home) or Home (on other pages) */}
             {showProgress ? (
                 <button
-                    className={`nav-tab no-active-color ${activeTab === 'progress' ? 'active' : ''}`}
+                    className={`nav-tab ${activeTab === 'progress' ? 'active' : ''}`}
                     onClick={() => handleTabClick('progress')}
                     aria-label={t.progress}
                 >
@@ -51,7 +59,7 @@ export function BottomNav({ activeTab, onTabChange, onStartPrayer, showProgress 
                 </button>
             ) : (
                 <button
-                    className={`nav-tab no-active-color ${activeTab === 'home' ? 'active' : ''}`}
+                    className={`nav-tab ${activeTab === 'home' ? 'active' : ''}`}
                     onClick={() => handleTabClick('home')}
                     aria-label={t.home}
                 >
