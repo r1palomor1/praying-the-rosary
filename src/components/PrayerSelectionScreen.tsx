@@ -475,6 +475,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     onClick={onSelectDailyReadings}
                     className="prayer-card"
                     style={{
+                        position: 'relative',
+                        overflow: 'hidden',
                         border: (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying || isDailyReadingsGlobalActive) ? `1px solid ${dailyReadingsPlayback.liturgicalColor}` : undefined,
                         boxShadow: (isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying || isDailyReadingsGlobalActive) ? `0 0 15px ${dailyReadingsPlayback.liturgicalColor}40` : 'none',
                         transition: 'all 0.3s ease'
@@ -485,9 +487,54 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                             <img src="/daily_readings_icon.png" alt={t.dailyReadings} />
                         </div>
                     </div>
-                    <div className="card-content">
-                        <h2 className="card-title">{t.dailyReadings.toUpperCase()}</h2>
-                        <p className="card-subtitle" style={((isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) && dailyReadingsPlayback.currentSubtitle) ? { color: dailyReadingsPlayback.liturgicalColor, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' } : undefined}>
+                    <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
+                        {/* Title Row */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t.dailyReadings.toUpperCase()}</h2>
+                            {/* Percentage / Flag (Only show if not complete and progress > 0) */}
+                            {(!dailyReadingsPlayback.isComplete && dailyReadingsPlayback.progressPercentage > 0) && (
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    color: '#D4AF37',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 500,
+                                    letterSpacing: '0.02em',
+                                    opacity: 0.95
+                                }}>
+                                    {Math.round(dailyReadingsPlayback.progressPercentage)}%
+                                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>flag</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Inline Progress Bar */}
+                        {!dailyReadingsPlayback.isComplete && (
+                            <div style={{
+                                width: '100%',
+                                height: '2px',
+                                background: 'rgba(255, 255, 255, 0.15)',
+                                marginBottom: '10px',
+                                borderRadius: '1px',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{
+                                    height: '100%',
+                                    width: `${dailyReadingsPlayback.progressPercentage}%`,
+                                    background: '#D4AF37',
+                                    transition: 'width 0.3s linear'
+                                }} />
+                            </div>
+                        )}
+
+                        {/* Subtitle */}
+                        <p className="card-subtitle" style={{
+                            margin: 0,
+                            ...(((isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) && dailyReadingsPlayback.currentSubtitle)
+                                ? { color: dailyReadingsPlayback.liturgicalColor, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' }
+                                : {})
+                        }}>
                             {((isDailyReadingsQuickPlayActive || dailyReadingsPlayback.isPlaying) && dailyReadingsPlayback.currentSubtitle)
                                 ? dailyReadingsPlayback.currentSubtitle
                                 : t.dailyReadingsSubtitle}
@@ -557,6 +604,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     onClick={() => onSelectBibleInYear?.()}
                     className="prayer-card"
                     style={{
+                        position: 'relative',
+                        overflow: 'hidden',
                         border: (isBibleQuickPlayActive || biblePlayback.isPlaying || isBibleGlobalActive) ? `1px solid ${biblePlayback.liturgicalColor}` : undefined,
                         boxShadow: (isBibleQuickPlayActive || biblePlayback.isPlaying || isBibleGlobalActive) ? `0 0 15px ${biblePlayback.liturgicalColor}40` : 'none',
                         transition: 'all 0.3s ease'
@@ -567,18 +616,59 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                             <img src="/bible_year_icon.png" alt={t.bibleInAYear} />
                         </div>
                     </div>
-                    <div className="card-content">
-                        <h2 className="card-title">{t.bibleInAYear.toUpperCase()}</h2>
-                        <p className="card-subtitle" style={((isBibleQuickPlayActive || biblePlayback.isPlaying) && biblePlayback.currentSubtitle) ? { color: biblePlayback.liturgicalColor, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' } : undefined}>
+                    <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
+                        {/* Title Row */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t.bibleInAYear.toUpperCase()}</h2>
+
+                            {/* Percentage / Flag (Only show if not complete and progress > 0) */}
+                            {(!isDayComplete(expectedDay) && biblePlayback.progressPercentage > 0) && (
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    color: '#D4AF37',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 500,
+                                    letterSpacing: '0.02em',
+                                    opacity: 0.95
+                                }}>
+                                    {Math.round(biblePlayback.progressPercentage)}%
+                                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>flag</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Inline Progress Bar */}
+                        {!isDayComplete(expectedDay) && (
+                            <div style={{
+                                width: '100%',
+                                height: '2px',
+                                background: 'rgba(255, 255, 255, 0.15)',
+                                marginBottom: '10px',
+                                borderRadius: '1px',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{
+                                    height: '100%',
+                                    width: `${biblePlayback.progressPercentage}%`,
+                                    background: '#D4AF37',
+                                    transition: 'width 0.3s linear'
+                                }} />
+                            </div>
+                        )}
+
+                        {/* Subtitle */}
+                        <p className="card-subtitle" style={{
+                            margin: 0,
+                            ...(((isBibleQuickPlayActive || biblePlayback.isPlaying) && biblePlayback.currentSubtitle)
+                                ? { color: biblePlayback.liturgicalColor, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' }
+                                : {})
+                        }}>
                             {((isBibleQuickPlayActive || biblePlayback.isPlaying) && biblePlayback.currentSubtitle)
                                 ? biblePlayback.currentSubtitle
                                 : (() => {
                                     if (!bibleStartDate) return t.bibleInAYearSubtitle.replace('{day}', '1');
-
-                                    // Logic:
-                                    // 1. If missed days exist -> Show first missed day + "X missed"
-                                    // 2. If expected day is complete -> Show "Day X • Complete"
-                                    // 3. Else -> Show "Day X of 365"
 
                                     if (missedDays.length > 0) {
                                         const resumeDay = missedDays[0];
@@ -651,6 +741,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     onClick={handleRosaryCardClick}
                     className="prayer-card"
                     style={{
+                        position: 'relative',
+                        overflow: 'hidden',
                         // When completed or disabled, use default border (undefined)
                         // When reminder active and NOT completed OR if playing audio, use colored border
                         border: (showGlow || isQuickPlayActive || rosaryPlayback.isPlaying) ? `1px solid ${rosaryColorHex}` : undefined,
@@ -663,11 +755,55 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                             <img src="/rosary_icon.png" alt={t.rosary} />
                         </div>
                     </div>
-                    <div className="card-content">
-                        <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            {t.rosary.toUpperCase()}
-                        </h2>
-                        <p className="card-subtitle" style={((isQuickPlayActive || rosaryPlayback.isPlaying) && (rosaryPlayback.currentSubtitle || rosaryIntroSubtitle)) ? { color: rosaryColorHex, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' } : undefined}>
+                    <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
+                        {/* Title Row */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <h2 className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                {t.rosary.toUpperCase()}
+                            </h2>
+                            {(!isRosaryCompleted && rosaryPlayback.progressPercentage > 0) && (
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    color: '#D4AF37',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 500,
+                                    letterSpacing: '0.02em',
+                                    opacity: 0.95
+                                }}>
+                                    {Math.round(rosaryPlayback.progressPercentage)}%
+                                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>flag</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Inline Progress Bar */}
+                        {!isRosaryCompleted && (
+                            <div style={{
+                                width: '100%',
+                                height: '2px',
+                                background: 'rgba(255, 255, 255, 0.15)',
+                                marginBottom: '10px',
+                                borderRadius: '1px',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{
+                                    height: '100%',
+                                    width: `${rosaryPlayback.progressPercentage}%`,
+                                    background: '#D4AF37',
+                                    transition: 'width 0.3s linear'
+                                }} />
+                            </div>
+                        )}
+
+                        {/* Subtitle */}
+                        <p className="card-subtitle" style={{
+                            margin: 0,
+                            ...(((isQuickPlayActive || rosaryPlayback.isPlaying) && (rosaryPlayback.currentSubtitle || rosaryIntroSubtitle))
+                                ? { color: rosaryColorHex, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' }
+                                : {})
+                        }}>
                             {((isQuickPlayActive || rosaryPlayback.isPlaying) && (rosaryPlayback.currentSubtitle || rosaryIntroSubtitle))
                                 ? (rosaryPlayback.currentSubtitle || rosaryIntroSubtitle)
                                 : t.rosarySubtitle}
@@ -752,6 +888,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     }}
                     className="prayer-card"
                     style={{
+                        position: 'relative',
+                        overflow: 'hidden',
                         border: (isSacredQuickPlayActive || sacredPlayback.isPlaying) ? `1px solid ${rosaryColorHex}` : undefined,
                         boxShadow: (isSacredQuickPlayActive || sacredPlayback.isPlaying) ? `0 0 15px ${rosaryColorHex}40` : 'none',
                         transition: 'all 0.3s ease'
@@ -762,11 +900,55 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                             <img src="/sacred_prayers_icon.png" alt={t.sacredPrayers} />
                         </div>
                     </div>
-                    <div className="card-content">
-                        <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            {t.sacredPrayers.toUpperCase()}
-                        </h2>
-                        <p className="card-subtitle" style={((isSacredQuickPlayActive || sacredPlayback.isPlaying) && sacredPlayback.currentSubtitle) ? { color: rosaryColorHex, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' } : undefined}>
+                    <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
+                        {/* Title Row */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <h2 className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                {t.sacredPrayers.toUpperCase()}
+                            </h2>
+                            {(!isSacredCompleted && sacredPlayback.progressPercentage > 0) && (
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    color: '#D4AF37',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 500,
+                                    letterSpacing: '0.02em',
+                                    opacity: 0.95
+                                }}>
+                                    {Math.round(sacredPlayback.progressPercentage)}%
+                                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>flag</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Inline Progress Bar */}
+                        {!isSacredCompleted && (
+                            <div style={{
+                                width: '100%',
+                                height: '2px',
+                                background: 'rgba(255, 255, 255, 0.15)',
+                                marginBottom: '10px',
+                                borderRadius: '1px',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{
+                                    height: '100%',
+                                    width: `${sacredPlayback.progressPercentage}%`,
+                                    background: '#D4AF37',
+                                    transition: 'width 0.3s linear'
+                                }} />
+                            </div>
+                        )}
+
+                        {/* Subtitle */}
+                        <p className="card-subtitle" style={{
+                            margin: 0,
+                            ...(((isSacredQuickPlayActive || sacredPlayback.isPlaying) && sacredPlayback.currentSubtitle)
+                                ? { color: rosaryColorHex, fontWeight: 500, opacity: 0.95, filter: 'brightness(1.4)' }
+                                : {})
+                        }}>
                             {((isSacredQuickPlayActive || sacredPlayback.isPlaying) && sacredPlayback.currentSubtitle)
                                 ? sacredPlayback.currentSubtitle
                                 : t.sacredPrayersSubtitle}

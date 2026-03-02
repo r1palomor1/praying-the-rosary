@@ -385,6 +385,8 @@ export function useDailyReadingsPlayback(
     const allIds = reflection ? [...allReadingIds, 'reflection'] : allReadingIds;
     const hasData = readings.length > 0;
     const isComplete = hasData && allIds.every(id => completedIds.includes(id));
+    const completedCount = allIds.filter(id => completedIds.includes(id)).length;
+    const progressPercentage = hasData && allIds.length > 0 ? (completedCount / allIds.length) * 100 : 0;
 
     return {
         isPlaying,
@@ -394,6 +396,7 @@ export function useDailyReadingsPlayback(
         loading,
         hasReadings: readings.length > 0,
         liturgicalColor,
-        isComplete
+        isComplete,
+        progressPercentage
     };
 }

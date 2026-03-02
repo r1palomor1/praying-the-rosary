@@ -222,6 +222,7 @@ export function useSacredPrayersPlayback(options: UseSacredPrayersPlaybackOption
 
     // Check if completed
     const isComplete = currentStepIndex >= engineRef.current.getTotalSteps() - 1;
+    const progressPercentage = engineRef.current ? (currentStepIndex / engineRef.current.getTotalSteps()) * 100 : 0;
 
     return {
         isPlaying,
@@ -230,6 +231,7 @@ export function useSacredPrayersPlayback(options: UseSacredPrayersPlaybackOption
         play,
         stop,
         isComplete,
+        progressPercentage,
         engine: engineRef.current
     };
 }

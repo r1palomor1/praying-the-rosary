@@ -216,12 +216,15 @@ export function useRosaryPlayback(mysteryType: MysteryType, options: UseRosaryPl
         }
     }, [autoStart]); // Only run on mount
 
+    const progressPercentage = engineRef.current ? (currentStepIndex / engineRef.current.getTotalSteps()) * 100 : 0;
+
     return {
         isPlaying,
         currentStepIndex,
         currentSubtitle,
         play,
         stop,
+        progressPercentage,
         engine: engineRef.current
     };
 }

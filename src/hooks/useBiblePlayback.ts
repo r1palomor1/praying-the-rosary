@@ -51,7 +51,7 @@ export function useBiblePlayback(
 ) {
     const { language, playAudio, stopAudio } = useApp();
     const { onComplete } = options;
-    const { markChapterComplete, isChapterComplete } = useBibleProgress();
+    const { markChapterComplete, isChapterComplete, isDayComplete } = useBibleProgress();
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null);
@@ -379,6 +379,19 @@ export function useBiblePlayback(
         window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
     }, [stopAudio]);
 
+    // Parse all chapters to check progress
+    const allChapters: Chapter[] = [];
+    readings.forEach(reading => {
+        const chapters = parseChapters(reading);
+        allChapters.push(...chapters);
+    });
+
+    const completedChaptersCount = allChapters.filter(ch => isChapterComplete(currentDay, ch.title)).length;
+    let progressPercentage = allChapters.length > 0 ? (completedChaptersCount / allChapters.length) * 100 : 0;
+    if (isDayComplete(currentDay)) {
+        progressPercentage = 100;
+    }
+
     return {
         isPlaying,
         currentSubtitle,
@@ -386,6 +399,7 @@ export function useBiblePlayback(
         stop,
         loading,
         hasReadings: readings.length > 0,
-        liturgicalColor
+        liturgicalColor,
+        progressPercentage
     };
 }
