@@ -125,7 +125,6 @@ export function useBibleProgress(): BibleProgress {
         if (prev.includes(day)) return; // Already complete
 
         const newCompleted = [...prev, day].sort((a, b) => a - b);
-        console.log(`[useBibleProgress] markDayComplete: ${day}. New Array:`, newCompleted);
 
         localStorage.setItem(BIBLE_COMPLETED_DAYS_KEY, JSON.stringify(newCompleted));
         setCompletedDays(newCompleted);
@@ -149,7 +148,6 @@ export function useBibleProgress(): BibleProgress {
         if (dayChapters.includes(chapterId)) return;
 
         const updated = { ...prev, [day]: [...dayChapters, chapterId] };
-        console.log(`[useBibleProgress] markChapterComplete for Day ${day}: ${chapterId}. Updated:`, updated);
 
         localStorage.setItem(BIBLE_COMPLETED_CHAPTERS_KEY, JSON.stringify(updated));
         setCompletedChaptersState(updated);

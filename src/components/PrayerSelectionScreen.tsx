@@ -165,40 +165,54 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
             }
         };
 
-        // Check settings & completion status
-        const reminderSetting = localStorage.getItem('rosary_reminder_enabled') === 'true';
-        setIsReminderEnabled(reminderSetting);
+        const checkCompletion = () => {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
 
-        // Always check completion status regardless of reminder settings
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        const todayStr = `${year}-${month}-${day}`;
+            const reminderSetting = localStorage.getItem('rosary_reminder_enabled') === 'true';
+            setIsReminderEnabled(reminderSetting);
 
-        // 1. Rosary Completion
-        const lastCompletedFlag = localStorage.getItem('rosary_last_completed');
-        const hasHistoryCompletion = hasCompletionOnDate(todayStr); // Check persistent history
+            // 1. Rosary Completion
+            const lastCompletedFlag = localStorage.getItem('rosary_last_completed');
+            const hasHistoryCompletion = hasCompletionOnDate(todayStr); // Check persistent history
 
-        if (lastCompletedFlag === todayStr || hasHistoryCompletion) {
-            setIsRosaryCompleted(true);
-            // Sync the flag so next time it's faster
-            if (hasHistoryCompletion && lastCompletedFlag !== todayStr) {
-                localStorage.setItem('rosary_last_completed', todayStr);
+            if (lastCompletedFlag === todayStr || hasHistoryCompletion) {
+                setIsRosaryCompleted(true);
+                if (hasHistoryCompletion && lastCompletedFlag !== todayStr) {
+                    localStorage.setItem('rosary_last_completed', todayStr);
+                }
+            } else {
+                setIsRosaryCompleted(false);
             }
-        } else {
-            setIsRosaryCompleted(false);
-        }
 
-        // 2. Sacred Prayers Completion
-        const sacredLastCompletedFlag = localStorage.getItem('sacred_last_completed');
-        if (sacredLastCompletedFlag === todayStr) {
-            setIsSacredCompleted(true);
-        } else {
-            setIsSacredCompleted(false);
-        }
+            // 2. Sacred Prayers Completion
+            const sacredLastCompletedFlag = localStorage.getItem('sacred_last_completed');
+            if (sacredLastCompletedFlag === todayStr) {
+                setIsSacredCompleted(true);
+            } else {
+                setIsSacredCompleted(false);
+            }
+        };
 
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                checkCompletion();
+            }
+        };
+
+        checkCompletion();
         initScreen();
+
+        window.addEventListener('focus', checkCompletion);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener('focus', checkCompletion);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [language, showSettings]);
 
     // Calculate liturgical color hex for Rosary card styling
@@ -492,8 +506,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
                         {/* Title Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                            <h2 className="card-title" style={{ margin: 0 }}>{t.dailyReadings.toUpperCase()}</h2>
+                        <div className="card-title-row">
+                            <h2 className="card-title">{t.dailyReadings.toUpperCase()}</h2>
                             {/* Percentage / Flag (Only show if not complete and progress > 0) */}
                             {(!dailyReadingsPlayback.isComplete && dailyReadingsPlayback.progressPercentage > 0) && (
                                 <div style={{
@@ -621,8 +635,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
                         {/* Title Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                            <h2 className="card-title" style={{ margin: 0 }}>{t.bibleInAYear.toUpperCase()}</h2>
+                        <div className="card-title-row">
+                            <h2 className="card-title">{t.bibleInAYear.toUpperCase()}</h2>
 
                             {/* Percentage / Flag (Only show if not complete and progress > 0) */}
                             {(!isDayComplete(bibleDayToPlay) && biblePlayback.progressPercentage > 0) && (
@@ -760,8 +774,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
                         {/* Title Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                            <h2 className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div className="card-title-row">
+                            <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 {t.rosary.toUpperCase()}
                             </h2>
                             {(!isRosaryCompleted && rosaryPlayback.progressPercentage > 0) && (
@@ -905,8 +919,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
                         {/* Title Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                            <h2 className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div className="card-title-row">
+                            <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 {t.sacredPrayers.toUpperCase()}
                             </h2>
                             {(!isSacredCompleted && sacredPlayback.progressPercentage > 0) && (

@@ -281,12 +281,13 @@ export function useDailyReadingsPlayback(
                     text: chunk,
                     pause: isLast ? 1500 : 300,
                     onComplete: isLast ? () => {
-                        setCompletedIds(prev => {
-                            if (prev.includes(id)) return prev;
-                            const updated = [...prev, id];
-                            localStorage.setItem(`dailyReadings_completed_${dateString}`, JSON.stringify(updated));
-                            return updated;
-                        });
+                        const saved = localStorage.getItem(`dailyReadings_completed_${dateString}`);
+                        const prev = saved ? JSON.parse(saved) : [];
+                        if (prev.includes(id)) return;
+                        const updated = [...prev, id];
+                        localStorage.setItem(`dailyReadings_completed_${dateString}`, JSON.stringify(updated));
+                        setCompletedIds(updated);
+
                         // Notify DailyReadingsScreen to show checkmark
                         window.dispatchEvent(new CustomEvent('dailyReading:readingComplete', { detail: { id } }));
                     } : undefined
@@ -314,12 +315,13 @@ export function useDailyReadingsPlayback(
                         text: chunk,
                         pause: 300,
                         onComplete: isLast ? () => {
-                            setCompletedIds(prev => {
-                                if (prev.includes(id)) return prev;
-                                const updated = [...prev, id];
-                                localStorage.setItem(`dailyReadings_completed_${dateString}`, JSON.stringify(updated));
-                                return updated;
-                            });
+                            const saved = localStorage.getItem(`dailyReadings_completed_${dateString}`);
+                            const prev = saved ? JSON.parse(saved) : [];
+                            if (prev.includes(id)) return;
+                            const updated = [...prev, id];
+                            localStorage.setItem(`dailyReadings_completed_${dateString}`, JSON.stringify(updated));
+                            setCompletedIds(updated);
+
                             // Notify DailyReadingsScreen to show checkmark
                             window.dispatchEvent(new CustomEvent('dailyReading:readingComplete', { detail: { id } }));
                         } : undefined

@@ -132,12 +132,6 @@ export function useBiblePlayback(
 
                 if (!isCurrent) return;
 
-                console.log(`[useBiblePlayback] Fetched data for Day ${currentDay}:`, {
-                    period: data.period,
-                    readingsCount: readingsToFetch.length,
-                    readings: readingsToFetch.map(r => ({ title: r.title, citation: r.citation }))
-                });
-
                 setReadings(readingsToFetch);
             } catch (err) {
                 if (isCurrent) console.error('[useBiblePlayback] Error fetching Bible readings:', err);
@@ -213,8 +207,6 @@ export function useBiblePlayback(
         isPlayingRef.current = true;
         setIsPlaying(true);
 
-        console.log(`[useBiblePlayback] Playing Day ${currentDay}. AllComplete? ${allComplete}`);
-
         const segments: any[] = [];
 
         // Add intro
@@ -241,9 +233,7 @@ export function useBiblePlayback(
             chapters.forEach(chapter => {
                 // Skip if already completed unless replaying
                 const isComplete = isChapterComplete(currentDay, chapter.title);
-                console.log(`[useBiblePlayback] Evaluating Chapter: ${chapter.title}, isComplete: ${isComplete}, allComplete: ${allComplete}`);
                 if (!allComplete && isComplete) {
-                    console.log(`[useBiblePlayback] Skipping completed chapter: ${chapter.title}`);
                     return;
                 }
 
