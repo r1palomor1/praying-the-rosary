@@ -608,7 +608,8 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
     };
 
     const handleResetCurrentMystery = () => {
-        clearPrayerProgress(currentMysterySet);
+        // Standardize: Setting's generic Reset now globally clears all partial progress
+        clearPrayerProgress();
         clearSession();
         onBack();
     };

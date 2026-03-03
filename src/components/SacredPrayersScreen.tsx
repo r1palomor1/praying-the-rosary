@@ -363,7 +363,7 @@ export default function SacredPrayersScreen({ onComplete, onBack, startWithConti
     };
 
     const handleReset = () => {
-        clearPrayerProgress(sacredMysteryKey);
+        clearPrayerProgress();
         clearSession();
         window.location.reload();
     };

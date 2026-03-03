@@ -5,7 +5,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { LanguageSelector } from './components/LanguageSelector';
-import { loadPrayerProgress, hasValidPrayerProgress, savePrayerProgress } from './utils/storage';
+import { loadPrayerProgress, hasValidPrayerProgress, savePrayerProgress, clearPrayerProgress } from './utils/storage';
 import { PrayerFlowEngine } from './utils/prayerFlowEngine';
 import { SacredPrayerFlowEngine } from './utils/SacredPrayerFlowEngine';
 import { cleanupPrayerHistory } from './utils/cleanupHistory';
@@ -220,6 +220,7 @@ function AppContent() {
   };
 
   const handleResetProgress = () => {
+    clearPrayerProgress(); // Clear all partial progress up to 99%
     clearSession();
     localStorage.removeItem('sacred_last_completed');
     // This will reset both Rosary and Sacred Prayers progress

@@ -283,9 +283,9 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
                 onResetProgress={() => {
-                    // ALWAYS clear only the current mystery being viewed
-                    // This ensures completed mysteries are not affected when clearing a different mystery
-                    clearPrayerProgress(currentMysterySet);
+                    // Standardize: Resetting from Settings nukes ALL partial progress (as user expects)
+                    // The 'X' button in Mysteries tab remains the way to clear just one.
+                    clearPrayerProgress();
                     clearSession();
                     window.location.reload();
                 }}
