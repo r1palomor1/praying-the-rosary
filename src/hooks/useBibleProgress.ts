@@ -4,6 +4,55 @@ import { useState, useEffect, useMemo } from 'react';
 export const BIBLE_START_DATE_KEY = 'bible_start_date';
 export const BIBLE_COMPLETED_DAYS_KEY = 'bible_completed_days';
 export const BIBLE_COMPLETED_CHAPTERS_KEY = 'bible_completed_chapters';
+export const BIBLE_BACKUP_DAYS_KEY = 'bible_backup_days';
+export const BIBLE_BACKUP_CHAPTERS_KEY = 'bible_backup_chapters';
+
+export const hasBibleBackup = (): boolean => {
+    return localStorage.getItem(BIBLE_BACKUP_DAYS_KEY) !== null ||
+        localStorage.getItem(BIBLE_BACKUP_CHAPTERS_KEY) !== null;
+};
+
+export const resetBibleProgress = () => {
+    // 1. Create safety backup
+    const currentDays = localStorage.getItem(BIBLE_COMPLETED_DAYS_KEY);
+    const currentChapters = localStorage.getItem(BIBLE_COMPLETED_CHAPTERS_KEY);
+
+    if (currentDays) localStorage.setItem(BIBLE_BACKUP_DAYS_KEY, currentDays);
+    if (currentChapters) localStorage.setItem(BIBLE_BACKUP_CHAPTERS_KEY, currentChapters);
+
+    // 2. Wipe active data
+    localStorage.removeItem(BIBLE_COMPLETED_DAYS_KEY);
+    localStorage.removeItem(BIBLE_COMPLETED_CHAPTERS_KEY);
+
+    // 3. Notify app to sink states globally
+    window.dispatchEvent(new Event('bible-progress-updated'));
+};
+
+export const restoreBibleBackup = () => {
+    // 1. Get safety backup
+    const backupDays = localStorage.getItem(BIBLE_BACKUP_DAYS_KEY);
+    const backupChapters = localStorage.getItem(BIBLE_BACKUP_CHAPTERS_KEY);
+
+    // 2. Restore data
+    if (backupDays) {
+        localStorage.setItem(BIBLE_COMPLETED_DAYS_KEY, backupDays);
+    } else {
+        localStorage.removeItem(BIBLE_COMPLETED_DAYS_KEY);
+    }
+
+    if (backupChapters) {
+        localStorage.setItem(BIBLE_COMPLETED_CHAPTERS_KEY, backupChapters);
+    } else {
+        localStorage.removeItem(BIBLE_COMPLETED_CHAPTERS_KEY);
+    }
+
+    // 3. Remove backup since it's restored
+    localStorage.removeItem(BIBLE_BACKUP_DAYS_KEY);
+    localStorage.removeItem(BIBLE_BACKUP_CHAPTERS_KEY);
+
+    // 4. Notify app to sink states globally
+    window.dispatchEvent(new Event('bible-progress-updated'));
+};
 
 export interface BibleProgress {
     bibleStartDate: string | null; // ISO Date string (YYYY-MM-DD)
@@ -89,11 +138,15 @@ export function useBibleProgress(): BibleProgress {
             const savedDays = localStorage.getItem(BIBLE_COMPLETED_DAYS_KEY);
             if (savedDays) {
                 setCompletedDays(JSON.parse(savedDays));
+            } else {
+                setCompletedDays([]);
             }
 
             const savedChapters = localStorage.getItem(BIBLE_COMPLETED_CHAPTERS_KEY);
             if (savedChapters) {
                 setCompletedChaptersState(JSON.parse(savedChapters));
+            } else {
+                setCompletedChaptersState({});
             }
         };
 

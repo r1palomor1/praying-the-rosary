@@ -11,6 +11,7 @@ import { GeneralSection } from './GeneralSection';
 import { ProgressTrackingSection } from './ProgressTrackingSection';
 import { DisplaySection } from './DisplaySection';
 import { AudioSection } from './AudioSection';
+import { resetBibleProgress, restoreBibleBackup, hasBibleBackup } from '../../hooks/useBibleProgress';
 import './SettingsV2.css';
 
 interface SettingsModalV2Props {
@@ -34,7 +35,9 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
     const [showTextSizeModal, setShowTextSizeModal] = useState(false);
     const [showDateModal, setShowDateModal] = useState(false);
     const [showConfirmReset, setShowConfirmReset] = useState(false);
+    const [showConfirmBibleReset, setShowConfirmBibleReset] = useState(false);
     const [showVersionModal, setShowVersionModal] = useState(false);
+    const [hasBibleBackupFlag, setHasBibleBackupFlag] = useState(false);
 
     // Fetch version info and start dates on mount
     useEffect(() => {
@@ -43,6 +46,7 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
         setRosaryStartDateState(getRosaryStartDate() || '');
         setSacredStartDateState(getSacredStartDate() || '');
         setBibleStartDateState(getBibleStartDate() || '');
+        setHasBibleBackupFlag(hasBibleBackup());
     }, []);
 
     // Listen for Bible start date changes
@@ -66,7 +70,8 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
             title: 'SETTINGS',
             general: 'General',
             language: 'Language',
-            clearProgress: 'Clear Prayer Progress',
+            clearProgress: 'Reset Rosary & Sacred Prayers',
+            resetOptions: 'Data & Reset Options',
             display: 'Display',
             audio: 'Audio',
             speed: 'Playback Speed',
@@ -80,13 +85,16 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
             startDateTooltip: 'Started praying mid-year? No problem! Your goals will adjust so you\'re never "behind". Try different dates to see what-if scenarios.',
             dailyRosaryReminder: 'Daily Rosary Reminder',
             reminderDesc: 'Liturgical glow on active cards',
-            sacredPrayers: 'Sacred Prayers'
+            sacredPrayers: 'Sacred Prayers',
+            resetBible: 'Reset Bible in a Year Progress',
+            restoreBibleBackup: 'Restore Bible Progress Backup'
         },
         es: {
             title: 'CONFIGURACIÓN',
             general: 'General',
             language: 'Idioma',
-            clearProgress: 'Borrar Progreso de Oración',
+            clearProgress: 'Restablecer Rosario y Oraciones',
+            resetOptions: 'Opciones de Datos',
             display: 'Pantalla',
             audio: 'Audio',
             speed: 'Velocidad de Reproducción',
@@ -100,7 +108,9 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
             startDateTooltip: '¿Empezaste a rezar a mitad de año? ¡No hay problema! Tus metas se ajustarán para que nunca estés "atrasado". Prueba diferentes fechas para ver escenarios hipotéticos.',
             dailyRosaryReminder: 'Recordatorio Diario del Rosario',
             reminderDesc: 'Brillo litúrgico en tarjetas activas',
-            sacredPrayers: 'Oraciones Sagradas'
+            sacredPrayers: 'Oraciones Sagradas',
+            resetBible: 'Restablecer Progreso Bíblico',
+            restoreBibleBackup: 'Restaurar Copia de Seguridad Bíblica'
         }
     };
 
@@ -139,6 +149,24 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
         onClose();
     };
 
+    const handleResetBibleClick = () => {
+        if (!showConfirmBibleReset) {
+            setShowConfirmBibleReset(true);
+            setTimeout(() => setShowConfirmBibleReset(false), 3000);
+            return;
+        }
+
+        resetBibleProgress();
+        setHasBibleBackupFlag(hasBibleBackup());
+        setShowConfirmBibleReset(false);
+        // Optionally don't close so they can see the undo button
+    };
+
+    const handleRestoreBibleClick = () => {
+        restoreBibleBackup();
+        setHasBibleBackupFlag(hasBibleBackup());
+    };
+
     const handleDateApply = () => {
         // No-op: DateEditModal already saves via onRosaryDateChange, onSacredDateChange, onBibleDateChange
         // Those handlers update parent state AND call progressSettings functions to save to localStorage
@@ -162,6 +190,10 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
                         onLanguageChange={setLanguage}
                         onResetClick={handleResetClick}
                         showConfirmReset={showConfirmReset}
+                        onResetBibleClick={handleResetBibleClick}
+                        showConfirmBibleReset={showConfirmBibleReset}
+                        hasBibleBackupFlag={hasBibleBackupFlag}
+                        onRestoreBibleClick={handleRestoreBibleClick}
                         translations={t}
                         currentLanguage={currentLanguage}
                     />

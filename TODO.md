@@ -23,6 +23,9 @@
     - Erased old bottom-edge progress lines to clean up the design.
 
 ### Bible in a Year - Progress & Completion Improvements
+- [ ] **Data Sync/Data Mismatch Bug**
+  - Bug: On certain app state changes (like resetting progress), the card header shows the correct day (e.g. Day 7) but the loaded reading content is from Genesis 1 (Day 1).
+  - Note: Fixes itself upon a re-render (backing out of the card and returning). Need to ensure the content fetching hook is properly reacting to resets/start date changes without requiring unmounting.
 - [ ] **365-day completion celebration**
   - Show toast when user completes all 365 days
   - Offer "Start Again" button to reset with new start date
