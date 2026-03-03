@@ -10,6 +10,8 @@ interface GeneralSectionProps {
     showConfirmBibleReset: boolean;
     hasBibleBackupFlag: boolean;
     onRestoreBibleClick: () => void;
+    onExportDataClick: () => void;
+    onImportDataClick: () => void;
     translations: {
         general: string;
         language: string;
@@ -30,6 +32,8 @@ export function GeneralSection({
     showConfirmBibleReset,
     hasBibleBackupFlag,
     onRestoreBibleClick,
+    onExportDataClick,
+    onImportDataClick,
     translations,
     currentLanguage
 }: GeneralSectionProps) {
@@ -74,6 +78,32 @@ export function GeneralSection({
 
                 {showResets && (
                     <div style={{ backgroundColor: 'var(--settings-bg)', padding: '0.5rem 0' }}>
+                        {/* Export Data */}
+                        <button
+                            className="settings-list-item"
+                            onClick={onExportDataClick}
+                            style={{ paddingLeft: '2.5rem', borderBottom: 'none' }}
+                        >
+                            <div className="settings-item-left">
+                                <span className="settings-item-label" style={{ color: '#D4AF37', marginLeft: '28px', fontSize: '0.9rem' }}>
+                                    {language === 'es' ? 'Exportar Copia de Seguridad' : 'Export Data Backup'}
+                                </span>
+                            </div>
+                        </button>
+
+                        {/* Import Data */}
+                        <button
+                            className="settings-list-item"
+                            onClick={onImportDataClick}
+                            style={{ paddingLeft: '2.5rem', borderBottom: 'none' }}
+                        >
+                            <div className="settings-item-left">
+                                <span className="settings-item-label" style={{ color: '#D4AF37', marginLeft: '28px', fontSize: '0.9rem' }}>
+                                    {language === 'es' ? 'Importar Copia de Seguridad' : 'Import Data Backup'}
+                                </span>
+                            </div>
+                        </button>
+
                         {/* Clear Prayer Progress */}
                         <button
                             className="settings-list-item"

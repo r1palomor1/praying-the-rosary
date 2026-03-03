@@ -47,16 +47,15 @@
   - Verified `history` (calendar stats) remains completely isolated and safe during progress wipe.
 
 ### Backup & Restore Data Sync (Urgent, Non-Critical)
-- [ ] **Export & Import Tracking Stats (The "Bulletproof" Sync Manager)**
+- [x] **Export & Import Tracking Stats (The "Bulletproof" Sync Manager)**
   - **Export System (`.json`)**
     - Package all core completed histories (`rosary_prayer_history`, `sacred_prayer_history`, `bible_completion_history`), Bible active progress (`start_date`, `completed_days`), and Settings.
     - Explicitly exclude partial/temporary data (`_progress_` keys) to prevent broken state loads.
     - Add metadata (timestamp, device info).
   - **Import System & Merge Engine**
     - "Glass Box System": Before any data is changed, perform an auto `SYSTEM_PRE_IMPORT_BACKUP` silently to `localStorage`. Provide user with "Undo Last Import" panic button.
-    - **Granular Control UI:** When file is uploaded, show checkboxes allowing the user to select *which* data modules to import (e.g. ☑️ Rosary, ⬜️ Bible, ☑️ Settings).
+    - **Granular Control UI:** When file is uploaded, show checkboxes allowing the user to select *which* data modules to import (e.g. ☑️ Rosary, ☑️ Bible, ☑️ Settings).
     - **User Choice UI:** Give explicit options during file selection: "Merge" or "Replace completely".
-    - **Smart Conflict Engine:** If user selects "Replace", mathematically check if the device has older tracking data the file lacks. If true, trigger a *hard yellow warning*: "Your local device contains unique history not in this file. Erase anyway, or Merge instead?"
     - **Merge Logic:** Execute full distinct Set Union. Never drop a date when combining files.
 
 ### Future Architecure Revamp: "Math-Based State Swap"

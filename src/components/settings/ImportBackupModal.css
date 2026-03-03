@@ -1,0 +1,182 @@
+.import-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+
+.import-modal {
+    background-color: var(--settings-bg);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--settings-border);
+    display: flex;
+    flex-direction: column;
+}
+
+.import-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--settings-border);
+}
+
+.import-modal-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--settings-text-primary);
+}
+
+.import-modal-header button {
+    background: none;
+    border: none;
+    color: var(--settings-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.import-modal-body {
+    padding: 24px;
+}
+
+.import-step-upload,
+.import-step-success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 32px 0;
+}
+
+.upload-icon {
+    color: #D4AF37;
+    margin-bottom: 16px;
+}
+
+.success-icon {
+    color: #10B981;
+    margin-bottom: 16px;
+}
+
+.import-btn-primary {
+    background-color: #D4AF37;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    width: 100%;
+}
+
+.import-btn-secondary {
+    background-color: transparent;
+    color: var(--settings-text-primary);
+    border: 1px solid var(--settings-border);
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.import-btn-text {
+    background: none;
+    border: none;
+    color: var(--settings-text-secondary);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Configure Step */
+.config-section {
+    margin-bottom: 24px;
+}
+
+.config-section h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--settings-text-primary);
+    font-size: 1rem;
+}
+
+.check-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    color: var(--settings-text-primary);
+    cursor: pointer;
+}
+
+.check-label input {
+    margin-right: 12px;
+    width: 18px;
+    height: 18px;
+    accent-color: #D4AF37;
+}
+
+.radio-card {
+    border: 1px solid var(--settings-border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.radio-card.active {
+    border-color: #D4AF37;
+    background-color: rgba(212, 175, 55, 0.1);
+}
+
+.radio-card.replace.active {
+    border-color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.radio-card strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--settings-text-primary);
+}
+
+.radio-card p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--settings-text-secondary);
+    line-height: 1.4;
+}
+
+.import-error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #ef4444;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.import-error span {
+    margin-left: 8px;
+}

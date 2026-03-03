@@ -7,11 +7,13 @@ import { getRosaryStartDate, setRosaryStartDate, getSacredStartDate, setSacredSt
 import { VersionModal } from '../VersionModal';
 import { TextSizeModal } from './TextSizeModal';
 import { DateEditModal } from './DateEditModal';
+import { ImportBackupModal } from './ImportBackupModal';
 import { GeneralSection } from './GeneralSection';
 import { ProgressTrackingSection } from './ProgressTrackingSection';
 import { DisplaySection } from './DisplaySection';
 import { AudioSection } from './AudioSection';
 import { resetBibleProgress, restoreBibleBackup, hasBibleBackup } from '../../hooks/useBibleProgress';
+import { BackupManager } from '../../utils/backupManager';
 import './SettingsV2.css';
 
 interface SettingsModalV2Props {
@@ -37,6 +39,7 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
     const [showConfirmReset, setShowConfirmReset] = useState(false);
     const [showConfirmBibleReset, setShowConfirmBibleReset] = useState(false);
     const [showVersionModal, setShowVersionModal] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
     const [hasBibleBackupFlag, setHasBibleBackupFlag] = useState(false);
 
     // Fetch version info and start dates on mount
@@ -167,6 +170,15 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
         setHasBibleBackupFlag(hasBibleBackup());
     };
 
+    const handleExportDataClick = async () => {
+        const jsonString = await BackupManager.exportData();
+        BackupManager.downloadBackup(jsonString);
+    };
+
+    const handleImportDataClick = () => {
+        setShowImportModal(true);
+    };
+
     const handleDateApply = () => {
         // No-op: DateEditModal already saves via onRosaryDateChange, onSacredDateChange, onBibleDateChange
         // Those handlers update parent state AND call progressSettings functions to save to localStorage
@@ -194,6 +206,8 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
                         showConfirmBibleReset={showConfirmBibleReset}
                         hasBibleBackupFlag={hasBibleBackupFlag}
                         onRestoreBibleClick={handleRestoreBibleClick}
+                        onExportDataClick={handleExportDataClick}
+                        onImportDataClick={handleImportDataClick}
                         translations={t}
                         currentLanguage={currentLanguage}
                     />
@@ -288,6 +302,24 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
                 }}
                 onApply={handleDateApply}
                 language={language}
+            />
+
+            {/* Import Modal */}
+            <ImportBackupModal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                language={language}
+                onImportSuccess={() => {
+                    // Refresh data fields on success
+                    setRosaryStartDateState(getRosaryStartDate() || '');
+                    setSacredStartDateState(getSacredStartDate() || '');
+                    setBibleStartDateState(getBibleStartDate() || '');
+                    setHasBibleBackupFlag(hasBibleBackup());
+                    
+                    // We dispatch a custom event so the progress arrays living in hooks 
+                    // throughout the app know to re-fetch from local storage.
+                    window.dispatchEvent(new Event('backup_imported'));
+                }}
             />
         </div>
     );
