@@ -6,6 +6,7 @@ export const BIBLE_COMPLETED_DAYS_KEY = 'bible_completed_days';
 export const BIBLE_COMPLETED_CHAPTERS_KEY = 'bible_completed_chapters';
 export const BIBLE_BACKUP_DAYS_KEY = 'bible_backup_days';
 export const BIBLE_BACKUP_CHAPTERS_KEY = 'bible_backup_chapters';
+export const BIBLE_BACKUP_START_DATE_KEY = 'bible_backup_start_date';
 
 export const hasBibleBackup = (): boolean => {
     return localStorage.getItem(BIBLE_BACKUP_DAYS_KEY) !== null ||
@@ -16,22 +17,35 @@ export const resetBibleProgress = () => {
     // 1. Create safety backup
     const currentDays = localStorage.getItem(BIBLE_COMPLETED_DAYS_KEY);
     const currentChapters = localStorage.getItem(BIBLE_COMPLETED_CHAPTERS_KEY);
+    const currentDate = localStorage.getItem(BIBLE_START_DATE_KEY);
 
-    if (currentDays) localStorage.setItem(BIBLE_BACKUP_DAYS_KEY, currentDays);
-    if (currentChapters) localStorage.setItem(BIBLE_BACKUP_CHAPTERS_KEY, currentChapters);
+    // Only overwrite the safety backup if there is actually progress to save.
+    // This prevents accidental double-clicks from destroying a good backup with an empty one.
+    if (currentDays || currentChapters) {
+        if (currentDays) localStorage.setItem(BIBLE_BACKUP_DAYS_KEY, currentDays);
+        if (currentChapters) localStorage.setItem(BIBLE_BACKUP_CHAPTERS_KEY, currentChapters);
+        if (currentDate) localStorage.setItem(BIBLE_BACKUP_START_DATE_KEY, currentDate);
+    }
 
-    // 2. Wipe active data
+    // 2. Wipe active data and intentionally set start date to today dynamically
     localStorage.removeItem(BIBLE_COMPLETED_DAYS_KEY);
     localStorage.removeItem(BIBLE_COMPLETED_CHAPTERS_KEY);
+    
+    // Automatically reset start date to today when wiping progress so they don't have instant missed days
+    const today = new Date();
+    const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    localStorage.setItem(BIBLE_START_DATE_KEY, formattedDate);
 
     // 3. Notify app to sink states globally
     window.dispatchEvent(new Event('bible-progress-updated'));
+    window.dispatchEvent(new Event('bible-start-date-changed'));
 };
 
 export const restoreBibleBackup = () => {
     // 1. Get safety backup
     const backupDays = localStorage.getItem(BIBLE_BACKUP_DAYS_KEY);
     const backupChapters = localStorage.getItem(BIBLE_BACKUP_CHAPTERS_KEY);
+    const backupDate = localStorage.getItem(BIBLE_BACKUP_START_DATE_KEY);
 
     // 2. Restore data
     if (backupDays) {
@@ -46,12 +60,18 @@ export const restoreBibleBackup = () => {
         localStorage.removeItem(BIBLE_COMPLETED_CHAPTERS_KEY);
     }
 
+    if (backupDate) {
+        localStorage.setItem(BIBLE_START_DATE_KEY, backupDate);
+    }
+
     // 3. Remove backup since it's restored
     localStorage.removeItem(BIBLE_BACKUP_DAYS_KEY);
     localStorage.removeItem(BIBLE_BACKUP_CHAPTERS_KEY);
+    localStorage.removeItem(BIBLE_BACKUP_START_DATE_KEY);
 
     // 4. Notify app to sink states globally
     window.dispatchEvent(new Event('bible-progress-updated'));
+    window.dispatchEvent(new Event('bible-start-date-changed'));
 };
 
 export interface BibleProgress {

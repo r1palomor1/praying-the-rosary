@@ -23,21 +23,21 @@
     - Erased old bottom-edge progress lines to clean up the design.
 
 ### Bible in a Year - Progress & Completion Improvements
-- [ ] **Data Sync/Data Mismatch Bug**
+- [x] **Data Sync/Data Mismatch Bug**
   - Bug: On certain app state changes (like resetting progress), the card header shows the correct day (e.g. Day 7) but the loaded reading content is from Genesis 1 (Day 1).
   - Note: Fixes itself upon a re-render (backing out of the card and returning). Need to ensure the content fetching hook is properly reacting to resets/start date changes without requiring unmounting.
 - [ ] **365-day completion celebration**
   - Show toast when user completes all 365 days
   - Offer "Start Again" button to reset with new start date
-- [ ] **Add "Reset Bible Progress" button in Settings**
+- [x] **Add "Reset Bible Progress" button in Settings**
   - Separate from general "Clear Prayer Progress" 
   - Confirmation dialog: "Are you sure? This will clear all completed days and chapters."
   - **CRITICAL**: Create an automatic backup of the progress data before performing the wipe, allowing users to restore in case of an accidental reset.
-- [ ] **Allow Start Date changes without wiping data**
+- [x] **Allow Start Date changes without wiping data**
   - When the user changes the Bible start date in Settings, **do not clear progress**.
   - Changing the date simply "moves the goal posts" (e.g. changing from Feb 1 to Jan 1 to catch up).
   - The ONLY way to erase stats is through the explicit manual "Reset Bible Progress" button.
-- [ ] **No automatic cleanup for Bible in a Year**
+- [x] **No automatic cleanup for Bible in a Year**
   - Keep data forever (year-long progress tracking)
   - Only clear on explicit manual reset via the "Reset Bible Progress" button.
 
