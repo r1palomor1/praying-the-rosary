@@ -36,7 +36,32 @@ interface Props {
 
 export default function BibleInYearScreen({ onBack }: Props) {
     const { language } = useApp();
-    const [currentDay, setCurrentDay] = useState(1);
+    
+    const {
+        markDayComplete,
+        isDayComplete,
+        missedDays,
+        expectedDay,
+        bibleStartDate,
+        markChapterComplete,
+        isChapterComplete,
+        completedChapters,
+        completedDays
+    } = useBibleProgress();
+
+    const [currentDay, setCurrentDay] = useState(() => {
+        if (!bibleStartDate) return 1;
+        if (missedDays.length > 0) return missedDays[0];
+        if (expectedDay > 1) {
+            // Can't use isDayComplete here easily inside useState initializer because of closure
+            // but we can check completedDays directly
+            if (!completedDays.includes(expectedDay)) {
+                return expectedDay;
+            }
+        }
+        return 1;
+    });
+
     const [readings, setReadings] = useState<Reading[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -66,18 +91,6 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [showProgressModal, setShowProgressModal] = useState(false);
     const [showSourceInfo, setShowSourceInfo] = useState(false);
 
-    const {
-        markDayComplete,
-        isDayComplete,
-        missedDays,
-        expectedDay,
-        bibleStartDate,
-        markChapterComplete,
-        isChapterComplete,
-        completedChapters,
-        completedDays
-    } = useBibleProgress();
-
     // Auto-mark day complete if all chapters are done
     useEffect(() => {
         if (!readings || readings.length === 0) return;
@@ -103,6 +116,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
     // Initial Load Logic (Catch Up)
     useEffect(() => {
         if (!bibleStartDate || isPlaying) return;
+        // Run only once on mount or when bibleStartDate is actually assigned for the very first time.
+        // We handle initial state properly in useState, but just in case it takes a tick for localStorage:
         if (missedDays.length > 0) {
             setCurrentDay(missedDays[0]);
         } else if (expectedDay > 1) {
@@ -110,7 +125,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 setCurrentDay(expectedDay);
             }
         }
-    }, [bibleStartDate, missedDays.length, expectedDay, isPlaying]);
+    }, [bibleStartDate]); // ONLY track bibleStartDate to avoid random scrolling mid-session when days are ticked off
 
     const dayData: BibleDay = (biblePlan as BibleDay[])[currentDay - 1];
 

@@ -689,7 +689,12 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
 
                                     if (missedDays.length > 0) {
                                         const resumeDay = missedDays[0];
-                                        return language === 'es' ? `Continuar Día ${resumeDay} ( ${missedDays.length} días perdidos )` : `Resume Day ${resumeDay} ( ${missedDays.length} days missed )`;
+                                        const count = missedDays.length;
+                                        if (language === 'es') {
+                                            return count === 1 ? `Continuar Día ${resumeDay} ( 1 día perdido )` : `Continuar Día ${resumeDay} ( ${count} días perdidos )`;
+                                        } else {
+                                            return count === 1 ? `Resume Day ${resumeDay} ( 1 day missed )` : `Resume Day ${resumeDay} ( ${count} days missed )`;
+                                        }
                                     }
 
                                     if (isDayComplete(expectedDay)) {
