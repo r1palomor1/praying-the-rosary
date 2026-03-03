@@ -8,11 +8,12 @@ import {
     Square,
     Info,
     Flag,
-    RotateCcw
+    RotateCcw,
+    Trophy
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
-import { useBibleProgress } from '../hooks/useBibleProgress';
+import { useBibleProgress, archiveAndRestartBible } from '../hooks/useBibleProgress';
 import { killBiblePlayback, getBiblePlaying } from '../hooks/useBiblePlayback';
 import biblePlan from '../data/bibleInYearPlan.json';
 import { parseBibleChapters, chunkBibleText, type Reading, type Chapter } from '../utils/bibleParser';
@@ -90,6 +91,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [showSettings, setShowSettings] = useState(false);
     const [showProgressModal, setShowProgressModal] = useState(false);
     const [showSourceInfo, setShowSourceInfo] = useState(false);
+    const [showRenewModal, setShowRenewModal] = useState(false);
 
     // Auto-mark day complete if all chapters are done
     useEffect(() => {
@@ -467,6 +469,17 @@ export default function BibleInYearScreen({ onBack }: Props) {
     };
 
     const isCompleted = isDayComplete(currentDay);
+    const isYearComplete = completedDays.length >= 365;
+
+    const handleRestartYear = () => {
+        setShowRenewModal(true);
+    };
+
+    const confirmRestartYear = () => {
+        archiveAndRestartBible();
+        setCurrentDay(1);
+        setShowRenewModal(false);
+    };
 
     return (
         <div className="bible-screen-wrapper">
@@ -561,6 +574,72 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
                 {/* Content */}
                 <main className="sacred-content">
+                    {/* 365-Day Celebration Card */}
+                    {isYearComplete && (
+                        <div className="celebration-card" style={{
+                            background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%)',
+                            border: '1px solid rgba(212, 175, 55, 0.4)',
+                            borderRadius: '16px',
+                            padding: '1.5rem',
+                            marginBottom: '1.5rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            textAlign: 'center',
+                            boxShadow: '0 8px 32px rgba(212, 175, 55, 0.1)'
+                        }}>
+                            <div style={{
+                                width: '48px',
+                                height: '48px',
+                                borderRadius: '50%',
+                                backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginBottom: '1rem'
+                            }}>
+                                <Trophy size={28} color="#D4AF37" />
+                            </div>
+                            <h2 style={{ 
+                                color: '#D4AF37', 
+                                margin: '0 0 0.5rem 0', 
+                                fontSize: '1.25rem',
+                                fontFamily: "'Playfair Display', serif"
+                            }}>
+                                {language === 'es' ? '365 Días de Gracia' : '365 Days of Grace'}
+                            </h2>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem', fontSize: '0.95rem', lineHeight: '1.4' }}>
+                                {language === 'es' 
+                                    ? 'Has terminado la Biblia en un Año. Que el Espíritu te siga guiando.' 
+                                    : 'You have finished the Bible in a Year. May the Spirit continue to guide you.'}
+                            </p>
+                            <button 
+                                onClick={handleRestartYear}
+                                style={{
+                                    backgroundColor: '#D4AF37',
+                                    color: '#000',
+                                    border: 'none',
+                                    borderRadius: '24px',
+                                    padding: '0.75rem 1.5rem',
+                                    fontWeight: 'bold',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                            >
+                                <RotateCcw size={18} />
+                                {language === 'es' ? 'RENOVAR CAMINO' : 'RENEW JOURNEY'}
+                            </button>
+                        </div>
+                    )}
+
                     {error ? (
                         <div className="loading-container">
                             <p style={{ color: '#ef4444', textAlign: 'center', padding: '2rem' }}>{error}</p>
@@ -701,6 +780,68 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         onClose={() => setShowProgressModal(false)}
                         onDaySelect={setCurrentDay}
                     />
+                )}
+                {showRenewModal && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)', zIndex: 1000,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '1.5rem',
+                        backdropFilter: 'blur(4px)'
+                    }}>
+                        <div style={{
+                            backgroundColor: '#191b1f',
+                            borderRadius: '24px',
+                            padding: '2.5rem 2rem',
+                            border: '1px solid rgba(212, 175, 55, 0.15)',
+                            textAlign: 'center',
+                            maxWidth: '360px',
+                            width: '100%',
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+                        }}>
+                            <h3 style={{
+                                fontFamily: "'Playfair Display', serif",
+                                fontSize: '1.6rem',
+                                color: '#ffffff',
+                                margin: '0 0 1rem 0'
+                            }}>
+                                {language === 'es' ? '¿Renovar tu Camino?' : 'Renew Your Journey?'}
+                            </h3>
+                            <div style={{
+                                width: '32px', height: '2px', backgroundColor: '#D4AF37', margin: '0 auto 1.5rem auto', opacity: 0.5
+                            }} />
+                            <p style={{ color: 'var(--text-secondary, #9ca3af)', marginBottom: '2.5rem', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                                {language === 'es'
+                                    ? '¿Estás seguro? Esto archivará tus logros actuales y establecerá hoy como tu fecha de inicio. Puedes cambiar esto a cualquier fecha en configuración.'
+                                    : 'Are you sure? This will archive your current achievements and set your start date to today. You can change this to any date in settings.'}
+                            </p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <button
+                                    onClick={confirmRestartYear}
+                                    style={{
+                                        backgroundColor: '#D4AF37', color: '#000', border: 'none', borderRadius: '12px',
+                                        padding: '1rem', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer',
+                                        transition: 'opacity 0.2s',
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+                                    onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                                >
+                                    {language === 'es' ? 'Sí, Renovar Camino' : 'Yes, Renew Journey'}
+                                </button>
+                                <button
+                                    onClick={() => setShowRenewModal(false)}
+                                    style={{
+                                        backgroundColor: 'transparent', color: '#9ca3af', border: 'none',
+                                        padding: '1rem', fontWeight: '500', fontSize: '0.95rem', cursor: 'pointer',
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.color = '#ffffff'}
+                                    onMouseOut={(e) => e.currentTarget.style.color = '#9ca3af'}
+                                >
+                                    {language === 'es' ? 'Mantener mi Progreso' : 'Keep My Progress'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 )}
             </div>
         </div>

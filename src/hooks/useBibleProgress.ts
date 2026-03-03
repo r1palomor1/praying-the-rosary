@@ -7,6 +7,7 @@ export const BIBLE_COMPLETED_CHAPTERS_KEY = 'bible_completed_chapters';
 export const BIBLE_BACKUP_DAYS_KEY = 'bible_backup_days';
 export const BIBLE_BACKUP_CHAPTERS_KEY = 'bible_backup_chapters';
 export const BIBLE_BACKUP_START_DATE_KEY = 'bible_backup_start_date';
+export const BIBLE_COMPLETION_HISTORY_KEY = 'bible_completion_history';
 
 export const hasBibleBackup = (): boolean => {
     return localStorage.getItem(BIBLE_BACKUP_DAYS_KEY) !== null ||
@@ -39,6 +40,20 @@ export const resetBibleProgress = () => {
     // 3. Notify app to sink states globally
     window.dispatchEvent(new Event('bible-progress-updated'));
     window.dispatchEvent(new Event('bible-start-date-changed'));
+};
+
+export const archiveAndRestartBible = () => {
+    // 1. Record the completion in history
+    const historyObj = localStorage.getItem(BIBLE_COMPLETION_HISTORY_KEY);
+    const history = historyObj ? JSON.parse(historyObj) : [];
+    const today = new Date();
+    const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    
+    history.push({ completion_date: formattedDate });
+    localStorage.setItem(BIBLE_COMPLETION_HISTORY_KEY, JSON.stringify(history));
+
+    // 2. Perform the standard reset (which creates the backup and resets start_date to today)
+    resetBibleProgress();
 };
 
 export const restoreBibleBackup = () => {

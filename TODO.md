@@ -26,7 +26,7 @@
 - [x] **Data Sync/Data Mismatch Bug**
   - Bug: On certain app state changes (like resetting progress), the card header shows the correct day (e.g. Day 7) but the loaded reading content is from Genesis 1 (Day 1).
   - Note: Fixes itself upon a re-render (backing out of the card and returning). Need to ensure the content fetching hook is properly reacting to resets/start date changes without requiring unmounting.
-- [ ] **365-day completion celebration**
+- [x] **365-day completion celebration**
   - Show toast when user completes all 365 days
   - Offer "Start Again" button to reset with new start date
 - [x] **Add "Reset Bible Progress" button in Settings**
@@ -41,12 +41,26 @@
   - Keep data forever (year-long progress tracking)
   - Only clear on explicit manual reset via the "Reset Bible Progress" button.
 
+### Rosary & Sacred Prayers Progress Resets 
+- [x] **Standardize General Progress Reset**
+  - Updated Settings modal to globally clear all active Rosary and Sacred Prayers partial progress instead of only the currently selected mystery. 
+  - Verified `history` (calendar stats) remains completely isolated and safe during progress wipe.
+
 ### Backup & Restore Data Sync (Urgent, Non-Critical)
 - [ ] **Export & Import Tracking Stats**
   - Export all `localStorage` tracking stats into a single downloadable JSON backup file.
   - Import function to populate the respective `localStorage` keys from a backup file.
   - **Crucial Constraint:** During import, the app MUST compare the timestamp/version of the imported data against the device's existing local data. It must safely merge or prevent overriding more recent stats with older stats.
   - **Use Case:** Creating safe backups and syncing progress across multiple devices (e.g., migrating 6+ months of Rosary and Bible in a Year data from an Android phone to a tablet or iPhone).
+
+### Future Architecure Revamp: "Math-Based State Swap"
+- [ ] **Refactor Bible Tracking to remove Array Bloat & Enable "History Vault" Restores**
+  - **Concept:** Remove the `[1,2,3...]` checkbox array tracking. Instead, rely on pure math: `{ start_date: '1/1/25', highest_completed_day: 365, completion_date: '1/31/26' }`. 
+  - **The UI Benefit:** The app can dynamically regenerate the entire 365-day grid perfectly based solely on those integer inputs.
+  - **The "Vault" Feature:** In Settings, add a new "Restore Bible Journey" dropdown.
+    - Dropdown shows list of all active/past runs: `"Jan 1, 2025 - 365 Days"` | `"Mar 1, 2026 - 3 Days (Current)"`
+    - When a user selects a past run, the app saves their current state (e.g., Day 3), then swaps the math inputs to the old year. The UI instantly mathematically repaints the old 100% board. 
+    - They can use the drop down to seamlessly swap *back* to their active Year 2 run, and the app instantly repaints Day 1-3. No massive arrays, no trash bins, just pure state-swapping.
 
 ---
 
