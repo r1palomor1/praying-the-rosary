@@ -219,6 +219,9 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
     const renderReadingText = (text: string) => {
         let cleanText = text.replace(/\u003cbr\s*\/?\u003e/gi, '\n');
+        
+        // Strip out citation numbers like (17b) or (2) immediately following R.
+        cleanText = cleanText.replace(/(R\.|R\/\.)\s*\(\d+[a-zA-Z]?\)\s*/g, '$1 ');
 
         return cleanText.split('\n').map((line, lineIndex) => {
             const trimmed = line.trim();
@@ -234,13 +237,15 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                         style={{
                             fontWeight: '700',
                             color: liturgicalColor,
-                            margin: '0.5rem 0'
+                            margin: '1.25rem 0 0.5rem 0'
                         }}
                     >
                         {trimmed.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}
                     </p>
                 );
             }
+
+            const verseStyle = { margin: '0.4rem 0' };
 
             if (trimmed.includes('<strong>')) {
                 const parts: React.ReactNode[] = [];
@@ -264,10 +269,10 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     const afterText = trimmed.substring(lastIndex);
                     parts.push(afterText.replace(/<[^>]+>/g, ''));
                 }
-                return <p key={lineIndex} style={{ margin: '0.3rem 0' }}>{parts}</p>;
+                return <p key={lineIndex} style={verseStyle}>{parts}</p>;
             }
 
-            return <p key={lineIndex} style={{ margin: '0.3rem 0' }}>{trimmed.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}</p>;
+            return <p key={lineIndex} style={verseStyle}>{trimmed.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}</p>;
         });
     };
 
@@ -305,6 +310,8 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         let clean = rawText.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
         // Strip out verse numbers in brackets (e.g., [ 1 ])
         clean = clean.replace(/\[\s*\d+\s*\]/g, '');
+        // Strip out verse references in parenthesis after R. (e.g., (17b))
+        clean = clean.replace(/(R\.|R\/\.)\s*\(\d+[a-zA-Z]?\)\s*/g, '$1 ');
         // Replace "R." or "R/." with Response
         const responseWord = language === 'es' ? 'Respuesta.' : 'Response.';
         clean = clean.replace(/R\.|R\/\./g, responseWord);
