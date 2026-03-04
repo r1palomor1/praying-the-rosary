@@ -110,7 +110,14 @@ class UnifiedTTSManager {
             }
 
             const segment = this.segments[currentIndex];
-            const sanitized = sanitizeTextForSpeech(segment.text);
+            let sanitized = sanitizeTextForSpeech(segment.text);
+
+            // Hardware Wake-up Buffer: If this is the absolute first segment, 
+            // prepend a silent pause (like commas) so the mobile/bluetooth 
+            // audio hardware has time to wake up before words actually start.
+            if (currentIndex === 0) {
+                sanitized = ", , " + sanitized;
+            }
 
             const utterance = new SpeechSynthesisUtterance(sanitized);
             this.activeUtterance = utterance; // Prevent GC

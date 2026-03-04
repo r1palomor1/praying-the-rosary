@@ -409,7 +409,7 @@ git push
 ### 🎨 UI/UX Refinements (Not Started)
 **Priority:** Low | **Time:** 1-2 hours
 
-- [ ] **Redesign Settings "Data & Reset Options" Area**
+- [x] **Redesign Settings "Data & Reset Options" Area**
   - **Issue:** The current layout for "Export Data Backup", "Import Data Backup", "Reset Rosary", "Reset Bible", and "Restore Bible Progress" is clunky and visually unappealing. 
   - **Action:** Awaiting new mockups from user. Redesign and restructure this section for better grouping, hierarchy, and styling once provided.
 
