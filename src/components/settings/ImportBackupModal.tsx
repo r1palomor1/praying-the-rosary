@@ -52,10 +52,21 @@ export function ImportBackupModal({ isOpen, onClose, language, onImportSuccess }
         bibleConflictDesc: language === 'es' 
             ? 'No podemos combinar tus viajes bíblicos activos porque comenzaron en fechas diferentes. Por favor, elige qué viaje mantener en este dispositivo:' 
             : 'We cannot combine your active Bible journeys because they began on different dates. Please choose which journey to keep for this device:',
-        keepDeviceData: language === 'es' ? 'Mantener Datos del Dispositivo' : 'Keep Device Data',
-        useBackupData: language === 'es' ? 'Sobrescribir con Copia' : 'Overwrite with Backup',
+        keepDeviceData: language === 'es' ? 'Mantener Progreso del Dispositivo' : 'Keep Device Progress',
+        useBackupData: language === 'es' ? 'Usar Copia en su Lugar' : 'Use Backup Instead',
         startedOn: language === 'es' ? 'Iniciado' : 'Started',
-        daysCompleted: language === 'es' ? 'días completados' : 'days completed',
+        daysCompleted: language === 'es' ? 'días completos' : 'days complete',
+    };
+
+    const formatDisplayDate = (dateStr: string) => {
+        if (!dateStr || !dateStr.includes('-')) return dateStr;
+        const [y, m, d] = dateStr.split('-');
+        const date = new Date(Number(y), Number(m) - 1, Number(d));
+        return date.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -385,22 +396,22 @@ export function ImportBackupModal({ isOpen, onClose, language, onImportSuccess }
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 <button 
                                     className="import-btn-primary" 
-                                    style={{ backgroundColor: '#D4AF37' }}
+                                    style={{ backgroundColor: '#cda240', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}
                                     onClick={() => executeImport(false, 'device')}
                                 >
-                                    <strong>{t.keepDeviceData}</strong>
-                                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginTop: '4px' }}>
-                                        {t.startedOn}: {bibleStats.localStart} • {bibleStats.localCount} {t.daysCompleted}
+                                    <strong style={{ fontSize: '1.05rem', color: '#fff' }}>{t.keepDeviceData}</strong>
+                                    <div style={{ fontSize: '0.9rem', color: '#f8f9fa', marginTop: '6px', fontWeight: 'normal' }}>
+                                        {t.startedOn} {formatDisplayDate(bibleStats.localStart)} • {bibleStats.localCount} {t.daysCompleted}
                                     </div>
                                 </button>
                                 <button 
-                                    className="import-btn-secondary" 
-                                    style={{ borderColor: '#ef4444', color: '#ef4444' }}
+                                    className="import-btn-text" 
+                                    style={{ color: '#cda240', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px', background: 'transparent', border: 'none' }}
                                     onClick={() => executeImport(false, 'backup')}
                                 >
-                                    <strong>{t.useBackupData}</strong>
-                                    <div style={{ fontSize: '0.85rem', marginTop: '4px' }}>
-                                        {t.startedOn}: {bibleStats.importedStart} • {bibleStats.importedCount} {t.daysCompleted}
+                                    <strong style={{ fontSize: '1.05rem' }}>{t.useBackupData}</strong>
+                                    <div style={{ fontSize: '0.9rem', color: 'var(--settings-text-secondary)', marginTop: '6px', fontWeight: 'normal' }}>
+                                        {t.startedOn} {formatDisplayDate(bibleStats.importedStart)} • {bibleStats.importedCount} {t.daysCompleted}
                                     </div>
                                 </button>
                             </div>
