@@ -8,6 +8,7 @@ export interface BackupData {
         bible_completion_history?: any;
         bible_start_date?: string | null;
         bible_completed_days?: any;
+        bible_completed_chapters?: any;
         settings?: any;
         [key: string]: any;
     };
@@ -36,6 +37,7 @@ export class BackupManager {
                 key === 'bible_completion_history' ||
                 key === 'bible_start_date' ||
                 key === 'bible_completed_days' ||
+                key === 'bible_completed_chapters' ||
                 key === 'rosary_settings' ||
                 key === 'rosary_language' ||
                 key === 'rosary_last_completed' ||
@@ -159,6 +161,27 @@ export class BackupManager {
         // Standard primitive deduplication
         const uniqueSet = new Set(combined);
         return Array.from(uniqueSet).sort();
+    }
+
+    /**
+     * Specialized merge for Bible Chapters which are stored as Record<number, string[]>
+     */
+    static mergeBibleChapters(local: Record<number, string[]>, imported: Record<number, string[]>): Record<number, string[]> {
+        const result: Record<number, string[]> = { ...local };
+        
+        if (imported && typeof imported === 'object') {
+            for (const [day, chapters] of Object.entries(imported)) {
+                const dayNum = Number(day);
+                if (result[dayNum]) {
+                    // Combine and deduplicate chapter arrays
+                    const combined = [...result[dayNum], ...(Array.isArray(chapters) ? chapters : [])];
+                    result[dayNum] = Array.from(new Set(combined));
+                } else {
+                    result[dayNum] = Array.isArray(chapters) ? chapters : [];
+                }
+            }
+        }
+        return result;
     }
 
     /**

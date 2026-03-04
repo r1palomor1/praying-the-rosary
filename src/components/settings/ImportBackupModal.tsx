@@ -12,9 +12,10 @@ interface ImportBackupModalProps {
 
 export function ImportBackupModal({ isOpen, onClose, language, onImportSuccess }: ImportBackupModalProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [step, setStep] = useState<'upload' | 'configure' | 'conflict' | 'success'>('upload');
+    const [step, setStep] = useState<'upload' | 'configure' | 'conflict' | 'bible-conflict' | 'success'>('upload');
     const [parsedData, setParsedData] = useState<BackupData | null>(null);
     const [error, setError] = useState<string>('');
+    const [bibleStats, setBibleStats] = useState<{localStart: string, localCount: number, importedStart: string, importedCount: number} | null>(null);
 
     // Selections
     const [importMode, setImportMode] = useState<'merge' | 'replace'>('merge');
@@ -47,6 +48,14 @@ export function ImportBackupModal({ isOpen, onClose, language, onImportSuccess }
         conflictDesc: language === 'es' ? 'Su dispositivo local contiene un historial único que no está en este archivo de copia de seguridad. Si elige Reemplazar, perderá estos datos. ¿Borrar de todos modos o Combinar en su lugar?' : 'Your local device contains unique history not in this file. If you Replace, you will lose this local data. Erase anyway, or Merge instead?',
         eraseAnyway: language === 'es' ? 'Borrar y Reemplazar' : 'Erase & Replace',
         switchMerge: language === 'es' ? 'Cambiar a Combinar' : 'Switch to Merge',
+        bibleConflictTitle: language === 'es' ? 'Desajuste del Viaje Bíblico' : 'Bible Journey Mismatch',
+        bibleConflictDesc: language === 'es' 
+            ? 'No podemos combinar tus viajes bíblicos activos porque comenzaron en fechas diferentes. Por favor, elige qué viaje mantener en este dispositivo:' 
+            : 'We cannot combine your active Bible journeys because they began on different dates. Please choose which journey to keep for this device:',
+        keepDeviceData: language === 'es' ? 'Mantener Datos del Dispositivo' : 'Keep Device Data',
+        useBackupData: language === 'es' ? 'Sobrescribir con Copia' : 'Overwrite with Backup',
+        startedOn: language === 'es' ? 'Iniciado' : 'Started',
+        daysCompleted: language === 'es' ? 'días completados' : 'days completed',
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,16 +72,44 @@ export function ImportBackupModal({ isOpen, onClose, language, onImportSuccess }
         }
     };
 
-    const executeImport = async (forceReplace: boolean = false) => {
+    const executeImport = async (forceReplace: boolean = false, overrideBible: 'device' | 'backup' | 'merge' | null = null) => {
         try {
             if (!parsedData) return;
 
+            // SMART BIBLE MERGE CHECK
+            let bibleAction = overrideBible;
+            if (selectBible && importMode === 'merge' && bibleAction === null) {
+                const localStart = localStorage.getItem('bible_start_date');
+                const importedStart = parsedData.data['bible_start_date'];
+                
+                // Only conflict if BOTH exist and are DIFFERENT
+                if (localStart && importedStart && localStart !== importedStart) {
+                    let localCount = 0;
+                    let importedCount = 0;
+                    try { localCount = JSON.parse(localStorage.getItem('bible_completed_days') || '[]').length; } catch(e){}
+                    try { importedCount = (parsedData.data['bible_completed_days'] || []).length; } catch(e){}
+                    
+                    setBibleStats({ localStart, localCount, importedStart, importedCount });
+                    setStep('bible-conflict');
+                    return; // halt and wait for user explicitly
+                } else if (!localStart || !importedStart || localStart === importedStart) {
+                    // Safe to merge
+                    bibleAction = 'merge';
+                }
+            } else if (selectBible && importMode === 'replace') {
+                bibleAction = 'backup'; // Standard replace
+            }
+
             // Optional: check for smart conflicts before proceeding if in replace mode
-            if (importMode === 'replace' && !forceReplace) {
+            if (!forceReplace) {
                 let hasConflict = false;
 
-                const checkConflict = (isSelected: boolean, keys: string[]) => {
+                const checkConflict = (isSelected: boolean, keys: string[], isMergeable: boolean) => {
                     if (!isSelected) return;
+                    
+                    // If we are in merge mode and the field supports merging, there's no data loss conflict here.
+                    if (importMode === 'merge' && isMergeable) return;
+
                     for (const key of keys) {
                         const local = localStorage.getItem(key);
                         if (!local) continue;
@@ -101,9 +138,11 @@ export function ImportBackupModal({ isOpen, onClose, language, onImportSuccess }
                     }
                 };
 
-                checkConflict(selectRosary, ['rosary_prayer_history']);
-                checkConflict(selectSacred, ['sacred_prayer_history']);
-                checkConflict(selectBible, ['bible_completion_history']);
+                checkConflict(selectRosary, ['rosary_prayer_history'], true);
+                checkConflict(selectSacred, ['sacred_prayer_history'], true);
+                checkConflict(selectBible, ['bible_completion_history'], true);
+                // Active Bible tracking cannot merge due to start_date sync issues. So we check it even in 'merge' mode.
+                checkConflict(selectBible, ['bible_completed_days'], false); 
 
                 if (hasConflict) {
                     setStep('conflict');
@@ -152,10 +191,35 @@ export function ImportBackupModal({ isOpen, onClose, language, onImportSuccess }
             
             processModule(selectSacred, ['sacred_prayer_history'], true);
             
-            // Bible includes progress strings/objects, so replacing entirely instead of merging arrays
-            const bibleKeys = ['bible_completion_history', 'bible_start_date', 'bible_completed_days', 'bible_completed_chapters'];
-            processModule(selectBible, bibleKeys, false); 
-            
+            // Bible handling
+            if (selectBible) {
+                // Completed Historic Vault always merges in merge mode, or replaces in replace mode
+                processModule(true, ['bible_completion_history'], true);
+                
+                if (bibleAction === 'merge') {
+                    // Safe active merge (start dates matched or one was empty)
+                    if (parsedData.data['bible_start_date'] !== undefined) {
+                        dataToApply['bible_start_date'] = parsedData.data['bible_start_date'];
+                    }
+                    
+                    let localDays = [];
+                    try { localDays = JSON.parse(localStorage.getItem('bible_completed_days') || '[]'); } catch(e){}
+                    dataToApply['bible_completed_days'] = BackupManager.mergeHistories(localDays, parsedData.data['bible_completed_days'] || []);
+                    
+                    let localChapters = {};
+                    try { localChapters = JSON.parse(localStorage.getItem('bible_completed_chapters') || '{}'); } catch(e){}
+                    dataToApply['bible_completed_chapters'] = BackupManager.mergeBibleChapters(localChapters, parsedData.data['bible_completed_chapters'] || {});
+                    
+                } else if (bibleAction === 'backup') {
+                    // Force complete overwrite (Replace mode, or user chose "Overwrite with Backup")
+                    ['bible_start_date', 'bible_completed_days', 'bible_completed_chapters'].forEach(k => {
+                        if (parsedData.data[k] !== undefined) dataToApply[k] = parsedData.data[k];
+                    });
+                } else if (bibleAction === 'device') {
+                    // Do nothing for active keys, honoring "Keep Device Data"
+                }
+            }
+
             // Handle read-only logic settings
             if (selectSettings) {
                 const settingKeys = ['rosary_settings', 'rosary_language', 'announce_fruit_in_decades'];
@@ -287,23 +351,57 @@ export function ImportBackupModal({ isOpen, onClose, language, onImportSuccess }
                             <p style={{ lineHeight: 1.5, marginBottom: '24px' }}>{t.conflictDesc}</p>
                             
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <button 
-                                    className="import-btn-primary" 
-                                    style={{ backgroundColor: '#D4AF37' }}
-                                    onClick={() => {
-                                        setImportMode('merge');
-                                        // Slight delay so state updates before executing
-                                        setTimeout(() => executeImport(false), 0);
-                                    }}
-                                >
-                                    {t.switchMerge}
-                                </button>
+                                {importMode === 'replace' && (
+                                    <button 
+                                        className="import-btn-primary" 
+                                        style={{ backgroundColor: '#D4AF37' }}
+                                        onClick={() => {
+                                            setImportMode('merge');
+                                            // Slight delay so state updates before executing
+                                            setTimeout(() => executeImport(false), 0);
+                                        }}
+                                    >
+                                        {t.switchMerge}
+                                    </button>
+                                )}
                                 <button 
                                     className="import-btn-secondary" 
                                     style={{ borderColor: '#ef4444', color: '#ef4444' }}
                                     onClick={() => executeImport(true)} // force replace
                                 >
                                     {t.eraseAnyway}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 2.6: Smart Bible Merge Conflict */}
+                    {step === 'bible-conflict' && bibleStats && (
+                        <div className="import-step-conflict" style={{ textAlign: 'center', padding: '24px 0' }}>
+                            <AlertTriangle size={64} style={{ color: '#D4AF37', marginBottom: '16px' }} />
+                            <h3 style={{ marginTop: 0 }}>{t.bibleConflictTitle}</h3>
+                            <p style={{ lineHeight: 1.5, marginBottom: '24px' }}>{t.bibleConflictDesc}</p>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <button 
+                                    className="import-btn-primary" 
+                                    style={{ backgroundColor: '#D4AF37' }}
+                                    onClick={() => executeImport(false, 'device')}
+                                >
+                                    <strong>{t.keepDeviceData}</strong>
+                                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginTop: '4px' }}>
+                                        {t.startedOn}: {bibleStats.localStart} • {bibleStats.localCount} {t.daysCompleted}
+                                    </div>
+                                </button>
+                                <button 
+                                    className="import-btn-secondary" 
+                                    style={{ borderColor: '#ef4444', color: '#ef4444' }}
+                                    onClick={() => executeImport(false, 'backup')}
+                                >
+                                    <strong>{t.useBackupData}</strong>
+                                    <div style={{ fontSize: '0.85rem', marginTop: '4px' }}>
+                                        {t.startedOn}: {bibleStats.importedStart} • {bibleStats.importedCount} {t.daysCompleted}
+                                    </div>
                                 </button>
                             </div>
                         </div>

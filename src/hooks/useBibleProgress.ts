@@ -49,7 +49,7 @@ export const archiveAndRestartBible = () => {
     const today = new Date();
     const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     
-    history.push({ completion_date: formattedDate });
+    const startDate = localStorage.getItem(BIBLE_START_DATE_KEY) || formattedDate; history.push({ start_date: startDate, completion_date: formattedDate });
     localStorage.setItem(BIBLE_COMPLETION_HISTORY_KEY, JSON.stringify(history));
 
     // 2. Perform the standard reset (which creates the backup and resets start_date to today)
