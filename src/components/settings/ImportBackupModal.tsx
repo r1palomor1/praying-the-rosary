@@ -198,10 +198,20 @@ export function ImportBackupModal({ isOpen, onClose, language, onImportSuccess }
 
             // Process sections
             processModule(selectRosary, ['rosary_prayer_history'], true);
-            processModule(selectRosary, ['rosary_last_completed'], false); // Not an array!
-            
+            processModule(selectRosary, ['rosary_last_completed', 'rosary_start_date'], false); // Not an array!
+
             processModule(selectSacred, ['sacred_prayer_history'], true);
-            
+            processModule(selectSacred, ['sacred_start_date'], false);
+
+            // Dynamically import Daily Readings if user imports general prayer data
+            if (selectRosary || selectSacred) {
+                Object.keys(parsedData.data).forEach(k => {
+                    if (k.startsWith('dailyReadings_completed_')) {
+                        processModule(true, [k], true); // Merge the string arrays
+                    }
+                });
+            }
+
             // Bible handling
             if (selectBible) {
                 // Completed Historic Vault always merges in merge mode, or replaces in replace mode
