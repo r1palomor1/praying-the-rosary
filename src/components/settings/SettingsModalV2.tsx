@@ -197,20 +197,9 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
 
                 {/* Sections */}
                 <div className="settings-sections">
-                    <GeneralSection
-                        language={language}
-                        onLanguageChange={setLanguage}
-                        onResetClick={handleResetClick}
-                        showConfirmReset={showConfirmReset}
-                        onResetBibleClick={handleResetBibleClick}
-                        showConfirmBibleReset={showConfirmBibleReset}
-                        hasBibleBackupFlag={hasBibleBackupFlag}
-                        onRestoreBibleClick={handleRestoreBibleClick}
-                        onExportDataClick={handleExportDataClick}
-                        onImportDataClick={handleImportDataClick}
-                        translations={t}
-                        currentLanguage={currentLanguage}
-                    />
+                    <GeneralSection language={language} onLanguageChange={setLanguage} onResetClick={handleResetClick} showConfirmReset={showConfirmReset} onResetBibleClick={handleResetBibleClick} showConfirmBibleReset={showConfirmBibleReset} hasBibleBackupFlag={hasBibleBackupFlag} onRestoreBibleClick={handleRestoreBibleClick} onExportDataClick={handleExportDataClick} onImportDataClick={handleImportDataClick} translations={t} currentLanguage={currentLanguage} />
+
+                    
 
                     <ProgressTrackingSection
                         rosaryStartDate={rosaryStartDate}
@@ -324,3 +313,5 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
         </div>
     );
 }
+
+

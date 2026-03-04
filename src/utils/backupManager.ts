@@ -5,6 +5,8 @@ export interface BackupData {
     data: {
         rosary_prayer_history?: any;
         sacred_prayer_history?: any;
+        rosary_start_date?: string | null;
+        sacred_start_date?: string | null;
         bible_completion_history?: any;
         bible_start_date?: string | null;
         bible_completed_days?: any;
@@ -34,6 +36,8 @@ export class BackupManager {
             if (
                 key === 'rosary_prayer_history' ||
                 key === 'sacred_prayer_history' ||
+                key === 'rosary_start_date' ||
+                key === 'sacred_start_date' ||
                 key === 'bible_completion_history' ||
                 key === 'bible_start_date' ||
                 key === 'bible_completed_days' ||

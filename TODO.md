@@ -58,14 +58,17 @@
     - **User Choice UI:** Give explicit options during file selection: "Merge" or "Replace completely".
     - **Merge Logic:** Execute full distinct Set Union. Never drop a date when combining files.
 
-### Future Architecure Revamp: "Math-Based State Swap"
-- [ ] **Refactor Bible Tracking to remove Array Bloat & Enable "History Vault" Restores**
-  - **Concept:** Remove the `[1,2,3...]` checkbox array tracking. Instead, rely on pure math: `{ start_date: '1/1/25', highest_completed_day: 365, completion_date: '1/31/26' }`. 
-  - **The UI Benefit:** The app can dynamically regenerate the entire 365-day grid perfectly based solely on those integer inputs.
-  - **The "Vault" Feature:** In Settings, add a new "Restore Bible Journey" dropdown.
-    - Dropdown shows list of all active/past runs: `"Jan 1, 2025 - 365 Days"` | `"Mar 1, 2026 - 3 Days (Current)"`
-    - When a user selects a past run, the app saves their current state (e.g., Day 3), then swaps the math inputs to the old year. The UI instantly mathematically repaints the old 100% board. 
-    - They can use the drop down to seamlessly swap *back* to their active Year 2 run, and the app instantly repaints Day 1-3. No massive arrays, no trash bins, just pure state-swapping.
+### Future Architecure Revamp: "Math-Based State Swap" (Pivoted & Completed)
+- [x] **Refactor Bible Tracking to enable "History Vault" Restores**
+  - **Decision:** Kept array tracking for active journeys to allow tracking missed/skipped days.
+  - **The "Vault" Feature:** In Settings, added the ability to archive completed 365-day journeys.
+  - **Implementation:** `archiveAndRestartBible` safely pushes `start_date` and `highest_completed_day` to the completion history array before clearing the active board.
+
+### Backup & Restore Data Sync Polish (Completed Mar 3, 2026)
+- [x] **Smart Bible Merge & Settings UI Polish**
+  - **Implemented Smart Conflict Engine:** Automatically checks for `start_date` mismatches when importing a backup.
+  - **Soft Merge:** Merges chapters if `start_date` matches.
+  - **Custom Conflict UI:** If dates clash, presents a newly styled prompt (`MMM DD, YYYY` format) asking the user to either "Keep Device Data" or "Use Backup Data", effectively preventing accidental active-streak overwrites.
 
 ---
 
@@ -406,6 +409,10 @@ git push
 ### 🎨 UI/UX Refinements (Not Started)
 **Priority:** Low | **Time:** 1-2 hours
 
+- [ ] **Redesign Settings "Data & Reset Options" Area**
+  - **Issue:** The current layout for "Export Data Backup", "Import Data Backup", "Reset Rosary", "Reset Bible", and "Restore Bible Progress" is clunky and visually unappealing. 
+  - **Action:** Awaiting new mockups from user. Redesign and restructure this section for better grouping, hierarchy, and styling once provided.
+
 - [x] **Daily Readings Text Formatting**
   - Improve Responsorial Psalm whitespace/newlines
   - Ensure 'R.' responses are visually distinct
@@ -436,6 +443,21 @@ git push
 - [ ] **eSpeak-NG Evaluation** (<5 MB, robotic but excellent timing)
 - [ ] **New/Emerging WebAssembly TTS** (2024+ models, WebGPU, ONNX)
 - [ ] **Google Cloud TTS POC** (Alternative: research pricing, caching strategy)
+
+---
+
+### ☁️ Cloud Sync & Multi-Device Support (Future Architecture Vision)
+**Priority:** Long-Term Enhancement
+
+**Concept:** Move beyond manual JSON file export/import to a true, seamless multi-device sync experience. 
+**Requirements & Hurdles:**
+- Requires implementing robust Authentication protocols (Google OAuth2 - sometimes called "OAG"/OIDC, Apple Sign-In).
+- Requires an active backend database (e.g., Firebase Firestore, Supabase, or AWS) or bridging directly to the user's personal Google Drive/iCloud environments. 
+- Needs heavy security research to ensure user spiritual data and privacy remain 100% safeguarded.
+- **Actions items when ready:**
+  - [ ] Implement OAuth flows (Google / Apple).
+  - [ ] Build backend rules and user-specific data isolation.
+  - [ ] Write background sync queue that merges local states with cloud states seamlessly.
 
 ---
 
