@@ -252,7 +252,13 @@ export function ImportBackupModal({ isOpen, onClose, language, onImportSuccess }
             // 3. Apply to localStorage
             BackupManager.applyDataToStorage(dataToApply);
 
-            // 4. Conclude
+            // 4. Clean up hidden Bible safety backup if we're importing new Bible data
+            if (selectBible) {
+                const keysToWipe = ['bible_backup_days', 'bible_backup_chapters', 'bible_backup_start_date', 'bible_backup_timestamp'];
+                keysToWipe.forEach(k => localStorage.removeItem(k));
+            }
+
+            // 5. Conclude
             setStep('success');
             onImportSuccess();
         } catch (e: any) {
