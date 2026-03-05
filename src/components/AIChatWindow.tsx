@@ -45,10 +45,23 @@ export function AIChatWindow({ contextStr, topicName, initialMessage, language =
     }
   }, [initialMessage, messages.length]);
 
-  const handleSend = async () => {
-    if (!inputValue.trim() || !aiEnabled || isLoading) return;
+  const defaultCapsules = language === 'es' ? [
+    { label: 'Dar una reflexión', prompt: 'Por favor, dame una breve reflexión sobre esta lectura.' },
+    { label: 'Explicar', prompt: '¿Puedes explicar el significado de esta lectura?' },
+    { label: 'Contexto histórico', prompt: '¿Cuál es el contexto histórico de este pasaje?' },
+    { label: 'Aplicación práctica', prompt: '¿Cómo puedo aplicar las enseñanzas de esta lectura en mi vida diaria?' }
+  ] : [
+    { label: 'Provide a reflection', prompt: 'Please provide a short reflection on this reading.' },
+    { label: 'Explain this', prompt: 'Can you explain the meaning of this reading?' },
+    { label: 'Historical context', prompt: 'What is the historical context of this passage?' },
+    { label: 'Practical application', prompt: 'How can I apply the teachings of this reading to my daily life?' }
+  ];
 
-    const userText = inputValue.trim();
+  const handleSend = async (forcedText?: string) => {
+    const textToSubmit = forcedText || inputValue;
+    if (!textToSubmit.trim() || !aiEnabled || isLoading) return;
+
+    const userText = textToSubmit.trim();
     const newMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -122,6 +135,21 @@ export function AIChatWindow({ contextStr, topicName, initialMessage, language =
         <div ref={messagesEndRef} />
       </div>
 
+      {messages.length <= 1 && (
+        <div className="ai-capsules-container">
+          {defaultCapsules.map((capsule, index) => (
+            <button 
+              key={index} 
+              className="ai-capsule"
+              onClick={() => handleSend(capsule.prompt)}
+              disabled={isLoading}
+            >
+              {capsule.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="ai-input-container">
         <input
           type="text"
@@ -134,7 +162,7 @@ export function AIChatWindow({ contextStr, topicName, initialMessage, language =
         />
         <button 
           className="ai-send-button"
-          onClick={handleSend}
+          onClick={() => handleSend()}
           disabled={!inputValue.trim() || isLoading}
           aria-label="Send message"
         >

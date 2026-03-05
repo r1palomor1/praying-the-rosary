@@ -1,44 +1,71 @@
-import { Sparkles, Check } from 'lucide-react';
+import { Sparkles, Bot } from 'lucide-react';
 import { useAI } from '../../context/AIContext';
 
 interface AISectionProps {
     translations: {
-        aiFeatures: string;
-        aiDescription: string;
+        aiFeatures?: string;
+        aiDescription?: string;
     };
     currentLanguage: string;
 }
 
 export function AISection({ translations, currentLanguage }: AISectionProps) {
     const { aiEnabled, setAiEnabled } = useAI();
+    const isEs = currentLanguage === 'es';
 
     return (
-        <div className="settings-section">
-            <h3 className="settings-section-title">
-                <Sparkles size={18} className="settings-section-icon" />
-                {translations.aiFeatures || (currentLanguage === 'es' ? 'Compañero de IA' : 'AI Companion')}
-            </h3>
+        <section>
+            <h2 className="settings-section-header">
+                {translations.aiFeatures || (isEs ? 'Compañero de IA' : 'AI Companion')}
+            </h2>
 
             <div className="settings-card">
-                <div 
-                    className="settings-row clickable"
+                <button 
+                    className="settings-list-item"
                     onClick={() => setAiEnabled(!aiEnabled)}
+                    style={{ borderBottom: 'none' }}
                 >
-                    <div className="settings-row-content">
-                        <span className="settings-row-title">
-                            {translations.aiFeatures || (currentLanguage === 'es' ? 'Habilitar Funciones de IA' : 'Enable AI Features')}
-                        </span>
-                        <span className="settings-row-subtitle">
-                            {translations.aiDescription || (currentLanguage === 'es' 
-                                ? 'Proporciona explicaciones espirituales utilizando inteligencia artificial segura y católica.' 
-                                : 'Provides spiritual explanations using safe, Catholic AI.')}
-                        </span>
+                    <div className="settings-item-left">
+                        <Sparkles className="settings-icon" size={20} style={{ color: aiEnabled ? '#D4AF37' : '#888' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
+                            <span className="settings-item-label">
+                                {translations.aiFeatures || (isEs ? 'Habilitar Compañero' : 'Enable AI Features')}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--settings-text-muted)', marginTop: '2px', lineHeight: '1.2' }}>
+                                {translations.aiDescription || (isEs 
+                                    ? 'Proporciona explicaciones utilizando tecnología segura y católica.' 
+                                    : 'Provides spiritual explanations using safe, Catholic tech.')}
+                            </span>
+                        </div>
                     </div>
-                    <div className={`checkbox-circle ${aiEnabled ? 'checked' : ''}`}>
-                        {aiEnabled && <Check size={16} strokeWidth={3} />}
+                    <div className="settings-item-right">
+                        <div 
+                            style={{
+                                width: '40px',
+                                height: '22px',
+                                borderRadius: '12px',
+                                backgroundColor: aiEnabled ? '#D4AF37' : 'rgba(255,255,255,0.1)',
+                                position: 'relative',
+                                transition: 'background-color 0.2s',
+                                flexShrink: 0
+                            }}
+                        >
+                            <div 
+                                style={{
+                                    width: '18px',
+                                    height: '18px',
+                                    borderRadius: '50%',
+                                    backgroundColor: aiEnabled ? '#1a1a1a' : '#888',
+                                    position: 'absolute',
+                                    top: '2px',
+                                    left: aiEnabled ? '20px' : '2px',
+                                    transition: 'all 0.2s ease-in-out'
+                                }}
+                            />
+                        </div>
                     </div>
-                </div>
+                </button>
             </div>
-        </div>
+        </section>
     );
 }

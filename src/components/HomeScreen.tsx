@@ -41,7 +41,6 @@ export function HomeScreen({ onStartPrayer, onStartPrayerWithContinuous, onNavig
             if (homeMain && bottomSection) {
                 const contentWidth = homeMain.offsetWidth;
                 bottomSection.style.maxWidth = `${contentWidth}px`;
-                console.log('Home nav width set to:', contentWidth);
             }
         };
 

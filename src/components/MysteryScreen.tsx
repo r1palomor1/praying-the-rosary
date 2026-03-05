@@ -122,7 +122,6 @@ export function MysteryScreen({ onComplete, onBack, startWithContinuous = false 
                     }
 
                     bottomSection.style.maxWidth = `${Math.round(actualWidth)}px`;
-                    console.log('Image actual width:', Math.round(actualWidth), '(container:', containerWidth, ')');
                 }
             }
         };

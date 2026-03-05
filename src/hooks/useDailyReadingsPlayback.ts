@@ -215,7 +215,11 @@ export function useDailyReadingsPlayback(
             .replace(/&amp;/g, '&')
             .replace(/&lt;/g, '<')
             .replace(/&gt;/g, '>');
+        // Strip bracket verse numbers e.g. [1]
         clean = clean.replace(/\[\s*\d+\s*\]/g, '');
+        // Strip parenthesis scripture citations e.g. (40:5a) or (12)
+        clean = clean.replace(/\(\d+.*?\)/g, '');
+        
         const responseWord = language === 'es' ? 'Respuesta.' : 'Response.';
         clean = clean.replace(/R\.|R\/\./g, responseWord);
         return clean;

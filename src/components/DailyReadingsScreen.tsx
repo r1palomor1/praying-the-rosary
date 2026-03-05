@@ -7,13 +7,16 @@ import {
     Info,
     Calendar,
     CheckCircle,
-    RotateCcw
+    RotateCcw,
+    Sparkles
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { killDailyReadingsPlayback, getDailyReadingsActiveId } from '../hooks/useDailyReadingsPlayback';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { fetchLiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar';
+import { useAI } from '../context/AIContext';
+import { AIModal } from './AIModal';
 import './DailyReadingsScreen.css';
 
 interface Reading {
@@ -52,6 +55,19 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const [liturgicalData, setLiturgicalData] = useState<any>(null);
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
     const [showSourceInfo, setShowSourceInfo] = useState(false);
+    
+    // AI Companion State
+    const { aiEnabled } = useAI();
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    const [aiContextText, setAiContextText] = useState('');
+    const [aiTopicName, setAiTopicName] = useState('');
+
+    const handleOpenAI = (e: React.MouseEvent, title: string, text: string) => {
+        e.stopPropagation();
+        setAiTopicName(title);
+        setAiContextText(text);
+        setIsAIModalOpen(true);
+    };
 
     // Initialize from localStorage with current date
     const [completedItems, setCompletedItems] = useState<string[]>(() => {
@@ -705,7 +721,21 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                                     <Play size={18} fill="currentColor" />
                                                 )}
                                             </button>
-
+                                              {aiEnabled && (
+                                                  <button
+                                                        onClick={(e) => {
+                                                            const titleWithCitation = reading.citation 
+                                                                ? `${normalizeReadingTitle(reading.title)} (${reading.citation.replace(/,/g, ', ')})` 
+                                                                : normalizeReadingTitle(reading.title);
+                                                            handleOpenAI(e, titleWithCitation, reading.text);
+                                                        }}
+                                                      className="icon-btn-ghost"
+                                                      style={{ width: '32px', height: '32px', color: '#d4af37' }}
+                                                      aria-label="Ask AI Companion"
+                                                  >
+                                                      <Sparkles size={18} />
+                                                  </button>
+                                              )}
                                             <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 {(reading.citation ? reading.citation.replace(/,/g, ',  ') : null) || (language === 'es' ? 'Lectura' : 'Reading')}
                                                 {isCompleted && (
@@ -763,7 +793,16 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                                 <Play size={18} fill="currentColor" />
                                             )}
                                         </button>
-
+                                          {aiEnabled && (
+                                              <button
+                                                  onClick={(e) => handleOpenAI(e, reflection.title, reflection.content)}
+                                                  className="icon-btn-ghost"
+                                                  style={{ width: '32px', height: '32px', color: '#d4af37' }}
+                                                  aria-label="Ask AI Companion"
+                                              >
+                                                  <Sparkles size={18} />
+                                              </button>
+                                          )}
                                         <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             {reflection.title}
                                             {completedItems.includes('reflection') && (
@@ -850,6 +889,14 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     isOpen={showSettings}
                     onClose={() => setShowSettings(false)}
                     onResetProgress={() => { }}
+                />
+
+                <AIModal 
+                    isOpen={isAIModalOpen}
+                    onClose={() => setIsAIModalOpen(false)}
+                    contextStr={aiContextText}
+                    topicName={aiTopicName}
+                    language={language}
                 />
             </div>
         </div>

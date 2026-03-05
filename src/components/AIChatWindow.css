@@ -133,3 +133,36 @@
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
 }
+.ai-capsules-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 16px 12px 16px;
+    gap: 8px;
+}
+
+.ai-capsule {
+    background-color: rgba(212, 175, 55, 0.15);
+    color: var(--gold, #d4af37);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-capsule:hover {
+    background-color: rgba(212, 175, 55, 0.25);
+    border-color: rgba(212, 175, 55, 0.5);
+}
+
+.ai-capsule:active {
+    transform: scale(0.96);
+}
+

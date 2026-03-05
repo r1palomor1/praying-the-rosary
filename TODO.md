@@ -1347,3 +1347,22 @@ All critical bugs resolved. App is stable and production-ready.
 
 ## Active Bugs / Follow-ups (Feb 22, 2026)
 - [x] Fix: Green checkmarks on Daily Readings do not appear once a reading is completed during "Play All" playback.
+
+### ?? AI Companion V1: Debugging & UX Refinement
+- [ ] **Debug Local API Pipeline**: Review Vercel /api/ai-chat failing in local dev returning 'I cannot process your request'. Stop blind patching and explicitly monitor the app's internal Debug Panel network logs and the Hugging Face API dashboard logs to trace the root cause.
+- [ ] **Implement AI Readiness Constraint (UX)**: Consider dimming out or disabling the 'Sparkles' (AI) button on Daily Readings based on read/listen status.
+  - *Challenge*: If the user reads manually (instead of playing audio), there is currently no individual section checkmark (only the manual "mark all complete" at the bottom).
+  - *Proposed Solution*: Tie AI button state to the accordion expand/collapse state:
+    - Initially collapsed: AI is dimmed/disabled.
+    - User uncollapses (expands) section: AI becomes undimmed/active (they are actively reading and might have questions).
+    - User collapses section again: AI dims again.
+    - Section is fully checkmarked (via audio finish or global completion): AI is 100% undimmed permanently.
+
+
+### ?? Hybrid Reading & Listening Sync (UX Refinement)
+- [ ] **Daily Readings 'Mark as Complete' Button**: Add a global completion button at the bottom of the Daily Readings screen (feature parity with Bible In A Year).
+- [ ] **Inline 'Mark as Read' for Individual Sections**: Add a checkmark button at the bottom of the text inside expanded sections for *both* Daily Readings and Bible in a Year.
+  - *Behavior*: Clicking it marks that specific section as complete (green checkmark appears in header), triggers the completion logic, and auto-collapses the section.
+  - *Audio Sync Goal*: If a user reads 2 sections manually and clicks 'Mark as Read', pressing the main 'Play Audio' button at the top should skip the read sections and begin playing from the 3rd section.
+  - *Note on 'Un-checking'*: Keep it simple. Avoid adding an 'X' to uncheck. If they want to re-experience it, they can simply unfold the text to read again, or click the individual section's 'Play' button to listen again. Keep UI positive-action only.
+
