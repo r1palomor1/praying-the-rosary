@@ -9,6 +9,7 @@ import { TextSizeModal } from './TextSizeModal';
 import { DateEditModal } from './DateEditModal';
 import { ImportBackupModal } from './ImportBackupModal';
 import { GeneralSection } from './GeneralSection';
+import { AISection } from './AISection';
 import { ProgressTrackingSection } from './ProgressTrackingSection';
 import { DisplaySection } from './DisplaySection';
 import { AudioSection } from './AudioSection';
@@ -201,7 +202,9 @@ export function SettingsModalV2({ isOpen, onClose, onResetProgress, currentMyste
 
                     
 
-                    <ProgressTrackingSection
+                    <AISection translations={t} currentLanguage={language} />
+
+                      <ProgressTrackingSection
                         rosaryStartDate={rosaryStartDate}
                         sacredStartDate={sacredStartDate}
                         bibleStartDate={bibleStartDate}

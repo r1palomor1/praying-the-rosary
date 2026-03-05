@@ -310,6 +310,7 @@ function AppContent() {
 }
 
 import { ToastProvider } from './context/ToastContext';
+import { AIProvider } from './context/AIContext';
 
 // ... (existing imports)
 
@@ -317,8 +318,10 @@ function App() {
   return (
     <AppProvider>
       <ToastProvider>
-        <AppContent />
-        <DebugPanel />
+        <AIProvider>
+          <AppContent />
+          <DebugPanel />
+        </AIProvider>
       </ToastProvider>
     </AppProvider>
   );
