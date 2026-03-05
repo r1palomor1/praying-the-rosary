@@ -1,5 +1,13 @@
 # 👑 PROJECT RULES - READ FIRST
 
+## 0. STRICT DEPLOYMENT & COMMIT SEQUENCE (MANDATORY)
+When given permission to commit and push changes, you MUST follow this exact sequence perfectly. DO NOT chain commands with `;` or `&&`. Execute each separately and wait for successful completion before moving to the next.
+1. `npm run build` (Must pass with 100% clean output - fixes front-end issues before they become back-end blockages)
+2. `git add .`
+3. `git commit -m "..."`
+4. `npm run build` (2nd build is REQUIRED to embed the new git hash version stats into the app)
+5. `git push`
+
 ## 1. Explicit Permission for Builds & Deploys
 *   **NEVER** run `npm run build` or `git push` without asking the user for permission first.
 *   **NEVER** assume a workflow allows auto-deployment unless explicitly told for that specific turn.

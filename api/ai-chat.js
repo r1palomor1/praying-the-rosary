@@ -18,6 +18,9 @@ export default async function handler(req, res) {
   const startTime = Date.now();
   const endpoint = '/api/ai-chat';
 
+  // DEBUGGING: Log if the API Key actually exists inside Vercel's environment variables
+  console.log(`[Vercel Serverless] Checking env vars. Is HUGGINGFACE_API_KEY present? `, !!process.env.HUGGINGFACE_API_KEY);
+
   try {
     // 2. Rate Limit Check
     // Using IP as the "userId" identifier for anonymous rate limiting

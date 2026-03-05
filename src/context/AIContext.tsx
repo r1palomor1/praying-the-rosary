@@ -34,33 +34,51 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       return { error: 'AI features are currently disabled.' };
     }
 
-    try {
-      const response = await fetch('/api/ai-chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      console.log('[AI Debug] Attempting to send message to /api/ai-chat');
+      console.log('[AI Debug] Payload:', JSON.stringify({ ...payload, contextStr: payload.contextStr.substring(0, 50) + '...' })); // Truncated context for clean logs
 
-      const data = await response.json();
+      try {
+        const response = await fetch('/api/ai-chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
 
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to connect to AI Companion.');
+        console.log(`[AI Debug] Response Status: ${response.status} ${response.statusText}`);
+        
+        // Read raw text first so we can debug HTML/500 errors if JSON parse fails
+        const rawText = await response.text();
+        console.log(`[AI Debug] Raw Response Body:`, rawText.substring(0, 200) + (rawText.length > 200 ? '...' : ''));
+
+        let data;
+        try {
+          data = JSON.parse(rawText);
+        } catch (jsonErr) {
+          console.error('[AI Debug] Failed to parse JSON response. Server returned non-JSON format.');
+          throw new Error('Invalid server response format. Check debug panel.');
+        }
+
+        if (!response.ok) {
+          // If data.error is a boolean, grab data.message or data.details
+          const errMsg = typeof data.error === 'string' ? data.error : (data.details || data.message || 'Unknown server error');
+          console.error(`[AI Debug] Server returned error state: ${errMsg}`);
+          throw new Error(errMsg);
+        }
+
+        return { response: data.response };
+      } catch (error: any) {
+        console.error('[AI Debug] Catch Block Hit. AI Companion Error:', error.message || error);
+        return { error: error.message || 'An unexpected error occurred.' };
       }
+    };
 
-      return { response: data.response };
-    } catch (error: any) {
-      console.error('AI Companion Error:', error);
-      return { error: error.message || 'An unexpected error occurred.' };
-    }
-  };
-
-  return (
-    <AIContext.Provider value={{ aiEnabled, setAiEnabled, sendMessage }}>
-      {children}
-    </AIContext.Provider>
-  );
+    return (
+      <AIContext.Provider value={{ aiEnabled, setAiEnabled, sendMessage }}>
+        {children}
+      </AIContext.Provider>
+    );
 };
 
 export const useAI = () => {
