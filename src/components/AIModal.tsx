@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Sparkles, X } from 'lucide-react';
 import { AIChatWindow } from './AIChatWindow';
 import './AIModal.css';

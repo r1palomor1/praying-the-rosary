@@ -1,11 +1,8 @@
-import { Sparkles, Bot } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useAI } from '../../context/AIContext';
 
 interface AISectionProps {
-    translations: {
-        aiFeatures?: string;
-        aiDescription?: string;
-    };
+    translations: any;
     currentLanguage: string;
 }
 
