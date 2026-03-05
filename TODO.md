@@ -399,10 +399,9 @@ git push
   - Target: 115 MB bundle (36% reduction)
   - Required for Google Play optimization
   
-- [ ] **Optimize Images** (Step 3)
-  - Current: ~32 MB
-  - Target: ~17 MB (50% compression)
-  - Tools: TinyPNG, Squoosh, imagemin
+- [x] **Optimize Images** (Step 3) - COMPLETED Mar 4, 2026
+    - Original: ~32 MB
+    - Final: ~7.8 MB (75% compression via Sharp API & unreferenced duplicate removal)
 
 ---
 
@@ -1315,7 +1314,7 @@ User
 
 
 ## Daily Readings Enhancements
-- [ ] Refine Daily Readings text formatting: Improve whitespace/newlines for Responsorial Psalm and Alleluia (ensure 'R.' and verses are visually distinct).
+- [x] Refine Daily Readings text formatting: Improve whitespace/newlines for Responsorial Psalm and Alleluia (ensure 'R.' and verses are visually distinct).
 
 ##  Current Status / Hand-off (Jan 23, 2026)
 
