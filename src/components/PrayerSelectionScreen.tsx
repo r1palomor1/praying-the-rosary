@@ -501,7 +501,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                 >
                     <div className="card-image-container">
                         <div className="card-image">
-                            <img src="/daily_readings_icon.png" alt={t.dailyReadings} />
+                            <img src="/images/daily_readings_icon.png" alt={t.dailyReadings} />
                         </div>
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
@@ -630,7 +630,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                 >
                     <div className="card-image-container">
                         <div className="card-image">
-                            <img src="/bible_year_icon.png" alt={t.bibleInAYear} />
+                            <img src="/images/bible_year_icon.png" alt={t.bibleInAYear} />
                         </div>
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
@@ -774,7 +774,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                 >
                     <div className="card-image-container">
                         <div className="card-image">
-                            <img src="/rosary_icon.png" alt={t.rosary} />
+                            <img src="/images/rosary_icon.png" alt={t.rosary} />
                         </div>
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
@@ -919,7 +919,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                 >
                     <div className="card-image-container">
                         <div className="card-image">
-                            <img src="/sacred_prayers_icon.png" alt={t.sacredPrayers} />
+                            <img src="/images/sacred_prayers_icon.png" alt={t.sacredPrayers} />
                         </div>
                     </div>
                     <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
