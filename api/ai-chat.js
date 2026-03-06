@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   const startTime = Date.now();
   const endpoint = '/api/ai-chat';
 
-  const apiKey = process.env.HUGGINGFACE_API_KEY?.trim();
+  const apiKey = (process.env.HUGGINGFACE_API_KEY || process.env.HUGGING_FACE_API_KEY)?.trim();
 
   // ENHANCED DIAGNOSTICS: Deep inspection of what vercel dev is injecting
   const allHuggingKeys = Object.keys(process.env).filter(k => k.toLowerCase().includes('hugging') || k.toLowerCase().includes('hf_'));

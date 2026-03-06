@@ -1,7 +1,18 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Settings as SettingsIcon, ChevronRight, Loader2, Square } from 'lucide-react'; // Added Square
+
+const AIBookmarkIcon = ({ size = 24, strokeWidth = 2, color = 'currentColor' }: { size?: number, strokeWidth?: number, color?: string }) => {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+            <path d="M12 8l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z" />
+        </svg>
+    );
+};
 import { useApp } from '../context/AppContext';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
+import { AIModal } from './AIModal';
+import { loadReflections } from '../utils/savedReflections';
 import { getVersionInfo, type VersionInfo } from '../utils/version';
 import { LiturgicalCard } from './LiturgicalCard';
 import { fetchLiturgicalDay, type LiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar';
@@ -30,6 +41,8 @@ interface PrayerSelectionScreenProps {
 export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinuous, onSelectSacredPrayers, onStartSacredWithContinuous, onSelectDailyReadings, onSelectBibleInYear, onResetProgress }: PrayerSelectionScreenProps) {
     const { language, currentMysterySet, playAudio } = useApp();
     const [showSettings, setShowSettings] = useState(false);
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    const [savedCount, setSavedCount] = useState(0);
     const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
 
 
@@ -174,6 +187,10 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
 
             const reminderSetting = localStorage.getItem('rosary_reminder_enabled') === 'true';
             setIsReminderEnabled(reminderSetting);
+
+            // Update saved ai reflections count
+            const reflections = loadReflections();
+            setSavedCount(reflections.length);
 
             // 1. Rosary Completion
             const lastCompletedFlag = localStorage.getItem('rosary_last_completed');
@@ -416,8 +433,64 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                 onClose={() => setShowSettings(false)}
                 onResetProgress={handleReset}
             />
+            {isAIModalOpen && (
+                <AIModal
+                    isOpen={isAIModalOpen}
+                    onClose={() => setIsAIModalOpen(false)}
+                    contextStr=""
+                    topicName="Saved Reflections"
+                    language={language}
+                    startTab="saved"
+                />
+            )}
 
-            <div className="selection-header" style={{ position: 'absolute', top: '1rem', right: '1rem', width: 'auto', padding: 0, zIndex: 10 }}>
+            <div className="selection-header" style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                width: 'auto',
+                padding: 0,
+                zIndex: 10,
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: '0.5rem'
+            }}>
+                {savedCount > 0 && (
+                    <button
+                        className="settings-button"
+                        onClick={() => setIsAIModalOpen(true)}
+                        aria-label="View Saved Reflections"
+                        style={{
+                            color: 'rgba(255, 255, 255, 0.9)',
+                            background: 'transparent',
+                            border: 'none',
+                            boxShadow: 'none',
+                            padding: '8px',
+                            position: 'relative'
+                        }}
+                    >
+                        <AIBookmarkIcon size={24} strokeWidth={2} />
+                        <span style={{
+                            position: 'absolute',
+                            top: '2px',
+                            right: '2px',
+                            background: '#D4AF37',
+                            color: '#000',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            borderRadius: '50%',
+                            width: '16px',
+                            height: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid #1a1b26'
+                        }}>
+                            {savedCount}
+                        </span>
+                    </button>
+                )}
                 <button
                     className="settings-button"
                     onClick={() => setShowSettings(true)}

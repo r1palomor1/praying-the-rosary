@@ -24,13 +24,14 @@ interface AIChatWindowProps {
   source?: string;       // "Daily Readings" | "Bible in a Year" | etc.
   initialMessage?: string;
   language?: string;
+  startTab?: 'chat' | 'saved';
 }
 
 type ActiveTab = 'chat' | 'saved';
 
-export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings', initialMessage, language = 'en' }: AIChatWindowProps) {
+export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings', initialMessage, language = 'en', startTab = 'chat' }: AIChatWindowProps) {
   const { sendMessage, aiEnabled } = useAI();
-  const [activeTab, setActiveTab] = useState<ActiveTab>('chat');
+  const [activeTab, setActiveTab] = useState<ActiveTab>(startTab);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -375,7 +376,10 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
               {filteredSaved.map(item => (
                 <div key={item.id} className="ai-saved-card">
                   <div className="ai-saved-card-header">
-                    <span className="ai-saved-category">{item.categoryIcon} {item.category}</span>
+                    <span className="ai-saved-category">
+                      {item.categoryIcon} {item.category}
+                      <span style={{ opacity: 0.6, fontSize: '0.85em', marginLeft: '6px' }}>• {item.source}</span>
+                    </span>
                     <span className="ai-saved-date">{new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric' })}</span>
                   </div>
                   <div className="ai-saved-topic">{item.topic}</div>

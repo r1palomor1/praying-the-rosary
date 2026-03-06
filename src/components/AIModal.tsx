@@ -6,13 +6,14 @@ import './AIModal.css';
 interface AIModalProps {
   isOpen: boolean;
   onClose: () => void;
-  contextStr: string;
-  topicName: string;
+  contextStr?: string; // made optional
+  topicName?: string; // made optional
   source?: string;
   language?: string;
+  startTab?: 'chat' | 'saved';
 }
 
-export function AIModal({ isOpen, onClose, contextStr, topicName, source = 'Daily Readings', language = 'en' }: AIModalProps) {
+export function AIModal({ isOpen, onClose, contextStr = '', topicName = '', source = 'Daily Readings', language = 'en', startTab = 'chat' }: AIModalProps) {
   // Prevent body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -51,6 +52,7 @@ export function AIModal({ isOpen, onClose, contextStr, topicName, source = 'Dail
             source={source}
             language={language}
             initialMessage={initialGreeting}
+            startTab={startTab}
           />
         </div>
       </div>
