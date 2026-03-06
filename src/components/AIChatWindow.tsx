@@ -285,7 +285,7 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
                         onClick={() => handlePlayMessage(msg.id, msg.content)}
                         aria-label={playingMsgId === msg.id ? 'Stop audio' : 'Play audio'}
                       >
-                        {playingMsgId === msg.id ? <Square size={11} fill="currentColor" /> : <Play size={11} fill="currentColor" style={{ marginLeft: '1px' }} />}
+                        {playingMsgId === msg.id ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
                       </button>
                       <button
                         className={`ai-action-btn ai-save-btn ${msg.savedId ? 'saved' : ''}`}
@@ -293,7 +293,7 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
                         aria-label={msg.savedId ? 'Saved' : 'Save reflection'}
                         title={msg.savedId ? (language === 'es' ? 'Guardado' : 'Saved') : (language === 'es' ? 'Guardar reflexión' : 'Save reflection')}
                       >
-                        {msg.savedId ? <BookmarkCheck size={12} /> : <Bookmark size={12} />}
+                        {msg.savedId ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
                       </button>
                     </div>
                   )}
@@ -407,10 +407,10 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
                       onClick={() => handlePlaySaved(item)}
                       aria-label="Play"
                     >
-                      {playingMsgId === `saved-${item.id}` ? <Square size={11} fill="currentColor" /> : <Play size={11} fill="currentColor" style={{ marginLeft: '1px' }} />}
+                      {playingMsgId === `saved-${item.id}` ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
                     </button>
                     <button className="ai-action-btn ai-delete-btn" onClick={() => handleDeleteSaved(item.id)} aria-label="Delete">
-                      <Trash2 size={13} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
