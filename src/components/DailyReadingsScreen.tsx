@@ -55,17 +55,19 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     const [liturgicalData, setLiturgicalData] = useState<any>(null);
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
     const [showSourceInfo, setShowSourceInfo] = useState(false);
-    
+
     // AI Companion State
     const { aiEnabled } = useAI();
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [aiContextText, setAiContextText] = useState('');
     const [aiTopicName, setAiTopicName] = useState('');
+    const [aiSource, setAiSource] = useState('Daily Readings');
 
-    const handleOpenAI = (e: React.MouseEvent, title: string, text: string) => {
+    const handleOpenAI = (e: React.MouseEvent, title: string, text: string, source = 'Daily Readings') => {
         e.stopPropagation();
         setAiTopicName(title);
         setAiContextText(text);
+        setAiSource(source);
         setIsAIModalOpen(true);
     };
 
@@ -235,7 +237,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
     const renderReadingText = (text: string) => {
         let cleanText = text.replace(/\u003cbr\s*\/?\u003e/gi, '\n');
-        
+
         // Strip out citation numbers like (17b) or (2) immediately following R.
         cleanText = cleanText.replace(/(R\.|R\/\.)\s*\(\d+[a-zA-Z]?\)\s*/g, '$1 ');
 
@@ -721,21 +723,21 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                                     <Play size={18} fill="currentColor" />
                                                 )}
                                             </button>
-                                              {aiEnabled && (
-                                                  <button
-                                                        onClick={(e) => {
-                                                            const titleWithCitation = reading.citation 
-                                                                ? `${normalizeReadingTitle(reading.title)} (${reading.citation.replace(/,/g, ', ')})` 
-                                                                : normalizeReadingTitle(reading.title);
-                                                            handleOpenAI(e, titleWithCitation, reading.text);
-                                                        }}
-                                                      className="icon-btn-ghost"
-                                                      style={{ width: '32px', height: '32px', color: '#d4af37' }}
-                                                      aria-label="Ask AI Companion"
-                                                  >
-                                                      <Sparkles size={18} />
-                                                  </button>
-                                              )}
+                                            {aiEnabled && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        const titleWithCitation = reading.citation
+                                                            ? `${normalizeReadingTitle(reading.title)} (${reading.citation.replace(/,/g, ', ')})`
+                                                            : normalizeReadingTitle(reading.title);
+                                                        handleOpenAI(e, titleWithCitation, reading.text);
+                                                    }}
+                                                    className="icon-btn-ghost"
+                                                    style={{ width: '32px', height: '32px', color: '#d4af37' }}
+                                                    aria-label="Ask AI Companion"
+                                                >
+                                                    <Sparkles size={18} />
+                                                </button>
+                                            )}
                                             <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 {(reading.citation ? reading.citation.replace(/,/g, ',  ') : null) || (language === 'es' ? 'Lectura' : 'Reading')}
                                                 {isCompleted && (
@@ -793,16 +795,16 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                                 <Play size={18} fill="currentColor" />
                                             )}
                                         </button>
-                                          {aiEnabled && (
-                                              <button
-                                                  onClick={(e) => handleOpenAI(e, reflection.title, reflection.content)}
-                                                  className="icon-btn-ghost"
-                                                  style={{ width: '32px', height: '32px', color: '#d4af37' }}
-                                                  aria-label="Ask AI Companion"
-                                              >
-                                                  <Sparkles size={18} />
-                                              </button>
-                                          )}
+                                        {aiEnabled && (
+                                            <button
+                                                onClick={(e) => handleOpenAI(e, reflection.title, reflection.content, 'Words of the Pope')}
+                                                className="icon-btn-ghost"
+                                                style={{ width: '32px', height: '32px', color: '#d4af37' }}
+                                                aria-label="Ask AI Companion"
+                                            >
+                                                <Sparkles size={18} />
+                                            </button>
+                                        )}
                                         <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             {reflection.title}
                                             {completedItems.includes('reflection') && (
@@ -891,11 +893,12 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     onResetProgress={() => { }}
                 />
 
-                <AIModal 
+                <AIModal
                     isOpen={isAIModalOpen}
                     onClose={() => setIsAIModalOpen(false)}
                     contextStr={aiContextText}
                     topicName={aiTopicName}
+                    source={aiSource}
                     language={language}
                 />
             </div>

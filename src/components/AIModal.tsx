@@ -8,10 +8,11 @@ interface AIModalProps {
   onClose: () => void;
   contextStr: string;
   topicName: string;
+  source?: string;
   language?: string;
 }
 
-export function AIModal({ isOpen, onClose, contextStr, topicName, language = 'en' }: AIModalProps) {
+export function AIModal({ isOpen, onClose, contextStr, topicName, source = 'Daily Readings', language = 'en' }: AIModalProps) {
   // Prevent body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -26,7 +27,7 @@ export function AIModal({ isOpen, onClose, contextStr, topicName, language = 'en
 
   if (!isOpen) return null;
 
-  const initialGreeting = language === 'es' 
+  const initialGreeting = language === 'es'
     ? `He leído la lectura completa de hoy: ${topicName}. ¿Sobre qué parte te gustaría reflexionar o hacer una pregunta?`
     : `I have read today's complete section for: ${topicName}. What part would you like to reflect on or ask a question about?`;
 
@@ -42,11 +43,12 @@ export function AIModal({ isOpen, onClose, contextStr, topicName, language = 'en
             <X size={24} />
           </button>
         </div>
-        
+
         <div className="ai-modal-body">
-          <AIChatWindow 
+          <AIChatWindow
             contextStr={contextStr}
             topicName={topicName}
+            source={source}
             language={language}
             initialMessage={initialGreeting}
           />

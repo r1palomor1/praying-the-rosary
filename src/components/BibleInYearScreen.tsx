@@ -9,7 +9,8 @@ import {
     Info,
     Flag,
     RotateCcw,
-    Trophy
+    Trophy,
+    Sparkles
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
@@ -19,6 +20,8 @@ import biblePlan from '../data/bibleInYearPlan.json';
 import { parseBibleChapters, chunkBibleText, type Reading, type Chapter } from '../utils/bibleParser';
 import { BibleProgressModal } from './BibleProgressModal';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
+import { useAI } from '../context/AIContext';
+import { AIModal } from './AIModal';
 import './BibleInYearScreen.css';
 
 interface BibleDay {
@@ -37,7 +40,7 @@ interface Props {
 
 export default function BibleInYearScreen({ onBack }: Props) {
     const { language } = useApp();
-    
+
     const {
         markDayComplete,
         isDayComplete,
@@ -92,6 +95,18 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [showProgressModal, setShowProgressModal] = useState(false);
     const [showSourceInfo, setShowSourceInfo] = useState(false);
     const [showRenewModal, setShowRenewModal] = useState(false);
+
+    // AI Companion State
+    const { aiEnabled } = useAI();
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    const [aiTopicName, setAiTopicName] = useState('');
+
+    const handleOpenAI = (e: React.MouseEvent, reading: Reading) => {
+        e.stopPropagation();
+        const topicName = `${language === 'es' ? 'Día' : 'Day'} ${currentDay} — ${reading.title} (${reading.citation})`;
+        setAiTopicName(topicName);
+        setIsAIModalOpen(true);
+    };
 
     // Auto-mark day complete if all chapters are done
     useEffect(() => {
@@ -600,20 +615,20 @@ export default function BibleInYearScreen({ onBack }: Props) {
                             }}>
                                 <Trophy size={28} color="#D4AF37" />
                             </div>
-                            <h2 style={{ 
-                                color: '#D4AF37', 
-                                margin: '0 0 0.5rem 0', 
+                            <h2 style={{
+                                color: '#D4AF37',
+                                margin: '0 0 0.5rem 0',
                                 fontSize: '1.25rem',
                                 fontFamily: "'Playfair Display', serif"
                             }}>
                                 {language === 'es' ? '365 Días de Gracia' : '365 Days of Grace'}
                             </h2>
                             <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem', fontSize: '0.95rem', lineHeight: '1.4' }}>
-                                {language === 'es' 
-                                    ? 'Has terminado la Biblia en un Año. Que el Espíritu te siga guiando.' 
+                                {language === 'es'
+                                    ? 'Has terminado la Biblia en un Año. Que el Espíritu te siga guiando.'
                                     : 'You have finished the Bible in a Year. May the Spirit continue to guide you.'}
                             </p>
-                            <button 
+                            <button
                                 onClick={handleRestartYear}
                                 style={{
                                     backgroundColor: '#D4AF37',
@@ -664,13 +679,25 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                 <section key={idx} className="reading-section-sacred">
                                     <div className="section-header-sacred">
                                         <h2 className="section-title-sacred">{reading.title}</h2>
-                                        <button
-                                            className={`section-play-btn-small ${currentlyPlayingId === `reading-${idx}` ? 'active' : ''}`}
-                                            onClick={(e) => handlePlaySection(e, `reading-${idx}`, reading)}
-                                            aria-label={currentlyPlayingId === `reading-${idx}` ? "Stop" : "Play Section"}
-                                        >
-                                            {currentlyPlayingId === `reading-${idx}` ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
-                                        </button>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            {aiEnabled && (
+                                                <button
+                                                    className="icon-btn-ghost"
+                                                    onClick={(e) => handleOpenAI(e, reading)}
+                                                    style={{ width: '28px', height: '28px', color: '#d4af37' }}
+                                                    aria-label="Ask AI Companion"
+                                                >
+                                                    <Sparkles size={15} />
+                                                </button>
+                                            )}
+                                            <button
+                                                className={`section-play-btn-small ${currentlyPlayingId === `reading-${idx}` ? 'active' : ''}`}
+                                                onClick={(e) => handlePlaySection(e, `reading-${idx}`, reading)}
+                                                aria-label={currentlyPlayingId === `reading-${idx}` ? "Stop" : "Play Section"}
+                                            >
+                                                {currentlyPlayingId === `reading-${idx}` ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {/* Render Each Parsed Chapter as a separate Card */}
@@ -697,6 +724,22 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                                                 <Play size={18} fill="currentColor" />
                                                             )}
                                                         </button>
+
+                                                        {/* Chapter AI Button */}
+                                                        {aiEnabled && (
+                                                            <button
+                                                                className="icon-btn-ghost"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setAiTopicName(`${language === 'es' ? 'Día' : 'Day'} ${currentDay} — ${chapter.title}`);
+                                                                    setIsAIModalOpen(true);
+                                                                }}
+                                                                style={{ width: '26px', height: '26px', color: '#d4af37' }}
+                                                                aria-label="Ask AI about this chapter"
+                                                            >
+                                                                <Sparkles size={13} />
+                                                            </button>
+                                                        )}
 
                                                         <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                             {chapter.title}
@@ -774,6 +817,14 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 <SettingsModal
                     isOpen={showSettings}
                     onClose={() => setShowSettings(false)}
+                />
+                <AIModal
+                    isOpen={isAIModalOpen}
+                    onClose={() => setIsAIModalOpen(false)}
+                    contextStr=""
+                    topicName={aiTopicName}
+                    source="Bible in a Year"
+                    language={language}
                 />
                 {showProgressModal && (
                     <BibleProgressModal
