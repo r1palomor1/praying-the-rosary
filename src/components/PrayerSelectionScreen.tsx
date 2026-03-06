@@ -4,8 +4,14 @@ import { Settings as SettingsIcon, ChevronRight, Loader2, Square } from 'lucide-
 const AIBookmarkIcon = ({ size = 24, strokeWidth = 2, color = 'currentColor' }: { size?: number, strokeWidth?: number, color?: string }) => {
     return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+            {/* Bookmark body */}
             <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
-            <path d="M12 8l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z" />
+            {/* 4-point star - explicitly filled */}
+            <path
+                d="M12 7 L12.8 10.2 L16 11 L12.8 11.8 L12 15 L11.2 11.8 L8 11 L11.2 10.2 Z"
+                fill={color}
+                stroke="none"
+            />
         </svg>
     );
 };
