@@ -436,10 +436,69 @@
   transform: none;
 }
 
-.mark-complete-text {
-  /* Helper for text alignment inside button */
+
+/* Inline Mark as Read — appears at bottom of each expanded section */
+.mark-read-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  padding: 0.45rem 0.9rem;
+  background: transparent;
+  border: 1px solid rgba(168, 125, 62, 0.45);
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
+.mark-read-btn:hover {
+  background-color: rgba(168, 125, 62, 0.12);
+  border-color: rgba(168, 125, 62, 0.7);
+}
+
+/* Global Mark All Complete row — sits just above the Amen flourish */
+.mark-all-complete-row {
+  display: flex;
+  justify-content: center;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.mark-all-complete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  background: transparent;
+  border: 1px solid rgba(168, 125, 62, 0.5);
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.mark-all-complete-btn:hover {
+  background-color: rgba(168, 125, 62, 0.12);
+  border-color: rgba(168, 125, 62, 0.85);
+  transform: scale(1.02);
+}
+
+.mark-all-complete-btn:disabled {
+  cursor: default;
+  opacity: 1;
+  border-color: rgba(34, 197, 94, 0.45);
+  color: #22c55e;
+  transform: none;
+}
 
 /* Flourish */
 .flourish-container {

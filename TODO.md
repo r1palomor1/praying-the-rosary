@@ -1366,3 +1366,61 @@ All critical bugs resolved. App is stable and production-ready.
   - *Audio Sync Goal*: If a user reads 2 sections manually and clicks 'Mark as Read', pressing the main 'Play Audio' button at the top should skip the read sections and begin playing from the 3rd section.
   - *Note on 'Un-checking'*: Keep it simple. Avoid adding an 'X' to uncheck. If they want to re-experience it, they can simply unfold the text to read again, or click the individual section's 'Play' button to listen again. Keep UI positive-action only.
 
+
+---
+
+## AI Companion: Phase 4 — Search & Discovery Modes (Future Enhancement)
+
+**Design Principle:** The user experience is **choice** — two distinct mindsets, two distinct tools.
+
+> *"I want to find something specific"* vs. *"I want to understand something deeply."*
+
+---
+
+### 📖 Mode A: Bible Search — The Reference Tool
+
+**Purpose:** Find concrete scripture citations the user can look up in a hardcopy Bible, study Bible, or cross-reference guide.
+
+**User Flow:**
+- User opens AI Companion → taps **"Bible Search"** tab/button
+- Types a topic, keyword, or theme (e.g. "Hope", "Fear", "Suffering", "Love thy neighbor")
+- Output is a **clean, scannable list** of citations with verse text quoted:
+  - Romans 8:28 — "And we know that in all things God works for the good of those who love him..."
+  - Psalm 23:4 — "Even though I walk through the darkest valley, I will fear no evil..."
+  - John 14:27 — "Peace I leave with you; my peace I give you..."
+
+**AI Role:** Retrieval — no editorializing, no reflections. Just scripture, precisely cited.
+
+**Output Format:** Compact citation list, easily copy-able or screenshot-able for physical reference.
+
+---
+
+### 🔍 Mode B: Thematic Spiritual Companion — The Reflection Tool
+
+**Purpose:** Help the user understand a spiritual theme at the reflection, formation, and prayer level. Connects dots across the entire app.
+
+**User Flow:**
+- User opens AI Companion → taps **"Explore a Theme"** tab/button
+- Types a theme, feeling, or life situation (e.g. "Anxiety", "Grief", "Gratitude", "Growing in patience")
+- Output is a **flowing, prayerful reflection** that may include:
+  - Which Rosary mysteries connect to this theme and why
+  - What the Church/Catechism teaches on the topic
+  - How today's Daily Readings or recent readings illuminate it
+  - A short prayer or meditation suggestion
+  - (Optionally) 1–2 key passages woven naturally into the reflection — no raw citation list
+
+**AI Role:** Synthesizer & guide — like a spiritual director giving a homily tailored to your question.
+
+**Output Format:** Conversational paragraphs, warm and personal tone, saveable as a reflection.
+
+---
+
+### UX Design Notes
+- Both modes live inside the AI Companion (same modal, different tabs or toggle)
+- Bible Search satisfies the **study** mindset — "take notes, highlight, cross-reference"
+- Thematic Search satisfies the **formation** mindset — "pray with this, sit with this"
+- Saved reflections from Thematic Search appear in the existing Saved tab
+- Bible Search results are not saved (ephemeral reference lookups)
+
+**Status:** Future Enhancement — pending AI V1 testing completion.
+**Last Updated:** March 5, 2026

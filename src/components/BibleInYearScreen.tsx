@@ -757,6 +757,20 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                                 {expandedSections[rowKey] && (
                                                     <div className="card-content-expanded fade-in">
                                                         {renderContent(chapter.text)}
+                                                        {!isChapterComplete(currentDay, chapter.title) && (
+                                                            <button
+                                                                className="mark-read-btn"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    markChapterComplete(currentDay, chapter.title);
+                                                                    setExpandedSections(prev => ({ ...prev, [rowKey]: false }));
+                                                                }}
+                                                                aria-label="Mark chapter as read"
+                                                            >
+                                                                <CheckCircle size={15} />
+                                                                {language === 'es' ? 'Marcar como leído' : 'Mark as Read'}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

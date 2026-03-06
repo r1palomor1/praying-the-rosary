@@ -87,6 +87,37 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
     const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
+    // Helper for date-keyed localStorage
+    const getDateKey = (date: Date) =>
+        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    // Mark a single section as manually read
+    const markSectionComplete = (id: string, collapse = true) => {
+        const newCompleted = completedItems.includes(id) ? completedItems : [...completedItems, id];
+        setCompletedItems(newCompleted);
+        localStorage.setItem(`dailyReadings_completed_${getDateKey(currentDate)}`, JSON.stringify(newCompleted));
+        if (collapse) {
+            setExpandedSections(prev => ({ ...prev, [id]: false }));
+        }
+    };
+
+    // Mark ALL sections complete at once
+    const markAllComplete = () => {
+        const allIds = [
+            ...(readingsToRender ?? []).map((_, i) => `usccb-${i}`),
+            ...(reflection ? ['reflection'] : [])
+        ];
+        setCompletedItems(allIds);
+        localStorage.setItem(`dailyReadings_completed_${getDateKey(currentDate)}`, JSON.stringify(allIds));
+        // Also persist to rosary history so home screen badge updates
+        const today = getDateKey(currentDate);
+        const histKey = 'dailyReadings_history';
+        const existing = JSON.parse(localStorage.getItem(histKey) ?? '[]') as string[];
+        if (!existing.includes(today)) {
+            localStorage.setItem(histKey, JSON.stringify([...existing, today]));
+        }
+    };
+
     const blessingText = language === 'es'
         ? 'La lectura se ha completado. Que Dios te bendiga por tu fiel devoción.'
         : 'The reading is now complete. May God bless you for your faithful devotion.';
@@ -757,6 +788,16 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {renderReadingText(reading.text)}
+                                            {!isCompleted && (
+                                                <button
+                                                    className="mark-read-btn"
+                                                    onClick={(e) => { e.stopPropagation(); markSectionComplete(readingId); }}
+                                                    aria-label="Mark as read"
+                                                >
+                                                    <CheckCircle size={15} />
+                                                    {language === 'es' ? 'Marcar como leído' : 'Mark as Read'}
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -826,11 +867,47 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                         {reflection.content.split('\n\n').map((para, i) => (
                                             <p key={i} style={{ margin: '0.3rem 0' }}>{para.replace(/<[^>]+>/g, '')}</p>
                                         ))}
+                                        {!completedItems.includes('reflection') && (
+                                            <button
+                                                className="mark-read-btn"
+                                                onClick={(e) => { e.stopPropagation(); markSectionComplete('reflection'); }}
+                                                aria-label="Mark reflection as read"
+                                            >
+                                                <CheckCircle size={15} />
+                                                {language === 'es' ? 'Marcar como leído' : 'Mark as Read'}
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>
                         </section>
                     )}
+
+                    {/* Mark All Complete Button */}
+                    {!loading && !error && readingsToRender && readingsToRender.length > 0 && (() => {
+                        const allIds = [
+                            ...readingsToRender.map((_, i) => `usccb-${i}`),
+                            ...(reflection ? ['reflection'] : [])
+                        ];
+                        const allDone = allIds.every(id => completedItems.includes(id));
+                        return (
+                            <div className="mark-all-complete-row">
+                                <button
+                                    className="mark-all-complete-btn"
+                                    onClick={!allDone ? markAllComplete : undefined}
+                                    disabled={allDone}
+                                    aria-label={allDone
+                                        ? (language === 'es' ? 'Completado' : 'Completed')
+                                        : (language === 'es' ? 'Marcar todo como completado' : 'Mark all as complete')}
+                                >
+                                    <CheckCircle size={16} />
+                                    {allDone
+                                        ? (language === 'es' ? 'Completado' : 'Completed')
+                                        : (language === 'es' ? 'Marcar como Completado' : 'Mark as Complete')}
+                                </button>
+                            </div>
+                        );
+                    })()}
 
                     {/* Footer Source and Settings */}
                     {!loading && !error && readingsToRender && readingsToRender.length > 0 && (
