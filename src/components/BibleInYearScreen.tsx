@@ -140,7 +140,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 title: reading.title,
                 subtitle: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : '',
                 contextStr: '', // Not utilized in Bible yet
-                topicName: `${prefix} ${currentDay} — ${reading.title} (${reading.citation})`,
+                topicName: reading.citation ? `${reading.title} (${reading.citation})` : reading.title,
                 source: 'Bible in a Year'
             });
 
@@ -152,7 +152,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     title: chapter.title ? chapter.title.replace(/\s*-\s*/g, ' - ') : '',
                     subtitle: '',
                     contextStr: '',
-                    topicName: `${prefix} ${currentDay} — ${chapter.title}`,
+                    topicName: `${reading.title} (${chapter.title})`,
                     source: 'Bible in a Year'
                 });
             });
@@ -812,13 +812,13 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                                                     className="ai-guide-btn"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
-                                                                        setAiTopicName(`${language === 'es' ? 'D�a' : 'Day'} ${currentDay} � ${chapter.title}`);
+                                                                        setAiTopicName(`${reading.title} (${chapter.title})`);
                                                                         setIsAIModalOpen(true);
                                                                     }}
                                                                     style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid rgba(212, 175, 55, 0.4)', borderRadius: '20px', background: 'rgba(212, 175, 55, 0.1)', color: '#d4af37', width: '100%' }}
                                                                 >
                                                                     <Sparkles size={16} />
-                                                                    {language === 'es' ? 'Preguntar a la IA sobre este cap�tulo' : 'Ask AI about this chapter'}
+                                                                    {language === 'es' ? 'Preguntar a la IA sobre este capítulo' : 'Ask AI about this chapter'}
                                                                 </button>
                                                             )}
 

@@ -28,9 +28,13 @@ export function AIModal({ isOpen, onClose, contextStr = '', topicName = '', sour
 
   if (!isOpen) return null;
 
-  const initialGreeting = language === 'es'
-    ? '¿Sobre qué te gustaría reflexionar o hacer una pregunta?'
-    : 'What would you like to reflect on or ask a question about?';
+  const initialGreeting = topicName && topicName !== 'General'
+    ? (language === 'es'
+      ? `He leído la lectura de: ${topicName}. ¿Sobre qué te gustaría reflexionar o hacer una pregunta?`
+      : `I have read the section for: ${topicName}. What would you like to reflect on or ask a question about?`)
+    : (language === 'es'
+      ? '¿Sobre qué te gustaría reflexionar o hacer una pregunta?'
+      : 'What would you like to reflect on or ask a question about?');
 
   return (
     <div className="ai-modal-overlay" onClick={onClose}>
