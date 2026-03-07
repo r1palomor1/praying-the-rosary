@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, AlertCircle, ChevronDown, Play, Square, Bookmark, BookmarkCheck, Trash2 } from 'lucide-react';
+import { Send, AlertCircle, ChevronDown, ChevronUp, Play, Square, Bookmark, BookmarkCheck, Trash2 } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { ttsManager } from '../utils/ttsManager';
 import { sanitizeAIResponseForSpeech } from '../utils/textSanitizer';
 import {
   saveReflection, deleteReflection, loadReflections, deriveCategory,
+  updateReflectionTranslation,
   ALL_CATEGORIES, type SavedReflection
 } from '../utils/savedReflections';
+
 import type { Language } from '../types';
 import './AIChatWindow.css';
 
@@ -40,8 +42,36 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
   const [savedItems, setSavedItems] = useState<SavedReflection[]>(() => loadReflections());
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [translating, setTranslating] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const guideRef = useRef<HTMLDivElement>(null);
+
+  const localizeSource = (src: string) => {
+    if (language !== 'es') return src;
+    if (src === 'Daily Readings') return 'Lecturas Diarias';
+    if (src === 'Bible in a Year') return 'Biblia en un Año';
+    if (src === 'Rosary') return 'Rosario';
+    if (src === 'Sacred Prayers') return 'Oraciones Sagradas';
+    return src;
+  };
+
+  const localizeCategory = (cat: string) => {
+    if (language !== 'es') return cat;
+    const catMap: Record<string, string> = {
+      'Reflection': 'Reflexión',
+      'Scripture': 'Escritura',
+      'History': 'Historia',
+      'Application': 'Aplicación',
+      'Catechism': 'Catecismo',
+      'Rosary': 'Rosario',
+      'Prayer': 'Oración',
+      'Personal': 'Personal',
+      'All': 'Todo'
+    };
+    return catMap[cat] || cat;
+  };
+
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
@@ -67,13 +97,48 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
     return () => { ttsManager.stop(); };
   }, []);
 
-  // Refresh saved list and reset filter when switching to saved tab
+  // Refresh saved list, reset filter, and trigger lazy translation when switching to saved tab
   useEffect(() => {
     if (activeTab === 'saved') {
-      setSavedItems(loadReflections());
+      const fresh = loadReflections();
+      setSavedItems(fresh);
       setCategoryFilter('All');
+
+      // Lazy translate: find cards whose origin lang differs from current lang and have no cached translation
+      const needsTranslation = fresh.filter(r => (r.lang || 'en') !== language && !r.response_translated);
+      if (needsTranslation.length === 0) return;
+
+      const API_BASE = '';
+      setTranslating(true);
+
+      (async () => {
+        for (const item of needsTranslation) {
+          try {
+            const res = await fetch(`${API_BASE}/api/translate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ texts: [item.topic, item.question, item.response], from: item.lang || 'en', to: language }),
+            });
+            if (res.ok) {
+              const { translated } = await res.json();
+              if (translated && translated.length === 3) {
+                updateReflectionTranslation(item.id, {
+                  topic_translated: translated[0],
+                  question_translated: translated[1],
+                  response_translated: translated[2],
+                });
+              }
+            }
+          } catch (e) {
+            console.warn('[AIChatWindow] Translation failed for item', item.id, e);
+          }
+        }
+        setSavedItems(loadReflections()); // re-render with translations
+        setTranslating(false);
+      })();
     }
-  }, [activeTab]);
+  }, [activeTab, language]);
+
 
   const PROMPTS: Record<string, Record<string, string[]>> = {
     en: {
@@ -167,11 +232,30 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
       category,
       categoryIcon,
       response: msg.content,
+      lang: language,
     });
     // Mark the message as saved so the button turns into a checkmark
     setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, savedId: saved.id } : m));
     setSavedItems(loadReflections());
+
+    // Instantly trigger background translation to the other language so it's ready when they switch
+    const otherLang = language === 'es' ? 'en' : 'es';
+    fetch(`/api/translate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts: [saved.topic, saved.question, saved.response], from: language, to: otherLang })
+    }).then(res => res.json()).then(data => {
+      if (data?.translated?.length === 3) {
+        updateReflectionTranslation(saved.id, {
+          topic_translated: data.translated[0],
+          question_translated: data.translated[1],
+          response_translated: data.translated[2]
+        });
+        setSavedItems(loadReflections());
+      }
+    }).catch(e => console.warn('[AIChatWindow] Background auto-translation failed', e));
   };
+
 
   const handleDeleteSaved = (id: string) => {
     deleteReflection(id);
@@ -189,11 +273,17 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
     setPlayingMsgId(key);
     await ttsManager.setLanguage(language as Language);
     ttsManager.setOnEnd(() => setPlayingMsgId(null));
-    const clean = sanitizeAIResponseForSpeech(item.response);
+    // Use translated content if available and current lang differs from origin
+    const originLang = item.lang || 'en';
+    const textToSpeak = (originLang !== language && item.response_translated)
+      ? item.response_translated
+      : item.response;
+    const clean = sanitizeAIResponseForSpeech(textToSpeak);
     const chunks = clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [clean];
     const segments = chunks.map((c, i) => ({ text: c.trim(), gender: 'female' as const, postPause: i < chunks.length - 1 ? 150 : 0 }));
     try { await ttsManager.speakSegments(segments); } catch { setPlayingMsgId(null); }
   };
+
 
   const handleSend = async (forcedText?: string) => {
     const textToSubmit = forcedText || inputValue;
@@ -342,6 +432,19 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
       ) : (
         /* ─── Saved Tab ─── */
         <div className="ai-saved-tab">
+
+          {/* New Header */}
+          <div className="ai-saved-tab-header">
+            <h2 className="ai-saved-tab-title">
+              {language === 'es' ? 'Respuestas Sagradas' : 'Sacred Responses'}
+            </h2>
+            <p className="ai-saved-tab-subtitle">
+              {language === 'es'
+                ? 'Contemplaciones guiadas por IA según el intento de tu corazón'
+                : 'AI-guided contemplations based on your heart\'s intent'}
+            </p>
+          </div>
+
           {/* Category Filter */}
           <div className="ai-saved-filter-row">
             <select
@@ -356,9 +459,10 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
               {ALL_CATEGORIES.filter(cat => cat !== 'All' && savedItems.some(r => r.category === cat)).map(cat => {
                 const count = savedItems.filter(r => r.category === cat).length;
                 const icon = savedItems.find(r => r.category === cat)?.categoryIcon ?? '';
+                const displayCat = localizeCategory(cat);
                 return (
                   <option key={cat} value={cat} style={{ background: '#1e1e2e', color: '#fff' }}>
-                    {icon} {cat} ({count})
+                    {icon} {displayCat} ({count})
                   </option>
                 );
               })}
@@ -373,48 +477,72 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
             </div>
           ) : (
             <div className="ai-saved-list">
-              {filteredSaved.map(item => (
-                <div key={item.id} className="ai-saved-card">
-                  <div className="ai-saved-card-header">
-                    <span className="ai-saved-category">
-                      {item.categoryIcon} {item.category}
-                      <span style={{ opacity: 0.6, fontSize: '0.85em', marginLeft: '6px' }}>• {item.source}</span>
-                    </span>
-                    <span className="ai-saved-date">{new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric' })}</span>
+              {filteredSaved.map(item => {
+                const originLang = item.lang || 'en';
+                const topicDisplay = (originLang !== language && item.topic_translated) ? item.topic_translated : item.topic;
+                const questionDisplay = (originLang !== language && item.question_translated) ? item.question_translated : item.question;
+                const isExpanded = expandedCards.has(item.id);
+                const isPlaying = playingMsgId === `saved-${item.id}`;
+
+                const toggleExpand = () => setExpandedCards(prev => {
+                  const next = new Set(prev);
+                  next.has(item.id) ? next.delete(item.id) : next.add(item.id);
+                  return next;
+                });
+
+                return (
+                  <div key={item.id} className={`ai-saved-card-v2 ${isExpanded ? 'expanded' : ''}`} onClick={toggleExpand}>
+                    <div className="ai-saved-card-v2-header">
+                      <div className="ai-saved-card-v2-icon">
+                        {item.categoryIcon}
+                      </div>
+                      <div className="ai-saved-card-v2-title-area">
+                        <div className="ai-saved-card-v2-title">{topicDisplay}</div>
+                        <div className="ai-saved-card-v2-question-preview">"{questionDisplay}"</div>
+                        <div className="ai-saved-card-v2-subtitle">
+                          {localizeCategory(item.category)} • {new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                        </div>
+                      </div>
+                      <div className="ai-saved-card-v2-actions">
+                        <button
+                          className={`ai-action-btn ai-play-btn-v2 ${isPlaying ? 'playing' : ''}`}
+                          onClick={(e) => { e.stopPropagation(); handlePlaySaved(item); }}
+                          aria-label="Play"
+                        >
+                          {isPlaying ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
+                        </button>
+                        {isExpanded ? <ChevronUp size={16} color="rgba(255,255,255,0.3)" /> : <ChevronDown size={16} color="rgba(255,255,255,0.3)" />}
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className="ai-saved-card-v2-content" onClick={e => e.stopPropagation()}>
+                        <div className="ai-saved-card-v2-response">
+                          {/* Show translated content if current lang differs from origin and translation exists */}
+                          {(originLang !== language && item.response_translated) ? item.response_translated : item.response}
+                          {(originLang !== language && !item.response_translated && translating) && (
+                            <span className="ai-translating-indicator"> {language === 'es' ? '(traduciendo...)' : '(translating...)'}</span>
+                          )}
+                        </div>
+
+                        <div className="ai-saved-card-v2-footer">
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <span className={`ai-lang-tag ai-lang-tag--${originLang}`}>{originLang.toUpperCase()}</span>
+                            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{localizeSource(item.source)}</span>
+                          </div>
+                          <button
+                            className="ai-saved-card-v2-discard"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteSaved(item.id); }}
+                          >
+                            <Trash2 size={14} />
+                            {language === 'es' ? 'DESCARTAR' : 'DISCARD'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="ai-saved-topic">{item.topic}</div>
-                  <div className="ai-saved-question">"{item.question}"</div>
-                  <div className={`ai-saved-response ${expandedCards.has(item.id) ? 'expanded' : ''}`}>
-                    {item.response}
-                  </div>
-                  {item.response.length > 200 && (
-                    <button
-                      className="ai-saved-expand-btn"
-                      onClick={() => setExpandedCards(prev => {
-                        const next = new Set(prev);
-                        next.has(item.id) ? next.delete(item.id) : next.add(item.id);
-                        return next;
-                      })}
-                    >
-                      {expandedCards.has(item.id)
-                        ? (language === 'es' ? 'Ver menos ▲' : 'Show less ▲')
-                        : (language === 'es' ? 'Ver más ▼' : 'Show more ▼')}
-                    </button>
-                  )}
-                  <div className="ai-saved-card-actions">
-                    <button
-                      className={`ai-action-btn ai-play-btn ${playingMsgId === `saved-${item.id}` ? 'playing' : ''}`}
-                      onClick={() => handlePlaySaved(item)}
-                      aria-label="Play"
-                    >
-                      {playingMsgId === `saved-${item.id}` ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
-                    </button>
-                    <button className="ai-action-btn ai-delete-btn" onClick={() => handleDeleteSaved(item.id)} aria-label="Delete">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

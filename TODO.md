@@ -1424,3 +1424,102 @@ All critical bugs resolved. App is stable and production-ready.
 
 **Status:** Future Enhancement — pending AI V1 testing completion.
 **Last Updated:** March 5, 2026
+
+---
+
+## Bible in a Year: Alternative Plan — Alpha Bible (Bible with Nicky & Pippa Gumbel)
+
+**Source:** https://bible.alpha.org/en/classic/{day}/ (EN) | https://bible.alpha.org/es/classic/{day}/ (ES)
+
+**What makes it compelling:**
+- Each day has a **unifying spiritual theme** (e.g. "New Year's Resolutions", "Fear", "Hope") that ties all readings together
+- **Three scripture readings per day** (Psalm + New Testament + Old Testament) — same structure as current plan
+- **Per-reading commentary** by Nicky Gumbel — explains *why each passage matters today* in plain language
+- **Prayer** after each reading — built-in reflection moment
+- **"Pippa adds"** — a short personal reflection, warm and relatable
+- **Fully bilingual** — EN/ES via URL path swap (`/en/` vs `/es/`)
+- URL pattern is clean and predictable: `https://bible.alpha.org/en/classic/1/` through `/365/`
+
+**User Experience Potential:**
+- Could offer as **Plan B** alongside the current plan (user selects in settings)
+- The commentary layer is what our current plan lacks — scripture + human context built-in
+- Aligns naturally with our Thematic Spiritual Companion vision
+
+### Action Items Before Implementation
+- [ ] **Verify API accessibility**: Confirm pages 1–365 are publicly accessible without auth or rate limiting
+- [ ] **Check licensing / Terms of Use**: Review https://www.alpha.org/terms/ and https://bible.alpha.org — determine if content can be used in a non-commercial devotional app with attribution
+- [ ] **Attribution Requirements**: If permitted, display "Content from Bible with Nicky & Pippa Gumbel — Alpha" as source credit on each day's screen (same pattern as USCCB credit on Daily Readings)
+- [ ] **Contact Alpha if needed**: If ToS is unclear, reach out via https://www.alpha.org/contact/ to request permission for non-commercial faith app use
+
+### Technical Notes
+- Content is server-rendered HTML — would need a scraper/parser API route similar to current bible.js
+- Structure per page: Introduction → [Psalm + Commentary + Prayer] → [NT + Commentary + Prayer] → [OT + Commentary + Prayer] → Pippa adds
+- Bilingual support is native to the URL — no translation needed
+
+**Status:** Future Enhancement — pending licensing verification.
+**Last Updated:** March 5, 2026
+
+---
+
+## AI Companion: Saved Reflections — Bilingual Translation (Future Enhancement)
+
+**Design Principle:** Feature-rich UX with zero ongoing API cost after first translation.
+
+### The Problem
+Saved reflections are stored in the language the AI generated them (EN or ES). When the user switches app language, cards show in the original language — creating a mismatch.
+
+### The Solution: Option D + Helsinki-NLP + Language Tag (Option E)
+
+**Two complementary parts:**
+
+#### Part 1 — Language Tag on Every Card (Option E)
+- Show a small `EN` or `ES` pill badge on each saved card so origin language is always transparent
+- Simple, no API cost, implemented immediately alongside translation feature
+
+#### Part 2 — One-Time Lazy Translation via Helsinki-NLP (Option D)
+- When user opens the Saved tab in a language that differs from a card's origin:
+  - Check each card: does it already have the other language cached? → show it, 0 API calls
+  - If not → call Helsinki-NLP ONCE to translate, store result permanently in localStorage
+- After first translation, switching languages forever costs 0 additional calls per card
+
+**Translation models (HuggingFace — free, no generative tokens consumed):**
+- EN → ES: `Helsinki-NLP/opus-mt-en-es`
+- ES → EN: `Helsinki-NLP/opus-mt-es-en`
+
+**Storage structure per saved reflection:**
+```json
+{
+  "id": "abc123",
+  "lang": "en",
+  "content": "The Annunciation reminds us that God calls us...",
+  "content_es": "La Anunciaci\u00f3n nos recuerda que Dios nos llama..."
+}
+```
+
+**Logic on Saved tab open:**
+```
+For each card:
+  if card.lang !== currentLang:
+    if card has cached translation → show it (0 API calls)
+    else → call Helsinki-NLP → cache permanently → show translated text
+```
+
+**TTS compatibility:** The Play button always reads whichever language content is currently showing — both display and audio stay in sync automatically via existing ttsManager.setLanguage() logic.
+
+### Performance Notes
+- Helsinki-NLP = remote API call, zero app bundle size increase
+- localStorage impact: ~1,500 chars per card (both languages). 30 cards = ~45KB. Negligible.
+- Worst case (30 EN cards, first ever switch to ES): 30 Helsinki calls, staggered in background
+- After that: 0 calls forever regardless of how many times user switches languages
+- Helsinki translation is fast (<500ms per call) — not a generative model
+
+### Implementation Checklist
+- [ ] Add `content_es` / `content_en` field to `savedReflections.ts` storage schema
+- [ ] Create `api/translate.js` Vercel serverless function wrapping Helsinki-NLP HuggingFace Inference API
+- [ ] Update `AIChatWindow.tsx` Saved tab: on mount, check for missing translations and trigger background translation
+- [ ] Add language pill tag (`EN` / `ES`) to each saved card in `AIChatWindow.css`
+- [ ] Update TTS play handler on saved cards to use the currently-displayed language content
+- [ ] Test: save in EN, switch to ES, verify translation appears; switch back, verify original EN shows
+
+**Status:** Future Enhancement — pending AI V1 testing completion.
+**Last Updated:** March 6, 2026

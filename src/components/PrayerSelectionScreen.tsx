@@ -477,24 +477,6 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                         }}
                     >
                         <AIBookmarkIcon size={24} strokeWidth={2} />
-                        <span style={{
-                            position: 'absolute',
-                            top: '2px',
-                            right: '2px',
-                            background: '#D4AF37',
-                            color: '#000',
-                            fontSize: '10px',
-                            fontWeight: 'bold',
-                            borderRadius: '50%',
-                            width: '16px',
-                            height: '16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid #1a1b26'
-                        }}>
-                            {savedCount}
-                        </span>
                     </button>
                 )}
                 <button

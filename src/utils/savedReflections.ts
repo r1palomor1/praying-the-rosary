@@ -7,13 +7,17 @@ const STORAGE_KEY = 'ai_saved_reflections';
 
 export interface SavedReflection {
     id: string;
-    date: string;           // ISO "YYYY-MM-DD"
-    source: string;         // "Daily Readings" | "Bible in a Year" | "Rosary" | "Sacred Prayers"
-    topic: string;          // e.g. "First Reading (Jeremiah 17:5-10)"
-    question: string;       // the user's prompt
-    category: string;       // e.g. "Scripture"
-    categoryIcon: string;   // emoji
-    response: string;       // AI response text
+    date: string;                   // ISO "YYYY-MM-DD"
+    source: string;                 // "Daily Readings" | "Bible in a Year" | "Rosary" | "Sacred Prayers"
+    topic: string;                  // e.g. "First Reading (Jeremiah 17:5-10)"
+    question: string;               // the user's prompt
+    category: string;               // e.g. "Scripture"
+    categoryIcon: string;           // emoji
+    response: string;               // AI response text (original language)
+    lang: string;                   // origin language: 'en' | 'es'
+    response_translated?: string;   // cached Helsinki-NLP translation of response
+    topic_translated?: string;
+    question_translated?: string;
 }
 
 // ─── Category derivation (zero API cost — derived from prompt text) ────────
@@ -53,6 +57,7 @@ export function saveReflection(item: Omit<SavedReflection, 'id' | 'date'>): Save
         ...item,
         id: Date.now().toString(),
         date: new Date().toISOString().split('T')[0],
+        lang: item.lang || 'en',
     };
     reflections.unshift(newItem); // newest first
     localStorage.setItem(STORAGE_KEY, JSON.stringify(reflections));
@@ -61,6 +66,14 @@ export function saveReflection(item: Omit<SavedReflection, 'id' | 'date'>): Save
 
 export function deleteReflection(id: string): void {
     const reflections = loadReflections().filter(r => r.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(reflections));
+}
+
+/** Cache Helsinki-NLP translations on an existing saved reflection */
+export function updateReflectionTranslation(id: string, translations: { response_translated?: string, topic_translated?: string, question_translated?: string }): void {
+    const reflections = loadReflections().map(r =>
+        r.id === id ? { ...r, ...translations } : r
+    );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(reflections));
 }
 
