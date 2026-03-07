@@ -29,8 +29,8 @@ export function AIModal({ isOpen, onClose, contextStr = '', topicName = '', sour
   if (!isOpen) return null;
 
   const initialGreeting = language === 'es'
-    ? `He leído la lectura completa de hoy: ${topicName}. ¿Sobre qué parte te gustaría reflexionar o hacer una pregunta?`
-    : `I have read today's complete section for: ${topicName}. What part would you like to reflect on or ask a question about?`;
+    ? '¿Sobre qué te gustaría reflexionar o hacer una pregunta?'
+    : 'What would you like to reflect on or ask a question about?';
 
   return (
     <div className="ai-modal-overlay" onClick={onClose}>
@@ -38,7 +38,7 @@ export function AIModal({ isOpen, onClose, contextStr = '', topicName = '', sour
         <div className="ai-modal-header">
           <h2 className="ai-modal-title">
             <Sparkles size={20} />
-            Companion (IA)
+            {language === 'es' ? 'Compañero IA' : 'AI Companion'}
           </h2>
           <button className="ai-modal-close" onClick={onClose} aria-label="Close">
             <X size={24} />
@@ -59,3 +59,4 @@ export function AIModal({ isOpen, onClose, contextStr = '', topicName = '', sour
     </div>
   );
 }
+

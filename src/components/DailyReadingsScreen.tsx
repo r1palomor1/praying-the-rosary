@@ -17,6 +17,7 @@ import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { fetchLiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar';
 import { useAI } from '../context/AIContext';
 import { AIModal } from './AIModal';
+import { AITopicSelectionModal, type TopicOption } from './AITopicSelectionModal';
 import './DailyReadingsScreen.css';
 
 interface Reading {
@@ -59,15 +60,88 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
     // AI Companion State
     const { aiEnabled } = useAI();
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    const [isAITopicModalOpen, setIsAITopicModalOpen] = useState(false);
     const [aiContextText, setAiContextText] = useState('');
     const [aiTopicName, setAiTopicName] = useState('');
     const [aiSource, setAiSource] = useState('Daily Readings');
+    const [aiStartTab, setAiStartTab] = useState<'chat' | 'saved'>('chat');
+
+    const handleSelectAITopic = (option: TopicOption) => {
+        setIsAITopicModalOpen(false);
+        setAiTopicName(option.topicName);
+        setAiContextText(option.contextStr);
+        setAiSource(option.source);
+        setAiStartTab('chat');
+        setIsAIModalOpen(true);
+    };
+
+    const handleOpenGlobalChat = () => {
+        setIsAITopicModalOpen(false);
+        setAiTopicName('General');
+        setAiContextText('');
+        setAiStartTab('chat');
+        setIsAIModalOpen(true);
+    };
+
+    const handleOpenGlobalSaved = () => {
+        setIsAITopicModalOpen(false);
+        setAiTopicName('General');
+        setAiContextText('');
+        setAiStartTab('saved');
+        setIsAIModalOpen(true);
+    };
+
+    const getAITopics = (): TopicOption[] => {
+        const options: TopicOption[] = [];
+        
+        if (readingsToRender) {
+            readingsToRender.forEach((reading, rIdx) => {
+                const titleWithCitation = reading.citation
+                    ? `${normalizeReadingTitle(reading.title)} (${reading.citation.replace(/,/g, ', ')})`
+                    : normalizeReadingTitle(reading.title);
+
+                options.push({
+                    id: `reading-${rIdx}`,
+                    type: 'section',
+                    title: normalizeReadingTitle(reading.title),
+                    subtitle: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : '',
+                    contextStr: reading.text,
+                    topicName: titleWithCitation,
+                    source: 'Daily Readings'
+                });
+            });
+        }
+
+        if (reflection) {
+            options.push({
+                id: 'reflection',
+                type: 'section',
+                title: language === 'es' ? 'Palabras del Papa' : 'Words of the Pope',
+                subtitle: reflection.title,
+                contextStr: reflection.content,
+                topicName: reflection.title,
+                source: 'Words of the Pope'
+            });
+        }
+
+        options.push({
+            id: 'general',
+            type: 'general',
+            title: language === 'es' ? '¿Sobre qué más preferirías discutir o reflexionar?' : 'What else would you prefer to discuss or reflect on?',
+            topicName: language === 'es' ? `Reflexión General - Lecturas Diarias` : `General Reflection - Daily Readings`,
+            contextStr: '',
+            source: 'Daily Readings'
+        });
+
+        return options;
+    };
 
     const handleOpenAI = (e: React.MouseEvent, title: string, text: string, source = 'Daily Readings') => {
         e.stopPropagation();
         setAiTopicName(title);
         setAiContextText(text);
         setAiSource(source);
+        setAiStartTab('chat');
         setIsAIModalOpen(true);
     };
 
@@ -591,13 +665,26 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                         <h1 className="header-title">
                             {language === 'es' ? 'Lecturas Diarias' : 'Daily Readings'}
                         </h1>
-                        <button
-                            className="icon-btn-ghost"
-                            onClick={() => setShowSettings(true)}
-                            aria-label="Settings"
-                        >
-                            <SettingsIcon size={24} />
-                        </button>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {aiEnabled && (
+                                <button
+                                    className="icon-btn-ghost"
+                                    onClick={() => setIsAITopicModalOpen(true)}
+                                    style={{ color: '#d4af37' }}
+                                    aria-label="Ask AI Companion"
+                                >
+                                    <Sparkles size={24} />
+                                </button>
+                            )}
+                            <button
+                                className="icon-btn-ghost"
+                                onClick={() => setShowSettings(true)}
+                                aria-label="Settings"
+                            >
+                                <SettingsIcon size={24} />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="date-row">
@@ -754,21 +841,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                                     <Play size={18} fill="currentColor" />
                                                 )}
                                             </button>
-                                            {aiEnabled && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        const titleWithCitation = reading.citation
-                                                            ? `${normalizeReadingTitle(reading.title)} (${reading.citation.replace(/,/g, ', ')})`
-                                                            : normalizeReadingTitle(reading.title);
-                                                        handleOpenAI(e, titleWithCitation, reading.text);
-                                                    }}
-                                                    className="icon-btn-ghost"
-                                                    style={{ width: '32px', height: '32px', color: '#d4af37' }}
-                                                    aria-label="Ask AI Companion"
-                                                >
-                                                    <Sparkles size={18} />
-                                                </button>
-                                            )}
+                                            
                                             <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 {(reading.citation ? reading.citation.replace(/,/g, ',  ') : null) || (language === 'es' ? 'Lectura' : 'Reading')}
                                                 {isCompleted && (
@@ -788,16 +861,36 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {renderReadingText(reading.text)}
-                                            {!isCompleted && (
-                                                <button
-                                                    className="mark-read-btn"
-                                                    onClick={(e) => { e.stopPropagation(); markSectionComplete(readingId); }}
-                                                    aria-label="Mark as read"
-                                                >
-                                                    <CheckCircle size={15} />
-                                                    {language === 'es' ? 'Marcar como leído' : 'Mark as Read'}
-                                                </button>
-                                            )}
+
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                                                {aiEnabled && (
+                                                    <button
+                                                        className="ai-guide-btn"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const titleWithCitation = reading.citation
+                                                                ? `${normalizeReadingTitle(reading.title)} (${reading.citation.replace(/,/g, ', ')})`
+                                                                : normalizeReadingTitle(reading.title);
+                                                            handleOpenAI(e, titleWithCitation, reading.text);
+                                                        }}
+                                                        style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid rgba(212, 175, 55, 0.4)', borderRadius: '20px', background: 'rgba(212, 175, 55, 0.1)', color: '#d4af37', width: '100%' }}
+                                                    >
+                                                        <Sparkles size={16} />
+                                                        {language === 'es' ? 'Preguntar a la IA sobre esta lectura' : 'Ask AI about this reading'}
+                                                    </button>
+                                                )}
+
+                                                {!isCompleted && (
+                                                    <button
+                                                        className="mark-read-btn"
+                                                        onClick={(e) => { e.stopPropagation(); markSectionComplete(readingId); }}
+                                                        aria-label="Mark as read"
+                                                    >
+                                                        <CheckCircle size={15} />
+                                                        {language === 'es' ? 'Marcar como leído' : 'Mark as Read'}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -836,16 +929,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                                 <Play size={18} fill="currentColor" />
                                             )}
                                         </button>
-                                        {aiEnabled && (
-                                            <button
-                                                onClick={(e) => handleOpenAI(e, reflection.title, reflection.content, 'Words of the Pope')}
-                                                className="icon-btn-ghost"
-                                                style={{ width: '32px', height: '32px', color: '#d4af37' }}
-                                                aria-label="Ask AI Companion"
-                                            >
-                                                <Sparkles size={18} />
-                                            </button>
-                                        )}
+                                        
                                         <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             {reflection.title}
                                             {completedItems.includes('reflection') && (
@@ -867,16 +951,33 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                         {reflection.content.split('\n\n').map((para, i) => (
                                             <p key={i} style={{ margin: '0.3rem 0' }}>{para.replace(/<[^>]+>/g, '')}</p>
                                         ))}
-                                        {!completedItems.includes('reflection') && (
-                                            <button
-                                                className="mark-read-btn"
-                                                onClick={(e) => { e.stopPropagation(); markSectionComplete('reflection'); }}
-                                                aria-label="Mark reflection as read"
-                                            >
-                                                <CheckCircle size={15} />
-                                                {language === 'es' ? 'Marcar como leído' : 'Mark as Read'}
-                                            </button>
-                                        )}
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                                            {aiEnabled && (
+                                                <button
+                                                    className="ai-guide-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOpenAI(e, reflection.title, reflection.content, 'Words of the Pope');
+                                                    }}
+                                                    style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid rgba(212, 175, 55, 0.4)', borderRadius: '20px', background: 'rgba(212, 175, 55, 0.1)', color: '#d4af37', width: '100%' }}
+                                                >
+                                                    <Sparkles size={16} />
+                                                    {language === 'es' ? 'Preguntar a la IA sobre esta reflexión' : 'Ask AI about this reflection'}
+                                                </button>
+                                            )}
+
+                                            {!completedItems.includes('reflection') && (
+                                                <button
+                                                    className="mark-read-btn"
+                                                    onClick={(e) => { e.stopPropagation(); markSectionComplete('reflection'); }}
+                                                    aria-label="Mark reflection as read"
+                                                >
+                                                    <CheckCircle size={15} />
+                                                    {language === 'es' ? 'Marcar como leído' : 'Mark as Read'}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -964,6 +1065,16 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     )}
                 </main>
 
+                <AITopicSelectionModal
+                    isOpen={isAITopicModalOpen}
+                    onClose={() => setIsAITopicModalOpen(false)}
+                    options={isAITopicModalOpen ? getAITopics() : []}
+                    onSelect={handleSelectAITopic}
+                    onOpenChat={handleOpenGlobalChat}
+                    onOpenSaved={handleOpenGlobalSaved}
+                    language={language}
+                />
+
                 <SettingsModal
                     isOpen={showSettings}
                     onClose={() => setShowSettings(false)}
@@ -977,8 +1088,12 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                     topicName={aiTopicName}
                     source={aiSource}
                     language={language}
+                    startTab={aiStartTab}
                 />
             </div>
         </div>
     );
 }
+
+
+

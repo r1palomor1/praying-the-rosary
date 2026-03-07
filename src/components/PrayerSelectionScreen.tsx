@@ -1,24 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Settings as SettingsIcon, ChevronRight, Loader2, Square } from 'lucide-react'; // Added Square
+import { Settings as SettingsIcon, ChevronRight, Loader2, Square, Sparkles } from 'lucide-react'; // Added Square
 
-const AIBookmarkIcon = ({ size = 24, strokeWidth = 2, color = 'currentColor' }: { size?: number, strokeWidth?: number, color?: string }) => {
-    return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-            {/* Bookmark body */}
-            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
-            {/* 4-point star - explicitly filled */}
-            <path
-                d="M12 7 L12.8 10.2 L16 11 L12.8 11.8 L12 15 L11.2 11.8 L8 11 L11.2 10.2 Z"
-                fill={color}
-                stroke="none"
-            />
-        </svg>
-    );
-};
 import { useApp } from '../context/AppContext';
+import { useAI } from '../context/AIContext';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { AIModal } from './AIModal';
-import { loadReflections } from '../utils/savedReflections';
 import { getVersionInfo, type VersionInfo } from '../utils/version';
 import { LiturgicalCard } from './LiturgicalCard';
 import { fetchLiturgicalDay, type LiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar';
@@ -44,12 +30,12 @@ interface PrayerSelectionScreenProps {
     onStartSacredWithContinuous?: () => void;
 }
 
-export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinuous, onSelectSacredPrayers, onStartSacredWithContinuous, onSelectDailyReadings, onSelectBibleInYear, onResetProgress }: PrayerSelectionScreenProps) {
+    export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinuous, onSelectSacredPrayers, onStartSacredWithContinuous, onSelectDailyReadings, onSelectBibleInYear, onResetProgress }: PrayerSelectionScreenProps) {
     const { language, currentMysterySet, playAudio } = useApp();
+    const { aiEnabled } = useAI();
     const [showSettings, setShowSettings] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-    const [savedCount, setSavedCount] = useState(0);
-    const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
+const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
 
 
     // Liturgical data guaranteed non-null via fallback
@@ -192,13 +178,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
             const todayStr = `${year}-${month}-${day}`;
 
             const reminderSetting = localStorage.getItem('rosary_reminder_enabled') === 'true';
-            setIsReminderEnabled(reminderSetting);
-
-            // Update saved ai reflections count
-            const reflections = loadReflections();
-            setSavedCount(reflections.length);
-
-            // 1. Rosary Completion
+            setIsReminderEnabled(reminderSetting);// 1. Rosary Completion
             const lastCompletedFlag = localStorage.getItem('rosary_last_completed');
             const hasHistoryCompletion = hasCompletionOnDate(todayStr); // Check persistent history
 
@@ -444,9 +424,10 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     isOpen={isAIModalOpen}
                     onClose={() => setIsAIModalOpen(false)}
                     contextStr=""
-                    topicName="Saved Reflections"
+                    topicName="General"
+                    source="Home Screen"
                     language={language}
-                    startTab="saved"
+                    startTab="chat"
                 />
             )}
 
@@ -462,13 +443,13 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                 alignItems: 'center',
                 gap: '0.5rem'
             }}>
-                {savedCount > 0 && (
+                {aiEnabled && (
                     <button
                         className="settings-button"
                         onClick={() => setIsAIModalOpen(true)}
-                        aria-label="View Saved Reflections"
+                        aria-label="Ask AI Companion"
                         style={{
-                            color: 'rgba(255, 255, 255, 0.9)',
+                            color: 'var(--gold, #d4af37)',
                             background: 'transparent',
                             border: 'none',
                             boxShadow: 'none',
@@ -476,7 +457,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                             position: 'relative'
                         }}
                     >
-                        <AIBookmarkIcon size={24} strokeWidth={2} />
+                        <Sparkles size={24} strokeWidth={2} />
                     </button>
                 )}
                 <button
@@ -1109,3 +1090,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
 }
 
 export default PrayerSelectionScreen;
+
+
+
+
+

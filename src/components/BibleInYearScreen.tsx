@@ -22,6 +22,7 @@ import { BibleProgressModal } from './BibleProgressModal';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { useAI } from '../context/AIContext';
 import { AIModal } from './AIModal';
+import { AITopicSelectionModal, type TopicOption } from './AITopicSelectionModal';
 import './BibleInYearScreen.css';
 
 interface BibleDay {
@@ -99,16 +100,77 @@ export default function BibleInYearScreen({ onBack }: Props) {
     // AI Companion State
     const { aiEnabled } = useAI();
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    const [isAITopicModalOpen, setIsAITopicModalOpen] = useState(false);
     const [aiTopicName, setAiTopicName] = useState('');
+    const [aiStartTab, setAiStartTab] = useState<'chat' | 'saved'>('chat');
 
-    const handleOpenAI = (e: React.MouseEvent, reading: Reading) => {
-        e.stopPropagation();
-        const topicName = `${language === 'es' ? 'Día' : 'Day'} ${currentDay} — ${reading.title} (${reading.citation})`;
-        setAiTopicName(topicName);
+    const handleOpenTopAI = () => {
+        setIsAITopicModalOpen(true);
+    };
+
+    const handleSelectAITopic = (option: TopicOption) => {
+        setIsAITopicModalOpen(false);
+        setAiTopicName(option.topicName);
+        setAiStartTab('chat');
         setIsAIModalOpen(true);
     };
 
-    // Auto-mark day complete if all chapters are done
+    const handleOpenGlobalChat = () => {
+        setIsAITopicModalOpen(false);
+        setAiTopicName('General');
+        setAiStartTab('chat');
+        setIsAIModalOpen(true);
+    };
+
+    const handleOpenGlobalSaved = () => {
+        setIsAITopicModalOpen(false);
+        setAiTopicName('General');
+        setAiStartTab('saved');
+        setIsAIModalOpen(true);
+    };
+
+    const getAITopics = (): TopicOption[] => {
+        const options: TopicOption[] = [];
+        const prefix = language === 'es' ? 'Día' : 'Day';
+        
+        readings.forEach((reading, rIdx) => {
+            options.push({
+                id: `sec-${rIdx}`,
+                type: 'section',
+                title: reading.title,
+                subtitle: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : '',
+                contextStr: '', // Not utilized in Bible yet
+                topicName: `${prefix} ${currentDay} — ${reading.title} (${reading.citation})`,
+                source: 'Bible in a Year'
+            });
+
+            const chapters = parseBibleChapters(reading);
+            chapters.forEach((chapter, cIdx) => {
+                options.push({
+                    id: `chap-${rIdx}-${cIdx}`,
+                    type: 'chapter',
+                    title: chapter.title ? chapter.title.replace(/\s*-\s*/g, ' - ') : '',
+                    subtitle: '',
+                    contextStr: '',
+                    topicName: `${prefix} ${currentDay} — ${chapter.title}`,
+                    source: 'Bible in a Year'
+                });
+            });
+        });
+
+        options.push({
+            id: 'general',
+            type: 'general',
+            title: language === 'es' ? '¿Sobre qué más preferirías discutir o reflexionar?' : 'What else would you prefer to discuss or reflect on?',
+            topicName: language === 'es' ? `Reflexión General - ${prefix} ${currentDay}` : `General Reflection - ${prefix} ${currentDay}`,
+            contextStr: '',
+            source: 'Bible in a Year'
+        });
+
+        return options;
+    };
+
+// Auto-mark day complete if all chapters are done
     useEffect(() => {
         if (!readings || readings.length === 0) return;
         if (isDayComplete(currentDay)) return;
@@ -512,13 +574,25 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
                         <h1 className="header-title">{t.title}</h1>
 
-                        <button
-                            className="icon-btn-ghost"
-                            onClick={() => setShowSettings(true)}
-                            aria-label="Settings"
-                        >
-                            <Settings size={24} />
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {aiEnabled && (
+                                <button
+                                    className="icon-btn-ghost"
+                                    onClick={handleOpenTopAI}
+                                    style={{ color: '#d4af37' }}
+                                    aria-label="Ask AI Companion"
+                                >
+                                    <Sparkles size={24} />
+                                </button>
+                            )}
+                            <button
+                                className="icon-btn-ghost"
+                                onClick={() => setShowSettings(true)}
+                                aria-label="Settings"
+                            >
+                                <Settings size={24} />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="date-row">
@@ -677,19 +751,9 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
                             return (
                                 <section key={idx} className="reading-section-sacred">
-                                    <div className="section-header-sacred">
+                                                                                                            <div className="section-header-sacred">
                                         <h2 className="section-title-sacred">{reading.title}</h2>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            {aiEnabled && (
-                                                <button
-                                                    className="icon-btn-ghost"
-                                                    onClick={(e) => handleOpenAI(e, reading)}
-                                                    style={{ width: '28px', height: '28px', color: '#d4af37' }}
-                                                    aria-label="Ask AI Companion"
-                                                >
-                                                    <Sparkles size={15} />
-                                                </button>
-                                            )}
                                             <button
                                                 className={`section-play-btn-small ${currentlyPlayingId === `reading-${idx}` ? 'active' : ''}`}
                                                 onClick={(e) => handlePlaySection(e, `reading-${idx}`, reading)}
@@ -725,22 +789,6 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                                             )}
                                                         </button>
 
-                                                        {/* Chapter AI Button */}
-                                                        {aiEnabled && (
-                                                            <button
-                                                                className="icon-btn-ghost"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setAiTopicName(`${language === 'es' ? 'Día' : 'Day'} ${currentDay} — ${chapter.title}`);
-                                                                    setIsAIModalOpen(true);
-                                                                }}
-                                                                style={{ width: '26px', height: '26px', color: '#d4af37' }}
-                                                                aria-label="Ask AI about this chapter"
-                                                            >
-                                                                <Sparkles size={13} />
-                                                            </button>
-                                                        )}
-
                                                         <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                             {chapter.title}
                                                             {isChapterComplete(currentDay, chapter.title) && (
@@ -754,23 +802,41 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                                     />
                                                 </div>
 
-                                                {expandedSections[rowKey] && (
+                                                                                                {expandedSections[rowKey] && (
                                                     <div className="card-content-expanded fade-in">
                                                         {renderContent(chapter.text)}
-                                                        {!isChapterComplete(currentDay, chapter.title) && (
-                                                            <button
-                                                                className="mark-read-btn"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    markChapterComplete(currentDay, chapter.title);
-                                                                    setExpandedSections(prev => ({ ...prev, [rowKey]: false }));
-                                                                }}
-                                                                aria-label="Mark chapter as read"
-                                                            >
-                                                                <CheckCircle size={15} />
-                                                                {language === 'es' ? 'Marcar como leído' : 'Mark as Read'}
-                                                            </button>
-                                                        )}
+
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                                                            {aiEnabled && (
+                                                                <button
+                                                                    className="ai-guide-btn"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setAiTopicName(`${language === 'es' ? 'D�a' : 'Day'} ${currentDay} � ${chapter.title}`);
+                                                                        setIsAIModalOpen(true);
+                                                                    }}
+                                                                    style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid rgba(212, 175, 55, 0.4)', borderRadius: '20px', background: 'rgba(212, 175, 55, 0.1)', color: '#d4af37', width: '100%' }}
+                                                                >
+                                                                    <Sparkles size={16} />
+                                                                    {language === 'es' ? 'Preguntar a la IA sobre este cap�tulo' : 'Ask AI about this chapter'}
+                                                                </button>
+                                                            )}
+
+                                                            {!isChapterComplete(currentDay, chapter.title) && (
+                                                                <button
+                                                                    className="mark-read-btn"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        markChapterComplete(currentDay, chapter.title);
+                                                                        setExpandedSections(prev => ({ ...prev, [rowKey]: false }));
+                                                                    }}
+                                                                    aria-label="Mark chapter as read"
+                                                                >
+                                                                    <CheckCircle size={15} />
+                                                                    {language === 'es' ? 'Marcar como le�do' : 'Mark as Read'}
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
@@ -828,6 +894,15 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 </main>
 
                 {/* Modals */}
+                <AITopicSelectionModal
+                    isOpen={isAITopicModalOpen}
+                    onClose={() => setIsAITopicModalOpen(false)}
+                    options={isAITopicModalOpen ? getAITopics() : []}
+                    onSelect={handleSelectAITopic}
+                    onOpenChat={handleOpenGlobalChat}
+                    onOpenSaved={handleOpenGlobalSaved}
+                    language={language}
+                />
                 <SettingsModal
                     isOpen={showSettings}
                     onClose={() => setShowSettings(false)}
@@ -839,6 +914,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     topicName={aiTopicName}
                     source="Bible in a Year"
                     language={language}
+                    startTab={aiStartTab}
                 />
                 {showProgressModal && (
                     <BibleProgressModal
@@ -912,3 +988,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
         </div>
     );
 }
+
+
+
+
+
+
+

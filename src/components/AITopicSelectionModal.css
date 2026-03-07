@@ -1,0 +1,217 @@
+.ai-topic-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* center vertically unlike AIModal which is a bottom sheet */
+    animation: fadeIn 0.2s ease;
+    padding: 20px;
+}
+
+.ai-topic-modal-content {
+    background-color: var(--secondary-bg, #1a1b1e);
+    width: 100%;
+    max-width: 500px;
+    max-height: 85vh;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    overflow: hidden;
+}
+
+.ai-topic-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background-color: rgba(0,0,0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ai-topic-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--gold, #d4af37);
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.ai-topic-modal-close {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.ai-topic-modal-close:hover {
+    color: white;
+}
+
+.ai-topic-modal-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.ai-topic-prompt {
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    padding: 24px 20px 16px;
+    margin: 0;
+    font-weight: 500;
+}
+
+.ai-topic-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0 16px 24px;
+    gap: 10px;
+}
+
+.ai-topic-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.ai-topic-btn:hover {
+    background-color: rgba(212, 175, 55, 0.1);
+    border-color: rgba(212, 175, 55, 0.3);
+}
+
+.ai-topic-btn-section {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.ai-topic-btn-section .ai-topic-title {
+    color: var(--gold, #d4af37);
+    font-size: 1.125rem;
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.03em;
+}
+
+.ai-topic-btn-chapter {
+    padding: 14px 20px 14px 44px; /* Indent sub-chapters */
+    position: relative;
+}
+
+.ai-topic-btn-chapter::before {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
+}
+
+.ai-topic-btn-general {
+    margin-top: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px dashed rgba(212, 175, 55, 0.3);
+    justify-content: center;
+}
+
+.ai-topic-btn-general .ai-topic-title {
+    color: var(--gold, #d4af37);
+    font-style: italic;
+    text-align: center;
+    width: 100%;
+    font-size: 1.05rem;
+}
+
+.ai-topic-btn-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ai-topic-title {
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.ai-topic-btn-chapter .ai-topic-title {
+    font-size: 0.875rem;
+}
+
+.ai-topic-subtitle {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.875rem;
+}
+
+@keyframes scaleUp {
+    from { 
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+
+.ai-topic-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background-color: rgba(0,0,0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ai-topic-footer-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex: 1;
+    padding: 12px 16px;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ai-topic-footer-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
