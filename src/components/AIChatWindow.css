@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    max-height: 60vh;
+    max-height: 85vh;
     background-color: var(--secondary-bg, #1e1e1e);
     border-radius: 12px;
     overflow: hidden;
@@ -403,12 +403,13 @@
 .ai-saved-list {
     flex: 1 1 auto;
     overflow-y: auto;
-    padding: 8px 14px 14px;
+    padding: 8px 14px 24px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    height: 100%;
-    /* Rigid boundary trick */
+    gap: 12px;
+    min-height: 0;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 .ai-saved-card {
@@ -558,7 +559,7 @@
 /* ── UI Redesign for Saved Tab V2 ── */
 .ai-saved-tab-header {
     text-align: center;
-    padding: 0px 16px 4px;
+    padding: 16px 16px 8px;
     flex: 0 0 auto;
 }
 
@@ -579,9 +580,13 @@
 
 /* Card V2 */
 .ai-saved-card-v2 {
+    flex-shrink: 0;
+    /* Prevents cards from squishing when container is full */
+    display: flex;
+    flex-direction: column;
     background-color: rgba(255, 255, 255, 0.03);
     border-radius: 12px;
-    margin-bottom: 12px;
+    /* margin-bottom relies on gap from ai-saved-list now */
     overflow: hidden;
     cursor: pointer;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -598,6 +603,7 @@
 }
 
 .ai-saved-card-v2-header {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     padding: 12px 14px;
@@ -625,6 +631,8 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
+    /* CRITICAL: Allows text-overflow ellipsis to work inside a flex item */
 }
 
 .ai-saved-card-v2-title {
@@ -634,6 +642,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    /* allow it to take space if needed, but not push container */
+    max-width: 100%;
 }
 
 .ai-saved-card-v2-question-preview {
@@ -643,6 +653,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .ai-saved-card-v2-subtitle {
@@ -686,14 +697,17 @@
 }
 
 .ai-saved-card-v2-content {
+    flex-shrink: 0;
     padding: 0 14px 14px 14px;
     cursor: auto;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     padding-top: 12px;
     -webkit-user-select: text;
     user-select: text;
-    max-height: 35vh;
+    max-height: 40vh;
     overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 .ai-saved-card-v2-response {

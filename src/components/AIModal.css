@@ -9,7 +9,8 @@
     z-index: 1000;
     display: flex;
     justify-content: center;
-    align-items: flex-end; /* Slide up from bottom */
+    align-items: flex-end;
+    /* Slide up from bottom */
     animation: fadeIn 0.3s ease;
 }
 
@@ -17,12 +18,13 @@
     background-color: var(--secondary-bg, #1a1b1e);
     width: 100%;
     max-width: 600px;
-    height: 85vh; /* Takes up most of the screen like a sheet */
+    height: 98vh;
+    /* Maximized vertical sheet space */
     border-radius: 20px 20px 0 0;
     display: flex;
     flex-direction: column;
     animation: slideUp 0.3s ease-out;
-    box-shadow: 0 -4px 24px rgba(0,0,0,0.5);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
     border-top: 1px solid rgba(212, 175, 55, 0.2);
 }
 
@@ -31,7 +33,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
-    background-color: rgba(0,0,0, 0.2);
+    background-color: rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 20px 20px 0 0;
 }
@@ -79,6 +81,11 @@
 }
 
 @keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
 }

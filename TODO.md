@@ -112,6 +112,18 @@ git push
 
 ## ✅ Completed Features
 
+### 🎨 AI Companion: Saved Tab Redesign & Bilingual Translation (Completed Mar 6, 2026)
+- [x] **Redesigned Saved Tab (V2)**
+  - Implemented an expandable "accordion" card layout for a cleaner, more compact dashboard.
+  - Added new "Sacred Responses" Dashboard Header and refactored overall flexbox geometry to maximize screen real estate.
+  - Promoted the user's prompt (question) to the collapsed card view as a single-line "First-Line Preview" (italicized blue).
+  - Enforced strict CSS boundaries (`flex`, `min-height`, `max-height`, `overflow-y`) on expanded text to guarantee massive responses scroll natively without breaking the layout.
+  - Re-enabled native `-webkit-user-select: text` inside the card body so AI responses can be easily highlighted/copied on mobile.
+- [x] **Background Bilingual Translation**
+  - Assessed Meta `NLLB-200`, but reverted to `Helsinki-NLP OPUS-MT` as the optimal choice due to HuggingFace Free Tier 500-error server constraints.
+  - Implemented silent `/api/translate` payload conversions (bulk-translating topic, question, and response simultaneously).
+  - Action trigger: Upon clicking "Save", the data instantly translates to the user's alternate language in the background, ensuring immediate availability when toggling settings.
+
 ### 🎨 Daily Readings: Unified "Bible in a Year" Layout Migration (Completed)
 - [x] **Redesign Daily Readings UI to match Bible in a Year**
   - **Goal:** Transplant the exact layout, theme, and user experience we built for the "Bible in a Year" screen to the "Daily Readings" screen.
@@ -460,24 +472,30 @@ git push
 
 ---
 
-### 🤖 AI-Powered Spiritual Companion (Not Started)
-**Priority:** Vision | **Time:** 46-58 hours | **Cost:** $0 (100% free APIs)
+### 🤖 AI-Powered Spiritual Companion (In Progress)
+**Priority:** Current Active Focus | **Time:** 46-58 hours | **Cost:** $0 (100% free APIs)
 
 **Core Principle:** AI is 100% optional enhancement. All existing features remain fully functional if AI unavailable.
 
 **Free API Strategy:**
-- Gemini: 1,500 requests/day free
-- Groq: 14,400 requests/day free
+- HuggingFace Llama 3.1 8B (Primary Serverless Routing)
 - User-level rate limiting + queue system
 - Progressive enhancement pattern (AI enhances, never replaces)
 
 ---
 
-#### **Phase 1: Mystery AI Chat** (8-10 hrs)
-- [ ] Replace static "Learn More" with Gemini API chatbot
-- [ ] Mystery Q&A and deeper theological explanations
-- [ ] Groq fallback for quota limits
-- [ ] **Fallback:** Keep existing static "Learn More" modal if AI unavailable
+#### **Phase 0 & 1.1/1.2: Infrastructure & Engine Setup** ✅ COMPLETED
+- [x] Secured HuggingFace Free Tier APIs
+- [x] Built Serverless Route (`/api/ai-chat.js`)
+- [x] Implemented Bilingual Background Translations (`/api/translate.js`)
+- [x] Built the `AIModal.tsx` and `AIChatWindow.tsx` UI Components
+- [x] Created "Saved" tab with local storage state for spiritual bookmarks
+
+#### **Phase 1.3: Wire Mystery AI Chat to Rosary Engine** (NEXT IMMEDIATE TARGET - Per PRD)
+- [ ] Replace static "Learn More" modal inside `MysteryScreen.tsx` with the new `AIModal.tsx` companion
+- [ ] Pass the current mystery's context (Title, Fruit, Scripture) directly into the AI Companion prompt
+- [ ] Mystery Q&A and deeper theological explanations interface working
+- [ ] **Fallback:** Keep existing static "Learn More" modal functionality gracefully intact if AI fails or returns an error
 
 #### **Phase 2: Scripture Intelligence** (6-8 hrs)
 - [ ] Bible verse search & lookup
