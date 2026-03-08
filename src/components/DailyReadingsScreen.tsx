@@ -103,11 +103,14 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 options.push({
                     id: `reading-${rIdx}`,
                     type: 'section',
-                    title: normalizeReadingTitle(reading.title),
-                    subtitle: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : '',
+                    title: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : normalizeReadingTitle(reading.title),
+                    subtitle: '',
                     contextStr: reading.text,
                     topicName: titleWithCitation,
-                    source: 'Daily Readings'
+                    source: 'Daily Readings',
+                    previewText: reading.text ? (reading.text.length > 90 ? reading.text.substring(0, 90).replace(/\s+[^\s]*$/, '...') : reading.text) : '',
+                    iconType: reading.title.toLowerCase().includes('gospel') || reading.title.toLowerCase().includes('evangelio') ? 'book' : 'reading',
+                    eyebrow: normalizeReadingTitle(reading.title)
                 });
             });
         }
@@ -116,11 +119,14 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             options.push({
                 id: 'reflection',
                 type: 'section',
-                title: language === 'es' ? 'Palabras del Papa' : 'Words of the Pope',
-                subtitle: reflection.title,
+                title: reflection.title,
+                subtitle: '',
                 contextStr: reflection.content,
                 topicName: reflection.title,
-                source: 'Words of the Pope'
+                source: 'Words of the Pope',
+                previewText: reflection.content ? (reflection.content.length > 90 ? reflection.content.substring(0, 90).replace(/\s+[^\s]*$/, '...') : reflection.content) : '',
+                iconType: 'chat',
+                eyebrow: language === 'es' ? 'Palabras del Papa' : 'Words of the Pope'
             });
         }
 
@@ -130,7 +136,9 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
             title: language === 'es' ? '¿Sobre qué más preferirías discutir o reflexionar?' : 'What else would you prefer to discuss or reflect on?',
             topicName: language === 'es' ? `Reflexión General - Lecturas Diarias` : `General Reflection - Daily Readings`,
             contextStr: '',
-            source: 'Daily Readings'
+            source: 'Daily Readings',
+            iconType: 'chat',
+            eyebrow: language === 'es' ? 'General' : 'General'
         });
 
         return options;

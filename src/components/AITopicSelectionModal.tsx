@@ -1,4 +1,4 @@
-import { Sparkles, X, ChevronRight, MessageCircle, Bookmark } from 'lucide-react';
+import { Sparkles, X, ChevronRight, MessageCircle, Bookmark, Book, BookOpenText, MessageSquareQuote } from 'lucide-react';
 import './AITopicSelectionModal.css';
 
 export interface TopicOption {
@@ -9,6 +9,10 @@ export interface TopicOption {
   topicName: string;
   contextStr: string;
   source: string;
+  previewText?: string;
+  iconType?: 'book' | 'reading' | 'chat';
+  eyebrow?: string;
+  eyebrowHighlight?: string;
 }
 
 interface AITopicSelectionModalProps {
@@ -24,37 +28,73 @@ interface AITopicSelectionModalProps {
 export function AITopicSelectionModal({ isOpen, onClose, options, onSelect, onOpenChat, onOpenSaved, language }: AITopicSelectionModalProps) {
   if (!isOpen) return null;
 
+  const renderIcon = (type?: string) => {
+    switch (type) {
+      case 'book':
+        return <Book size={20} />;
+      case 'reading':
+        return <BookOpenText size={20} />;
+      case 'chat':
+      default:
+        return <MessageSquareQuote size={20} />;
+    }
+  };
+
   return (
     <div className="ai-topic-modal-overlay" onClick={onClose}>
       <div className="ai-topic-modal-content" onClick={e => e.stopPropagation()}>
         <div className="ai-topic-modal-header">
           <div className="ai-topic-modal-title">
             <Sparkles size={20} color="#d4af37" />
-            <span>{language === 'es' ? 'Compañero IA' : 'AI Companion'}</span>
+            <span>{language === 'es' ? 'Compa�ero IA' : 'AI Companion'}</span>
           </div>
           <button className="ai-topic-modal-close" onClick={onClose} aria-label="Close">
             <X size={24} />
           </button>
         </div>
-        
+
         <div className="ai-topic-modal-body">
           <h3 className="ai-topic-prompt">
-            {language === 'es' ? '¿Sobre qué te gustaría reflexionar o discutir?' : 'What would you like to reflect or discuss?'}
+            {language === 'es' ? '�Sobre qu� te gustar�a reflexionar o discutir?' : 'What would you like to reflect or discuss?'}
           </h3>
-          
+
           <div className="ai-topic-list">
             {options.map((opt) => (
-              <button
+              <div
                 key={opt.id}
-                className={`ai-topic-btn ai-topic-btn-${opt.type}`}
+                className="ai-topic-card"
                 onClick={() => onSelect(opt)}
+                role="button"
+                tabIndex={0}
               >
-                <div className="ai-topic-btn-text">
-                  <span className="ai-topic-title">{opt.title}</span>
-                  {opt.subtitle && <span className="ai-topic-subtitle">{opt.subtitle}</span>}
+                <div className="ai-topic-card-icon">
+                  {renderIcon(opt.iconType)}
                 </div>
-                <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
-              </button>
+                <div className="ai-topic-card-content">
+                  {opt.eyebrow && (
+                    <span className="ai-topic-card-eyebrow">
+                      {opt.eyebrow}
+                      {opt.eyebrowHighlight && (
+                        <>
+                          <span style={{ margin: '0 4px', color: 'rgba(255, 255, 255, 0.4)' }}>•</span>
+                          <span style={{ color: '#fff' }}>{opt.eyebrowHighlight}</span>
+                        </>
+                      )}
+                    </span>
+                  )}
+                  <span className="ai-topic-card-title">
+                    {opt.title} {opt.subtitle ? ` | ${opt.subtitle}` : ''}
+                  </span>
+                  {opt.previewText && (
+                    <span className="ai-topic-card-preview">
+                      "{opt.previewText}"
+                    </span>
+                  )}
+                </div>
+                <div className="ai-topic-card-arrow">
+                  <ChevronRight size={20} />
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -79,4 +119,5 @@ export function AITopicSelectionModal({ isOpen, onClose, options, onSelect, onOp
     </div>
   );
 }
+
 

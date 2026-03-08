@@ -133,18 +133,26 @@ export default function BibleInYearScreen({ onBack }: Props) {
         const options: TopicOption[] = [];
         
         readings.forEach((reading, rIdx) => {
+            const titleText = reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : reading.title;
+            const fullReadingPrompt = language === 'es' ? 'Reflexiona sobre la lectura completa...' : 'Discuss the full reading...';
             options.push({
                 id: `sec-${rIdx}`,
                 type: 'section',
-                title: reading.title,
-                subtitle: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : '',
+                title: fullReadingPrompt,
+                subtitle: '',
                 contextStr: '', // Not utilized in Bible yet
                 topicName: reading.citation ? `${reading.title} (${reading.citation})` : reading.title,
-                source: 'Bible in a Year'
+                source: 'Bible in a Year',
+                previewText: '',
+                iconType: 'chat',
+                eyebrow: reading.title,
+                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : undefined,
+                
             });
 
             const chapters = parseBibleChapters(reading);
             chapters.forEach((chapter, cIdx) => {
+                const cleanChapterText = chapter.text.replace(/###.*?\n/g, '').replace(/\[\d+\]\s*/g, '').trim();
                 options.push({
                     id: `chap-${rIdx}-${cIdx}`,
                     type: 'chapter',
@@ -152,7 +160,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     subtitle: '',
                     contextStr: '',
                     topicName: `${reading.title} (${chapter.title})`,
-                    source: 'Bible in a Year'
+                    source: 'Bible in a Year',
+                    previewText: cleanChapterText ? (cleanChapterText.length > 90 ? cleanChapterText.substring(0, 90).replace(/\s+[^\s]*$/, '...') : cleanChapterText) : '',
+                    iconType: 'reading',
+                    eyebrow: reading.title
                 });
             });
         });
@@ -163,7 +174,9 @@ export default function BibleInYearScreen({ onBack }: Props) {
             title: language === 'es' ? '¿Sobre qué más preferirías discutir o reflexionar?' : 'What else would you prefer to discuss or reflect on?',
             topicName: language === 'es' ? `Reflexión General` : `General Reflection`,
             contextStr: '',
-            source: 'Bible in a Year'
+            source: 'Bible in a Year',
+            iconType: 'chat',
+            eyebrow: language === 'es' ? 'General' : 'General'
         });
 
         return options;
