@@ -131,7 +131,6 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
     const getAITopics = (): TopicOption[] => {
         const options: TopicOption[] = [];
-        const prefix = language === 'es' ? 'Día' : 'Day';
         
         readings.forEach((reading, rIdx) => {
             options.push({
@@ -162,7 +161,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
             id: 'general',
             type: 'general',
             title: language === 'es' ? '¿Sobre qué más preferirías discutir o reflexionar?' : 'What else would you prefer to discuss or reflect on?',
-            topicName: language === 'es' ? `Reflexión General - ${prefix} ${currentDay}` : `General Reflection - ${prefix} ${currentDay}`,
+            topicName: language === 'es' ? `Reflexión General` : `General Reflection`,
             contextStr: '',
             source: 'Bible in a Year'
         });
@@ -813,6 +812,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         setAiTopicName(`${reading.title} (${chapter.title})`);
+                                                                        setAiStartTab('chat');
                                                                         setIsAIModalOpen(true);
                                                                     }}
                                                                     style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid rgba(212, 175, 55, 0.4)', borderRadius: '20px', background: 'rgba(212, 175, 55, 0.1)', color: '#d4af37', width: '100%' }}

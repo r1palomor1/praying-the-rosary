@@ -2,6 +2,14 @@
 
 ## 🛑 URGENT FIXES (Next Session)
 
+### 🎨 AI Companion UI & Flow Standardization (Completed Mar 7, 2026)
+- [x] **Universal Entry Points & Standardized Context**
+  - **Inline Buttons:** Transplanted and standardized the "Ask AI about this..." inline buttons across both `BibleInYearScreen` and `DailyReadingsScreen` into uniform, flex-column wrappers with custom border styling (`var(--gold)` gradients).
+  - **Context Fixing:** Ensured accurate context parsing so the AI initial greeting exactly cites the current reading/chapter without invalid html/encoded character artifacts. 
+  - **Topic Selection Modal Upgrade:** Added a "Subtle Sticky Footer" to `AITopicSelectionModal.tsx` mapping to "Go to Chat" and "View Saved", utilizing universal `lucide-react` icons.
+  - **Home Screen App-wide generic entry:** Replaced the legacy `AIBookmarkIcon` on the `PrayerSelectionScreen` with the universal `Sparkles` icon to launch a "General" AI chat safely globally. 
+  - **Cleaned Bubble Text:** Standardized "AI Companion" titles and shortened generic "What would you like to reflect on or ask a question about?" defaults.
+
 ### Church Icon Quick Play - Daily Readings
 - [x] **Fix Word of the Pope highlighting during church/card playback**
   - Bug: "Word of the Pope" (Reflection) doesn't highlight when playing from church icon and entering card

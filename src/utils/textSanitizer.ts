@@ -8,9 +8,11 @@ export function sanitizeTextForSpeech(text: string): string {
         .replace(/¡/g, '')
         .replace(/¿/g, '')
         // Remove other special characters that might be mispronounced
-        .replace(/[«»]/g, '"')  // Replace guillemets with regular quotes
-        .replace(/[""]/g, '"')  // Normalize smart quotes
-        .replace(/['']/g, "'")  // Normalize smart apostrophes
+        .replace(/[«»]/g, '')  // Strip guillemets completely to avoid TTS pronouncing them
+        .replace(/["“”]/g, '')  // Completely remove straight and smart double quotes
+        .replace(/['‘’]/g, "'")  // Normalize smart apostrophes to straight apostrophes
+        // Prevent ellipsis or multiple dots being read aloud as "punto punto"
+        .replace(/\.{2,}/g, '.')
         // Keep regular punctuation (. , ; : ! ? - etc.) as they help with prosody
         .trim();
 }
@@ -46,9 +48,10 @@ export function sanitizeAIResponseForSpeech(text: string): string {
             // ── Inline code backticks ─────────────────────────────────────
             .replace(/`([^`]*)`/g, '$1')         // `code` → code
 
-            // ── Smart / curly quotes → remove (let words flow naturally) ──
-            .replace(/[""]/g, '')                // "quoted" → quoted
-            .replace(/['']/g, "'")              // 'quoted' → 'quoted' (keep apostrophe)
+            // ── Smart / curly quotes / strict punctuation strips ──────────
+            .replace(/["“”]/g, '')               // remove double quotes entirely
+            .replace(/['‘’]/g, "'")              // normalize single quotes
+            .replace(/\.{2,}/g, '.')             // collapse multiple periods
 
             // ── Dashes: em/en dash → brief spoken pause (comma) ──────────
             .replace(/\s*[—–]\s*/g, ', ')

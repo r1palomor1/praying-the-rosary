@@ -479,7 +479,12 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
             <div className="ai-saved-list">
               {filteredSaved.map(item => {
                 const originLang = item.lang || 'en';
-                const topicDisplay = (originLang !== language && item.topic_translated) ? item.topic_translated : item.topic;
+                let topicDisplay = (originLang !== language && item.topic_translated) ? item.topic_translated : item.topic;
+                
+                if (item.source === 'Bible in a Year') {
+                  topicDisplay = topicDisplay.replace(/^(Day|Día)\s+\d+\s+[—\-]\s*/i, '');
+                }
+                
                 const questionDisplay = (originLang !== language && item.question_translated) ? item.question_translated : item.question;
                 const isExpanded = expandedCards.has(item.id);
                 const isPlaying = playingMsgId === `saved-${item.id}`;
