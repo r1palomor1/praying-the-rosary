@@ -133,7 +133,6 @@ export default function BibleInYearScreen({ onBack }: Props) {
         const options: TopicOption[] = [];
         
         readings.forEach((reading, rIdx) => {
-            const titleText = reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : reading.title;
             const fullReadingPrompt = language === 'es' ? 'Reflexiona sobre la lectura completa...' : 'Discuss the full reading...';
             options.push({
                 id: `sec-${rIdx}`,
@@ -146,8 +145,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 previewText: '',
                 iconType: 'chat',
                 eyebrow: reading.title,
-                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : undefined,
-                
+                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : undefined
             });
 
             const chapters = parseBibleChapters(reading);
