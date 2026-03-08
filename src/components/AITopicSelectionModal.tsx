@@ -3,7 +3,7 @@ import './AITopicSelectionModal.css';
 
 export interface TopicOption {
   id: string;
-  type: 'section' | 'chapter' | 'general';
+  type: 'section' | 'chapter' | 'general' | 'divider';
   title: string;
   subtitle?: string;
   topicName: string;
@@ -60,41 +60,49 @@ export function AITopicSelectionModal({ isOpen, onClose, options, onSelect, onOp
 
           <div className="ai-topic-list">
             {options.map((opt) => (
-              <div
-                key={opt.id}
-                className="ai-topic-card"
-                onClick={() => onSelect(opt)}
-                role="button"
-                tabIndex={0}
-              >
-                <div className="ai-topic-card-icon">
-                  {renderIcon(opt.iconType)}
+              opt.type === 'divider' ? (
+                <div key={opt.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', margin: '8px 0', opacity: 0.8 }}>
+                  <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.3) 100%)' }} />
+                  <span className="material-symbols-outlined" style={{ color: 'var(--gold, #d4af37)', margin: '0 12px', fontSize: '1.1rem', opacity: 0.8 }}>church</span>
+                  <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(212,175,55,0.3) 0%, rgba(212,175,55,0) 100%)' }} />
                 </div>
-                <div className="ai-topic-card-content">
-                  {opt.eyebrow && (
-                    <span className="ai-topic-card-eyebrow">
-                      {opt.eyebrow}
-                      {opt.eyebrowHighlight && (
-                        <>
-                          <span style={{ margin: '0 4px', color: 'rgba(255, 255, 255, 0.4)' }}>•</span>
-                          <span style={{ color: '#fff' }}>{opt.eyebrowHighlight}</span>
-                        </>
-                      )}
+              ) : (
+                <div
+                  key={opt.id}
+                  className={`ai-topic-card ${opt.type === 'general' ? 'general-card' : ''} ${opt.type === 'section' ? 'section-card' : ''}`}
+                  onClick={() => onSelect(opt)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div className="ai-topic-card-icon">
+                    {renderIcon(opt.iconType)}
+                  </div>
+                  <div className="ai-topic-card-content">
+                    {opt.eyebrow && (
+                      <span className="ai-topic-card-eyebrow">
+                        {opt.eyebrow}
+                        {opt.eyebrowHighlight && (
+                          <>
+                            <span style={{ margin: '0 4px', color: 'rgba(255, 255, 255, 0.4)' }}>•</span>
+                            <span style={{ color: '#fff' }}>{opt.eyebrowHighlight}</span>
+                          </>
+                        )}
+                      </span>
+                    )}
+                    <span className="ai-topic-card-title">
+                      {opt.title} {opt.subtitle ? ` | ${opt.subtitle}` : ''}
                     </span>
-                  )}
-                  <span className="ai-topic-card-title">
-                    {opt.title} {opt.subtitle ? ` | ${opt.subtitle}` : ''}
-                  </span>
-                  {opt.previewText && (
-                    <span className="ai-topic-card-preview">
-                      "{opt.previewText}"
-                    </span>
-                  )}
+                    {opt.previewText && (
+                      <span className="ai-topic-card-preview">
+                        "{opt.previewText}"
+                      </span>
+                    )}
+                  </div>
+                  <div className="ai-topic-card-arrow">
+                    <ChevronRight size={20} />
+                  </div>
                 </div>
-                <div className="ai-topic-card-arrow">
-                  <ChevronRight size={20} />
-                </div>
-              </div>
+              )
             ))}
           </div>
         </div>

@@ -14,6 +14,11 @@
   - **Topic Selection Modal Upgrade:** Added a "Subtle Sticky Footer" to `AITopicSelectionModal.tsx` mapping to "Go to Chat" and "View Saved", utilizing universal `lucide-react` icons.
   - **Home Screen App-wide generic entry:** Replaced the legacy `AIBookmarkIcon` on the `PrayerSelectionScreen` with the universal `Sparkles` icon to launch a "General" AI chat safely globally. 
   - **Cleaned Bubble Text:** Standardized "AI Companion" titles and shortened generic "What would you like to reflect on or ask a question about?" defaults.
+- [x] **AI History & Saved Responses Tabs**
+  - **3-Tier Storage System:** Upgraded the "Saved Responses" menu to use 3 dedicated tabs for filtering: "All Saved", "Favorites", and "Recent 48h history".
+  - **Auto-Save History:** Any AI response generated is automatically saved to the active device's "Recent History" queue with a 48 hour auto-delete expiration if not permanently bookmarked/starred.
+  - **Star and Bookmark Icons:** Added inline toggle icons next to the chat's play button, allowing users to easily Favorite (star) or Bookmark (save permanently) items directly from the chat UI without menus.
+  - **Auto-translate caching:** Automatically fetches the alternate language translation in the background upon a prompt completion, so offline switching works seamlessly later.
 
 ### Church Icon Quick Play - Daily Readings
 - [x] **Fix Word of the Pope highlighting during church/card playback**

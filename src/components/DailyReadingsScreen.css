@@ -283,8 +283,8 @@
 }
 
 .chapter-label {
-  font-size: 0.875rem;
-  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-family: 'Georgia', serif;
   font-weight: 500;
   letter-spacing: 0.025em;
   color: var(--color-text-light);

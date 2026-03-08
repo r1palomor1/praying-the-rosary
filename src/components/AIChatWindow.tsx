@@ -1,13 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, AlertCircle, ChevronDown, ChevronUp, Play, Square, Bookmark, BookmarkCheck, Trash2 } from 'lucide-react';
+import { Send, AlertCircle, ChevronDown, ChevronUp, Play, Square, Bookmark, BookmarkCheck, Trash2, Star } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { ttsManager } from '../utils/ttsManager';
 import { sanitizeAIResponseForSpeech } from '../utils/textSanitizer';
-import {
-  saveReflection, deleteReflection, loadReflections, deriveCategory,
-  updateReflectionTranslation,
-  ALL_CATEGORIES, type SavedReflection
-} from '../utils/savedReflections';
+import { saveReflection, loadReflections, deleteReflection, updateReflectionFlags, updateReflectionTranslation, deriveCategory, type SavedReflection } from '../utils/savedReflections';
 
 import type { Language } from '../types';
 import './AIChatWindow.css';
@@ -40,7 +36,7 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [playingMsgId, setPlayingMsgId] = useState<string | null>(null);
   const [savedItems, setSavedItems] = useState<SavedReflection[]>(() => loadReflections());
-  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [savedTab, setSavedTab] = useState<'all' | 'favorites' | 'recent'>('all');
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [translating, setTranslating] = useState(false);
 
@@ -102,7 +98,6 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
     if (activeTab === 'saved') {
       const fresh = loadReflections();
       setSavedItems(fresh);
-      setCategoryFilter('All');
 
       // Lazy translate: find cards whose origin lang differs from current lang and have no cached translation
       const needsTranslation = fresh.filter(r => (r.lang || 'en') !== language && !r.response_translated);
@@ -222,39 +217,42 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
     }
   };
 
-  const handleSaveMessage = (msg: Message, question: string) => {
-    if (msg.savedId) return; // already saved
-    const { category, categoryIcon } = deriveCategory(question);
-    const saved = saveReflection({
-      source,
-      topic: topicName || source,
-      question,
-      category,
-      categoryIcon,
-      response: msg.content,
-      lang: language,
-    });
-    // Mark the message as saved so the button turns into a checkmark
-    setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, savedId: saved.id } : m));
-    setSavedItems(loadReflections());
+  const handleToggleBookmark = (msg: Message | { savedId?: string }) => {
+    if (!msg.savedId) return;
+    const item = savedItems.find(r => r.id === msg.savedId);
+    if (!item) return;
 
-    // Instantly trigger background translation to the other language so it's ready when they switch
-    const otherLang = language === 'es' ? 'en' : 'es';
-    fetch(`/api/translate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texts: [saved.topic, saved.question, saved.response], from: language, to: otherLang })
-    }).then(res => res.json()).then(data => {
-      if (data?.translated?.length === 3) {
-        updateReflectionTranslation(saved.id, {
-          topic_translated: data.translated[0],
-          question_translated: data.translated[1],
-          response_translated: data.translated[2]
-        });
-        setSavedItems(loadReflections());
-      }
-    }).catch(e => console.warn('[AIChatWindow] Background auto-translation failed', e));
+    // Toggle temporary status
+    const newTempStatus = !item.isTemporary;
+
+    updateReflectionFlags(msg.savedId, {
+      isTemporary: newTempStatus,
+      // If reverting to recent history, remove favorite status and restart the 48h clock
+      isFavorite: newTempStatus ? false : item.isFavorite,
+      ...(newTempStatus ? { timestamp: Date.now() } : {})
+    });
+    setSavedItems(loadReflections());
   };
+
+  const handleToggleFavorite = (msg: Message | { savedId?: string }) => {
+    if (!msg.savedId) return;
+    const item = savedItems.find(r => r.id === msg.savedId);
+    if (!item) return;
+
+    const newFav = !item.isFavorite;
+
+    if (newFav) {
+      // Favoriting explicitly saves it permanently
+      updateReflectionFlags(msg.savedId, { isFavorite: true, isTemporary: false });
+    } else {
+      // Un-favoriting leaves it in the "All Saved" (Bookmarked) state permanently
+      updateReflectionFlags(msg.savedId, { isFavorite: false, isTemporary: false });
+    }
+
+    setSavedItems(loadReflections());
+  };
+
+  // No translation on manual save toggle now; it happens dynamically
 
 
   const handleDeleteSaved = (id: string) => {
@@ -306,10 +304,41 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
         isError: true,
       }]);
     } else if (response) {
-      const aiMsg: Message = { id: `ai-${Date.now()}`, role: 'ai', content: response };
+      // Auto-save every response as temporary implicitly
+      const { category, categoryIcon } = deriveCategory(userText);
+      const saved = saveReflection({
+        source,
+        topic: topicName || source,
+        question: userText,
+        category,
+        categoryIcon,
+        response: response,
+        lang: language,
+        isTemporary: true,
+        isFavorite: false,
+      });
+      setSavedItems(loadReflections());
+
+      // Instantly trigger background translation to the other language so it's ready when they switch
+      const otherLang = language === 'es' ? 'en' : 'es';
+      fetch(`/api/translate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: [saved.topic, saved.question, saved.response], from: language, to: otherLang })
+      }).then(res => res.json()).then(data => {
+        if (data?.translated?.length === 3) {
+          updateReflectionTranslation(saved.id, {
+            topic_translated: data.translated[0],
+            question_translated: data.translated[1],
+            response_translated: data.translated[2]
+          });
+          setSavedItems(loadReflections());
+        }
+      }).catch(e => console.warn('[AIChatWindow] Background auto-translation failed', e));
+
+      const aiMsg: Message = { id: `ai-${Date.now()}`, role: 'ai', content: response, savedId: saved.id };
       setMessages(prev => {
         const updated = [...prev, aiMsg];
-        // Auto-derive the question that prompted this response (last user message)
         return updated;
       });
       // Store user's question alongside so save button knows what was asked
@@ -322,15 +351,15 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
   };
 
   // Saved tab filtered list
-  const filteredSaved = categoryFilter === 'All'
-    ? savedItems
-    : savedItems.filter(r => r.category === categoryFilter);
-
-  const savedCount = savedItems.length;
+  const filteredSaved = savedItems.filter(item => {
+    if (savedTab === 'favorites') return item.isFavorite;
+    if (savedTab === 'recent') return item.isTemporary;
+    return !item.isTemporary; // 'all' means all permanently saved items
+  });
 
   // Tab labels
   const chatLabel = language === 'es' ? 'Chat' : 'Chat';
-  const savedLabel = language === 'es' ? `Guardado (${savedCount})` : `Saved (${savedCount})`;
+  const savedLabel = language === 'es' ? 'Guardado' : 'Saved';
 
   if (!aiEnabled) {
     return (
@@ -358,10 +387,7 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
         <>
           {/* Chat Messages */}
           <div className="ai-messages-list">
-            {messages.map((msg, idx) => {
-              // Find the preceding user message to use as the question for save
-              const question = (msg as any)._question ||
-                [...messages].reverse().find((m, ri) => ri > messages.length - 1 - idx && m.role === 'user')?.content || '';
+            {messages.map((msg) => {
               return (
                 <div key={msg.id} className={`ai-message-wrapper ${msg.role}`}>
                   <div className={`ai-message ${msg.role}`}>
@@ -378,12 +404,19 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
                         {playingMsgId === msg.id ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
                       </button>
                       <button
-                        className={`ai-action-btn ai-save-btn ${msg.savedId ? 'saved' : ''}`}
-                        onClick={() => handleSaveMessage(msg, question)}
-                        aria-label={msg.savedId ? 'Saved' : 'Save reflection'}
-                        title={msg.savedId ? (language === 'es' ? 'Guardado' : 'Saved') : (language === 'es' ? 'Guardar reflexión' : 'Save reflection')}
+                        className={`ai-action-btn ai-save-btn ${msg.savedId && !savedItems.find(r => r.id === msg.savedId)?.isTemporary ? 'saved' : ''}`}
+                        onClick={() => handleToggleBookmark(msg)}
+                        aria-label={msg.savedId && !savedItems.find(r => r.id === msg.savedId)?.isTemporary ? 'Saved' : 'Save reflection'}
+                        title={msg.savedId && !savedItems.find(r => r.id === msg.savedId)?.isTemporary ? (language === 'es' ? 'Guardado' : 'Saved') : (language === 'es' ? 'Guardar reflexión' : 'Save reflection')}
                       >
-                        {msg.savedId ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                        {msg.savedId && !savedItems.find(r => r.id === msg.savedId)?.isTemporary ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                      </button>
+                      <button
+                        className="ai-action-btn ai-star-btn"
+                        onClick={() => handleToggleFavorite(msg)}
+                        title={language === 'es' ? 'Favorito' : 'Favorite'}
+                      >
+                        <Star size={16} fill={savedItems.find(r => r.id === msg.savedId)?.isFavorite ? 'currentColor' : 'none'} color={savedItems.find(r => r.id === msg.savedId)?.isFavorite ? 'inherit' : 'currentColor'} />
                       </button>
                     </div>
                   )}
@@ -445,28 +478,42 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
             </p>
           </div>
 
-          {/* Category Filter */}
-          <div className="ai-saved-filter-row">
-            <select
-              className="ai-saved-filter-select"
-              aria-label={language === 'es' ? 'Filtrar por categoria' : 'Filter by category'}
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-            >
-              <option value="All" style={{ background: '#1e1e2e', color: '#fff' }}>
-                {language === 'es' ? `Todo (${savedItems.length})` : `All (${savedItems.length})`}
-              </option>
-              {ALL_CATEGORIES.filter(cat => cat !== 'All' && savedItems.some(r => r.category === cat)).map(cat => {
-                const count = savedItems.filter(r => r.category === cat).length;
-                const icon = savedItems.find(r => r.category === cat)?.categoryIcon ?? '';
-                const displayCat = localizeCategory(cat);
-                return (
-                  <option key={cat} value={cat} style={{ background: '#1e1e2e', color: '#fff' }}>
-                    {icon} {displayCat} ({count})
-                  </option>
-                );
-              })}
-            </select>
+          {/* Filter Tabs */}
+          <div className="ai-saved-filter-row" style={{ display: 'flex', gap: '8px', padding: '0 24px 16px', overflowX: 'auto' }}>
+            {['All Saved', 'Favorites', 'Recent 48h history'].map((tabStr, idx) => {
+              const tabVal = ['all', 'favorites', 'recent'][idx] as 'all' | 'favorites' | 'recent';
+              const langStr = language === 'es'
+                ? ['Todo Guardado', 'Favoritos', 'Historial 48h'][idx]
+                : tabStr;
+
+              const count = savedItems.filter(item => {
+                if (tabVal === 'favorites') return item.isFavorite;
+                if (tabVal === 'recent') return item.isTemporary;
+                return !item.isTemporary;
+              }).length;
+
+              return (
+                <button
+                  key={tabVal}
+                  onClick={() => setSavedTab(tabVal)}
+                  style={{
+                    background: savedTab === tabVal ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.05)',
+                    border: `1px solid ${savedTab === tabVal ? 'rgba(212, 175, 55, 0.5)' : 'rgba(255,255,255,0.1)'}`,
+                    color: savedTab === tabVal ? '#D4AF37' : 'rgba(255,255,255,0.7)',
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    fontSize: '0.85rem',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    flexShrink: 0
+                  }}
+                >
+                  {langStr} ( {count} )
+                </button>
+              );
+            })}
           </div>
 
           {filteredSaved.length === 0 ? (
@@ -480,11 +527,11 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
               {filteredSaved.map(item => {
                 const originLang = item.lang || 'en';
                 let topicDisplay = (originLang !== language && item.topic_translated) ? item.topic_translated : item.topic;
-                
+
                 if (item.source === 'Bible in a Year') {
                   topicDisplay = topicDisplay.replace(/^(Day|Día)\s+\d+\s+[—\-]\s*/i, '');
                 }
-                
+
                 const questionDisplay = (originLang !== language && item.question_translated) ? item.question_translated : item.question;
                 const isExpanded = expandedCards.has(item.id);
                 const isPlaying = playingMsgId === `saved-${item.id}`;
@@ -515,6 +562,21 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
                           aria-label="Play"
                         >
                           {isPlaying ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
+                        </button>
+                        <button
+                          className={`ai-action-btn ai-save-btn ${!item.isTemporary ? 'saved' : ''}`}
+                          onClick={(e) => { e.stopPropagation(); handleToggleBookmark({ savedId: item.id } as Message); }}
+                          aria-label={!item.isTemporary ? 'Saved' : 'Save reflection'}
+                          title={!item.isTemporary ? (language === 'es' ? 'Guardado' : 'Saved') : (language === 'es' ? 'Guardar reflexión' : 'Save reflection')}
+                        >
+                          {!item.isTemporary ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                        </button>
+                        <button
+                          className={`ai-action-btn ai-star-btn ${item.isFavorite ? 'saved' : ''}`}
+                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite({ savedId: item.id } as Message); }}
+                          title={language === 'es' ? 'Favorito' : 'Favorite'}
+                        >
+                          <Star size={16} fill={item.isFavorite ? 'currentColor' : 'none'} color={item.isFavorite ? 'inherit' : 'currentColor'} />
                         </button>
                         {isExpanded ? <ChevronUp size={16} color="rgba(255,255,255,0.3)" /> : <ChevronDown size={16} color="rgba(255,255,255,0.3)" />}
                       </div>

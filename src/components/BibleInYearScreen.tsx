@@ -23,6 +23,7 @@ import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { useAI } from '../context/AIContext';
 import { AIModal } from './AIModal';
 import { AITopicSelectionModal, type TopicOption } from './AITopicSelectionModal';
+import { formatCitation } from '../utils/textSanitizer';
 import './BibleInYearScreen.css';
 
 interface BibleDay {
@@ -57,14 +58,12 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [currentDay, setCurrentDay] = useState(() => {
         if (!bibleStartDate) return 1;
         if (missedDays.length > 0) return missedDays[0];
-        if (expectedDay > 1) {
-            // Can't use isDayComplete here easily inside useState initializer because of closure
-            // but we can check completedDays directly
-            if (!completedDays.includes(expectedDay)) {
-                return expectedDay;
-            }
-        }
-        return 1;
+
+        // If there are no missed days from previous dates,
+        // we should look at the current expected day.
+        // Even if they have already completed it today, showing the most recent completed
+        // active day is the best user experience.
+        return expectedDay > 0 ? expectedDay : 1;
     });
 
     const [readings, setReadings] = useState<Reading[]>([]);
@@ -131,30 +130,45 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
     const getAITopics = (): TopicOption[] => {
         const options: TopicOption[] = [];
-        
-        readings.forEach((reading, rIdx) => {
-            const fullReadingPrompt = language === 'es' ? 'Reflexiona sobre la lectura completa...' : 'Discuss the full reading...';
-            options.push({
-                id: `sec-${rIdx}`,
-                type: 'section',
-                title: fullReadingPrompt,
-                subtitle: '',
-                contextStr: '', // Not utilized in Bible yet
-                topicName: reading.citation ? `${reading.title} (${reading.citation})` : reading.title,
-                source: 'Bible in a Year',
-                previewText: '',
-                iconType: 'chat',
-                eyebrow: reading.title,
-                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, '-') : undefined
-            });
 
+        readings.forEach((reading, rIdx) => {
             const chapters = parseBibleChapters(reading);
+
+            if (rIdx > 0) {
+                options.push({
+                    id: `div-reading-${rIdx}`,
+                    type: 'divider',
+                    title: '',
+                    topicName: '',
+                    source: '',
+                    contextStr: ''
+                });
+            }
+
+            if (chapters.length > 1) {
+                const citationFormatted = formatCitation(reading.citation, language);
+                const fullReadingPrompt = language === 'es' ? 'Reflexiona sobre la lectura completa...' : 'Discuss the full reading...';
+                options.push({
+                    id: `sec-${rIdx}`,
+                    type: 'section',
+                    title: fullReadingPrompt,
+                    subtitle: '',
+                    contextStr: '', // Not utilized in Bible yet
+                    topicName: reading.citation ? `${reading.title} (${citationFormatted})` : reading.title,
+                    source: 'Bible in a Year',
+                    previewText: '',
+                    iconType: 'chat',
+                    eyebrow: reading.title,
+                    eyebrowHighlight: reading.citation ? citationFormatted : undefined
+                });
+            }
+
             chapters.forEach((chapter, cIdx) => {
                 const cleanChapterText = chapter.text.replace(/###.*?\n/g, '').replace(/\[\d+\]\s*/g, '').trim();
                 options.push({
                     id: `chap-${rIdx}-${cIdx}`,
                     type: 'chapter',
-                    title: chapter.title ? chapter.title.replace(/\s*-\s*/g, '-') : '',
+                    title: chapter.title ? formatCitation(chapter.title, language) : '',
                     subtitle: '',
                     contextStr: '',
                     topicName: `${reading.title} (${chapter.title})`,
@@ -164,6 +178,15 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     eyebrow: reading.title
                 });
             });
+        });
+
+        options.push({
+            id: 'div-general',
+            type: 'divider',
+            title: '',
+            topicName: '',
+            source: '',
+            contextStr: ''
         });
 
         options.push({
@@ -180,7 +203,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
         return options;
     };
 
-// Auto-mark day complete if all chapters are done
+    // Auto-mark day complete if all chapters are done
     useEffect(() => {
         if (!readings || readings.length === 0) return;
         if (isDayComplete(currentDay)) return;
@@ -761,7 +784,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
                             return (
                                 <section key={idx} className="reading-section-sacred">
-                                                                                                            <div className="section-header-sacred">
+                                    <div className="section-header-sacred">
                                         <h2 className="section-title-sacred">{reading.title}</h2>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                             <button
@@ -812,7 +835,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                                                     />
                                                 </div>
 
-                                                                                                {expandedSections[rowKey] && (
+                                                {expandedSections[rowKey] && (
                                                     <div className="card-content-expanded fade-in">
                                                         {renderContent(chapter.text)}
 

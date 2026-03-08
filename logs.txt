@@ -1,0 +1,699 @@
+﻿commit 32698f57e0f26d16dbbb00a392db0b5d5b42b2db
+Author: palomo32 <palomo32@gmail.com>
+Date:   Sun Mar 8 14:46:23 2026 -0500
+
+    fix(citation): unify verse separation to comma for Spanish and English, clean up AI modal accents
+
+diff --git a/TODO.md b/TODO.md
+index 8220137..4acb356 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -3,6 +3,11 @@
+ ## ≡ƒ¢æ URGENT FIXES (Next Session)
+ 
+ ### ≡ƒÄ¿ AI Companion UI & Flow Standardization (Completed Mar 7, 2026)
++- [x] **Dark Card UI for AI Topic Selection Modal**
++  - **Wireframe Mapping:** Standardized the topic option cards to match the new UI wireframes (flex column layouts, separate "eyebrow" text, main title text, and prompt).
++  - **Dynamic Typography:** Implemented two-tone typography (e.g. Gold "First Reading", White "Genesis 12-13") via `eyebrowHighlight` parameter.
++  - **Bible In A Year Redundancy Fix:** Removed redundant scripture text on parent/section cards, replacing it with a localized "Discuss the full reading..." call to action.
++  - **Vercel TS Strictness Fix:** Debugged and resolved a strict TypeScript compilation error (`error TS6133: 'titleText' is declared but its value is never read`) that caused local Vercel builds to fail, bringing the deployment back online.
+ - [x] **Universal Entry Points & Standardized Context**
+   - **Inline Buttons:** Transplanted and standardized the "Ask AI about this..." inline buttons across both `BibleInYearScreen` and `DailyReadingsScreen` into uniform, flex-column wrappers with custom border styling (`var(--gold)` gradients).
+   - **Context Fixing:** Ensured accurate context parsing so the AI initial greeting exactly cites the current reading/chapter without invalid html/encoded character artifacts. 
+diff --git a/src/components/AITopicSelectionModal.tsx b/src/components/AITopicSelectionModal.tsx
+index 41d98fa..2697995 100644
+--- a/src/components/AITopicSelectionModal.tsx
++++ b/src/components/AITopicSelectionModal.tsx
+@@ -46,7 +46,7 @@ export function AITopicSelectionModal({ isOpen, onClose, options, onSelect, onOp
+         <div className="ai-topic-modal-header">
+           <div className="ai-topic-modal-title">
+             <Sparkles size={20} color="#d4af37" />
+-            <span>{language === 'es' ? 'Compa∩┐╜ero IA' : 'AI Companion'}</span>
++            <span>{language === 'es' ? 'Compa├▒ero IA' : 'AI Companion'}</span>
+           </div>
+           <button className="ai-topic-modal-close" onClick={onClose} aria-label="Close">
+             <X size={24} />
+@@ -55,7 +55,7 @@ export function AITopicSelectionModal({ isOpen, onClose, options, onSelect, onOp
+ 
+         <div className="ai-topic-modal-body">
+           <h3 className="ai-topic-prompt">
+-            {language === 'es' ? '∩┐╜Sobre qu∩┐╜ te gustar∩┐╜a reflexionar o discutir?' : 'What would you like to reflect or discuss?'}
++            {language === 'es' ? '┬┐Sobre qu├⌐ te gustar├¡a reflexionar o discutir?' : 'What would you like to reflect or discuss?'}
+           </h3>
+ 
+           <div className="ai-topic-list">
+diff --git a/src/components/BibleInYearScreen.tsx b/src/components/BibleInYearScreen.tsx
+index 4e83510..ef4eea0 100644
+--- a/src/components/BibleInYearScreen.tsx
++++ b/src/components/BibleInYearScreen.tsx
+@@ -145,7 +145,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
+                 previewText: '',
+                 iconType: 'chat',
+                 eyebrow: reading.title,
+-                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : undefined
++                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, '-') : undefined
+             });
+ 
+             const chapters = parseBibleChapters(reading);
+@@ -154,7 +154,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
+                 options.push({
+                     id: `chap-${rIdx}-${cIdx}`,
+                     type: 'chapter',
+-                    title: chapter.title ? chapter.title.replace(/\s*-\s*/g, ' - ') : '',
++                    title: chapter.title ? chapter.title.replace(/\s*-\s*/g, '-') : '',
+                     subtitle: '',
+                     contextStr: '',
+                     topicName: `${reading.title} (${chapter.title})`,
+diff --git a/src/components/DailyReadingsScreen.tsx b/src/components/DailyReadingsScreen.tsx
+index 20ff7e4..1f74275 100644
+--- a/src/components/DailyReadingsScreen.tsx
++++ b/src/components/DailyReadingsScreen.tsx
+@@ -97,13 +97,15 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void })
+         if (readingsToRender) {
+             readingsToRender.forEach((reading, rIdx) => {
+                 const titleWithCitation = reading.citation
+-                    ? `${normalizeReadingTitle(reading.title)} (${reading.citation.replace(/,/g, ', ')})`
+-                    : normalizeReadingTitle(reading.title);
++                    ? (language === 'es'
++                        ? reading.citation.replace(/(\d+),\s*(\d)/g, '$1:$2').replace(/\s*-\s*/g, '-').replace(/\.\s*/g, ', ')
++                        : reading.citation.replace(/\s*-\s*/g, '-'))
++                    : (language === 'es' ? 'Lectura' : 'Reading');
+ 
+                 options.push({
+                     id: `reading-${rIdx}`,
+                     type: 'section',
+-                    title: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : normalizeReadingTitle(reading.title),
++                    title: reading.citation ? reading.citation.replace(/(\d+),\s*(\d)/g, '$1:$2').replace(/\s*-\s*/g, '-') : normalizeReadingTitle(reading.title),
+                     subtitle: '',
+                     contextStr: reading.text,
+                     topicName: titleWithCitation,
+@@ -851,7 +853,11 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void })
+                                             </button>
+                                             
+                                             <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+-                                                {(reading.citation ? reading.citation.replace(/,/g, ',  ') : null) || (language === 'es' ? 'Lectura' : 'Reading')}
++                                                {reading.citation
++                                                    ? (language === 'es'
++                                                        ? reading.citation.replace(/(\d+),\s*(\d)/g, '$1:$2').replace(/\s*-\s*/g, '-').replace(/\.\s*/g, ', ')
++                                                        : reading.citation.replace(/\s*-\s*/g, '-'))
++                                                    : (language === 'es' ? 'Lectura' : 'Reading')}
+                                                 {isCompleted && (
+                                                     <CheckCircle size={14} color="#22c55e" />
+                                                 )}
+
+commit 683539bc5cb730fb16d82081c7aa57f8e451d367
+Author: palomo32 <palomo32@gmail.com>
+Date:   Sat Mar 7 20:52:48 2026 -0600
+
+    fix(ai-companion): remove unused titleText variable to fix strict TS build on Vercel
+
+diff --git a/build_output.txt b/build_output.txt
+new file mode 100644
+index 0000000..1f134b5
+Binary files /dev/null and b/build_output.txt differ
+diff --git a/build_output2.txt b/build_output2.txt
+new file mode 100644
+index 0000000..7528ba2
+Binary files /dev/null and b/build_output2.txt differ
+diff --git a/src/components/BibleInYearScreen.tsx b/src/components/BibleInYearScreen.tsx
+index 7cb24b4..4e83510 100644
+--- a/src/components/BibleInYearScreen.tsx
++++ b/src/components/BibleInYearScreen.tsx
+@@ -133,7 +133,6 @@ export default function BibleInYearScreen({ onBack }: Props) {
+         const options: TopicOption[] = [];
+         
+         readings.forEach((reading, rIdx) => {
+-            const titleText = reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : reading.title;
+             const fullReadingPrompt = language === 'es' ? 'Reflexiona sobre la lectura completa...' : 'Discuss the full reading...';
+             options.push({
+                 id: `sec-${rIdx}`,
+@@ -146,8 +145,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
+                 previewText: '',
+                 iconType: 'chat',
+                 eyebrow: reading.title,
+-                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : undefined,
+-                
++                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : undefined
+             });
+ 
+             const chapters = parseBibleChapters(reading);
+diff --git a/ts_errors.txt b/ts_errors.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/tsc_error.txt b/tsc_error.txt
+new file mode 100644
+index 0000000..0a82ee9
+Binary files /dev/null and b/tsc_error.txt differ
+
+commit 6f27be73da82eee39096e77610b1e793200284ac
+Author: palomo32 <palomo32@gmail.com>
+Date:   Sat Mar 7 20:43:44 2026 -0600
+
+    feat: redesign AI topic selection modal with dark card ui and refine layout
+
+diff --git a/src/components/AITopicSelectionModal.css b/src/components/AITopicSelectionModal.css
+index 949fb76..8829afc 100644
+--- a/src/components/AITopicSelectionModal.css
++++ b/src/components/AITopicSelectionModal.css
+@@ -9,7 +9,7 @@
+     z-index: 1000;
+     display: flex;
+     justify-content: center;
+-    align-items: center; /* center vertically unlike AIModal which is a bottom sheet */
++    align-items: center;
+     animation: fadeIn 0.2s ease;
+     padding: 20px;
+ }
+@@ -18,12 +18,12 @@
+     background-color: var(--secondary-bg, #1a1b1e);
+     width: 100%;
+     max-width: 500px;
+-    max-height: 85vh;
++    max-height: 95vh;
+     border-radius: 20px;
+     display: flex;
+     flex-direction: column;
+     animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
++    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+     border: 1px solid rgba(212, 175, 55, 0.2);
+     overflow: hidden;
+ }
+@@ -33,7 +33,7 @@
+     justify-content: space-between;
+     align-items: center;
+     padding: 18px 24px;
+-    background-color: rgba(0,0,0, 0.2);
++    background-color: rgba(0, 0, 0, 0.2);
+     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+ }
+ 
+@@ -84,113 +84,112 @@
+     display: flex;
+     flex-direction: column;
+     padding: 0 16px 24px;
+-    gap: 10px;
++    gap: 12px;
+ }
+ 
+-.ai-topic-btn {
++.ai-topic-card {
+     display: flex;
+-    justify-content: space-between;
+-    align-items: center;
++    align-items: flex-start;
++    gap: 16px;
+     width: 100%;
+-    background-color: rgba(255, 255, 255, 0.04);
++    background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+     border: 1px solid rgba(255, 255, 255, 0.08);
+-    border-radius: 12px;
+-    padding: 16px 20px;
++    border-radius: 16px;
++    padding: 16px;
+     cursor: pointer;
+-    transition: all 0.2s;
++    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+     text-align: left;
++    position: relative;
++    overflow: hidden;
+ }
+ 
+-.ai-topic-btn:hover {
+-    background-color: rgba(212, 175, 55, 0.1);
++.ai-topic-card:hover {
++    background: linear-gradient(145deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.05) 100%);
+     border-color: rgba(212, 175, 55, 0.3);
++    transform: translateY(-2px);
++    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+ }
+ 
+-.ai-topic-btn-section {
+-    background-color: rgba(255, 255, 255, 0.06);
+-    border-color: rgba(255, 255, 255, 0.12);
+-}
+-
+-.ai-topic-btn-section .ai-topic-title {
++.ai-topic-card-icon {
++    display: flex;
++    align-items: center;
++    justify-content: center;
++    width: 40px;
++    height: 40px;
++    background-color: rgba(212, 175, 55, 0.15);
++    border-radius: 12px;
+     color: var(--gold, #d4af37);
+-    font-size: 1.125rem;
+-    font-family: 'Georgia', serif;
+-    letter-spacing: 0.03em;
++    flex-shrink: 0;
+ }
+ 
+-.ai-topic-btn-chapter {
+-    padding: 14px 20px 14px 44px; /* Indent sub-chapters */
+-    position: relative;
++.ai-topic-card-content {
++    display: flex;
++    flex-direction: column;
++    gap: 6px;
++    flex-grow: 1;
+ }
+ 
+-.ai-topic-btn-chapter::before {
+-    content: '';
+-    position: absolute;
+-    left: 24px;
+-    top: 50%;
+-    transform: translateY(-50%);
+-    width: 6px;
+-    height: 6px;
+-    border-radius: 50%;
+-    background-color: rgba(255, 255, 255, 0.9);
+-    box-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
++.ai-topic-card-eyebrow {
++    font-size: 0.75rem;
++    font-weight: 600;
++    text-transform: uppercase;
++    letter-spacing: 0.05em;
++    color: var(--gold, #d4af37);
+ }
+ 
+-.ai-topic-btn-general {
+-    margin-top: 10px;
+-    background-color: rgba(0, 0, 0, 0.2);
+-    border: 1px dashed rgba(212, 175, 55, 0.3);
+-    justify-content: center;
++.ai-topic-card-title {
++    font-family: 'Georgia', serif;
++    font-size: 1.15rem;
++    font-weight: 600;
++    color: #fff;
++    line-height: 1.3;
+ }
+ 
+-.ai-topic-btn-general .ai-topic-title {
+-    color: var(--gold, #d4af37);
++.ai-topic-card-preview {
++    font-size: 0.875rem;
++    color: rgba(255, 255, 255, 0.6);
+     font-style: italic;
+-    text-align: center;
+-    width: 100%;
+-    font-size: 1.05rem;
++    line-height: 1.4;
++    display: -webkit-box;
++    -webkit-line-clamp: 2;
++    -webkit-box-orient: vertical;
++    overflow: hidden;
+ }
+ 
+-.ai-topic-btn-text {
++.ai-topic-card-arrow {
+     display: flex;
+-    flex-direction: column;
+-    gap: 4px;
+-}
+-
+-.ai-topic-title {
+-    color: #fff;
+-    font-size: 0.95rem;
+-    font-weight: 500;
+-}
+-
+-.ai-topic-btn-chapter .ai-topic-title {
+-    font-size: 0.875rem;
++    align-items: center;
++    justify-content: center;
++    height: 100%;
++    color: rgba(255, 255, 255, 0.3);
++    transition: color 0.2s, transform 0.2s;
++    align-self: center;
+ }
+ 
+-.ai-topic-subtitle {
+-    color: rgba(255, 255, 255, 0.85);
+-    font-size: 0.875rem;
++.ai-topic-card:hover .ai-topic-card-arrow {
++    color: var(--gold, #d4af37);
++    transform: translateX(4px);
+ }
+ 
+ @keyframes scaleUp {
+-    from { 
++    from {
+         opacity: 0;
+         transform: scale(0.95) translateY(10px);
+     }
+-    to { 
++
++    to {
+         opacity: 1;
+         transform: scale(1) translateY(0);
+     }
+ }
+ 
+-
+ .ai-topic-modal-footer {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     gap: 12px;
+     padding: 16px 24px;
+-    background-color: rgba(0,0,0, 0.2);
++    background-color: rgba(0, 0, 0, 0.2);
+     border-top: 1px solid rgba(255, 255, 255, 0.05);
+ }
+ 
+@@ -213,5 +212,4 @@
+ .ai-topic-footer-btn:hover {
+     background-color: rgba(255, 255, 255, 0.1);
+     color: #fff;
+-}
+-
++}
+\ No newline at end of file
+diff --git a/src/components/AITopicSelectionModal.tsx b/src/components/AITopicSelectionModal.tsx
+index 2fbf179..41d98fa 100644
+--- a/src/components/AITopicSelectionModal.tsx
++++ b/src/components/AITopicSelectionModal.tsx
+@@ -1,4 +1,4 @@
+-import { Sparkles, X, ChevronRight, MessageCircle, Bookmark } from 'lucide-react';
++import { Sparkles, X, ChevronRight, MessageCircle, Bookmark, Book, BookOpenText, MessageSquareQuote } from 'lucide-react';
+ import './AITopicSelectionModal.css';
+ 
+ export interface TopicOption {
+@@ -9,6 +9,10 @@ export interface TopicOption {
+   topicName: string;
+   contextStr: string;
+   source: string;
++  previewText?: string;
++  iconType?: 'book' | 'reading' | 'chat';
++  eyebrow?: string;
++  eyebrowHighlight?: string;
+ }
+ 
+ interface AITopicSelectionModalProps {
+@@ -24,37 +28,73 @@ interface AITopicSelectionModalProps {
+ export function AITopicSelectionModal({ isOpen, onClose, options, onSelect, onOpenChat, onOpenSaved, language }: AITopicSelectionModalProps) {
+   if (!isOpen) return null;
+ 
++  const renderIcon = (type?: string) => {
++    switch (type) {
++      case 'book':
++        return <Book size={20} />;
++      case 'reading':
++        return <BookOpenText size={20} />;
++      case 'chat':
++      default:
++        return <MessageSquareQuote size={20} />;
++    }
++  };
++
+   return (
+     <div className="ai-topic-modal-overlay" onClick={onClose}>
+       <div className="ai-topic-modal-content" onClick={e => e.stopPropagation()}>
+         <div className="ai-topic-modal-header">
+           <div className="ai-topic-modal-title">
+             <Sparkles size={20} color="#d4af37" />
+-            <span>{language === 'es' ? 'Compa├▒ero IA' : 'AI Companion'}</span>
++            <span>{language === 'es' ? 'Compa∩┐╜ero IA' : 'AI Companion'}</span>
+           </div>
+           <button className="ai-topic-modal-close" onClick={onClose} aria-label="Close">
+             <X size={24} />
+           </button>
+         </div>
+-        
++
+         <div className="ai-topic-modal-body">
+           <h3 className="ai-topic-prompt">
+-            {language === 'es' ? '┬┐Sobre qu├⌐ te gustar├¡a reflexionar o discutir?' : 'What would you like to reflect or discuss?'}
++            {language === 'es' ? '∩┐╜Sobre qu∩┐╜ te gustar∩┐╜a reflexionar o discutir?' : 'What would you like to reflect or discuss?'}
+           </h3>
+-          
++
+           <div className="ai-topic-list">
+             {options.map((opt) => (
+-              <button
++              <div
+                 key={opt.id}
+-                className={`ai-topic-btn ai-topic-btn-${opt.type}`}
++                className="ai-topic-card"
+                 onClick={() => onSelect(opt)}
++                role="button"
++                tabIndex={0}
+               >
+-                <div className="ai-topic-btn-text">
+-                  <span className="ai-topic-title">{opt.title}</span>
+-                  {opt.subtitle && <span className="ai-topic-subtitle">{opt.subtitle}</span>}
++                <div className="ai-topic-card-icon">
++                  {renderIcon(opt.iconType)}
+                 </div>
+-                <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
+-              </button>
++                <div className="ai-topic-card-content">
++                  {opt.eyebrow && (
++                    <span className="ai-topic-card-eyebrow">
++                      {opt.eyebrow}
++                      {opt.eyebrowHighlight && (
++                        <>
++                          <span style={{ margin: '0 4px', color: 'rgba(255, 255, 255, 0.4)' }}>ΓÇó</span>
++                          <span style={{ color: '#fff' }}>{opt.eyebrowHighlight}</span>
++                        </>
++                      )}
++                    </span>
++                  )}
++                  <span className="ai-topic-card-title">
++                    {opt.title} {opt.subtitle ? ` | ${opt.subtitle}` : ''}
++                  </span>
++                  {opt.previewText && (
++                    <span className="ai-topic-card-preview">
++                      "{opt.previewText}"
++                    </span>
++                  )}
++                </div>
++                <div className="ai-topic-card-arrow">
++                  <ChevronRight size={20} />
++                </div>
++              </div>
+             ))}
+           </div>
+         </div>
+@@ -80,3 +120,4 @@ export function AITopicSelectionModal({ isOpen, onClose, options, onSelect, onOp
+   );
+ }
+ 
++
+diff --git a/src/components/BibleInYearScreen.tsx b/src/components/BibleInYearScreen.tsx
+index 2b4bc5a..7cb24b4 100644
+--- a/src/components/BibleInYearScreen.tsx
++++ b/src/components/BibleInYearScreen.tsx
+@@ -133,18 +133,26 @@ export default function BibleInYearScreen({ onBack }: Props) {
+         const options: TopicOption[] = [];
+         
+         readings.forEach((reading, rIdx) => {
++            const titleText = reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : reading.title;
++            const fullReadingPrompt = language === 'es' ? 'Reflexiona sobre la lectura completa...' : 'Discuss the full reading...';
+             options.push({
+                 id: `sec-${rIdx}`,
+                 type: 'section',
+-                title: reading.title,
+-                subtitle: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : '',
++                title: fullReadingPrompt,
++                subtitle: '',
+                 contextStr: '', // Not utilized in Bible yet
+                 topicName: reading.citation ? `${reading.title} (${reading.citation})` : reading.title,
+-                source: 'Bible in a Year'
++                source: 'Bible in a Year',
++                previewText: '',
++                iconType: 'chat',
++                eyebrow: reading.title,
++                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : undefined,
++                
+             });
+ 
+             const chapters = parseBibleChapters(reading);
+             chapters.forEach((chapter, cIdx) => {
++                const cleanChapterText = chapter.text.replace(/###.*?\n/g, '').replace(/\[\d+\]\s*/g, '').trim();
+                 options.push({
+                     id: `chap-${rIdx}-${cIdx}`,
+                     type: 'chapter',
+@@ -152,7 +160,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
+                     subtitle: '',
+                     contextStr: '',
+                     topicName: `${reading.title} (${chapter.title})`,
+-                    source: 'Bible in a Year'
++                    source: 'Bible in a Year',
++                    previewText: cleanChapterText ? (cleanChapterText.length > 90 ? cleanChapterText.substring(0, 90).replace(/\s+[^\s]*$/, '...') : cleanChapterText) : '',
++                    iconType: 'reading',
++                    eyebrow: reading.title
+                 });
+             });
+         });
+@@ -163,7 +174,9 @@ export default function BibleInYearScreen({ onBack }: Props) {
+             title: language === 'es' ? '┬┐Sobre qu├⌐ m├ís preferir├¡as discutir o reflexionar?' : 'What else would you prefer to discuss or reflect on?',
+             topicName: language === 'es' ? `Reflexi├│n General` : `General Reflection`,
+             contextStr: '',
+-            source: 'Bible in a Year'
++            source: 'Bible in a Year',
++            iconType: 'chat',
++            eyebrow: language === 'es' ? 'General' : 'General'
+         });
+ 
+         return options;
+diff --git a/src/components/DailyReadingsScreen.tsx b/src/components/DailyReadingsScreen.tsx
+index eef995e..20ff7e4 100644
+--- a/src/components/DailyReadingsScreen.tsx
++++ b/src/components/DailyReadingsScreen.tsx
+@@ -103,11 +103,14 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void })
+                 options.push({
+                     id: `reading-${rIdx}`,
+                     type: 'section',
+-                    title: normalizeReadingTitle(reading.title),
+-                    subtitle: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : '',
++                    title: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : normalizeReadingTitle(reading.title),
++                    subtitle: '',
+                     contextStr: reading.text,
+                     topicName: titleWithCitation,
+-                    source: 'Daily Readings'
++                    source: 'Daily Readings',
++                    previewText: reading.text ? (reading.text.length > 90 ? reading.text.substring(0, 90).replace(/\s+[^\s]*$/, '...') : reading.text) : '',
++                    iconType: reading.title.toLowerCase().includes('gospel') || reading.title.toLowerCase().includes('evangelio') ? 'book' : 'reading',
++                    eyebrow: normalizeReadingTitle(reading.title)
+                 });
+             });
+         }
+@@ -116,11 +119,14 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void })
+             options.push({
+                 id: 'reflection',
+                 type: 'section',
+-                title: language === 'es' ? 'Palabras del Papa' : 'Words of the Pope',
+-                subtitle: reflection.title,
++                title: reflection.title,
++                subtitle: '',
+                 contextStr: reflection.content,
+                 topicName: reflection.title,
+-                source: 'Words of the Pope'
++                source: 'Words of the Pope',
++                previewText: reflection.content ? (reflection.content.length > 90 ? reflection.content.substring(0, 90).replace(/\s+[^\s]*$/, '...') : reflection.content) : '',
++                iconType: 'chat',
++                eyebrow: language === 'es' ? 'Palabras del Papa' : 'Words of the Pope'
+             });
+         }
+ 
+@@ -130,7 +136,9 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void })
+             title: language === 'es' ? '┬┐Sobre qu├⌐ m├ís preferir├¡as discutir o reflexionar?' : 'What else would you prefer to discuss or reflect on?',
+             topicName: language === 'es' ? `Reflexi├│n General - Lecturas Diarias` : `General Reflection - Daily Readings`,
+             contextStr: '',
+-            source: 'Daily Readings'
++            source: 'Daily Readings',
++            iconType: 'chat',
++            eyebrow: language === 'es' ? 'General' : 'General'
+         });
+ 
+         return options;
+
+commit c9e99a6475ed509f9831fbcb8c260bd12cd4f235
+Author: palomo32 <palomo32@gmail.com>
+Date:   Sat Mar 7 19:50:38 2026 -0600
+
+    fix: ai display and playback sanitization improvements
+
+diff --git a/TODO.md b/TODO.md
+index 13a1057..8220137 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -2,6 +2,14 @@
+ 
+ ## ≡ƒ¢æ URGENT FIXES (Next Session)
+ 
++### ≡ƒÄ¿ AI Companion UI & Flow Standardization (Completed Mar 7, 2026)
++- [x] **Universal Entry Points & Standardized Context**
++  - **Inline Buttons:** Transplanted and standardized the "Ask AI about this..." inline buttons across both `BibleInYearScreen` and `DailyReadingsScreen` into uniform, flex-column wrappers with custom border styling (`var(--gold)` gradients).
++  - **Context Fixing:** Ensured accurate context parsing so the AI initial greeting exactly cites the current reading/chapter without invalid html/encoded character artifacts. 
++  - **Topic Selection Modal Upgrade:** Added a "Subtle Sticky Footer" to `AITopicSelectionModal.tsx` mapping to "Go to Chat" and "View Saved", utilizing universal `lucide-react` icons.
++  - **Home Screen App-wide generic entry:** Replaced the legacy `AIBookmarkIcon` on the `PrayerSelectionScreen` with the universal `Sparkles` icon to launch a "General" AI chat safely globally. 
++  - **Cleaned Bubble Text:** Standardized "AI Companion" titles and shortened generic "What would you like to reflect on or ask a question about?" defaults.
++
+ ### Church Icon Quick Play - Daily Readings
+ - [x] **Fix Word of the Pope highlighting during church/card playback**
+   - Bug: "Word of the Pope" (Reflection) doesn't highlight when playing from church icon and entering card
+diff --git a/src/components/AIChatWindow.tsx b/src/components/AIChatWindow.tsx
+index 0d49732..fcba470 100644
+--- a/src/components/AIChatWindow.tsx
++++ b/src/components/AIChatWindow.tsx
+@@ -479,7 +479,12 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
+             <div className="ai-saved-list">
+               {filteredSaved.map(item => {
+                 const originLang = item.lang || 'en';
+-                const topicDisplay = (originLang !== language && item.topic_translated) ? item.topic_translated : item.topic;
++                let topicDisplay = (originLang !== language && item.topic_translated) ? item.topic_translated : item.topic;
++                
++                if (item.source === 'Bible in a Year') {
++                  topicDisplay = topicDisplay.replace(/^(Day|D├¡a)\s+\d+\s+[ΓÇö\-]\s*/i, '');
++                }
++                
+                 const questionDisplay = (originLang !== language && item.question_translated) ? item.question_translated : item.question;
+                 const isExpanded = expandedCards.has(item.id);
+                 const isPlaying = playingMsgId === `saved-${item.id}`;
+diff --git a/src/components/BibleInYearScreen.tsx b/src/components/BibleInYearScreen.tsx
+index cce8bbc..2b4bc5a 100644
+--- a/src/components/BibleInYearScreen.tsx
++++ b/src/components/BibleInYearScreen.tsx
+@@ -131,7 +131,6 @@ export default function BibleInYearScreen({ onBack }: Props) {
+ 
+     const getAITopics = (): TopicOption[] => {
+         const options: TopicOption[] = [];
+-        const prefix = language === 'es' ? 'D├¡a' : 'Day';
+         
+         readings.forEach((reading, rIdx) => {
+             options.push({
+@@ -162,7 +161,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
+             id: 'general',
+             type: 'general',
+             title: language === 'es' ? '┬┐Sobre qu├⌐ m├ís preferir├¡as discutir o reflexionar?' : 'What else would you prefer to discuss or reflect on?',
+-            topicName: language === 'es' ? `Reflexi├│n General - ${prefix} ${currentDay}` : `General Reflection - ${prefix} ${currentDay}`,
++            topicName: language === 'es' ? `Reflexi├│n General` : `General Reflection`,
+             contextStr: '',
+             source: 'Bible in a Year'
+         });
+@@ -813,6 +812,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
+                                                                     onClick={(e) => {
+                                                                         e.stopPropagation();
+                                                                         setAiTopicName(`${reading.title} (${chapter.title})`);
++                                                                        setAiStartTab('chat');
+                                                                         setIsAIModalOpen(true);
+                                                                     }}
+                                                                     style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid rgba(212, 175, 55, 0.4)', borderRadius: '20px', background: 'rgba(212, 175, 55, 0.1)', color: '#d4af37', width: '100%' }}
+diff --git a/src/utils/textSanitizer.ts b/src/utils/textSanitizer.ts
+index 9a2a26f..d204280 100644
+--- a/src/utils/textSanitizer.ts
++++ b/src/utils/textSanitizer.ts
+@@ -8,9 +8,11 @@ export function sanitizeTextForSpeech(text: string): string {
+         .replace(/┬í/g, '')
+         .replace(/┬┐/g, '')
+         // Remove other special characters that might be mispronounced
+-        .replace(/[┬½┬╗]/g, '"')  // Replace guillemets with regular quotes
+-        .replace(/[""]/g, '"')  // Normalize smart quotes
+-        .replace(/['']/g, "'")  // Normalize smart apostrophes
++        .replace(/[┬½┬╗]/g, '')  // Strip guillemets completely to avoid TTS pronouncing them
++        .replace(/["ΓÇ£ΓÇ¥]/g, '')  // Completely remove straight and smart double quotes
++        .replace(/['ΓÇÿΓÇÖ]/g, "'")  // Normalize smart apostrophes to straight apostrophes
++        // Prevent ellipsis or multiple dots being read aloud as "punto punto"
++        .replace(/\.{2,}/g, '.')
+         // Keep regular punctuation (. , ; : ! ? - etc.) as they help with prosody
+         .trim();
+ }
+@@ -46,9 +48,10 @@ export function sanitizeAIResponseForSpeech(text: string): string {
+             // ΓöÇΓöÇ Inline code backticks ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+             .replace(/`([^`]*)`/g, '$1')         // `code` ΓåÆ code
+ 
+-            // ΓöÇΓöÇ Smart / curly quotes ΓåÆ remove (let words flow naturally) ΓöÇΓöÇ
+-            .replace(/[""]/g, '')                // "quoted" ΓåÆ quoted
+-            .replace(/['']/g, "'")              // 'quoted' ΓåÆ 'quoted' (keep apostrophe)
++            // ΓöÇΓöÇ Smart / curly quotes / strict punctuation strips ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
++            .replace(/["ΓÇ£ΓÇ¥]/g, '')               // remove double quotes entirely
++            .replace(/['ΓÇÿΓÇÖ]/g, "'")              // normalize single quotes
++            .replace(/\.{2,}/g, '.')             // collapse multiple periods
+ 
+             // ΓöÇΓöÇ Dashes: em/en dash ΓåÆ brief spoken pause (comma) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+             .replace(/\s*[ΓÇöΓÇô]\s*/g, ', ')

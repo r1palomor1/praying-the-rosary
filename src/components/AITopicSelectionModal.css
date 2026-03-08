@@ -110,6 +110,45 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* Section Header Card Styling */
+.ai-topic-card.section-card {
+    padding: 10px 16px;
+    background: rgba(212, 175, 55, 0.05);
+    /* Very subtle gold */
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 8px;
+    margin-bottom: 2px;
+    margin-top: 8px;
+}
+
+.ai-topic-list>.ai-topic-card.section-card:first-child {
+    margin-top: 0;
+}
+
+.ai-topic-card.section-card:hover {
+    background: rgba(212, 175, 55, 0.1);
+    transform: translateX(4px);
+    /* Slide instead of pop up */
+    box-shadow: none;
+}
+
+.ai-topic-card.section-card .ai-topic-card-icon {
+    display: none;
+    /* Hide icon to make it a pure header */
+}
+
+.ai-topic-card.section-card .ai-topic-card-title {
+    font-size: 1rem;
+    font-style: italic;
+    /* Stylize the 'Discuss the full reading...' prompt */
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.ai-topic-card.section-card .ai-topic-card-eyebrow {
+    font-size: 0.7rem;
+    opacity: 0.9;
+}
+
 .ai-topic-card-icon {
     display: flex;
     align-items: center;

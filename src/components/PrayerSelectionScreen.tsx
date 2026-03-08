@@ -30,12 +30,12 @@ interface PrayerSelectionScreenProps {
     onStartSacredWithContinuous?: () => void;
 }
 
-    export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinuous, onSelectSacredPrayers, onStartSacredWithContinuous, onSelectDailyReadings, onSelectBibleInYear, onResetProgress }: PrayerSelectionScreenProps) {
+export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinuous, onSelectSacredPrayers, onStartSacredWithContinuous, onSelectDailyReadings, onSelectBibleInYear, onResetProgress }: PrayerSelectionScreenProps) {
     const { language, currentMysterySet, playAudio } = useApp();
     const { aiEnabled } = useAI();
     const [showSettings, setShowSettings] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
+    const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
 
 
     // Liturgical data guaranteed non-null via fallback
@@ -569,23 +569,23 @@ const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
                         </div>
 
                         {/* Inline Progress Bar */}
-                        {!dailyReadingsPlayback.isComplete && (
-                            <div style={{
-                                width: '100%',
-                                height: '2px',
-                                background: 'rgba(255, 255, 255, 0.15)',
-                                marginBottom: '10px',
-                                borderRadius: '1px',
-                                overflow: 'hidden'
-                            }}>
+                        <div style={{
+                            width: '100%',
+                            height: '2px',
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            marginBottom: '10px',
+                            borderRadius: '1px',
+                            overflow: 'hidden'
+                        }}>
+                            {!dailyReadingsPlayback.isComplete && (
                                 <div style={{
                                     height: '100%',
                                     width: `${dailyReadingsPlayback.progressPercentage}%`,
                                     background: '#D4AF37',
                                     transition: 'width 0.3s linear'
                                 }} />
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         {/* Subtitle */}
                         <p className="card-subtitle" style={{
@@ -699,23 +699,23 @@ const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
                         </div>
 
                         {/* Inline Progress Bar */}
-                        {!isDayComplete(bibleDayToPlay) && (
-                            <div style={{
-                                width: '100%',
-                                height: '2px',
-                                background: 'rgba(255, 255, 255, 0.15)',
-                                marginBottom: '10px',
-                                borderRadius: '1px',
-                                overflow: 'hidden'
-                            }}>
+                        <div style={{
+                            width: '100%',
+                            height: '2px',
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            marginBottom: '10px',
+                            borderRadius: '1px',
+                            overflow: 'hidden'
+                        }}>
+                            {!isDayComplete(bibleDayToPlay) && (
                                 <div style={{
                                     height: '100%',
                                     width: `${biblePlayback.progressPercentage}%`,
                                     background: '#D4AF37',
                                     transition: 'width 0.3s linear'
                                 }} />
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         {/* Subtitle */}
                         <p className="card-subtitle" style={{
@@ -740,38 +740,23 @@ const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
                                     }
 
                                     if (isDayComplete(expectedDay)) {
-                                        return language === 'es' ? `Día ${expectedDay} • Completado` : `Day ${expectedDay} • Complete`;
+                                        // Primary message is 'Devotion fulfilled', with occasional 'Journey continues tomorrow' every 3rd day
+                                        if (expectedDay % 3 === 0) {
+                                            return language === 'es'
+                                                ? `Día ${expectedDay} • El camino continúa mañana`
+                                                : `Day ${expectedDay} • Journey continues tomorrow`;
+                                        } else {
+                                            return language === 'es'
+                                                ? `Día ${expectedDay} • Devoción cumplida`
+                                                : `Day ${expectedDay} • Devotion fulfilled`;
+                                        }
                                     }
 
                                     return t.bibleInAYearSubtitle.replace('{day}', expectedDay.toString());
                                 })()}
                         </p>
                     </div>
-                    {missedDays.length === 0 && isDayComplete(expectedDay) ? (
-                        <div style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            border: `1px solid ${biblePlayback.liturgicalColor}`,
-                            borderRadius: '50%',
-                            width: '28px',
-                            height: '28px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: `0 0 10px ${biblePlayback.liturgicalColor}30`
-                        }}>
-                            <span
-                                className="material-symbols-outlined"
-                                style={{
-                                    fontSize: '20px',
-                                    color: biblePlayback.liturgicalColor
-                                }}
-                            >
-                                check
-                            </span>
-                        </div>
-                    ) : (
-                        <ChevronRight className="card-chevron" size={24} />
-                    )}
+                    <ChevronRight className="card-chevron" size={24} />
                 </button>
 
                 {/* Divider with clickable church icon for quick play */}
@@ -843,23 +828,23 @@ const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
                         </div>
 
                         {/* Inline Progress Bar */}
-                        {!isRosaryCompleted && (
-                            <div style={{
-                                width: '100%',
-                                height: '2px',
-                                background: 'rgba(255, 255, 255, 0.15)',
-                                marginBottom: '10px',
-                                borderRadius: '1px',
-                                overflow: 'hidden'
-                            }}>
+                        <div style={{
+                            width: '100%',
+                            height: '2px',
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            marginBottom: '10px',
+                            borderRadius: '1px',
+                            overflow: 'hidden'
+                        }}>
+                            {!isRosaryCompleted && (
                                 <div style={{
                                     height: '100%',
                                     width: `${rosaryPlayback.progressPercentage}%`,
                                     background: '#D4AF37',
                                     transition: 'width 0.3s linear'
                                 }} />
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         {/* Subtitle */}
                         <p className="card-subtitle" style={{
@@ -988,23 +973,23 @@ const [appVersion, setAppVersion] = useState<VersionInfo | null>(null);
                         </div>
 
                         {/* Inline Progress Bar */}
-                        {!isSacredCompleted && (
-                            <div style={{
-                                width: '100%',
-                                height: '2px',
-                                background: 'rgba(255, 255, 255, 0.15)',
-                                marginBottom: '10px',
-                                borderRadius: '1px',
-                                overflow: 'hidden'
-                            }}>
+                        <div style={{
+                            width: '100%',
+                            height: '2px',
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            marginBottom: '10px',
+                            borderRadius: '1px',
+                            overflow: 'hidden'
+                        }}>
+                            {!isSacredCompleted && (
                                 <div style={{
                                     height: '100%',
                                     width: `${sacredPlayback.progressPercentage}%`,
                                     background: '#D4AF37',
                                     transition: 'width 0.3s linear'
                                 }} />
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         {/* Subtitle */}
                         <p className="card-subtitle" style={{

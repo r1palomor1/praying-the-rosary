@@ -335,19 +335,22 @@
 }
 
 /* ── Save Button ── */
-.ai-save-btn {
+.ai-save-btn,
+.ai-star-btn {
     border: 1px solid rgba(255, 255, 255, 0.2);
     background-color: rgba(255, 255, 255, 0.06);
     color: rgba(255, 255, 255, 0.45);
 }
 
-.ai-save-btn:hover {
+.ai-save-btn:hover,
+.ai-star-btn:hover {
     background-color: rgba(212, 175, 55, 0.15);
     border-color: rgba(212, 175, 55, 0.5);
     color: var(--gold, #d4af37);
 }
 
-.ai-save-btn.saved {
+.ai-save-btn.saved,
+.ai-star-btn.saved {
     background-color: rgba(212, 175, 55, 0.15);
     border-color: rgba(212, 175, 55, 0.5);
     color: var(--gold, #d4af37);

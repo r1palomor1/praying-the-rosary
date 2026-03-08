@@ -70,4 +70,23 @@ export function sanitizeAIResponseForSpeech(text: string): string {
     );
 }
 
+/**
+ * Normalizes citation strings based on the language.
+ * Spanish Bibles traditionally use commas for chapters and periods for verses.
+ * English Bibles use colons for chapters and commas for verses.
+ * This unifies both into the English formatting for aesthetic consistency.
+ */
+export function formatCitation(citation: string | null | undefined, language: string): string {
+    if (!citation) {
+        return language === 'es' ? 'Lectura' : 'Reading';
+    }
 
+    if (language === 'es') {
+        return citation
+            .replace(/(\d+),\s*(\d)/g, '$1:$2')
+            .replace(/\s*-\s*/g, '-')
+            .replace(/\.\s*/g, ', ');
+    }
+
+    return citation.replace(/\s*-\s*/g, '-');
+}

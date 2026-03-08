@@ -112,11 +112,11 @@ class UnifiedTTSManager {
             const segment = this.segments[currentIndex];
             let sanitized = sanitizeTextForSpeech(segment.text);
 
-            // Hardware Wake-up Buffer: If this is the absolute first segment, 
-            // prepend a silent pause (like commas) so the mobile/bluetooth 
-            // audio hardware has time to wake up before words actually start.
+            // Hardware Wake-up Buffer Note: We previously used ", , " here to wake up Bluetooth 
+            // devices, but that caused audible clicks/glitches on initial startup with some voices. 
+            // We now pass the clean string and rely on the OS to handle the audio buffer gracefully.
             if (currentIndex === 0) {
-                sanitized = ", , " + sanitized;
+                sanitized = "\u200B " + sanitized; // Zero-width space instead of commas
             }
 
             const utterance = new SpeechSynthesisUtterance(sanitized);

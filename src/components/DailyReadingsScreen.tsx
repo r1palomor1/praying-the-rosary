@@ -15,6 +15,7 @@ import { ttsManager } from '../utils/ttsManager';
 import { killDailyReadingsPlayback, getDailyReadingsActiveId } from '../hooks/useDailyReadingsPlayback';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { fetchLiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar';
+import { formatCitation } from '../utils/textSanitizer';
 import { useAI } from '../context/AIContext';
 import { AIModal } from './AIModal';
 import { AITopicSelectionModal, type TopicOption } from './AITopicSelectionModal';
@@ -93,19 +94,18 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
 
     const getAITopics = (): TopicOption[] => {
         const options: TopicOption[] = [];
-        
+
         if (readingsToRender) {
             readingsToRender.forEach((reading, rIdx) => {
+                const citationFormatted = formatCitation(reading.citation, language);
                 const titleWithCitation = reading.citation
-                    ? (language === 'es'
-                        ? reading.citation.replace(/(\d+),\s*(\d)/g, '$1:$2').replace(/\s*-\s*/g, '-').replace(/\.\s*/g, ', ')
-                        : reading.citation.replace(/\s*-\s*/g, '-'))
+                    ? `${normalizeReadingTitle(reading.title)} (${citationFormatted})`
                     : (language === 'es' ? 'Lectura' : 'Reading');
 
                 options.push({
                     id: `reading-${rIdx}`,
-                    type: 'section',
-                    title: reading.citation ? reading.citation.replace(/(\d+),\s*(\d)/g, '$1:$2').replace(/\s*-\s*/g, '-') : normalizeReadingTitle(reading.title),
+                    type: 'chapter',
+                    title: reading.citation ? citationFormatted : normalizeReadingTitle(reading.title),
                     subtitle: '',
                     contextStr: reading.text,
                     topicName: titleWithCitation,
@@ -120,7 +120,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         if (reflection) {
             options.push({
                 id: 'reflection',
-                type: 'section',
+                type: 'chapter',
                 title: reflection.title,
                 subtitle: '',
                 contextStr: reflection.content,
@@ -131,6 +131,15 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                 eyebrow: language === 'es' ? 'Palabras del Papa' : 'Words of the Pope'
             });
         }
+
+        options.push({
+            id: 'div-general',
+            type: 'divider',
+            title: '',
+            topicName: '',
+            source: '',
+            contextStr: ''
+        });
 
         options.push({
             id: 'general',
@@ -675,7 +684,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                         <h1 className="header-title">
                             {language === 'es' ? 'Lecturas Diarias' : 'Daily Readings'}
                         </h1>
-                        
+
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             {aiEnabled && (
                                 <button
@@ -851,12 +860,10 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                                     <Play size={18} fill="currentColor" />
                                                 )}
                                             </button>
-                                            
+
                                             <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 {reading.citation
-                                                    ? (language === 'es'
-                                                        ? reading.citation.replace(/(\d+),\s*(\d)/g, '$1:$2').replace(/\s*-\s*/g, '-').replace(/\.\s*/g, ', ')
-                                                        : reading.citation.replace(/\s*-\s*/g, '-'))
+                                                    ? formatCitation(reading.citation, language)
                                                     : (language === 'es' ? 'Lectura' : 'Reading')}
                                                 {isCompleted && (
                                                     <CheckCircle size={14} color="#22c55e" />
@@ -943,7 +950,7 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                                 <Play size={18} fill="currentColor" />
                                             )}
                                         </button>
-                                        
+
                                         <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             {reflection.title}
                                             {completedItems.includes('reflection') && (
