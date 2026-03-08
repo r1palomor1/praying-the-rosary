@@ -46,7 +46,7 @@ export function AITopicSelectionModal({ isOpen, onClose, options, onSelect, onOp
         <div className="ai-topic-modal-header">
           <div className="ai-topic-modal-title">
             <Sparkles size={20} color="#d4af37" />
-            <span>{language === 'es' ? 'Compa�ero IA' : 'AI Companion'}</span>
+            <span>{language === 'es' ? 'Compañero IA' : 'AI Companion'}</span>
           </div>
           <button className="ai-topic-modal-close" onClick={onClose} aria-label="Close">
             <X size={24} />
@@ -55,7 +55,7 @@ export function AITopicSelectionModal({ isOpen, onClose, options, onSelect, onOp
 
         <div className="ai-topic-modal-body">
           <h3 className="ai-topic-prompt">
-            {language === 'es' ? '�Sobre qu� te gustar�a reflexionar o discutir?' : 'What would you like to reflect or discuss?'}
+            {language === 'es' ? '¿Sobre qué te gustaría reflexionar o discutir?' : 'What would you like to reflect or discuss?'}
           </h3>
 
           <div className="ai-topic-list">

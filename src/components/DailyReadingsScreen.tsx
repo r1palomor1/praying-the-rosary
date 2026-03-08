@@ -97,13 +97,15 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
         if (readingsToRender) {
             readingsToRender.forEach((reading, rIdx) => {
                 const titleWithCitation = reading.citation
-                    ? `${normalizeReadingTitle(reading.title)} (${reading.citation.replace(/,/g, ', ')})`
-                    : normalizeReadingTitle(reading.title);
+                    ? (language === 'es'
+                        ? reading.citation.replace(/(\d+),\s*(\d)/g, '$1:$2').replace(/\s*-\s*/g, '-').replace(/\.\s*/g, ', ')
+                        : reading.citation.replace(/\s*-\s*/g, '-'))
+                    : (language === 'es' ? 'Lectura' : 'Reading');
 
                 options.push({
                     id: `reading-${rIdx}`,
                     type: 'section',
-                    title: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : normalizeReadingTitle(reading.title),
+                    title: reading.citation ? reading.citation.replace(/(\d+),\s*(\d)/g, '$1:$2').replace(/\s*-\s*/g, '-') : normalizeReadingTitle(reading.title),
                     subtitle: '',
                     contextStr: reading.text,
                     topicName: titleWithCitation,
@@ -851,7 +853,11 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                                             </button>
                                             
                                             <span className="chapter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                {(reading.citation ? reading.citation.replace(/,/g, ',  ') : null) || (language === 'es' ? 'Lectura' : 'Reading')}
+                                                {reading.citation
+                                                    ? (language === 'es'
+                                                        ? reading.citation.replace(/(\d+),\s*(\d)/g, '$1:$2').replace(/\s*-\s*/g, '-').replace(/\.\s*/g, ', ')
+                                                        : reading.citation.replace(/\s*-\s*/g, '-'))
+                                                    : (language === 'es' ? 'Lectura' : 'Reading')}
                                                 {isCompleted && (
                                                     <CheckCircle size={14} color="#22c55e" />
                                                 )}

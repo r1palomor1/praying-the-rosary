@@ -3,6 +3,11 @@
 ## 🛑 URGENT FIXES (Next Session)
 
 ### 🎨 AI Companion UI & Flow Standardization (Completed Mar 7, 2026)
+- [x] **Dark Card UI for AI Topic Selection Modal**
+  - **Wireframe Mapping:** Standardized the topic option cards to match the new UI wireframes (flex column layouts, separate "eyebrow" text, main title text, and prompt).
+  - **Dynamic Typography:** Implemented two-tone typography (e.g. Gold "First Reading", White "Genesis 12-13") via `eyebrowHighlight` parameter.
+  - **Bible In A Year Redundancy Fix:** Removed redundant scripture text on parent/section cards, replacing it with a localized "Discuss the full reading..." call to action.
+  - **Vercel TS Strictness Fix:** Debugged and resolved a strict TypeScript compilation error (`error TS6133: 'titleText' is declared but its value is never read`) that caused local Vercel builds to fail, bringing the deployment back online.
 - [x] **Universal Entry Points & Standardized Context**
   - **Inline Buttons:** Transplanted and standardized the "Ask AI about this..." inline buttons across both `BibleInYearScreen` and `DailyReadingsScreen` into uniform, flex-column wrappers with custom border styling (`var(--gold)` gradients).
   - **Context Fixing:** Ensured accurate context parsing so the AI initial greeting exactly cites the current reading/chapter without invalid html/encoded character artifacts. 

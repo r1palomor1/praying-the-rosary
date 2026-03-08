@@ -145,7 +145,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 previewText: '',
                 iconType: 'chat',
                 eyebrow: reading.title,
-                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, ' - ') : undefined
+                eyebrowHighlight: reading.citation ? reading.citation.replace(/\s*-\s*/g, '-') : undefined
             });
 
             const chapters = parseBibleChapters(reading);
@@ -154,7 +154,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
                 options.push({
                     id: `chap-${rIdx}-${cIdx}`,
                     type: 'chapter',
-                    title: chapter.title ? chapter.title.replace(/\s*-\s*/g, ' - ') : '',
+                    title: chapter.title ? chapter.title.replace(/\s*-\s*/g, '-') : '',
                     subtitle: '',
                     contextStr: '',
                     topicName: `${reading.title} (${chapter.title})`,
