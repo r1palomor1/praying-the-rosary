@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, AlertCircle, ChevronDown, ChevronUp, Play, Square, Bookmark, BookmarkCheck, Trash2, Star } from 'lucide-react';
+import { Send, AlertCircle, ChevronDown, ChevronUp, Play, Square, Bookmark, BookmarkCheck, Trash2, Star, LayoutGrid, List } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { ttsManager } from '../utils/ttsManager';
 import { sanitizeAIResponseForSpeech } from '../utils/textSanitizer';
@@ -38,6 +38,8 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
   const [savedItems, setSavedItems] = useState<SavedReflection[]>(() => loadReflections());
   const [savedTab, setSavedTab] = useState<'all' | 'favorites' | 'recent'>('all');
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'grouped' | 'list'>('grouped');
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [translating, setTranslating] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -357,6 +359,109 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
     return !item.isTemporary; // 'all' means all permanently saved items
   });
 
+  const groupedSaved = filteredSaved.reduce((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = [];
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, SavedReflection[]>);
+
+  const renderCard = (item: SavedReflection) => {
+    const originLang = item.lang || 'en';
+    let topicDisplay = (originLang !== language && item.topic_translated) ? item.topic_translated : item.topic;
+
+    if (item.source === 'Bible in a Year') {
+      topicDisplay = topicDisplay.replace(/^(Day|Día)\s+\d+\s+[—\-]\s*/i, '');
+    }
+
+    const questionDisplay = (originLang !== language && item.question_translated) ? item.question_translated : item.question;
+    const isExpanded = expandedCards.has(item.id);
+    const isPlaying = playingMsgId === `saved-${item.id}`;
+
+    const toggleExpand = () => setExpandedCards(prev => {
+      const next = new Set(prev);
+      next.has(item.id) ? next.delete(item.id) : next.add(item.id);
+      return next;
+    });
+
+    return (
+      <div key={item.id} className={`ai-saved-card-v2 ${isExpanded ? 'expanded' : ''}`} onClick={toggleExpand}>
+        <div className="ai-saved-card-v2-header" style={{ alignItems: 'stretch' }}>
+          <div className="ai-saved-card-v2-icon" style={viewMode === 'grouped' ? { background: 'transparent', width: 'auto', height: 'auto', fontSize: '1.2rem', marginLeft: '1px', marginRight: '8px' } : undefined}>
+            {item.categoryIcon}
+          </div>
+
+          <div className="ai-saved-card-v2-title-area">
+            <div className="ai-saved-card-v2-title">{topicDisplay}</div>
+            <div className="ai-saved-card-v2-question-preview">"{questionDisplay}"</div>
+
+            <div className="ai-saved-card-v2-actions-left" onClick={(e) => e.stopPropagation()}>
+              <button
+                className={`ai-action-btn ai-play-btn-v2 ${isPlaying ? 'playing' : ''}`}
+                onClick={(e) => { e.stopPropagation(); handlePlaySaved(item); }}
+                aria-label="Play"
+              >
+                {isPlaying ? <Square size={13} fill="currentColor" /> : <Play size={13} fill="currentColor" style={{ marginLeft: '2px' }} />}
+              </button>
+              <button
+                className={`ai-action-btn ai-save-btn ${!item.isTemporary ? 'saved' : ''}`}
+                onClick={(e) => { e.stopPropagation(); handleToggleBookmark({ savedId: item.id } as Message); }}
+                aria-label={!item.isTemporary ? 'Saved' : 'Save reflection'}
+                title={!item.isTemporary ? (language === 'es' ? 'Guardado' : 'Saved') : (language === 'es' ? 'Guardar reflexión' : 'Save reflection')}
+              >
+                {!item.isTemporary ? <BookmarkCheck size={13} /> : <Bookmark size={13} />}
+              </button>
+              <button
+                className={`ai-action-btn ai-star-btn ${item.isFavorite ? 'saved' : ''}`}
+                onClick={(e) => { e.stopPropagation(); handleToggleFavorite({ savedId: item.id } as Message); }}
+                title={language === 'es' ? 'Favorito' : 'Favorite'}
+              >
+                <Star size={13} fill={item.isFavorite ? 'currentColor' : 'none'} color={item.isFavorite ? 'inherit' : 'currentColor'} />
+              </button>
+            </div>
+          </div>
+
+          <div className="ai-saved-card-v2-right-col" style={{ justifyContent: 'space-between', marginTop: '3px' }}>
+            <div className="ai-saved-card-v2-date-right">
+              {viewMode === 'list' && (
+                <span style={{ marginRight: '6px', opacity: 0.6 }}>{localizeCategory(item.category)} •</span>
+              )}
+              {new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </div>
+
+            <div className="ai-saved-card-v2-chevron">
+              {isExpanded ? <ChevronUp size={16} color="var(--gold, #d4af37)" /> : <ChevronDown size={16} color="rgba(255,255,255,0.4)" />}
+            </div>
+          </div>
+        </div>
+
+        {isExpanded && (
+          <div className="ai-saved-card-v2-content" onClick={e => e.stopPropagation()}>
+            <div className="ai-saved-card-v2-response">
+              {(originLang !== language && item.response_translated) ? item.response_translated : item.response}
+              {(originLang !== language && !item.response_translated && translating) && (
+                <span className="ai-translating-indicator"> {language === 'es' ? '(traduciendo...)' : '(translating...)'}</span>
+              )}
+            </div>
+
+            <div className="ai-saved-card-v2-footer">
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span className={`ai-lang-tag ai-lang-tag--${originLang}`}>{originLang.toUpperCase()}</span>
+                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{localizeSource(item.source)}</span>
+              </div>
+              <button
+                className="ai-saved-card-v2-discard"
+                onClick={(e) => { e.stopPropagation(); handleDeleteSaved(item.id); }}
+              >
+                <Trash2 size={14} />
+                {language === 'es' ? 'DESCARTAR' : 'DISCARD'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Tab labels
   const chatLabel = language === 'es' ? 'Chat' : 'Chat';
   const savedLabel = language === 'es' ? 'Guardado' : 'Saved';
@@ -479,41 +584,49 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
           </div>
 
           {/* Filter Tabs */}
-          <div className="ai-saved-filter-row" style={{ display: 'flex', gap: '8px', padding: '0 24px 16px', overflowX: 'auto' }}>
-            {['All Saved', 'Favorites', 'Recent 48h history'].map((tabStr, idx) => {
-              const tabVal = ['all', 'favorites', 'recent'][idx] as 'all' | 'favorites' | 'recent';
-              const langStr = language === 'es'
-                ? ['Todo Guardado', 'Favoritos', 'Historial 48h'][idx]
-                : tabStr;
+          <div className="ai-saved-filter-container">
+            <div className="ai-saved-filter-scroll">
+              <div className="ai-saved-filter-row">
+                {['All Saved', 'Favorites', 'Recent 48h history'].map((tabStr, idx) => {
+                  const tabVal = ['all', 'favorites', 'recent'][idx] as 'all' | 'favorites' | 'recent';
+                  const langStr = language === 'es'
+                    ? ['Todo Guardado', 'Favoritos', 'Historial 48h'][idx]
+                    : tabStr;
 
-              const count = savedItems.filter(item => {
-                if (tabVal === 'favorites') return item.isFavorite;
-                if (tabVal === 'recent') return item.isTemporary;
-                return !item.isTemporary;
-              }).length;
+                  const count = savedItems.filter(item => {
+                    if (tabVal === 'favorites') return item.isFavorite;
+                    if (tabVal === 'recent') return item.isTemporary;
+                    return !item.isTemporary;
+                  }).length;
 
-              return (
-                <button
-                  key={tabVal}
-                  onClick={() => setSavedTab(tabVal)}
-                  style={{
-                    background: savedTab === tabVal ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${savedTab === tabVal ? 'rgba(212, 175, 55, 0.5)' : 'rgba(255,255,255,0.1)'}`,
-                    color: savedTab === tabVal ? '#D4AF37' : 'rgba(255,255,255,0.7)',
-                    padding: '6px 14px',
-                    borderRadius: '20px',
-                    fontSize: '0.85rem',
-                    fontWeight: 500,
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    flexShrink: 0
-                  }}
-                >
-                  {langStr} ( {count} )
-                </button>
-              );
-            })}
+                  return (
+                    <button
+                      key={tabVal}
+                      onClick={() => setSavedTab(tabVal)}
+                      className={`ai-saved-filter-btn ${savedTab === tabVal ? 'active' : ''}`}
+                    >
+                      {langStr} ( {count} )
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {/* View Mode Toggle */}
+            <div className="ai-view-toggle">
+              <button
+                className="ai-view-btn active"
+                onClick={() => {
+                  setViewMode(prev => prev === 'grouped' ? 'list' : 'grouped');
+                  // Reset category expansion when returning to grouped view for a clean dashboard
+                  if (viewMode === 'list') {
+                    setExpandedCategories(new Set());
+                  }
+                }}
+                title={viewMode === 'grouped' ? (language === 'es' ? 'Ver como lista' : 'View as list') : (language === 'es' ? 'Ver en grupos' : 'View as groups')}
+              >
+                {viewMode === 'grouped' ? <List size={16} /> : <LayoutGrid size={16} />}
+              </button>
+            </div>
           </div>
 
           {filteredSaved.length === 0 ? (
@@ -523,93 +636,47 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
                 : 'No saved reflections yet. Chat with the companion and save the responses that inspire you.'}
             </div>
           ) : (
-            <div className="ai-saved-list">
-              {filteredSaved.map(item => {
-                const originLang = item.lang || 'en';
-                let topicDisplay = (originLang !== language && item.topic_translated) ? item.topic_translated : item.topic;
+            <div className="ai-saved-list-scroll-area">
+              {viewMode === 'list' ? (
+                <div className="ai-saved-list">
+                  {filteredSaved.map((item) => renderCard(item))}
+                </div>
+              ) : (
+                <div className="ai-saved-groups-layout">
+                  {Object.entries(groupedSaved)
+                    .sort(([catA], [catB]) => localizeCategory(catA).localeCompare(localizeCategory(catB)))
+                    .map(([cat, items]) => {
+                      const isGroupExpanded = expandedCategories.has(cat);
+                      const toggleCategory = () => {
+                        setExpandedCategories(prev => {
+                          const next = new Set(prev);
+                          next.has(cat) ? next.delete(cat) : next.add(cat);
+                          return next;
+                        });
+                      };
 
-                if (item.source === 'Bible in a Year') {
-                  topicDisplay = topicDisplay.replace(/^(Day|Día)\s+\d+\s+[—\-]\s*/i, '');
-                }
+                      const catIcon = items[0]?.categoryIcon || '📁';
+                      const localCat = localizeCategory(cat);
 
-                const questionDisplay = (originLang !== language && item.question_translated) ? item.question_translated : item.question;
-                const isExpanded = expandedCards.has(item.id);
-                const isPlaying = playingMsgId === `saved-${item.id}`;
-
-                const toggleExpand = () => setExpandedCards(prev => {
-                  const next = new Set(prev);
-                  next.has(item.id) ? next.delete(item.id) : next.add(item.id);
-                  return next;
-                });
-
-                return (
-                  <div key={item.id} className={`ai-saved-card-v2 ${isExpanded ? 'expanded' : ''}`} onClick={toggleExpand}>
-                    <div className="ai-saved-card-v2-header">
-                      <div className="ai-saved-card-v2-icon">
-                        {item.categoryIcon}
-                      </div>
-                      <div className="ai-saved-card-v2-title-area">
-                        <div className="ai-saved-card-v2-title">{topicDisplay}</div>
-                        <div className="ai-saved-card-v2-question-preview">"{questionDisplay}"</div>
-                        <div className="ai-saved-card-v2-subtitle">
-                          {localizeCategory(item.category)} • {new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                        </div>
-                      </div>
-                      <div className="ai-saved-card-v2-actions">
-                        <button
-                          className={`ai-action-btn ai-play-btn-v2 ${isPlaying ? 'playing' : ''}`}
-                          onClick={(e) => { e.stopPropagation(); handlePlaySaved(item); }}
-                          aria-label="Play"
-                        >
-                          {isPlaying ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />}
-                        </button>
-                        <button
-                          className={`ai-action-btn ai-save-btn ${!item.isTemporary ? 'saved' : ''}`}
-                          onClick={(e) => { e.stopPropagation(); handleToggleBookmark({ savedId: item.id } as Message); }}
-                          aria-label={!item.isTemporary ? 'Saved' : 'Save reflection'}
-                          title={!item.isTemporary ? (language === 'es' ? 'Guardado' : 'Saved') : (language === 'es' ? 'Guardar reflexión' : 'Save reflection')}
-                        >
-                          {!item.isTemporary ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
-                        </button>
-                        <button
-                          className={`ai-action-btn ai-star-btn ${item.isFavorite ? 'saved' : ''}`}
-                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite({ savedId: item.id } as Message); }}
-                          title={language === 'es' ? 'Favorito' : 'Favorite'}
-                        >
-                          <Star size={16} fill={item.isFavorite ? 'currentColor' : 'none'} color={item.isFavorite ? 'inherit' : 'currentColor'} />
-                        </button>
-                        {isExpanded ? <ChevronUp size={16} color="rgba(255,255,255,0.3)" /> : <ChevronDown size={16} color="rgba(255,255,255,0.3)" />}
-                      </div>
-                    </div>
-
-                    {isExpanded && (
-                      <div className="ai-saved-card-v2-content" onClick={e => e.stopPropagation()}>
-                        <div className="ai-saved-card-v2-response">
-                          {/* Show translated content if current lang differs from origin and translation exists */}
-                          {(originLang !== language && item.response_translated) ? item.response_translated : item.response}
-                          {(originLang !== language && !item.response_translated && translating) && (
-                            <span className="ai-translating-indicator"> {language === 'es' ? '(traduciendo...)' : '(translating...)'}</span>
+                      return (
+                        <div key={cat} className="ai-saved-group-container">
+                          <div className="ai-saved-group-header" onClick={toggleCategory}>
+                            <div className="ai-saved-group-title">
+                              <span style={{ marginRight: '8px', fontSize: '1.2rem' }}>{catIcon}</span>
+                              {localCat} ({items.length})
+                            </div>
+                            {isGroupExpanded ? <ChevronUp size={18} color="var(--gold, #d4af37)" /> : <ChevronDown size={18} color="rgba(255,255,255,0.4)" />}
+                          </div>
+                          {isGroupExpanded && (
+                            <div className="ai-saved-group-content">
+                              {items.map(item => renderCard(item))}
+                            </div>
                           )}
                         </div>
-
-                        <div className="ai-saved-card-v2-footer">
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <span className={`ai-lang-tag ai-lang-tag--${originLang}`}>{originLang.toUpperCase()}</span>
-                            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{localizeSource(item.source)}</span>
-                          </div>
-                          <button
-                            className="ai-saved-card-v2-discard"
-                            onClick={(e) => { e.stopPropagation(); handleDeleteSaved(item.id); }}
-                          >
-                            <Trash2 size={14} />
-                            {language === 'es' ? 'DESCARTAR' : 'DISCARD'}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+                      );
+                    })}
+                </div>
+              )}
             </div>
           )}
         </div>

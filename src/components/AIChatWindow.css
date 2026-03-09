@@ -18,6 +18,8 @@
     flex-direction: column;
     gap: 12px;
     scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 /* Wrapper holds bubble + play button together */
@@ -560,6 +562,102 @@
 }
 
 /* ── UI Redesign for Saved Tab V2 ── */
+.ai-saved-filter-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 16px;
+    width: 100%;
+}
+
+.ai-saved-filter-scroll {
+    overflow-x: auto;
+    width: 100%;
+    /* Hide scrollbar for a cleaner look */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.ai-saved-filter-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.ai-saved-filter-row {
+    display: flex;
+    gap: 8px;
+    padding: 0 10px;
+    width: max-content;
+    margin: 0 auto;
+}
+
+.ai-saved-filter-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 6px 9px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.ai-saved-filter-btn.active {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: rgba(212, 175, 55, 0.5);
+    color: #D4AF37;
+}
+
+/* Tablet and desktop spacing */
+@media (min-width: 768px) {
+    .ai-saved-filter-row {
+        padding: 0 24px;
+    }
+
+    .ai-saved-filter-row::after {
+        display: none;
+    }
+
+    .ai-saved-filter-btn {
+        padding: 6px 14px;
+    }
+}
+
+.ai-view-toggle {
+    display: flex;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    padding: 4px;
+    align-self: flex-end;
+    margin-right: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ai-view-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ai-view-btn:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.ai-view-btn.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .ai-saved-tab-header {
     text-align: center;
     padding: 16px 16px 8px;
@@ -579,6 +677,39 @@
     color: rgba(255, 255, 255, 0.6);
     margin: 0;
     line-height: 1.4;
+}
+
+/* Scroll Area */
+.ai-saved-list-scroll-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0 8px 24px;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Thin, dark-mode friendly scrollbars for Webkit */
+.ai-messages-list::-webkit-scrollbar,
+.ai-saved-list-scroll-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ai-messages-list::-webkit-scrollbar-track,
+.ai-saved-list-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ai-messages-list::-webkit-scrollbar-thumb,
+.ai-saved-list-scroll-area::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.ai-messages-list::-webkit-scrollbar-thumb:hover,
+.ai-saved-list-scroll-area::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.4);
 }
 
 /* Card V2 */
@@ -609,8 +740,8 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    padding: 12px 14px;
-    gap: 12px;
+    padding: 12px 8px;
+    gap: 8px;
     -webkit-user-select: none;
     user-select: none;
 }
@@ -629,13 +760,12 @@
 }
 
 .ai-saved-card-v2-title-area {
-    flex-grow: 1;
+    flex: 1 1 auto;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     min-width: 0;
-    /* CRITICAL: Allows text-overflow ellipsis to work inside a flex item */
 }
 
 .ai-saved-card-v2-title {
@@ -645,8 +775,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* allow it to take space if needed, but not push container */
-    max-width: 100%;
 }
 
 .ai-saved-card-v2-question-preview {
@@ -656,7 +784,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
 }
 
 .ai-saved-card-v2-subtitle {
@@ -665,12 +792,42 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
 }
 
 .ai-saved-card-v2-actions {
     display: flex;
     align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.ai-saved-card-v2-actions-left {
+    display: flex;
+    align-items: center;
     gap: 12px;
+    margin-top: 4px;
+}
+
+.ai-saved-card-v2-right-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 12px;
+}
+
+.ai-saved-card-v2-date-right {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 500;
 }
 
 .ai-play-btn-v2 {
@@ -746,4 +903,48 @@
 
 .ai-saved-card-v2-discard:hover {
     color: #ef4444;
+}
+
+/* ── Grouped View Layout ── */
+.ai-saved-groups-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ai-saved-group-container {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: background-color 0.2s;
+}
+
+.ai-saved-group-container:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.ai-saved-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    cursor: pointer;
+    user-select: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+}
+
+.ai-saved-group-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.ai-saved-group-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 6px 16px;
 }
