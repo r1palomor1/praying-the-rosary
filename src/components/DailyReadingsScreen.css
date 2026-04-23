@@ -90,21 +90,30 @@
 }
 
 .header-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: auto;
+  flex: 0 1 auto;
   text-align: center;
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: clamp(0.9rem, 4.5vw, 1.15rem);
   font-weight: 700;
-  letter-spacing: 0.15em;
+  letter-spacing: clamp(0.05em, 1.5vw, 0.15em);
   text-transform: uppercase;
   color: var(--color-text-light);
   margin: 0;
+  padding: 0 0.5rem;
   pointer-events: none;
-  white-space: nowrap;
   z-index: 10;
+  line-height: 1.2;
+}
+
+.header-side-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.header-side-group.right {
+  justify-content: flex-end;
 }
 
 .date-row {

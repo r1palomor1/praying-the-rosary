@@ -77,36 +77,66 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   const { language } = useApp();
   const starters = language === 'es' ? STARTERS_ES : STARTERS_EN;
 
-  /* Wizard State */
-  const [inputMode, setInputMode] = useState<InputMode>('readings');
+  /* Wizard State - Persisted via localStorage */
+  const [inputMode, setInputMode] = useState<InputMode>(() => (localStorage.getItem('sermonAI_inputMode') as InputMode) || 'readings');
   
   /* Step 1: Source */
-  const [readingsDate, setReadingsDate]             = useState(new Date());
+  const [readingsDate, setReadingsDate] = useState(() => {
+    const saved = localStorage.getItem('sermonAI_readingsDate');
+    return saved ? new Date(saved) : new Date();
+  });
   const [readingOptions, setReadingOptions]         = useState<ReadingOption[]>([]);
-  const [selectedReadingIdx, setSelectedReadingIdx] = useState(0);
+  const [selectedReadingIdx, setSelectedReadingIdx] = useState(() => Number(localStorage.getItem('sermonAI_selectedReadingIdx')) || 0);
   const [loadingReadings, setLoadingReadings]       = useState(false);
-  const [selectedStarterId, setSelectedStarterId]   = useState<string | null>(null);
+  const [selectedStarterId, setSelectedStarterId]   = useState<string | null>(() => localStorage.getItem('sermonAI_selectedStarterId') || null);
   const [showStartersList, setShowStartersList]     = useState(false);
-  const [customText, setCustomText]                 = useState('');
+  const [showInputModeOptions, setShowInputModeOptions] = useState(false);
+  const [showReadingOptions, setShowReadingOptions]     = useState(false);
+  const [customText, setCustomText]                 = useState(() => localStorage.getItem('sermonAI_customText') || '');
 
   /* Step 2: Style */
-  const [sermonMode,   setSermonMode]   = useState<SermonMode>('standard');
-  const [sermonLength, setSermonLength] = useState<SermonLen>('medium');
-  const [sermonTone,   setSermonTone]   = useState<SermonTone>('pastoral');
+  const [sermonMode,   setSermonMode]   = useState<SermonMode>(() => (localStorage.getItem('sermonAI_sermonMode') as SermonMode) || 'standard');
+  const [sermonLength, setSermonLength] = useState<SermonLen>(() => (localStorage.getItem('sermonAI_sermonLength') as SermonLen) || 'medium');
+  const [sermonTone,   setSermonTone]   = useState<SermonTone>(() => (localStorage.getItem('sermonAI_sermonTone') as SermonTone) || 'pastoral');
   const [showStyleOptions, setShowStyleOptions] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   /* Output & Result State */
   const [isGenerating, setIsGenerating] = useState(false);
-  const [output,       setOutput]       = useState('');
+  const [output,       setOutput]       = useState(() => localStorage.getItem('sermonAI_lastOutput') || '');
   const [genError,     setGenError]     = useState('');
-  const [isExpanded,   setIsExpanded]   = useState(false);
+  const [isExpanded,   setIsExpanded]   = useState(() => Boolean(localStorage.getItem('sermonAI_lastOutput')));
   const [isPlaying,    setIsPlaying]    = useState(false);
   const [copySuccess,  setCopySuccess]  = useState(false);
 
   /* Refs */
   const dateInputRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
+
+  /* ── Persistence Logic ── */
+  useEffect(() => {
+    localStorage.setItem('sermonAI_inputMode', inputMode);
+    localStorage.setItem('sermonAI_readingsDate', readingsDate.toISOString());
+    localStorage.setItem('sermonAI_selectedReadingIdx', String(selectedReadingIdx));
+    if (selectedStarterId) localStorage.setItem('sermonAI_selectedStarterId', selectedStarterId);
+    else localStorage.removeItem('sermonAI_selectedStarterId');
+    localStorage.setItem('sermonAI_customText', customText);
+    localStorage.setItem('sermonAI_sermonMode', sermonMode);
+    localStorage.setItem('sermonAI_sermonLength', sermonLength);
+    localStorage.setItem('sermonAI_sermonTone', sermonTone);
+    if (output) localStorage.setItem('sermonAI_lastOutput', output);
+    else localStorage.removeItem('sermonAI_lastOutput');
+  }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone, output]);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    // Clear output when any input dependency changes
+    if (output) setOutput('');
+  }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone]);
 
   /* ── Fetch readings ── */
   const formatDateParam = (d: Date) => {
@@ -290,19 +320,16 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
 
           <div className="sermon-control-group">
             <div className="sermon-select-with-action">
-              <div className="sermon-input-wrapper">
-                <span className="sermon-input-icon">
-                  {inputMode === 'readings' ? <BookOpen size={18} /> : inputMode === 'suggestions' ? <List size={18} /> : <Type size={18} />}
-                </span>
-                <select 
-                  className="sermon-select" 
-                  value={inputMode} 
-                  onChange={(e) => setInputMode(e.target.value as InputMode)}
-                >
-                  <option value="readings">{t.dailyReadings}</option>
-                  <option value="suggestions">{t.starters}</option>
-                  <option value="custom">{t.custom}</option>
-                </select>
+              <div className="sermon-style-summary" style={{ flex: 1, margin: 0 }} onClick={() => setShowInputModeOptions(!showInputModeOptions)}>
+                <div className="sermon-style-summary-content">
+                  <span className="sermon-input-icon" style={{ position: 'static', transform: 'none', color: 'var(--sermon-gold)' }}>
+                    {inputMode === 'readings' ? <BookOpen size={18} /> : inputMode === 'suggestions' ? <List size={18} /> : <Type size={18} />}
+                  </span>
+                  <span className="sermon-style-summary-values" style={{ color: 'var(--sermon-text)' }}>
+                    {inputMode === 'readings' ? t.dailyReadings : inputMode === 'suggestions' ? t.starters : t.custom}
+                  </span>
+                </div>
+                <ChevronDown size={18} className={`sermon-style-expand-icon${showInputModeOptions ? ' expanded' : ''}`} />
               </div>
 
               {inputMode === 'readings' && (
@@ -321,25 +348,56 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                 </div>
               )}
             </div>
+
+            {showInputModeOptions && (
+              <div className="sermon-starter-select-list" style={{ marginTop: '4px' }}>
+                  <div className={`sermon-starter-item${inputMode === 'readings' ? ' selected' : ''}`} onClick={() => { setInputMode('readings'); setShowInputModeOptions(false); }}>
+                    <BookOpen size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
+                    <div className="sermon-starter-item-text">
+                       <span className="sermon-starter-item-title">{t.dailyReadings}</span>
+                    </div>
+                  </div>
+                  <div className={`sermon-starter-item${inputMode === 'suggestions' ? ' selected' : ''}`} onClick={() => { setInputMode('suggestions'); setShowInputModeOptions(false); }}>
+                    <List size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
+                    <div className="sermon-starter-item-text">
+                       <span className="sermon-starter-item-title">{t.starters}</span>
+                    </div>
+                  </div>
+                  <div className={`sermon-starter-item${inputMode === 'custom' ? ' selected' : ''}`} onClick={() => { setInputMode('custom'); setShowInputModeOptions(false); }}>
+                    <Type size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
+                    <div className="sermon-starter-item-text">
+                       <span className="sermon-starter-item-title">{t.custom}</span>
+                    </div>
+                  </div>
+              </div>
+            )}
           </div>
 
           {/* Dynamic Content based on Source */}
           {inputMode === 'readings' && (
             <div className="sermon-control-group">
               <label className="sermon-label">{language === 'es' ? 'Lectura' : 'Reading'}</label>
-              <div className="sermon-input-wrapper">
-                <select className="sermon-select" style={{ paddingLeft: '12px' }} value={selectedReadingIdx} onChange={e => setSelectedReadingIdx(Number(e.target.value))}>
-                  {loadingReadings ? (
-                    <option disabled>{language === 'es' ? 'Cargando...' : 'Loading...'}</option>
-                  ) : readingOptions.length > 0 ? (
-                    readingOptions.map((opt, i) => (
-                      <option key={i} value={i}>{opt.label}{opt.citation ? ` — ${opt.citation}` : ''}</option>
-                    ))
-                  ) : (
-                    <option disabled>{language === 'es' ? 'No hay lecturas' : 'No readings'}</option>
-                  )}
-                </select>
+              <div className="sermon-style-summary" style={{ margin: 0 }} onClick={() => setShowReadingOptions(!showReadingOptions)}>
+                <div className="sermon-style-summary-content">
+                   <span className="sermon-style-summary-values" style={{ color: 'var(--sermon-text)' }}>
+                     {loadingReadings ? (language === 'es' ? 'Cargando...' : 'Loading...') : readingOptions.length > 0 ? (readingOptions[selectedReadingIdx]?.label + (readingOptions[selectedReadingIdx]?.citation ? ` — ${readingOptions[selectedReadingIdx].citation}` : '')) : (language === 'es' ? 'No hay lecturas' : 'No readings')}
+                   </span>
+                </div>
+                <ChevronDown size={18} className={`sermon-style-expand-icon${showReadingOptions ? ' expanded' : ''}`} />
               </div>
+
+              {showReadingOptions && readingOptions.length > 0 && (
+                <div className="sermon-starter-select-list" style={{ marginTop: '4px' }}>
+                  {readingOptions.map((opt, i) => (
+                    <div key={i} className={`sermon-starter-item${selectedReadingIdx === i ? ' selected' : ''}`} onClick={() => { setSelectedReadingIdx(i); setShowReadingOptions(false); }}>
+                      <div className="sermon-starter-item-text">
+                         <span className="sermon-starter-item-title">{opt.label}</span>
+                         {opt.citation && <span className="sermon-starter-item-sub">{opt.citation}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

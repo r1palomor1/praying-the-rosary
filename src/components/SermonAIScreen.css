@@ -28,7 +28,7 @@
 
 /* ── Header ── */
 .sermon-header {
-  padding: 32px 16px 20px;
+  padding: 32px 16px 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -95,6 +95,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: -8px;
 }
 
 .sermon-step-title {
@@ -148,12 +149,19 @@
   appearance: none;
   -webkit-appearance: none;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sermon-select:focus, .sermon-input-field:focus, .sermon-textarea:focus {
+  outline: none;
+  background-color: #2a1d15 !important;
+  border-color: var(--sermon-gold);
 }
 
 /* Fix for dropdown contrast */
-.sermon-select option {
-  background-color: #2a1d15;
-  color: var(--sermon-text);
+.sermon-select option, .sermon-select optgroup {
+  background-color: #2a1d15 !important;
+  color: var(--sermon-text) !important;
 }
 
 .sermon-select-with-action {
@@ -296,24 +304,27 @@
 }
 
 .sermon-btn-generate {
-  width: 100%;
-  background: var(--sermon-gold);
-  color: #120c08;
+  align-self: center;
+  background-color: #a87d3e;
+  color: #191b1f;
   border: none;
-  border-radius: 14px;
-  padding: 16px;
-  font-size: 1.15rem;
+  border-radius: 24px;
+  padding: 12px 40px;
+  font-size: 1.05rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: transform 0.2s, opacity 0.2s;
   font-family: inherit;
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 4px 14px 0 rgba(168, 125, 62, 0.39);
 }
-.sermon-btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+.sermon-btn-generate:hover:not(:disabled) {
+  transform: scale(1.02);
+}
+.sermon-btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* ── Result Card ── */
 .sermon-result-card {

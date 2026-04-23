@@ -679,7 +679,7 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
             <div className="readings-container">
                 <header className="sacred-header">
                     <div className="header-top-row">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <div className="header-side-group left">
                             <button className="icon-btn-ghost" onClick={onBack} aria-label="Back">
                                 <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>family_home</span>
                             </button>
@@ -700,7 +700,7 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
                             {language === 'es' ? 'Lecturas Diarias' : 'Daily Readings'}
                         </h1>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <div className="header-side-group right">
                             {aiEnabled && (
                                 <button
                                     className="icon-btn-ghost"
