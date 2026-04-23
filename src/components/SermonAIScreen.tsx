@@ -112,7 +112,17 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   /* Refs */
   const dateInputRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
-  const isInitialMount = useRef(true);
+
+  const prevDeps = useRef([
+    inputMode, 
+    readingsDate.toISOString(), 
+    selectedReadingIdx, 
+    selectedStarterId, 
+    customText, 
+    sermonMode, 
+    sermonLength, 
+    sermonTone
+  ]);
 
   /* ── Persistence Logic ── */
   useEffect(() => {
@@ -130,12 +140,23 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone, output]);
 
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
+    const currentDeps = [
+      inputMode, 
+      readingsDate.toISOString(), 
+      selectedReadingIdx, 
+      selectedStarterId, 
+      customText, 
+      sermonMode, 
+      sermonLength, 
+      sermonTone
+    ];
+    
+    // Check if dependencies truly changed to avoid React Strict Mode / mount bugs
+    const changed = prevDeps.current.some((dep, i) => dep !== currentDeps[i]);
+    if (changed) {
+      if (output) setOutput('');
     }
-    // Clear output when any input dependency changes
-    if (output) setOutput('');
+    prevDeps.current = currentDeps;
   }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone]);
 
   /* ── Fetch readings ── */
@@ -158,7 +179,7 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
           citation: r.citation ?? '',
         }));
         setReadingOptions(opts);
-        setSelectedReadingIdx(0);
+        setSelectedReadingIdx(prev => prev >= opts.length ? 0 : prev);
       })
       .catch(() => { if (!cancelled) setReadingOptions([]); })
       .finally(() => { if (!cancelled) setLoadingReadings(false); });
