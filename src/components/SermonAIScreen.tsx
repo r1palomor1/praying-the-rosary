@@ -1,29 +1,37 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ScrollText, Calendar, Volume2, Square, Copy, Check, ChevronRight, ChevronDown } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Calendar, 
+  Volume2, 
+  Square, 
+  Copy, 
+  Check, 
+  ChevronDown, 
+  ChevronRight, 
+  Settings, 
+  Sparkles, 
+  BookOpen,
+  Type,
+  List
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { sanitizeAIResponseForSpeech } from '../utils/textSanitizer';
+import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import './SermonAIScreen.css';
 
 /* ─── Strip markdown & structural labels from LLM output for visual display ─── */
 function sanitizeSermonDisplay(text: string): string {
   return text
-    // Remove section header labels e.g. "**1. LITURGICAL GREETING & CONTEXT**" or "1. LITURGICAL GREETING"
     .replace(/^\**\s*\d+\.\s*[A-ZÁÉÍÓÚÑ\s&:()\-]+\**\s*$/gm, '')
-    // Un-fenced markdown headers like "# LITURGICAL GREETING"
     .replace(/^#{1,6}\s*.+$/gm, '')
-    // Bold/italic markers (order: *** before ** before *)
-    // Handles potential spaces around content: ** text **
     .replace(/\*{3}([\s\S]+?)\*{3}/g, '$1')
     .replace(/\*{2}([\s\S]+?)\*{2}/g, '$1')
     .replace(/\*([\s\S]+?)\*/g, '$1')
     .replace(/_{2}([\s\S]+?)_{2}/g, '$1')
     .replace(/_([\s\S]+?)_/g, '$1')
-    // Stray lone asterisks or brackets
     .replace(/[\*\#\_]/g, '')
-    // Numbered structure labels standing alone on a line
     .replace(/^\d+\.\s*[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s&:()\-]+$/gm, '')
-    // Collapse multiple blank lines
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
@@ -59,49 +67,46 @@ const STARTERS_ES = [
 type InputMode   = 'readings' | 'suggestions' | 'custom';
 type SermonMode  = 'standard' | 'abstract';
 type SermonLen   = 'short' | 'medium' | 'long';
-type SermonTone  = 'pastoral' | 'teaching' | 'contemplative' | 'urgent';
+type SermonTone  = 'pastoral' | 'reflective' | 'teaching';
 
 interface ReadingOption { label: string; citation: string; }
 
 const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
-/* ─── Component ─── */
 export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   const { language } = useApp();
   const starters = language === 'es' ? STARTERS_ES : STARTERS_EN;
 
-  /* Input mode */
+  /* Wizard State */
   const [inputMode, setInputMode] = useState<InputMode>('readings');
-
-  /* Daily Readings */
+  
+  /* Step 1: Source */
   const [readingsDate, setReadingsDate]             = useState(new Date());
   const [readingOptions, setReadingOptions]         = useState<ReadingOption[]>([]);
   const [selectedReadingIdx, setSelectedReadingIdx] = useState(0);
   const [loadingReadings, setLoadingReadings]       = useState(false);
+  const [selectedStarterId, setSelectedStarterId]   = useState<string | null>(null);
+  const [showStartersList, setShowStartersList]     = useState(false);
+  const [customText, setCustomText]                 = useState('');
 
-  /* Suggestions */
-  const [selectedStarterId, setSelectedStarterId] = useState<string | null>(null);
-  const [showStartersList, setShowStartersList] = useState(false);
-
-  /* Custom */
-  const [customText, setCustomText] = useState('');
-
-  /* Controls */
+  /* Step 2: Style */
   const [sermonMode,   setSermonMode]   = useState<SermonMode>('standard');
   const [sermonLength, setSermonLength] = useState<SermonLen>('medium');
   const [sermonTone,   setSermonTone]   = useState<SermonTone>('pastoral');
+  const [showStyleOptions, setShowStyleOptions] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
-  /* Output */
+  /* Output & Result State */
   const [isGenerating, setIsGenerating] = useState(false);
   const [output,       setOutput]       = useState('');
   const [genError,     setGenError]     = useState('');
-
-  /* TTS / Copy */
+  const [isExpanded,   setIsExpanded]   = useState(false);
   const [isPlaying,    setIsPlaying]    = useState(false);
   const [copySuccess,  setCopySuccess]  = useState(false);
 
-  /* Date picker ref */
+  /* Refs */
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   /* ── Fetch readings ── */
   const formatDateParam = (d: Date) => {
@@ -130,8 +135,8 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
     return () => { cancelled = true; };
   }, [readingsDate, language]);
 
-  /* ── Resolved prompt ── */
-  const getPrompt = (): string => {
+  /* ── Prompt Resolution ── */
+  const getPromptValue = (): string => {
     if (inputMode === 'readings') {
       const opt = readingOptions[selectedReadingIdx];
       if (!opt) return '';
@@ -143,62 +148,54 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
     return customText.trim();
   };
 
-  const canGenerate = getPrompt().length > 0 && !isGenerating;
+  const canGenerate = getPromptValue().length > 0 && !isGenerating;
 
-  /* ── Generate ── */
+  /* ── Action Handlers ── */
   const handleGenerate = async () => {
-    const sourceText = getPrompt();
+    const sourceText = getPromptValue();
     if (!sourceText) return;
     if (isPlaying) { ttsManager.stop(); setIsPlaying(false); }
     setIsGenerating(true);
     setOutput('');
     setGenError('');
+    setIsExpanded(false);
+    
     try {
       const res = await fetch('/api/sermon', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ sourceText, mode: sermonMode, tone: sermonTone, duration: sermonLength, language }),
+        body:    JSON.stringify({ 
+          sourceText, 
+          mode: sermonMode, 
+          tone: sermonTone === 'reflective' ? 'contemplative' : sermonTone, 
+          duration: sermonLength, 
+          language 
+        }),
       });
 
-      // Guard against empty or non-JSON responses (e.g. local dev 404)
       const rawText = await res.text();
       if (!rawText || !rawText.trim().startsWith('{')) {
-        throw new Error(
-          res.status === 404
-            ? 'Sermon API not available in local dev. Deploy to Vercel to test.'
-            : `Server error (${res.status}). Please try again.`
-        );
+        throw new Error(res.status === 404 ? 'API not available in local dev.' : `Server error (${res.status})`);
       }
 
       const data = JSON.parse(rawText);
-      if (!res.ok) throw new Error(data.details || data.message || data.error || 'Failed to generate.');
-      // Sanitize markdown from the model output before display
+      if (!res.ok) throw new Error(data.message || 'Failed to generate.');
       setOutput(sanitizeSermonDisplay(data.response ?? ''));
       
-      // Reset selection to default after generation
-      setSelectedStarterId(null);
-      setShowStartersList(false);
+      // Scroll to result
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     } catch (err: any) {
-      setGenError(err.message || 'An error occurred. Please try again.');
+      setGenError(err.message || 'An error occurred.');
     } finally {
       setIsGenerating(false);
     }
   };
 
-
-  /* ── Clear ── */
-  const handleClear = () => {
-    if (isPlaying) { ttsManager.stop(); setIsPlaying(false); }
-    setOutput(''); setGenError(''); setCustomText(''); setSelectedStarterId(null);
-  };
-
-  /* ── TTS ── */
   const handleSpeak = async () => {
     if (!output) return;
     if (isPlaying) { ttsManager.stop(); setIsPlaying(false); return; }
     await ttsManager.setLanguage(language);
     ttsManager.setOnEnd(() => setIsPlaying(false));
-    // Use the existing AI speech sanitizer for TTS (strips any residual markdown)
     const spokenText = sanitizeAIResponseForSpeech(output);
     const chunks = spokenText.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) ?? [spokenText];
     setIsPlaying(true);
@@ -209,279 +206,308 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
     } catch { setIsPlaying(false); }
   };
 
-  /* ── Copy ── */
   const handleCopy = async () => {
     if (!output) return;
     try { await navigator.clipboard.writeText(output); }
-    catch { const t = document.createElement('textarea'); t.value = output; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+    catch { 
+      const t = document.createElement('textarea'); 
+      t.value = output; 
+      document.body.appendChild(t); 
+      t.select(); 
+      document.execCommand('copy'); 
+      t.remove(); 
+    }
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 1500);
   };
 
-  /* ── Date picker ── */
   const triggerDatePicker = () => {
     if ((dateInputRef.current as any)?.showPicker) (dateInputRef.current as any).showPicker();
     else dateInputRef.current?.click();
   };
+
   const yyyy = readingsDate.getFullYear();
   const mStr = String(readingsDate.getMonth() + 1).padStart(2, '0');
   const dStr = String(readingsDate.getDate()).padStart(2, '0');
   const htmlDate = `${yyyy}-${mStr}-${dStr}`;
 
-  /* ── Badge labels ── */
-  const lenLabel  = sermonLength === 'short' ? (language === 'es' ? 'Aprox. 1-2 min' : 'Approx. 1-2 min')
-                  : sermonLength === 'long'  ? (language === 'es' ? 'Aprox. 5+ min'  : 'Approx. 5+ min')
-                  :                           (language === 'es' ? 'Aprox. 3-4 min' : 'Approx. 3-4 min');
-  const toneLabel = ({ pastoral: language === 'es' ? 'Pastoral' : 'Pastoral', teaching: language === 'es' ? 'Didáctico' : 'Teaching', contemplative: language === 'es' ? 'Contemplativo' : 'Contemplative', urgent: language === 'es' ? 'Profético' : 'Prophetic' } as Record<SermonTone, string>)[sermonTone];
+  /* ── UI Strings ── */
+  const t = {
+    title: language === 'es' ? 'Sermón IA' : 'Sermon AI',
+    subtitle: language === 'es' ? 'Crea sermones católicos llenos de fe en minutos.' : 'Create faith-filled, Catholic sermons in minutes.',
+    step1: language === 'es' ? 'Fuente' : 'Source',
+    step1Desc: language === 'es' ? '¿En qué deseas basar tu sermón?' : 'What would you like your sermon to be based on?',
+    step2: language === 'es' ? 'Estilo' : 'Style',
+    step2Desc: language === 'es' ? 'Elige cómo debe sonar tu sermón.' : 'Choose how your sermon should sound.',
+    step3: language === 'es' ? 'Generar' : 'Generate',
+    step3Desc: language === 'es' ? 'Revisa tus selecciones.' : 'Review your selections.',
+    generateBtn: language === 'es' ? 'Crear Sermón' : 'Build Sermon',
+    generating: language === 'es' ? 'Creando...' : 'Building...',
+    security: language === 'es' ? 'Tu contenido es privado y seguro.' : 'Your content is private and secure.',
+    yourSermon: language === 'es' ? 'Tu Sermón' : 'Your Sermon',
+    draft: language === 'es' ? 'Borrador' : 'Draft',
+    listen: language === 'es' ? 'Escuchar' : 'Listen',
+    copy: language === 'es' ? 'Copiar' : 'Copy',
+    expand: language === 'es' ? 'Expandir sermón completo' : 'Expand full sermon',
+    collapse: language === 'es' ? 'Contraer' : 'Collapse',
+    helper: language === 'es' ? 'Estos ajustes ayudan a dar forma al tono y la profundidad.' : 'These settings help shape the tone and depth.',
+    dailyReadings: language === 'es' ? 'Lecturas del Día' : 'Daily Readings',
+    starters: language === 'es' ? 'Ideas de Sermones' : 'Sermon Starters',
+    custom: language === 'es' ? 'Texto Libre' : 'Custom',
+    placeholder: language === 'es' ? 'Ej: Lucas 5; Fiesta de la Ascensión; una reflexión sobre la misericordia…' : 'E.g.: Luke 5; Feast of the Ascension; a reflection on mercy…',
+    tapToChange: language === 'es' ? 'Toca para cambiar' : 'Tap to change',
+  };
 
-  /* ── Render ── */
   return (
     <div className="sermon-screen">
-
       {/* ── Header ── */}
       <header className="sermon-header">
-        <button className="sermon-nav-btn" onClick={onBack} aria-label={language === 'es' ? 'Volver' : 'Back'}>
-          <ArrowLeft size={22} />
+        <button className="sermon-back-btn-abs" onClick={onBack} aria-label={language === 'es' ? 'Volver' : 'Back'}>
+          <ArrowLeft size={24} />
         </button>
-        <div className="sermon-header-brand">
-          <ScrollText size={18} />
-          <span>{language === 'es' ? 'Borrador de Sermón IA' : 'AI Sermon Draft'}</span>
+        <div className="sermon-brand-group">
+          <h1 className="sermon-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Sparkles size={24} color="var(--sermon-gold)" />
+            {t.title}
+          </h1>
         </div>
-        <div style={{ width: 40 }} />
+        <button className="sermon-help-btn-abs" onClick={() => setShowSettings(true)} aria-label="Settings">
+          <Settings size={22} />
+        </button>
       </header>
 
+      {/* Settings Modal */}
+      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+
       <div className="sermon-body">
-
-        {/* ── Card 1: Source ── */}
-        <div className="sermon-card">
-          <p className="sermon-card-question">
-            {language === 'es'
-              ? '¿En qué deseas basar tu sermón?'
-              : 'What would you like your sermon to be based on?'}
-          </p>
-
-          {/* Pills */}
-          <div className="sermon-pills">
-            {(['readings', 'suggestions', 'custom'] as InputMode[]).map(m => (
-              <button
-                key={m}
-                className={`sermon-pill${inputMode === m ? ' active' : ''}`}
-                onClick={() => setInputMode(m)}
-              >
-                {m === 'readings'    ? (language === 'es' ? 'Lecturas del Día' : 'Daily Readings') :
-                 m === 'suggestions' ? (language === 'es' ? 'Ideas de Sermones' : 'Sermon Starters') :
-                                       (language === 'es' ? 'Texto Libre'       : 'Custom')}
-              </button>
-            ))}
+        
+        {/* ── Step 1: Source ── */}
+        <section className="sermon-step-card">
+          <div className="sermon-step-header">
+            <h2 className="sermon-step-title">{t.step1}</h2>
           </div>
+          <p className="sermon-step-desc">{t.step1Desc}</p>
 
-          {/* ── Mode: Daily Readings ── */}
-          {inputMode === 'readings' && (
-            <div className="sermon-readings-panel">
-              <div className="sermon-readings-row">
-                <span className="sermon-readings-date-label">
-                  {readingsDate.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          <div className="sermon-control-group">
+            <div className="sermon-select-with-action">
+              <div className="sermon-input-wrapper">
+                <span className="sermon-input-icon">
+                  {inputMode === 'readings' ? <BookOpen size={18} /> : inputMode === 'suggestions' ? <List size={18} /> : <Type size={18} />}
                 </span>
-                <div style={{ position: 'relative', display: 'inline-flex' }}>
-                  <button className="sermon-icon-btn" onClick={triggerDatePicker} aria-label="Select date">
-                    <Calendar size={16} />
+                <select 
+                  className="sermon-select" 
+                  value={inputMode} 
+                  onChange={(e) => setInputMode(e.target.value as InputMode)}
+                >
+                  <option value="readings">{t.dailyReadings}</option>
+                  <option value="suggestions">{t.starters}</option>
+                  <option value="custom">{t.custom}</option>
+                </select>
+              </div>
+
+              {inputMode === 'readings' && (
+                <div style={{ position: 'relative' }}>
+                  <button 
+                    className="sermon-inline-action-btn" 
+                    onClick={triggerDatePicker}
+                    aria-label="Select date"
+                  >
+                    <Calendar size={20} />
                   </button>
                   <input ref={dateInputRef} type="date" value={htmlDate}
                     onChange={e => { if (e.target.value) { const [y,mo,d] = e.target.value.split('-').map(Number); setReadingsDate(new Date(y, mo-1, d)); }}}
-                    style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', inset: 0, width: '100%', height: '100%' }}
+                    style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', right: 0, top: 0, width: '100%', height: '100%' }}
                   />
                 </div>
-              </div>
+              )}
+            </div>
+          </div>
 
-              {loadingReadings
-                ? <p className="sermon-muted">{language === 'es' ? 'Cargando lecturas…' : 'Loading readings…'}</p>
-                : readingOptions.length === 0
-                  ? <p className="sermon-muted">{language === 'es' ? 'No se encontraron lecturas.' : 'No readings found.'}</p>
-                  : (
-                    <select className="sermon-select" value={selectedReadingIdx}
-                      onChange={e => setSelectedReadingIdx(Number(e.target.value))}>
-                      {readingOptions.map((opt, i) => (
-                        <option key={i} value={i}>
-                          {opt.label}{opt.citation ? ` — ${opt.citation}` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  )
-              }
+          {/* Dynamic Content based on Source */}
+          {inputMode === 'readings' && (
+            <div className="sermon-control-group">
+              <label className="sermon-label">{language === 'es' ? 'Lectura' : 'Reading'}</label>
+              <div className="sermon-input-wrapper">
+                <select className="sermon-select" style={{ paddingLeft: '12px' }} value={selectedReadingIdx} onChange={e => setSelectedReadingIdx(Number(e.target.value))}>
+                  {loadingReadings ? (
+                    <option disabled>{language === 'es' ? 'Cargando...' : 'Loading...'}</option>
+                  ) : readingOptions.length > 0 ? (
+                    readingOptions.map((opt, i) => (
+                      <option key={i} value={i}>{opt.label}{opt.citation ? ` — ${opt.citation}` : ''}</option>
+                    ))
+                  ) : (
+                    <option disabled>{language === 'es' ? 'No hay lecturas' : 'No readings'}</option>
+                  )}
+                </select>
+              </div>
             </div>
           )}
 
-          {/* ── Mode: Sermon Starters ── */}
           {inputMode === 'suggestions' && (
-            <div className="sermon-starters-list">
-              {/* Show selected item as a "collapsed dropdown" if selected and not expanded */}
+            <div className="sermon-starter-select-list">
               {selectedStarterId && !showStartersList ? (
-                <div
-                  className="sermon-starter-card selected"
-                  onClick={() => setShowStartersList(true)}
-                  role="button" tabIndex={0}
-                  onKeyDown={e => e.key === 'Enter' && setShowStartersList(true)}
-                >
-                  <span className="sermon-starter-icon">
-                    {starters.find(s => s.id === selectedStarterId)?.icon}
-                  </span>
-                  <div className="sermon-starter-text">
-                    <span className="sermon-starter-title">
-                      {starters.find(s => s.id === selectedStarterId)?.title}
-                    </span>
-                    <span className="sermon-starter-sub">
-                      {language === 'es' ? 'Toca para cambiar' : 'Tap to change'}
-                    </span>
+                <div className="sermon-starter-item selected" onClick={() => setShowStartersList(true)}>
+                  <span className="sermon-starter-item-icon">{starters.find(s => s.id === selectedStarterId)?.icon}</span>
+                  <div className="sermon-starter-item-text">
+                    <span className="sermon-starter-item-title">{starters.find(s => s.id === selectedStarterId)?.title}</span>
+                    <span className="sermon-starter-item-sub">{t.tapToChange}</span>
                   </div>
-                  <ChevronDown size={16} className="sermon-starter-arrow" />
+                  <ChevronDown size={18} color="var(--sermon-gold)" />
                 </div>
               ) : (
-                /* Show full list if nothing selected OR showStartersList is true */
                 starters.map(s => (
-                  <div
-                    key={s.id}
-                    className={`sermon-starter-card${selectedStarterId === s.id ? ' selected' : ''}`}
-                    onClick={() => {
-                      setSelectedStarterId(s.id);
-                      setShowStartersList(false);
-                    }}
-                    role="button" tabIndex={0}
-                    onKeyDown={e => e.key === 'Enter' && (setSelectedStarterId(s.id), setShowStartersList(false))}
-                  >
-                    <span className="sermon-starter-icon">{s.icon}</span>
-                    <div className="sermon-starter-text">
-                      <span className="sermon-starter-title">{s.title}</span>
-                      <span className="sermon-starter-sub">{s.sub}</span>
+                  <div key={s.id} className={`sermon-starter-item${selectedStarterId === s.id ? ' selected' : ''}`} onClick={() => { setSelectedStarterId(s.id); setShowStartersList(false); }}>
+                    <span className="sermon-starter-item-icon">{s.icon}</span>
+                    <div className="sermon-starter-item-text">
+                      <span className="sermon-starter-item-title">{s.title}</span>
+                      <span className="sermon-starter-item-sub">{s.sub}</span>
                     </div>
-                    <ChevronRight size={16} className="sermon-starter-arrow" />
+                    <ChevronRight size={18} color="var(--sermon-text-dim)" />
                   </div>
                 ))
               )}
             </div>
           )}
 
-          {/* ── Mode: Custom ── */}
           {inputMode === 'custom' && (
-            <textarea
-              className="sermon-textarea"
-              value={customText}
+            <textarea 
+              className="sermon-textarea" 
+              value={customText} 
               onChange={e => setCustomText(e.target.value)}
-              placeholder={language === 'es'
-                ? 'Ej: Lucas 5, Fiesta de la Ascensión, una reflexión sobre la misericordia…'
-                : 'E.g.: Luke 5, Feast of the Ascension, a teaching on mercy…'}
-              rows={4}
+              placeholder={t.placeholder}
             />
           )}
-        </div>
+        </section>
 
-        {/* ── Card 2: Controls ── */}
-        <div className="sermon-card">
-          {/* Mode toggle */}
-          <div className="sermon-controls-row">
-            <div className="sermon-mode-section">
-              <span className="sermon-control-label">{language === 'es' ? 'Modo' : 'Mode'}</span>
-              <div className="sermon-mode-tabs">
-                <button
-                  className={`sermon-mode-tab${sermonMode === 'standard' ? ' active-standard' : ''}`}
-                  onClick={() => setSermonMode('standard')}
-                >
-                  {language === 'es' ? 'Estándar' : 'Standard'}
+        {/* ── Step 2: Style (Collapsible + Chips) ── */}
+        <section className="sermon-step-card">
+          <div className="sermon-step-header">
+            <h2 className="sermon-step-title">{t.step2}</h2>
+          </div>
+
+          <div className="sermon-style-summary" onClick={() => setShowStyleOptions(!showStyleOptions)}>
+            <div className="sermon-style-summary-content">
+              <span className="sermon-style-summary-values">
+                {sermonMode === 'standard' ? (language === 'es' ? 'Estándar' : 'Standard') : (language === 'es' ? 'Abstracto' : 'Abstract')} • {sermonLength === 'short' ? 'Short' : sermonLength === 'medium' ? 'Medium' : 'Long'} • {sermonTone.charAt(0).toUpperCase() + sermonTone.slice(1)}
+              </span>
+            </div>
+            <ChevronDown size={18} className={`sermon-style-expand-icon${showStyleOptions ? ' expanded' : ''}`} />
+          </div>
+
+          {showStyleOptions && (
+            <>
+              <div className="sermon-control-group">
+                <label className="sermon-label">{language === 'es' ? 'Modo' : 'Mode'}</label>
+                <div className="sermon-segments">
+                  <button className={`sermon-segment-btn${sermonMode === 'standard' ? ' active' : ''}`} onClick={() => setSermonMode('standard')}>
+                    {language === 'es' ? 'Estándar' : 'Standard'}
+                  </button>
+                  <button className={`sermon-segment-btn${sermonMode === 'abstract' ? ' active' : ''}`} onClick={() => setSermonMode('abstract')}>
+                    {language === 'es' ? 'Abstracto' : 'Abstract'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="sermon-control-group">
+                <label className="sermon-label">{language === 'es' ? 'Duración' : 'Length'}</label>
+                <div className="sermon-segments">
+                  <button className={`sermon-segment-btn${sermonLength === 'short' ? ' active' : ''}`} onClick={() => setSermonLength('short')}>
+                    {language === 'es' ? 'Corto' : 'Short'}
+                  </button>
+                  <button className={`sermon-segment-btn${sermonLength === 'medium' ? ' active' : ''}`} onClick={() => setSermonLength('medium')}>
+                    {language === 'es' ? 'Medio' : 'Medium'}
+                  </button>
+                  <button className={`sermon-segment-btn${sermonLength === 'long' ? ' active' : ''}`} onClick={() => setSermonLength('long')}>
+                    {language === 'es' ? 'Largo' : 'Long'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="sermon-control-group">
+                <label className="sermon-label">{language === 'es' ? 'Tono' : 'Tone'}</label>
+                <div className="sermon-segments">
+                  <button className={`sermon-segment-btn${sermonTone === 'pastoral' ? ' active' : ''}`} onClick={() => setSermonTone('pastoral')}>
+                    {language === 'es' ? 'Pastoral' : 'Pastoral'}
+                  </button>
+                  <button className={`sermon-segment-btn${sermonTone === 'reflective' ? ' active' : ''}`} onClick={() => setSermonTone('reflective')}>
+                    {language === 'es' ? 'Reflexivo' : 'Reflective'}
+                  </button>
+                  <button className={`sermon-segment-btn${sermonTone === 'teaching' ? ' active' : ''}`} onClick={() => setSermonTone('teaching')}>
+                    {language === 'es' ? 'Didáctico' : 'Teaching'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="sermon-helper-box">
+                <Sparkles size={14} />
+                <span>{t.helper}</span>
+              </div>
+            </>
+          )}
+        </section>
+
+        {/* ── Step 3: Generate ── */}
+        <section className="sermon-step-card sermon-generate-card">
+          <div className="sermon-step-header" style={{ alignSelf: 'flex-start' }}>
+            <h2 className="sermon-step-title">{t.step3}</h2>
+          </div>
+          <p className="sermon-step-desc" style={{ alignSelf: 'flex-start', textAlign: 'left' }}>{t.step3Desc}</p>
+
+          <button className="sermon-btn-generate" onClick={handleGenerate} disabled={!canGenerate || isGenerating}>
+            {isGenerating ? (
+              <>
+                <div className="sermon-spinner" />
+                <span>{t.generating}</span>
+              </>
+            ) : (
+              <>
+                <Sparkles size={20} />
+                <span>{t.generateBtn}</span>
+              </>
+            )}
+          </button>
+        </section>
+
+        {/* ── Result Preview Card ── */}
+        {(output || genError) && (
+          <div className="sermon-result-card" ref={resultRef}>
+            {genError ? (
+              <div className="sermon-error-msg">{genError}</div>
+            ) : (
+              <>
+                <div className="sermon-result-header">
+                  <div className="sermon-result-title-group">
+                    <h3 className="sermon-result-title">{t.yourSermon}</h3>
+                    <span className="sermon-badge-draft">{t.draft}</span>
+                  </div>
+                  <div className="sermon-result-actions">
+                    <button className="sermon-action-btn" onClick={handleSpeak} title={isPlaying ? 'Stop' : 'Listen'}>
+                      {isPlaying ? <Square size={16} fill="currentColor" /> : <Volume2 size={16} />}
+                      <span>{t.listen}</span>
+                    </button>
+                    <button className="sermon-action-btn" onClick={handleCopy}>
+                      {copySuccess ? <Check size={16} color="#4ade80" /> : <Copy size={16} />}
+                      <span>{t.copy}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`sermon-result-body${!isExpanded ? ' sermon-text-collapsed' : ''}`}>
+                  {output}
+                </div>
+
+                <button className="sermon-expand-btn" onClick={() => setIsExpanded(!isExpanded)}>
+                  <span>{isExpanded ? t.collapse : t.expand}</span>
+                  <ChevronDown size={18} style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                 </button>
-                <button
-                  className={`sermon-mode-tab${sermonMode === 'abstract' ? ' active-abstract' : ''}`}
-                  onClick={() => setSermonMode('abstract')}
-                >
-                  {language === 'es' ? 'Abstracto' : 'Abstract'}
-                </button>
-              </div>
-            </div>
 
-            <div className="sermon-selects-row">
-              <div className="sermon-select-group">
-                <label className="sermon-control-label" htmlFor="sermon-length">
-                  {language === 'es' ? 'Duración' : 'Length'}
-                </label>
-                <select id="sermon-length" className="sermon-select" value={sermonLength}
-                  onChange={e => setSermonLength(e.target.value as SermonLen)}>
-                  <option value="short">{language === 'es' ? 'Corto (1-2 min)' : 'Short (1-2 min)'}</option>
-                  <option value="medium">{language === 'es' ? 'Estándar (3-4 min)' : 'Standard (3-4 min)'}</option>
-                  <option value="long">{language === 'es' ? 'Largo (5+ min)' : 'Long (5+ min)'}</option>
-                </select>
-              </div>
-
-              <div className="sermon-select-group">
-                <label className="sermon-control-label" htmlFor="sermon-tone">
-                  {language === 'es' ? 'Tono' : 'Tone'}
-                </label>
-                <select id="sermon-tone" className="sermon-select" value={sermonTone}
-                  onChange={e => setSermonTone(e.target.value as SermonTone)}>
-                  <option value="pastoral">{language === 'es' ? 'Pastoral'      : 'Pastoral'}</option>
-                  <option value="teaching">{language === 'es' ? 'Didáctico'     : 'Teaching'}</option>
-                  <option value="contemplative">{language === 'es' ? 'Contemplativo' : 'Contemplative'}</option>
-                  <option value="urgent">{language === 'es' ? 'Profético'     : 'Prophetic'}</option>
-                </select>
-              </div>
-            </div>
+                <div className="sermon-result-footer">
+                  {readingsDate.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • {getPromptValue().split(' — ')[1] || getPromptValue()} • {sermonMode === 'standard' ? 'Standard' : 'Abstract'} • {sermonLength} • {sermonTone}
+                </div>
+              </>
+            )}
           </div>
-
-          <p className="sermon-mode-note">
-            {sermonMode === 'abstract'
-              ? (language === 'es' ? 'Modo Abstracto: reflexión contemplativa y poética.' : 'Abstract mode: contemplative, poetic reflection shaped for the selected length.')
-              : (language === 'es' ? 'Modo Estándar: homilía pastoral con estructura litúrgica.' : 'Standard mode: pastoral homily with liturgical structure.')}
-          </p>
-
-          {/* Actions */}
-          <div className="sermon-actions">
-            <button className="sermon-btn-primary" onClick={handleGenerate} disabled={!canGenerate}>
-              {isGenerating
-                ? (language === 'es' ? 'Generando…' : 'Generating…')
-                : (language === 'es' ? 'Generar' : 'Generate')}
-            </button>
-            <button className="sermon-btn-secondary" onClick={handleClear}>
-              {language === 'es' ? 'Limpiar' : 'Clear'}
-            </button>
-          </div>
-        </div>
-
-        {/* ── Card 3: Output ── */}
-        <div className="sermon-card sermon-output-card">
-          <div className="sermon-output-header">
-            <div className="sermon-output-meta">
-              <span><strong>{language === 'es' ? 'Modo:' : 'Mode:'}</strong> {sermonMode === 'abstract' ? (language === 'es' ? 'Abstracto' : 'Abstract') : (language === 'es' ? 'Estándar' : 'Standard')}</span>
-              <span><strong>{language === 'es' ? 'Duración:' : 'Length:'}</strong> {lenLabel}</span>
-              <span><strong>{language === 'es' ? 'Tono:' : 'Tone:'}</strong> {toneLabel}</span>
-            </div>
-            <div className="sermon-output-tools">
-              <button className="sermon-tool-btn" onClick={handleSpeak} disabled={!output || isGenerating}
-                aria-label={isPlaying ? 'Stop' : 'Listen'} title={isPlaying ? 'Stop' : 'Listen'}>
-                {isPlaying ? <Square size={15} fill="currentColor" /> : <Volume2 size={15} />}
-              </button>
-              <button className="sermon-tool-btn" onClick={handleCopy} disabled={!output || isGenerating}
-                aria-label="Copy" title="Copy">
-                {copySuccess ? <Check size={15} /> : <Copy size={15} />}
-              </button>
-            </div>
-          </div>
-
-          {isGenerating && (
-            <div className="sermon-generating">
-              <div className="sermon-spinner" />
-              <span>{language === 'es' ? 'Preparando el sermón…' : 'Preparing your sermon…'}</span>
-            </div>
-          )}
-
-          {genError && <p className="sermon-error">{genError}</p>}
-
-          {output && !isGenerating && (
-            <div className="sermon-output-text">{output}</div>
-          )}
-
-          {!output && !isGenerating && !genError && (
-            <p className="sermon-placeholder">
-              {language === 'es' ? 'Tu borrador de sermón aparecerá aquí.' : 'Your sermon draft will appear here.'}
-            </p>
-          )}
-        </div>
+        )}
 
       </div>
     </div>
