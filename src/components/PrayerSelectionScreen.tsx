@@ -484,7 +484,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                 <h1
                     className="selection-title"
                     style={{
-                        margin: '-0.4rem 0 -0.4rem', // symmetrical negative spacing
+                        margin: '-0.75rem 0 -0.75rem', // tightened negative spacing
                         fontSize: '1.5rem',
                         letterSpacing: '0.15em',
                         color: '#E5E7EB', // Action header is neutral/white
@@ -498,7 +498,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                 </h1>
 
                 {/* 3. Helper Divider (Below Title) - Reduced spacing */}
-                <div className="decorative-divider" style={{ opacity: 0.6, position: 'relative' }}>
+                <div className="decorative-divider" style={{ opacity: 0.6, position: 'relative', padding: '0 1rem' }}>
                     <div className="divider-line divider-line-left"></div>
                     <button
                         onClick={handleDailyReadingsQuickPlay}

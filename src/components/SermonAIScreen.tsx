@@ -244,7 +244,7 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
     generateBtn: language === 'es' ? 'Crear Sermón' : 'Build Sermon',
     generating: language === 'es' ? 'Creando...' : 'Building...',
     security: language === 'es' ? 'Tu contenido es privado y seguro.' : 'Your content is private and secure.',
-    yourSermon: language === 'es' ? 'Tu Sermón' : 'Your Sermon',
+    yourSermon: language === 'es' ? 'Tu Sermón IA' : 'Your Sermon AI',
     draft: language === 'es' ? 'Borrador' : 'Draft',
     listen: language === 'es' ? 'Escuchar' : 'Listen',
     copy: language === 'es' ? 'Copiar' : 'Copy',
@@ -478,7 +478,6 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                 <div className="sermon-result-header">
                   <div className="sermon-result-title-group">
                     <h3 className="sermon-result-title">{t.yourSermon}</h3>
-                    <span className="sermon-badge-draft">{t.draft}</span>
                   </div>
                   <div className="sermon-result-actions">
                     <button className="sermon-action-btn" onClick={handleSpeak} title={isPlaying ? 'Stop' : 'Listen'}>

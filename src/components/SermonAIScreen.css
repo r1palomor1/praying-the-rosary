@@ -138,7 +138,7 @@
 
 .sermon-select, .sermon-input-field, .sermon-textarea {
   width: 100%;
-  background: var(--sermon-input-bg);
+  background-color: #2a1d15 !important;
   border: 1px solid var(--sermon-border);
   border-radius: 12px;
   color: var(--sermon-text);
