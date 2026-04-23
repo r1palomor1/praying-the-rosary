@@ -8,7 +8,8 @@ import {
     Calendar,
     CheckCircle,
     RotateCcw,
-    Sparkles
+    Sparkles,
+    ScrollText
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
@@ -41,7 +42,7 @@ interface DailyReflection {
     date: string;
 }
 
-export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) {
+export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: () => void; onOpenSermon?: () => void }) {
     const { language } = useApp();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [data, setData] = useState<DailyReadingsData | null>(null);
@@ -686,6 +687,17 @@ export default function DailyReadingsScreen({ onBack }: { onBack: () => void }) 
                         </h1>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {aiEnabled && onOpenSermon && (
+                                <button
+                                    className="icon-btn-ghost"
+                                    onClick={onOpenSermon}
+                                    style={{ color: '#d4af37' }}
+                                    aria-label="AI Sermon Draft"
+                                    title="AI Sermon Draft"
+                                >
+                                    <ScrollText size={22} />
+                                </button>
+                            )}
                             {aiEnabled && (
                                 <button
                                     className="icon-btn-ghost"

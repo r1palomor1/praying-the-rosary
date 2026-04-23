@@ -41,3 +41,6 @@ public/version.json
 gitlog.txt
 gitlog2.txt
 gitlog3.txt
+
+# Next-phase resource folders (local reference only, not for deployment)
+catholic-sermom-ai/
