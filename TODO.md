@@ -151,6 +151,9 @@ git push
   - Assessed Meta `NLLB-200`, but reverted to `Helsinki-NLP OPUS-MT` as the optimal choice due to HuggingFace Free Tier 500-error server constraints.
   - Implemented silent `/api/translate` payload conversions (bulk-translating topic, question, and response simultaneously).
   - Action trigger: Upon clicking "Save", the data instantly translates to the user's alternate language in the background, ensuring immediate availability when toggling settings.
+- [x] **Sermon AI Background Translation**
+  - Added background `/api/translate` task immediately after a sermon generates to ensure the alternate language is pre-cached.
+  - Sermon dynamically renders the translated cache if the user swaps language.
 
 ### 🎨 Daily Readings: Unified "Bible in a Year" Layout Migration (Completed)
 - [x] **Redesign Daily Readings UI to match Bible in a Year**
@@ -518,6 +521,13 @@ git push
 - [x] Implemented Bilingual Background Translations (`/api/translate.js`)
 - [x] Built the `AIModal.tsx` and `AIChatWindow.tsx` UI Components
 - [x] Created "Saved" tab with local storage state for spiritual bookmarks
+
+#### **Phase 1.3: Sermon AI Integration** (NEXT IMMEDIATE TARGET)
+- [ ] **Sermon AI Save & History Feature**
+  - Implement Save icon (Bookmark) alongside Listen and Copy icons for generated sermons.
+  - Add 48-hour Unsaved history queue for Sermon AI.
+  - Create a "View Saved" modal/tab mirroring the AI Chat saved logic.
+  - Integrate Listen, Copy, and Favorites directly into the saved Sermon cards.
 
 #### **Phase 1.3: Wire Mystery AI Chat to Rosary Engine** (NEXT IMMEDIATE TARGET - Per PRD)
 - [ ] Replace static "Learn More" modal inside `MysteryScreen.tsx` with the new `AIModal.tsx` companion

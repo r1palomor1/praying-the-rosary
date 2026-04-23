@@ -104,8 +104,11 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   /* Output & Result State */
   const [isGenerating, setIsGenerating] = useState(false);
   const [output,       setOutput]       = useState(() => localStorage.getItem('sermonAI_lastOutput') || '');
+  const [translatedOutput, setTranslatedOutput] = useState(() => localStorage.getItem('sermonAI_lastOutput_translated') || '');
+  const [originLang, setOriginLang] = useState(() => localStorage.getItem('sermonAI_lastOutput_originLang') || language);
+  const [isTranslating, setIsTranslating] = useState(false);
   const [genError,     setGenError]     = useState('');
-  const [isExpanded,   setIsExpanded]   = useState(() => Boolean(localStorage.getItem('sermonAI_lastOutput')));
+  const [isExpanded,   setIsExpanded]   = useState(false);
   const [isPlaying,    setIsPlaying]    = useState(false);
   const [copySuccess,  setCopySuccess]  = useState(false);
 
@@ -135,9 +138,16 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
     localStorage.setItem('sermonAI_sermonMode', sermonMode);
     localStorage.setItem('sermonAI_sermonLength', sermonLength);
     localStorage.setItem('sermonAI_sermonTone', sermonTone);
-    if (output) localStorage.setItem('sermonAI_lastOutput', output);
-    else localStorage.removeItem('sermonAI_lastOutput');
-  }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone, output]);
+    if (output) {
+      localStorage.setItem('sermonAI_lastOutput', output);
+      localStorage.setItem('sermonAI_lastOutput_translated', translatedOutput);
+      localStorage.setItem('sermonAI_lastOutput_originLang', originLang);
+    } else {
+      localStorage.removeItem('sermonAI_lastOutput');
+      localStorage.removeItem('sermonAI_lastOutput_translated');
+      localStorage.removeItem('sermonAI_lastOutput_originLang');
+    }
+  }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone, output, translatedOutput, originLang]);
 
   useEffect(() => {
     const currentDeps = [
@@ -154,7 +164,10 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
     // Check if dependencies truly changed to avoid React Strict Mode / mount bugs
     const changed = prevDeps.current.some((dep, i) => dep !== currentDeps[i]);
     if (changed) {
-      if (output) setOutput('');
+      if (output) {
+        setOutput('');
+        setTranslatedOutput('');
+      }
     }
     prevDeps.current = currentDeps;
   }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone]);
@@ -208,6 +221,7 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
     if (isPlaying) { ttsManager.stop(); setIsPlaying(false); }
     setIsGenerating(true);
     setOutput('');
+    setTranslatedOutput('');
     setGenError('');
     setIsExpanded(false);
     
@@ -231,10 +245,28 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
 
       const data = JSON.parse(rawText);
       if (!res.ok) throw new Error(data.message || 'Failed to generate.');
-      setOutput(sanitizeSermonDisplay(data.response ?? ''));
+      
+      const finalOutput = sanitizeSermonDisplay(data.response ?? '');
+      setOutput(finalOutput);
+      setOriginLang(language);
       
       // Scroll to result
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+
+      // Background Translation
+      setIsTranslating(true);
+      const otherLang = language === 'es' ? 'en' : 'es';
+      fetch('/api/translate', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: [finalOutput], from: language, to: otherLang })
+      }).then(r => r.json()).then(transData => {
+        if (transData?.translated?.length === 1) {
+          setTranslatedOutput(transData.translated[0]);
+        }
+      }).catch(e => console.warn('[SermonAIScreen] Background auto-translation failed', e))
+        .finally(() => setIsTranslating(false));
+
     } catch (err: any) {
       setGenError(err.message || 'An error occurred.');
     } finally {
@@ -247,7 +279,9 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
     if (isPlaying) { ttsManager.stop(); setIsPlaying(false); return; }
     await ttsManager.setLanguage(language);
     ttsManager.setOnEnd(() => setIsPlaying(false));
-    const spokenText = sanitizeAIResponseForSpeech(output);
+    
+    const textToSpeak = (originLang !== language && translatedOutput) ? translatedOutput : output;
+    const spokenText = sanitizeAIResponseForSpeech(textToSpeak, language);
     const chunks = spokenText.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) ?? [spokenText];
     setIsPlaying(true);
     try {
@@ -259,7 +293,8 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
 
   const handleCopy = async () => {
     if (!output) return;
-    try { await navigator.clipboard.writeText(output); }
+    const textToCopy = (originLang !== language && translatedOutput) ? translatedOutput : output;
+    try { await navigator.clipboard.writeText(textToCopy); }
     catch { 
       const t = document.createElement('textarea'); 
       t.value = output; 
@@ -571,7 +606,10 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                 </div>
 
                 <div className={`sermon-result-body${!isExpanded ? ' sermon-text-collapsed' : ''}`}>
-                  {output}
+                  {(originLang !== language && translatedOutput) ? translatedOutput : output}
+                  {(originLang !== language && !translatedOutput && isTranslating) && (
+                    <span className="ai-translating-indicator" style={{fontStyle: 'italic', opacity: 0.7}}> {language === 'es' ? '(traduciendo...)' : '(translating...)'}</span>
+                  )}
                 </div>
 
                 <button className="sermon-expand-btn" onClick={() => setIsExpanded(!isExpanded)}>

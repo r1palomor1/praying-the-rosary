@@ -23,13 +23,18 @@ export function sanitizeTextForSpeech(text: string): string {
  * Only strips content inside (), [], {} brackets for citations.
  * Bare inline scripture refs like "Luke 16:19-31" are preserved.
  */
-export function sanitizeAIResponseForSpeech(text: string): string {
+export function sanitizeAIResponseForSpeech(text: string, language: string = 'en'): string {
+    const toWord = language === 'es' ? ' al ' : ' to ';
+
     return sanitizeTextForSpeech(
         text
             // ── Bracket citations (CCC refs, footnotes, etc.) ──────────────
             .replace(/\([^)]*\)/g, '')           // (CCC 1033), (John 3:16)
             .replace(/\[[^\]]*\]/g, '')           // [1], [note]
             .replace(/\{[^}]*\}/g, '')            // {footnote}
+
+            // ── Number ranges (e.g. Bible verses "6-8" → "6 to 8") ────────
+            .replace(/(\d+)\s*[\-–]\s*(\d+)/g, `$1${toWord}$2`)
 
             // ── Markdown bold/italic (order matters: ** before *) ──────────
             .replace(/\*\*\*(.+?)\*\*\*/g, '$1') // ***bold italic***

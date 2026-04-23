@@ -205,7 +205,7 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
     setPlayingMsgId(msgId);
     await ttsManager.setLanguage(language as Language);
     ttsManager.setOnEnd(() => setPlayingMsgId(null));
-    const clean = sanitizeAIResponseForSpeech(text);
+    const clean = sanitizeAIResponseForSpeech(text, language);
     const chunks = clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [clean];
     const segments = chunks.map((chunk, i) => ({
       text: chunk.trim(),
@@ -278,7 +278,7 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
     const textToSpeak = (originLang !== language && item.response_translated)
       ? item.response_translated
       : item.response;
-    const clean = sanitizeAIResponseForSpeech(textToSpeak);
+    const clean = sanitizeAIResponseForSpeech(textToSpeak, language);
     const chunks = clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [clean];
     const segments = chunks.map((c, i) => ({ text: c.trim(), gender: 'female' as const, postPause: i < chunks.length - 1 ? 150 : 0 }));
     try { await ttsManager.speakSegments(segments); } catch { setPlayingMsgId(null); }
