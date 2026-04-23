@@ -1,8 +1,32 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ScrollText, Calendar, Volume2, Square, Copy, Check, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ScrollText, Calendar, Volume2, Square, Copy, Check, ChevronRight, ChevronDown } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
+import { sanitizeAIResponseForSpeech } from '../utils/textSanitizer';
 import './SermonAIScreen.css';
+
+/* ─── Strip markdown & structural labels from LLM output for visual display ─── */
+function sanitizeSermonDisplay(text: string): string {
+  return text
+    // Remove section header labels e.g. "**1. LITURGICAL GREETING & CONTEXT**" or "1. LITURGICAL GREETING"
+    .replace(/^\**\s*\d+\.\s*[A-ZÁÉÍÓÚÑ\s&:()\-]+\**\s*$/gm, '')
+    // Un-fenced markdown headers like "# LITURGICAL GREETING"
+    .replace(/^#{1,6}\s*.+$/gm, '')
+    // Bold/italic markers (order: *** before ** before *)
+    // Handles potential spaces around content: ** text **
+    .replace(/\*{3}([\s\S]+?)\*{3}/g, '$1')
+    .replace(/\*{2}([\s\S]+?)\*{2}/g, '$1')
+    .replace(/\*([\s\S]+?)\*/g, '$1')
+    .replace(/_{2}([\s\S]+?)_{2}/g, '$1')
+    .replace(/_([\s\S]+?)_/g, '$1')
+    // Stray lone asterisks or brackets
+    .replace(/[\*\#\_]/g, '')
+    // Numbered structure labels standing alone on a line
+    .replace(/^\d+\.\s*[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s&:()\-]+$/gm, '')
+    // Collapse multiple blank lines
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
 
 /* ─── Static suggestion data ─── */
 const STARTERS_EN = [
@@ -57,6 +81,7 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
 
   /* Suggestions */
   const [selectedStarterId, setSelectedStarterId] = useState<string | null>(null);
+  const [showStartersList, setShowStartersList] = useState(false);
 
   /* Custom */
   const [customText, setCustomText] = useState('');
@@ -147,7 +172,12 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
 
       const data = JSON.parse(rawText);
       if (!res.ok) throw new Error(data.details || data.message || data.error || 'Failed to generate.');
-      setOutput(data.response ?? '');
+      // Sanitize markdown from the model output before display
+      setOutput(sanitizeSermonDisplay(data.response ?? ''));
+      
+      // Reset selection to default after generation
+      setSelectedStarterId(null);
+      setShowStartersList(false);
     } catch (err: any) {
       setGenError(err.message || 'An error occurred. Please try again.');
     } finally {
@@ -168,7 +198,9 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
     if (isPlaying) { ttsManager.stop(); setIsPlaying(false); return; }
     await ttsManager.setLanguage(language);
     ttsManager.setOnEnd(() => setIsPlaying(false));
-    const chunks = output.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) ?? [output];
+    // Use the existing AI speech sanitizer for TTS (strips any residual markdown)
+    const spokenText = sanitizeAIResponseForSpeech(output);
+    const chunks = spokenText.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) ?? [spokenText];
     setIsPlaying(true);
     try {
       await ttsManager.speakSegments(
@@ -282,22 +314,49 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
           {/* ── Mode: Sermon Starters ── */}
           {inputMode === 'suggestions' && (
             <div className="sermon-starters-list">
-              {starters.map(s => (
+              {/* Show selected item as a "collapsed dropdown" if selected and not expanded */}
+              {selectedStarterId && !showStartersList ? (
                 <div
-                  key={s.id}
-                  className={`sermon-starter-card${selectedStarterId === s.id ? ' selected' : ''}`}
-                  onClick={() => setSelectedStarterId(s.id)}
+                  className="sermon-starter-card selected"
+                  onClick={() => setShowStartersList(true)}
                   role="button" tabIndex={0}
-                  onKeyDown={e => e.key === 'Enter' && setSelectedStarterId(s.id)}
+                  onKeyDown={e => e.key === 'Enter' && setShowStartersList(true)}
                 >
-                  <span className="sermon-starter-icon">{s.icon}</span>
+                  <span className="sermon-starter-icon">
+                    {starters.find(s => s.id === selectedStarterId)?.icon}
+                  </span>
                   <div className="sermon-starter-text">
-                    <span className="sermon-starter-title">{s.title}</span>
-                    <span className="sermon-starter-sub">{s.sub}</span>
+                    <span className="sermon-starter-title">
+                      {starters.find(s => s.id === selectedStarterId)?.title}
+                    </span>
+                    <span className="sermon-starter-sub">
+                      {language === 'es' ? 'Toca para cambiar' : 'Tap to change'}
+                    </span>
                   </div>
-                  <ChevronRight size={16} className="sermon-starter-arrow" />
+                  <ChevronDown size={16} className="sermon-starter-arrow" />
                 </div>
-              ))}
+              ) : (
+                /* Show full list if nothing selected OR showStartersList is true */
+                starters.map(s => (
+                  <div
+                    key={s.id}
+                    className={`sermon-starter-card${selectedStarterId === s.id ? ' selected' : ''}`}
+                    onClick={() => {
+                      setSelectedStarterId(s.id);
+                      setShowStartersList(false);
+                    }}
+                    role="button" tabIndex={0}
+                    onKeyDown={e => e.key === 'Enter' && (setSelectedStarterId(s.id), setShowStartersList(false))}
+                  >
+                    <span className="sermon-starter-icon">{s.icon}</span>
+                    <div className="sermon-starter-text">
+                      <span className="sermon-starter-title">{s.title}</span>
+                      <span className="sermon-starter-sub">{s.sub}</span>
+                    </div>
+                    <ChevronRight size={16} className="sermon-starter-arrow" />
+                  </div>
+                ))
+              )}
             </div>
           )}
 

@@ -49,6 +49,8 @@ Before writing, approach this task with the mindset of a Catholic priest prepari
 
 5. FLEXIBLE INPUT: The scripture or theme provided may be in any format — a book name ("Luke"), a chapter ("Luke 5"), specific verses ("Luke 5:5-10"), a feast name ("Feast of the Ascension"), a doctrinal theme ("mercy"), or a pastoral phrase ("a sermon on forgiveness"). Interpret all inputs charitably and faithfully as a Catholic theological reference.
 
+6. OUTPUT FORMAT: Do NOT include section headers, numbered labels, or markdown formatting (no **bold**, no *italic*, no # headings) in the output. Write as flowing, spoken prose only — as a priest would actually deliver it at the ambo. The output should read as natural speech, not a formatted document. Do NOT output labels like "LITURGICAL GREETING" or "PASTORAL APPLICATION".
+
 ${langInstruction}
 Target length: ${durationDesc}.
 Tone: ${toneDesc}.
