@@ -7,9 +7,9 @@ const PRIMARY_MODEL = 'meta-llama/Llama-3.1-8B-Instruct';
 const FALLBACK_MODEL = 'mistralai/Mistral-7B-Instruct-v0.2';
 
 const DURATION_TOKENS = {
-  short: 450,
-  medium: 750,
-  long: 1200,
+  short: 600,     // Was 450
+  medium: 1200,   // Was 750
+  long: 2500,     // Was 1200
 };
 
 const TONE_DESCRIPTORS = {

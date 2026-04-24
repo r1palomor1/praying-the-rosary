@@ -520,27 +520,27 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
 
   /* ── UI Strings ── */
   const t = {
-    title: language === 'es' ? 'Sermón IA' : 'Sermon AI',
-    subtitle: language === 'es' ? 'Crea sermones católicos llenos de fe en minutos.' : 'Create faith-filled, Catholic sermons in minutes.',
+    title: language === 'es' ? 'Inspiración IA' : 'Inspiration AI',
+    subtitle: language === 'es' ? 'Crea inspiraciones católicas llenas de fe en minutos.' : 'Create faith-filled, Catholic inspirations in minutes.',
     step1: language === 'es' ? 'Fuente' : 'Source',
-    step1Desc: language === 'es' ? '¿En qué deseas basar tu sermón?' : 'What would you like your sermon to be based on?',
+    step1Desc: language === 'es' ? '¿En qué se basa la inspiración?' : 'What is the inspiration based on?',
     step2: language === 'es' ? 'Estilo' : 'Style',
-    step2Desc: language === 'es' ? 'Elige cómo debe sonar tu sermón.' : 'Choose how your sermon should sound.',
+    step2Desc: language === 'es' ? 'Elige cómo debe sonar tu inspiración.' : 'Choose how your inspiration should sound.',
     step3: language === 'es' ? 'Generar' : 'Generate',
     step3Desc: language === 'es' ? 'Revisa tus selecciones.' : 'Review your selections.',
-    generateBtn: language === 'es' ? 'Crear Sermón' : 'Build Sermon',
+    generateBtn: language === 'es' ? 'Crear Inspiración' : 'Build Inspiration',
     generating: language === 'es' ? 'Creando...' : 'Building...',
     security: language === 'es' ? 'Tu contenido es privado y seguro.' : 'Your content is private and secure.',
-    yourSermon: language === 'es' ? 'Tu Sermón IA' : 'Your Sermon AI',
+    yourSermon: language === 'es' ? 'Reflexión' : 'Reflection',
     draft: language === 'es' ? 'Borrador' : 'Draft',
     listen: language === 'es' ? 'Escuchar' : 'Listen',
     copy: language === 'es' ? 'Copiar' : 'Copy',
-    expand: language === 'es' ? 'Expandir sermón completo' : 'Expand full sermon',
+    expand: language === 'es' ? 'Expandir inspiración completa' : 'Expand full inspiration',
     collapse: language === 'es' ? 'Contraer' : 'Collapse',
     helper: language === 'es' ? 'Estos ajustes ayudan a dar forma al tono y la profundidad.' : 'These settings help shape the tone and depth.',
-    dailyReadings: language === 'es' ? 'Lecturas del Día' : 'Daily Readings',
-    starters: language === 'es' ? 'Ideas de Sermones' : 'Sermon Starters',
-    custom: language === 'es' ? 'Texto Libre' : 'Custom',
+    dailyReadings: language === 'es' ? 'Lecturas Diarias' : 'Daily Readings',
+    starters: language === 'es' ? 'Sugerencias' : 'Starters / Suggestions',
+    custom: language === 'es' ? 'Texto Propio' : 'Custom Input',
     placeholder: language === 'es' ? 'Ej: Lucas 5; Fiesta de la Ascensión; una reflexión sobre la misericordia…' : 'E.g.: Luke 5; Feast of the Ascension; a reflection on mercy…',
     tapToChange: language === 'es' ? 'Toca para cambiar' : 'Tap to change',
   };
@@ -865,10 +865,10 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
             <div className="sermon-saved-tab-header">
                 <div className="sermon-saved-filter-scroll">
                   <div className="sermon-saved-filter-row">
-                    {['All Saved', 'Favorites', 'Recent 48h history'].map((tabStr, idx) => {
+                    {['All Inspirations', 'Favorites', 'Recent 48h history'].map((tabStr, idx) => {
                       const tabVal = ['all', 'favorites', 'recent'][idx] as 'all' | 'favorites' | 'recent';
                       const langStr = language === 'es'
-                        ? ['Todo Guardado', 'Favoritos', 'Historial 48h'][idx]
+                        ? ['Inspiraciones', 'Favoritos', 'Historial 48h'][idx]
                         : tabStr;
 
                       const count = savedItems.filter(item => {
@@ -910,7 +910,7 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                 return !item.isTemporary;
               }).length === 0 ? (
                 <div className="sermon-saved-empty">
-                  {language === 'es' ? 'No hay sermones guardados aún.' : 'No saved sermons yet.'}
+                  {language === 'es' ? 'No hay inspiraciones guardadas aún.' : 'No saved inspirations yet.'}
                 </div>
               ) : viewMode === 'list' ? (
                 <div className="sermon-saved-list">
@@ -943,9 +943,9 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                     
                     const groupIcons: Record<string, string> = { readings: '📖', starters: '✨', custom: '✍️' };
                     const groupNames: Record<string, string> = {
-                      readings: language === 'es' ? 'Lecturas del Día' : 'Daily Readings',
-                      starters: language === 'es' ? 'Ideas de Sermones' : 'Sermon Starters',
-                      custom: language === 'es' ? 'Texto Libre' : 'Custom'
+                      readings: t.dailyReadings,
+                      starters: t.starters,
+                      custom: t.custom
                     };
 
                     return (
