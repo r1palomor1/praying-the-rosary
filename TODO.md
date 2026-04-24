@@ -528,6 +528,7 @@ git push
   - Add 48-hour Unsaved history queue for Sermon AI.
   - Create a "View Saved" modal/tab mirroring the AI Chat saved logic.
   - Integrate Listen, Copy, and Favorites directly into the saved Sermon cards.
+  - **Export & Backup Integration:** Update `BackupManager` to include `ai_saved_reflections` and future `sermonAI_saved_sermons` keys in the JSON backup structure to preserve user spiritual bookmarks across devices.
 
 #### **Phase 1.3: Wire Mystery AI Chat to Rosary Engine** (NEXT IMMEDIATE TARGET - Per PRD)
 - [ ] Replace static "Learn More" modal inside `MysteryScreen.tsx` with the new `AIModal.tsx` companion

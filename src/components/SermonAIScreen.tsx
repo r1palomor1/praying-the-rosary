@@ -262,7 +262,9 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
         body: JSON.stringify({ texts: [finalOutput], from: language, to: otherLang })
       }).then(r => r.json()).then(transData => {
         if (transData?.translated?.length === 1) {
-          setTranslatedOutput(transData.translated[0]);
+          const trans = transData.translated[0];
+          setTranslatedOutput(trans);
+          localStorage.setItem('sermonAI_lastOutput_translated', trans);
         }
       }).catch(e => console.warn('[SermonAIScreen] Background auto-translation failed', e))
         .finally(() => setIsTranslating(false));
