@@ -17,7 +17,8 @@ import {
   Bookmark,
   BookmarkCheck,
   Star,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
@@ -494,15 +495,6 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
       {/* Settings Modal */}
       <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
 
-      <div className="sermon-tab-strip">
-        <button className={`sermon-tab ${activeTab === 'build' ? 'active' : ''}`} onClick={() => setActiveTab('build')}>
-          {language === 'es' ? 'Crear' : 'Build'}
-        </button>
-        <button className={`sermon-tab ${activeTab === 'saved' ? 'active' : ''}`} onClick={() => setActiveTab('saved')}>
-          {language === 'es' ? 'Guardado' : 'Saved'}
-        </button>
-      </div>
-
       <div className="sermon-body">
         
         {activeTab === 'build' ? (
@@ -624,12 +616,40 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
           )}
 
           {inputMode === 'custom' && (
-            <textarea 
-              className="sermon-textarea" 
-              value={customText} 
-              onChange={e => setCustomText(e.target.value)}
-              placeholder={t.placeholder}
-            />
+            <div className="sermon-textarea-wrapper" style={{ position: 'relative' }}>
+              <textarea 
+                className="sermon-textarea" 
+                value={customText} 
+                onChange={e => setCustomText(e.target.value)}
+                placeholder={t.placeholder}
+                style={{ paddingRight: '40px' }}
+              />
+              {customText && (
+                <button 
+                  className="sermon-textarea-clear" 
+                  onClick={() => setCustomText('')}
+                  style={{ 
+                    position: 'absolute', 
+                    top: '12px', 
+                    right: '12px', 
+                    background: 'transparent', 
+                    border: 'none', 
+                    color: 'var(--sermon-text-dim)', 
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px',
+                    borderRadius: '50%',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <X size={18} />
+                </button>
+              )}
+            </div>
           )}
         </section>
 
@@ -729,9 +749,12 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
               <div className="sermon-error-msg">{genError}</div>
             ) : (
               <>
-                <div className="sermon-result-header">
+                <div className="sermon-result-header" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <div className="sermon-result-title-group">
                     <h3 className="sermon-result-title">{t.yourSermon}</h3>
+                  </div>
+                  <div className="sermon-result-meta" style={{ fontSize: '0.75rem', color: 'var(--sermon-text-dim)', letterSpacing: '0.02em' }}>
+                    {getPromptValue().split(' — ')[1] || getPromptValue()} • {sermonMode === 'standard' ? 'Standard' : 'Abstract'} • {sermonLength} • {sermonTone}
                   </div>
                 </div>
 
@@ -761,10 +784,6 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                   <span>{isExpanded ? t.collapse : t.expand}</span>
                   <ChevronDown size={18} style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                 </button>
-
-                <div className="sermon-result-footer">
-                  {readingsDate.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • {getPromptValue().split(' — ')[1] || getPromptValue()} • {sermonMode === 'standard' ? 'Standard' : 'Abstract'} • {sermonLength} • {sermonTone}
-                </div>
               </>
             )}
           </div>
@@ -862,6 +881,17 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
           </div>
         )}
 
+      </div>
+
+      <div className="sermon-tab-strip">
+        <button className={`sermon-tab ${activeTab === 'build' ? 'active' : ''}`} onClick={() => setActiveTab('build')}>
+          <Sparkles size={20} />
+          <span>{language === 'es' ? 'Crear' : 'Build'}</span>
+        </button>
+        <button className={`sermon-tab ${activeTab === 'saved' ? 'active' : ''}`} onClick={() => setActiveTab('saved')}>
+          <Bookmark size={20} />
+          <span>{language === 'es' ? 'Guardado' : 'Saved'}</span>
+        </button>
       </div>
     </div>
   );
