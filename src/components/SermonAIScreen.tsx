@@ -7,16 +7,22 @@ import {
   Copy, 
   Check, 
   ChevronDown, 
+  ChevronUp,
   ChevronRight, 
   Settings, 
   Sparkles, 
   BookOpen,
   Type,
-  List
+  List,
+  Bookmark,
+  BookmarkCheck,
+  Star,
+  Trash2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { sanitizeAIResponseForSpeech } from '../utils/textSanitizer';
+import { saveSermon, updateSavedSermonTranslation, updateSavedSermonFlags, loadSavedSermons, deleteSavedSermon, type SavedSermon } from '../utils/savedSermons';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import './SermonAIScreen.css';
 
@@ -77,6 +83,12 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   const { language } = useApp();
   const starters = language === 'es' ? STARTERS_ES : STARTERS_EN;
 
+  /* Tabs State */
+  const [activeTab, setActiveTab] = useState<'build' | 'saved'>('build');
+  const [savedTabFilter, setSavedTabFilter] = useState<'all' | 'favorites' | 'recent'>('all');
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [playingSavedId, setPlayingSavedId] = useState<string | null>(null);
+
   /* Wizard State - Persisted via localStorage */
   const [inputMode, setInputMode] = useState<InputMode>(() => (localStorage.getItem('sermonAI_inputMode') as InputMode) || 'readings');
   
@@ -106,11 +118,13 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   const [output,       setOutput]       = useState(() => localStorage.getItem('sermonAI_lastOutput') || '');
   const [translatedOutput, setTranslatedOutput] = useState(() => localStorage.getItem('sermonAI_lastOutput_translated') || '');
   const [originLang, setOriginLang] = useState(() => localStorage.getItem('sermonAI_lastOutput_originLang') || language);
+  const [activeSermonId, setActiveSermonId] = useState<string | null>(() => localStorage.getItem('sermonAI_lastOutput_id') || null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [genError,     setGenError]     = useState('');
   const [isExpanded,   setIsExpanded]   = useState(false);
   const [isPlaying,    setIsPlaying]    = useState(false);
   const [copySuccess,  setCopySuccess]  = useState(false);
+  const [savedItems, setSavedItems] = useState(loadSavedSermons());
 
   /* Refs */
   const dateInputRef = useRef<HTMLInputElement>(null);
@@ -142,12 +156,14 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
       localStorage.setItem('sermonAI_lastOutput', output);
       localStorage.setItem('sermonAI_lastOutput_translated', translatedOutput);
       localStorage.setItem('sermonAI_lastOutput_originLang', originLang);
+      if (activeSermonId) localStorage.setItem('sermonAI_lastOutput_id', activeSermonId);
     } else {
       localStorage.removeItem('sermonAI_lastOutput');
       localStorage.removeItem('sermonAI_lastOutput_translated');
       localStorage.removeItem('sermonAI_lastOutput_originLang');
+      localStorage.removeItem('sermonAI_lastOutput_id');
     }
-  }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone, output, translatedOutput, originLang]);
+  }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone, output, translatedOutput, originLang, activeSermonId]);
 
   useEffect(() => {
     const currentDeps = [
@@ -167,10 +183,16 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
       if (output) {
         setOutput('');
         setTranslatedOutput('');
+        setActiveSermonId(null);
       }
     }
     prevDeps.current = currentDeps;
   }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone]);
+
+  // Caveman simple: whenever the language toggles, re-read the background translation from memory!
+  useEffect(() => {
+    setTranslatedOutput(localStorage.getItem('sermonAI_lastOutput_translated') || '');
+  }, [language]);
 
   /* ── Fetch readings ── */
   const formatDateParam = (d: Date) => {
@@ -250,6 +272,19 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
       setOutput(finalOutput);
       setOriginLang(language);
       
+      // Save to 48-hour history
+      const saved = saveSermon({
+        sourceText,
+        mode: sermonMode,
+        duration: sermonLength,
+        tone: sermonTone,
+        response: finalOutput,
+        lang: language,
+        isTemporary: true
+      });
+      setActiveSermonId(saved.id);
+      setSavedItems(loadSavedSermons());
+      
       // Scroll to result
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
 
@@ -265,6 +300,8 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
           const trans = transData.translated[0];
           setTranslatedOutput(trans);
           localStorage.setItem('sermonAI_lastOutput_translated', trans);
+          updateSavedSermonTranslation(saved.id, trans);
+          setSavedItems(loadSavedSermons());
         }
       }).catch(e => console.warn('[SermonAIScreen] Background auto-translation failed', e))
         .finally(() => setIsTranslating(false));
@@ -273,6 +310,96 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
       setGenError(err.message || 'An error occurred.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleToggleBookmark = () => {
+    if (!activeSermonId) return;
+    const item = savedItems.find(r => r.id === activeSermonId);
+    if (!item) return;
+
+    const newTempStatus = !item.isTemporary;
+    updateSavedSermonFlags(activeSermonId, {
+      isTemporary: newTempStatus,
+      isFavorite: newTempStatus ? false : item.isFavorite,
+      ...(newTempStatus ? { timestamp: Date.now() } : {})
+    });
+    setSavedItems(loadSavedSermons());
+  };
+
+  const handleToggleFavorite = () => {
+    if (!activeSermonId) return;
+    const item = savedItems.find(r => r.id === activeSermonId);
+    if (!item) return;
+
+    const newFav = !item.isFavorite;
+    if (newFav) {
+      updateSavedSermonFlags(activeSermonId, { isFavorite: true, isTemporary: false });
+    } else {
+      updateSavedSermonFlags(activeSermonId, { isFavorite: false });
+    }
+    setSavedItems(loadSavedSermons());
+  };
+
+  const activeSermonRecord = savedItems.find(r => r.id === activeSermonId);
+
+  const handleDeleteSaved = (id: string) => {
+    deleteSavedSermon(id);
+    setSavedItems(loadSavedSermons());
+  };
+
+  const handlePlaySaved = async (item: SavedSermon) => {
+    if (playingSavedId === item.id) {
+      ttsManager.stop();
+      setPlayingSavedId(null);
+      return;
+    }
+    ttsManager.stop();
+    setIsPlaying(false);
+    setPlayingSavedId(item.id);
+    await ttsManager.setLanguage(language as any);
+    ttsManager.setOnEnd(() => setPlayingSavedId(null));
+    
+    const originLang = item.lang || 'en';
+    const textToSpeak = (originLang !== language && item.response_translated) ? item.response_translated : item.response;
+    const spokenText = sanitizeAIResponseForSpeech(textToSpeak, language);
+    const chunks = spokenText.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) ?? [spokenText];
+    try {
+      await ttsManager.speakSegments(
+        chunks.map((text, i) => ({ text: text.trim(), gender: 'female' as const, postPause: i < chunks.length - 1 ? 200 : 0 }))
+      );
+    } catch { setPlayingSavedId(null); }
+  };
+
+  const handleToggleSavedBookmark = (item: SavedSermon) => {
+    const newTempStatus = !item.isTemporary;
+    updateSavedSermonFlags(item.id, {
+      isTemporary: newTempStatus,
+      isFavorite: newTempStatus ? false : item.isFavorite,
+      ...(newTempStatus ? { timestamp: Date.now() } : {})
+    });
+    setSavedItems(loadSavedSermons());
+  };
+
+  const handleToggleSavedFavorite = (item: SavedSermon) => {
+    const newFav = !item.isFavorite;
+    if (newFav) {
+      updateSavedSermonFlags(item.id, { isFavorite: true, isTemporary: false });
+    } else {
+      updateSavedSermonFlags(item.id, { isFavorite: false });
+    }
+    setSavedItems(loadSavedSermons());
+  };
+
+  const handleCopyText = async (text: string) => {
+    try { await navigator.clipboard.writeText(text); }
+    catch { 
+      const t = document.createElement('textarea'); 
+      t.value = text; 
+      document.body.appendChild(t); 
+      t.select(); 
+      document.execCommand('copy'); 
+      t.remove(); 
     }
   };
 
@@ -367,9 +494,20 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
       {/* Settings Modal */}
       <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
 
+      <div className="sermon-tab-strip">
+        <button className={`sermon-tab ${activeTab === 'build' ? 'active' : ''}`} onClick={() => setActiveTab('build')}>
+          {language === 'es' ? 'Crear' : 'Build'}
+        </button>
+        <button className={`sermon-tab ${activeTab === 'saved' ? 'active' : ''}`} onClick={() => setActiveTab('saved')}>
+          {language === 'es' ? 'Guardado' : 'Saved'}
+        </button>
+      </div>
+
       <div className="sermon-body">
         
-        {/* ── Step 1: Source ── */}
+        {activeTab === 'build' ? (
+          <>
+            {/* ── Step 1: Source ── */}
         <section className="sermon-step-card">
           <div className="sermon-step-header">
             <h2 className="sermon-step-title">{t.step1}</h2>
@@ -595,16 +733,6 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                   <div className="sermon-result-title-group">
                     <h3 className="sermon-result-title">{t.yourSermon}</h3>
                   </div>
-                  <div className="sermon-result-actions">
-                    <button className="sermon-action-btn" onClick={handleSpeak} title={isPlaying ? 'Stop' : 'Listen'}>
-                      {isPlaying ? <Square size={16} fill="currentColor" /> : <Volume2 size={16} />}
-                      <span>{t.listen}</span>
-                    </button>
-                    <button className="sermon-action-btn" onClick={handleCopy}>
-                      {copySuccess ? <Check size={16} color="#4ade80" /> : <Copy size={16} />}
-                      <span>{t.copy}</span>
-                    </button>
-                  </div>
                 </div>
 
                 <div className={`sermon-result-body${!isExpanded ? ' sermon-text-collapsed' : ''}`}>
@@ -612,6 +740,21 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                   {(originLang !== language && !translatedOutput && isTranslating) && (
                     <span className="ai-translating-indicator" style={{fontStyle: 'italic', opacity: 0.7}}> {language === 'es' ? '(traduciendo...)' : '(translating...)'}</span>
                   )}
+                </div>
+
+                <div className="sermon-result-footer-actions">
+                  <button className="sermon-icon-btn" onClick={handleSpeak} title={isPlaying ? 'Stop' : 'Listen'}>
+                    {isPlaying ? <Square size={18} fill="currentColor" /> : <Volume2 size={18} />}
+                  </button>
+                  <button className={`sermon-icon-btn ${activeSermonRecord && !activeSermonRecord.isTemporary ? 'saved' : ''}`} onClick={handleToggleBookmark} title={language === 'es' ? 'Guardar' : 'Save'}>
+                    {(activeSermonRecord && !activeSermonRecord.isTemporary) ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
+                  </button>
+                  <button className={`sermon-icon-btn ${activeSermonRecord?.isFavorite ? 'saved' : ''}`} onClick={handleToggleFavorite} title={language === 'es' ? 'Favorito' : 'Favorite'}>
+                    <Star size={18} fill={activeSermonRecord?.isFavorite ? 'currentColor' : 'none'} color={activeSermonRecord?.isFavorite ? 'inherit' : 'currentColor'} />
+                  </button>
+                  <button className="sermon-icon-btn" onClick={handleCopy} title={language === 'es' ? 'Copiar' : 'Copy'}>
+                    {copySuccess ? <Check size={18} color="#4ade80" /> : <Copy size={18} />}
+                  </button>
                 </div>
 
                 <button className="sermon-expand-btn" onClick={() => setIsExpanded(!isExpanded)}>
@@ -623,6 +766,98 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                   {readingsDate.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • {getPromptValue().split(' — ')[1] || getPromptValue()} • {sermonMode === 'standard' ? 'Standard' : 'Abstract'} • {sermonLength} • {sermonTone}
                 </div>
               </>
+            )}
+          </div>
+        )}
+          </>
+        ) : (
+          <div className="sermon-saved-tab">
+            <div className="sermon-saved-filter-row">
+              {['All Saved', 'Favorites', 'Recent 48h history'].map((tabStr, idx) => {
+                const tabVal = ['all', 'favorites', 'recent'][idx] as 'all' | 'favorites' | 'recent';
+                const langStr = language === 'es' ? ['Todo Guardado', 'Favoritos', 'Historial 48h'][idx] : tabStr;
+                const count = savedItems.filter(item => {
+                  if (tabVal === 'favorites') return item.isFavorite;
+                  if (tabVal === 'recent') return item.isTemporary;
+                  return !item.isTemporary;
+                }).length;
+                return (
+                  <button key={tabVal} onClick={() => setSavedTabFilter(tabVal)} className={`sermon-saved-filter-btn ${savedTabFilter === tabVal ? 'active' : ''}`}>
+                    {langStr} ({count})
+                  </button>
+                );
+              })}
+            </div>
+            
+            {savedItems.filter(item => {
+              if (savedTabFilter === 'favorites') return item.isFavorite;
+              if (savedTabFilter === 'recent') return item.isTemporary;
+              return !item.isTemporary;
+            }).length === 0 ? (
+              <div className="sermon-saved-empty">
+                {language === 'es' ? 'No hay sermones guardados aún.' : 'No saved sermons yet.'}
+              </div>
+            ) : (
+              <div className="sermon-saved-list">
+                {savedItems.filter(item => {
+                  if (savedTabFilter === 'favorites') return item.isFavorite;
+                  if (savedTabFilter === 'recent') return item.isTemporary;
+                  return !item.isTemporary;
+                }).map(item => {
+                  const originLang = item.lang || 'en';
+                  const responseDisplay = (originLang !== language && item.response_translated) ? item.response_translated : item.response;
+                  const isExpanded = expandedCards.has(item.id);
+                  const isPlayingThis = playingSavedId === item.id;
+                  const toggleExpand = () => setExpandedCards(prev => { const next = new Set(prev); next.has(item.id) ? next.delete(item.id) : next.add(item.id); return next; });
+
+                  return (
+                    <div key={item.id} className={`sermon-saved-card ${isExpanded ? 'expanded' : ''}`} onClick={toggleExpand}>
+                      <div className="sermon-saved-card-header">
+                        <div className="sermon-saved-card-title-area">
+                          <div className="sermon-saved-card-title">{item.sourceText}</div>
+                          <div className="sermon-saved-card-meta">
+                            {item.mode === 'standard' ? (language === 'es' ? 'Estándar' : 'Standard') : (language === 'es' ? 'Abstracto' : 'Abstract')} • {item.duration} • {item.tone}
+                          </div>
+                          <div className="sermon-saved-card-actions" onClick={(e) => e.stopPropagation()}>
+                            <button className={`sermon-icon-btn ${isPlayingThis ? 'playing' : ''}`} onClick={(e) => { e.stopPropagation(); handlePlaySaved(item); }}>
+                              {isPlayingThis ? <Square size={16} fill="currentColor" /> : <Volume2 size={16} />}
+                            </button>
+                            <button className={`sermon-icon-btn ${!item.isTemporary ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedBookmark(item); }}>
+                              {!item.isTemporary ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                            </button>
+                            <button className={`sermon-icon-btn ${item.isFavorite ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedFavorite(item); }}>
+                              <Star size={16} fill={item.isFavorite ? 'currentColor' : 'none'} color={item.isFavorite ? 'inherit' : 'currentColor'} />
+                            </button>
+                            <button className="sermon-icon-btn" onClick={(e) => { e.stopPropagation(); handleCopyText(responseDisplay); }}>
+                              <Copy size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="sermon-saved-card-right">
+                           <div className="sermon-saved-card-date">
+                             {new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                           </div>
+                           <div className="sermon-saved-card-chevron">
+                             {isExpanded ? <ChevronUp size={18} color="var(--sermon-gold)" /> : <ChevronDown size={18} color="rgba(244, 231, 212, 0.4)" />}
+                           </div>
+                        </div>
+                      </div>
+                      {isExpanded && (
+                        <div className="sermon-saved-card-content" onClick={e => e.stopPropagation()}>
+                          <div className="sermon-saved-card-response">{responseDisplay}</div>
+                          <div className="sermon-saved-card-footer">
+                            <span className="sermon-badge-draft">{originLang.toUpperCase()}</span>
+                            <button className="sermon-saved-card-discard" onClick={(e) => { e.stopPropagation(); handleDeleteSaved(item.id); }}>
+                              <Trash2 size={14} />
+                              {language === 'es' ? 'DESCARTAR' : 'DISCARD'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}

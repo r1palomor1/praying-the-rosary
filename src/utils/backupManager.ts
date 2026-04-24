@@ -12,6 +12,8 @@ export interface BackupData {
         bible_completed_days?: any;
         bible_completed_chapters?: any;
         settings?: any;
+        ai_saved_reflections?: any;
+        sermonAI_saved_sermons?: any;
         [key: string]: any;
     };
 }
@@ -45,7 +47,9 @@ export class BackupManager {
                 key === 'rosary_settings' ||
                 key === 'rosary_language' ||
                 key === 'rosary_last_completed' ||
-                key.startsWith('dailyReadings_completed_')
+                key.startsWith('dailyReadings_completed_') ||
+                key === 'ai_saved_reflections' ||
+                key === 'sermonAI_saved_sermons'
             ) {
                 try {
                     const value = localStorage.getItem(key);
