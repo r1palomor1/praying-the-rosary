@@ -649,6 +649,47 @@ p {
     font-family: var(--font-body);
 }
 
+/* Thin, dark-mode friendly scrollbars for Webkit */
+.ai-messages-list::-webkit-scrollbar,
+.ai-saved-list-scroll-area::-webkit-scrollbar {
+    width: 4px;
+}
+
+.ai-messages-list::-webkit-scrollbar-track,
+.ai-saved-list-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ai-messages-list::-webkit-scrollbar-thumb,
+.ai-saved-list-scroll-area::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.ai-messages-list::-webkit-scrollbar-thumb:hover,
+.ai-saved-list-scroll-area::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== CUSTOM SCROLLBARS ===== */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 .litany-reminder-highlight {
     color: #FBBF24;
     font-weight: 600;

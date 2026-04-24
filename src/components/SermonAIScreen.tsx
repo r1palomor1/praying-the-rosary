@@ -18,7 +18,8 @@ import {
   BookmarkCheck,
   Star,
   Trash2,
-  X
+  X,
+  LayoutGrid
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
@@ -89,6 +90,8 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   const [savedTabFilter, setSavedTabFilter] = useState<'all' | 'favorites' | 'recent'>('all');
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [playingSavedId, setPlayingSavedId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'grouped'>('grouped');
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   /* Wizard State - Persisted via localStorage */
   const [inputMode, setInputMode] = useState<InputMode>(() => (localStorage.getItem('sermonAI_inputMode') as InputMode) || 'readings');
@@ -276,6 +279,7 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
       // Save to 48-hour history
       const saved = saveSermon({
         sourceText,
+        sourceType: inputMode === 'suggestions' ? 'starters' : inputMode,
         mode: sermonMode,
         duration: sermonLength,
         tone: sermonTone,
@@ -446,6 +450,65 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   const mStr = String(readingsDate.getMonth() + 1).padStart(2, '0');
   const dStr = String(readingsDate.getDate()).padStart(2, '0');
   const htmlDate = `${yyyy}-${mStr}-${dStr}`;
+
+  const renderSavedCard = (item: SavedSermon) => {
+    const originLang = item.lang || 'en';
+    const responseDisplay = (originLang !== language && item.response_translated) ? item.response_translated : item.response;
+    const isExpanded = expandedCards.has(item.id);
+    const isPlayingThis = playingSavedId === item.id;
+    const toggleExpand = () => setExpandedCards(prev => { 
+      const next = new Set(prev); 
+      next.has(item.id) ? next.delete(item.id) : next.add(item.id); 
+      return next; 
+    });
+
+    return (
+      <div key={item.id} className={`sermon-saved-card ${isExpanded ? 'expanded' : ''}`} onClick={toggleExpand}>
+        <div className="sermon-saved-card-header">
+          <div className="sermon-saved-card-title-area">
+            <div className="sermon-saved-card-title">{item.sourceText}</div>
+            <div className="sermon-saved-card-meta">
+              {item.mode === 'standard' ? (language === 'es' ? 'Estándar' : 'Standard') : (language === 'es' ? 'Abstracto' : 'Abstract')} • {item.duration} • {item.tone}
+            </div>
+            <div className="sermon-saved-card-actions" onClick={(e) => e.stopPropagation()}>
+              <button className={`sermon-icon-btn ${isPlayingThis ? 'playing' : ''}`} onClick={(e) => { e.stopPropagation(); handlePlaySaved(item); }}>
+                {isPlayingThis ? <Square size={16} fill="currentColor" /> : <Volume2 size={16} />}
+              </button>
+              <button className={`sermon-icon-btn ${!item.isTemporary ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedBookmark(item); }}>
+                {!item.isTemporary ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+              </button>
+              <button className={`sermon-icon-btn ${item.isFavorite ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedFavorite(item); }}>
+                <Star size={16} fill={item.isFavorite ? 'currentColor' : 'none'} color={item.isFavorite ? 'inherit' : 'currentColor'} />
+              </button>
+              <button className="sermon-icon-btn" onClick={(e) => { e.stopPropagation(); handleCopyText(responseDisplay); }}>
+                <Copy size={16} />
+              </button>
+            </div>
+          </div>
+          <div className="sermon-saved-card-right">
+             <div className="sermon-saved-card-date">
+               {new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+             </div>
+             <div className="sermon-saved-card-chevron">
+               {isExpanded ? <ChevronUp size={18} color="var(--sermon-gold)" /> : <ChevronDown size={18} color="rgba(244, 231, 212, 0.4)" />}
+             </div>
+          </div>
+        </div>
+        {isExpanded && (
+          <div className="sermon-saved-card-content" onClick={e => e.stopPropagation()}>
+            <div className="sermon-saved-card-response">{responseDisplay}</div>
+            <div className="sermon-saved-card-footer">
+              <span className="sermon-badge-draft">{originLang.toUpperCase()}</span>
+              <button className="sermon-saved-card-discard" onClick={(e) => { e.stopPropagation(); handleDeleteSaved(item.id); }}>
+                <Trash2 size={14} />
+                {language === 'es' ? 'DESCARTAR' : 'DISCARD'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   /* ── UI Strings ── */
   const t = {
@@ -791,93 +854,111 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
           </>
         ) : (
           <div className="sermon-saved-tab">
-            <div className="sermon-saved-filter-row">
-              {['All Saved', 'Favorites', 'Recent 48h history'].map((tabStr, idx) => {
-                const tabVal = ['all', 'favorites', 'recent'][idx] as 'all' | 'favorites' | 'recent';
-                const langStr = language === 'es' ? ['Todo Guardado', 'Favoritos', 'Historial 48h'][idx] : tabStr;
-                const count = savedItems.filter(item => {
-                  if (tabVal === 'favorites') return item.isFavorite;
-                  if (tabVal === 'recent') return item.isTemporary;
-                  return !item.isTemporary;
-                }).length;
-                return (
-                  <button key={tabVal} onClick={() => setSavedTabFilter(tabVal)} className={`sermon-saved-filter-btn ${savedTabFilter === tabVal ? 'active' : ''}`}>
-                    {langStr} ({count})
-                  </button>
-                );
-              })}
-            </div>
-            
-            {savedItems.filter(item => {
-              if (savedTabFilter === 'favorites') return item.isFavorite;
-              if (savedTabFilter === 'recent') return item.isTemporary;
-              return !item.isTemporary;
-            }).length === 0 ? (
-              <div className="sermon-saved-empty">
-                {language === 'es' ? 'No hay sermones guardados aún.' : 'No saved sermons yet.'}
-              </div>
-            ) : (
-              <div className="sermon-saved-list">
-                {savedItems.filter(item => {
-                  if (savedTabFilter === 'favorites') return item.isFavorite;
-                  if (savedTabFilter === 'recent') return item.isTemporary;
-                  return !item.isTemporary;
-                }).map(item => {
-                  const originLang = item.lang || 'en';
-                  const responseDisplay = (originLang !== language && item.response_translated) ? item.response_translated : item.response;
-                  const isExpanded = expandedCards.has(item.id);
-                  const isPlayingThis = playingSavedId === item.id;
-                  const toggleExpand = () => setExpandedCards(prev => { const next = new Set(prev); next.has(item.id) ? next.delete(item.id) : next.add(item.id); return next; });
+            <div className="sermon-saved-tab-header">
+                <div className="sermon-saved-filter-scroll">
+                  <div className="sermon-saved-filter-row">
+                    {['All Saved', 'Favorites', 'Recent 48h history'].map((tabStr, idx) => {
+                      const tabVal = ['all', 'favorites', 'recent'][idx] as 'all' | 'favorites' | 'recent';
+                      const langStr = language === 'es'
+                        ? ['Todo Guardado', 'Favoritos', 'Historial 48h'][idx]
+                        : tabStr;
 
-                  return (
-                    <div key={item.id} className={`sermon-saved-card ${isExpanded ? 'expanded' : ''}`} onClick={toggleExpand}>
-                      <div className="sermon-saved-card-header">
-                        <div className="sermon-saved-card-title-area">
-                          <div className="sermon-saved-card-title">{item.sourceText}</div>
-                          <div className="sermon-saved-card-meta">
-                            {item.mode === 'standard' ? (language === 'es' ? 'Estándar' : 'Standard') : (language === 'es' ? 'Abstracto' : 'Abstract')} • {item.duration} • {item.tone}
-                          </div>
-                          <div className="sermon-saved-card-actions" onClick={(e) => e.stopPropagation()}>
-                            <button className={`sermon-icon-btn ${isPlayingThis ? 'playing' : ''}`} onClick={(e) => { e.stopPropagation(); handlePlaySaved(item); }}>
-                              {isPlayingThis ? <Square size={16} fill="currentColor" /> : <Volume2 size={16} />}
-                            </button>
-                            <button className={`sermon-icon-btn ${!item.isTemporary ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedBookmark(item); }}>
-                              {!item.isTemporary ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
-                            </button>
-                            <button className={`sermon-icon-btn ${item.isFavorite ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedFavorite(item); }}>
-                              <Star size={16} fill={item.isFavorite ? 'currentColor' : 'none'} color={item.isFavorite ? 'inherit' : 'currentColor'} />
-                            </button>
-                            <button className="sermon-icon-btn" onClick={(e) => { e.stopPropagation(); handleCopyText(responseDisplay); }}>
-                              <Copy size={16} />
-                            </button>
-                          </div>
-                        </div>
-                        <div className="sermon-saved-card-right">
-                           <div className="sermon-saved-card-date">
-                             {new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                           </div>
-                           <div className="sermon-saved-card-chevron">
-                             {isExpanded ? <ChevronUp size={18} color="var(--sermon-gold)" /> : <ChevronDown size={18} color="rgba(244, 231, 212, 0.4)" />}
-                           </div>
-                        </div>
-                      </div>
-                      {isExpanded && (
-                        <div className="sermon-saved-card-content" onClick={e => e.stopPropagation()}>
-                          <div className="sermon-saved-card-response">{responseDisplay}</div>
-                          <div className="sermon-saved-card-footer">
-                            <span className="sermon-badge-draft">{originLang.toUpperCase()}</span>
-                            <button className="sermon-saved-card-discard" onClick={(e) => { e.stopPropagation(); handleDeleteSaved(item.id); }}>
-                              <Trash2 size={14} />
-                              {language === 'es' ? 'DESCARTAR' : 'DISCARD'}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      const count = savedItems.filter(item => {
+                        if (tabVal === 'favorites') return item.isFavorite;
+                        if (tabVal === 'recent') return item.isTemporary;
+                        return !item.isTemporary;
+                      }).length;
+
+                      return (
+                        <button
+                          key={tabVal}
+                          onClick={() => setSavedTabFilter(tabVal)}
+                          className={`sermon-saved-filter-btn ${savedTabFilter === tabVal ? 'active' : ''}`}
+                        >
+                          {langStr} ( {count} )
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="sermon-view-toggle">
+                  <button
+                    className={`sermon-view-toggle-btn ${viewMode === 'grouped' ? 'active' : ''}`}
+                    onClick={() => {
+                      setViewMode(prev => prev === 'grouped' ? 'list' : 'grouped');
+                      if (viewMode === 'list') setExpandedGroups(new Set());
+                    }}
+                    title={viewMode === 'grouped' ? (language === 'es' ? 'Ver como lista' : 'View as list') : (language === 'es' ? 'Ver en grupos' : 'View as groups')}
+                  >
+                    {viewMode === 'grouped' ? <List size={18} /> : <LayoutGrid size={18} />}
+                  </button>
+                </div>
               </div>
-            )}
+
+              {savedItems.filter(item => {
+                if (savedTabFilter === 'favorites') return item.isFavorite;
+                if (savedTabFilter === 'recent') return item.isTemporary;
+                return !item.isTemporary;
+              }).length === 0 ? (
+                <div className="sermon-saved-empty">
+                  {language === 'es' ? 'No hay sermones guardados aún.' : 'No saved sermons yet.'}
+                </div>
+              ) : viewMode === 'list' ? (
+                <div className="sermon-saved-list">
+                  {savedItems.filter(item => {
+                    if (savedTabFilter === 'favorites') return item.isFavorite;
+                    if (savedTabFilter === 'recent') return item.isTemporary;
+                    return !item.isTemporary;
+                  }).map(item => renderSavedCard(item))}
+                </div>
+              ) : (
+                <div className="sermon-saved-groups">
+                  {Object.entries(
+                    savedItems.filter(item => {
+                      if (savedTabFilter === 'favorites') return item.isFavorite;
+                      if (savedTabFilter === 'recent') return item.isTemporary;
+                      return !item.isTemporary;
+                    }).reduce((acc, item) => {
+                      const group = item.sourceType || 'custom';
+                      if (!acc[group]) acc[group] = [];
+                      acc[group].push(item);
+                      return acc;
+                    }, {} as Record<string, SavedSermon[]>)
+                  ).sort((a, b) => a[0].localeCompare(b[0])).map(([group, items]) => {
+                    const isExpanded = expandedGroups.has(group);
+                    const toggleGroup = () => setExpandedGroups(prev => {
+                      const next = new Set(prev);
+                      next.has(group) ? next.delete(group) : next.add(group);
+                      return next;
+                    });
+                    
+                    const groupIcons: Record<string, string> = { readings: '📖', starters: '✨', custom: '✍️' };
+                    const groupNames: Record<string, string> = {
+                      readings: language === 'es' ? 'Lecturas del Día' : 'Daily Readings',
+                      starters: language === 'es' ? 'Ideas de Sermones' : 'Sermon Starters',
+                      custom: language === 'es' ? 'Texto Libre' : 'Custom'
+                    };
+
+                    return (
+                      <div key={group} className="sermon-saved-group-container">
+                        <div className="sermon-saved-group-header" onClick={toggleGroup}>
+                          <div className="sermon-saved-group-title">
+                            <span style={{ fontSize: '1.1rem' }}>{groupIcons[group] || '📁'}</span>
+                            {groupNames[group] || group} ({items.length})
+                          </div>
+                          {isExpanded ? <ChevronUp size={18} color="var(--sermon-gold)" /> : <ChevronDown size={18} color="var(--sermon-text-dim)" />}
+                        </div>
+                        {isExpanded && (
+                          <div className="sermon-saved-group-content">
+                            {items.map(item => renderSavedCard(item))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
           </div>
         )}
 

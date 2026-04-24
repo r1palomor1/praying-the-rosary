@@ -12,6 +12,7 @@ export interface SavedSermon {
     mode: string;                   // 'standard' | 'abstract'
     duration: string;               // 'short' | 'medium' | 'long'
     tone: string;                   // 'pastoral' | 'teaching' | etc.
+    sourceType: 'readings' | 'starters' | 'custom'; // categorization
     response: string;               // AI response text (original language)
     lang: string;                   // origin language: 'en' | 'es'
     response_translated?: string;   // cached translation
