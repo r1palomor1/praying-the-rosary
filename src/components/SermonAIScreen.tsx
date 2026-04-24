@@ -480,8 +480,16 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
               <button className={`sermon-icon-btn ${item.isFavorite ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedFavorite(item); }}>
                 <Star size={16} fill={item.isFavorite ? 'currentColor' : 'none'} color={item.isFavorite ? 'inherit' : 'currentColor'} />
               </button>
-              <button className="sermon-icon-btn" onClick={(e) => { e.stopPropagation(); handleCopyText(responseDisplay); }}>
+              <button className="sermon-icon-btn" onClick={(e) => { e.stopPropagation(); handleCopyText(responseDisplay); }} title={language === 'es' ? 'Copiar' : 'Copy'}>
                 <Copy size={16} />
+              </button>
+              <button 
+                className="sermon-icon-btn sermon-card-trash" 
+                style={{ marginLeft: '12px' }} 
+                onClick={(e) => { e.stopPropagation(); handleDeleteSaved(item.id); }}
+                title={language === 'es' ? 'Eliminar' : 'Delete'}
+              >
+                <Trash2 size={16} />
               </button>
             </div>
           </div>
@@ -882,7 +890,7 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                   </div>
                 </div>
 
-                <div className="sermon-view-toggle">
+                <div className="sermon-view-toggle" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-4px' }}>
                   <button
                     className={`sermon-view-toggle-btn ${viewMode === 'grouped' ? 'active' : ''}`}
                     onClick={() => {

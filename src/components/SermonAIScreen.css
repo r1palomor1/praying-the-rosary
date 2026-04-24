@@ -605,10 +605,9 @@
 
 .sermon-saved-tab-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  gap: 16px;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .sermon-saved-filter-scroll {
@@ -627,13 +626,14 @@
   background: var(--sermon-card-bg);
   border: 1px solid var(--sermon-border);
   color: var(--sermon-text-dim);
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   font-family: inherit;
+  transition: all 0.2s;
 }
 
 .sermon-saved-filter-btn.active {
@@ -646,8 +646,8 @@
   background: var(--sermon-input-bg);
   border: 1px solid var(--sermon-border);
   color: var(--sermon-text-dim);
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -655,6 +655,7 @@
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
+  align-self: flex-end;
 }
 
 .sermon-view-toggle-btn.active {
@@ -839,4 +840,10 @@
 }
 .sermon-screen::-webkit-scrollbar-thumb:hover {
   background: rgba(212, 175, 55, 0.1);
+}
+
+.sermon-card-trash:hover {
+  color: #ff6b6b !important;
+  border-color: rgba(255, 107, 107, 0.4) !important;
+  background-color: rgba(255, 107, 107, 0.1) !important;
 }

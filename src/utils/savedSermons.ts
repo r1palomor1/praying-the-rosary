@@ -50,10 +50,20 @@ export function loadSavedSermons(): SavedSermon[] {
 
 export function saveSermon(item: Omit<SavedSermon, 'id' | 'date'>): SavedSermon {
     const sermons = loadSavedSermons();
+    
+    // De-duplication check: if a sermon with same response/source exists within last 5 mins
+    const now = Date.now();
+    const duplicate = sermons.find(s => 
+        s.response === item.response && 
+        s.sourceText === item.sourceText && 
+        (now - (s.timestamp || 0)) < 5 * 60 * 1000
+    );
+    if (duplicate) return duplicate;
+
     const newItem: SavedSermon = {
         ...item,
-        id: Date.now().toString(),
-        timestamp: Date.now(),
+        id: now.toString(),
+        timestamp: now,
         date: new Date().toISOString().split('T')[0],
         lang: item.lang || 'en',
     };
