@@ -18,8 +18,7 @@ import {
   BookmarkCheck,
   Star,
   Trash2,
-  X,
-  LayoutGrid
+  X
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
@@ -90,8 +89,16 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   const [savedTabFilter, setSavedTabFilter] = useState<'all' | 'favorites' | 'recent'>('all');
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [playingSavedId, setPlayingSavedId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'grouped'>('grouped');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  
+  const toggleAllGroups = () => {
+    const allGroups = ['readings', 'starters', 'custom'];
+    if (expandedGroups.size > 0) {
+      setExpandedGroups(new Set());
+    } else {
+      setExpandedGroups(new Set(allGroups));
+    }
+  };
 
   /* Wizard State - Persisted via localStorage */
   const [inputMode, setInputMode] = useState<InputMode>(() => (localStorage.getItem('sermonAI_inputMode') as InputMode) || 'readings');
@@ -892,14 +899,11 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
 
                 <div className="sermon-view-toggle" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-4px' }}>
                   <button
-                    className={`sermon-view-toggle-btn ${viewMode === 'grouped' ? 'active' : ''}`}
-                    onClick={() => {
-                      setViewMode(prev => prev === 'grouped' ? 'list' : 'grouped');
-                      if (viewMode === 'list') setExpandedGroups(new Set());
-                    }}
-                    title={viewMode === 'grouped' ? (language === 'es' ? 'Ver como lista' : 'View as list') : (language === 'es' ? 'Ver en grupos' : 'View as groups')}
+                    className={`sermon-view-toggle-btn ${expandedGroups.size > 0 ? 'active' : ''}`}
+                    onClick={toggleAllGroups}
+                    title={expandedGroups.size > 0 ? (language === 'es' ? 'Contraer todo' : 'Collapse all') : (language === 'es' ? 'Expandir todo' : 'Expand all')}
                   >
-                    {viewMode === 'grouped' ? <List size={18} /> : <LayoutGrid size={18} />}
+                    {expandedGroups.size > 0 ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                   </button>
                 </div>
               </div>
@@ -911,14 +915,6 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
               }).length === 0 ? (
                 <div className="sermon-saved-empty">
                   {language === 'es' ? 'No hay inspiraciones guardadas aún.' : 'No saved inspirations yet.'}
-                </div>
-              ) : viewMode === 'list' ? (
-                <div className="sermon-saved-list">
-                  {savedItems.filter(item => {
-                    if (savedTabFilter === 'favorites') return item.isFavorite;
-                    if (savedTabFilter === 'recent') return item.isTemporary;
-                    return !item.isTemporary;
-                  }).map(item => renderSavedCard(item))}
                 </div>
               ) : (
                 <div className="sermon-saved-groups">

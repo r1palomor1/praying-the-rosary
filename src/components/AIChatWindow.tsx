@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, AlertCircle, ChevronDown, ChevronUp, Play, Square, Bookmark, BookmarkCheck, Trash2, Star, LayoutGrid, List } from 'lucide-react';
+import { Send, AlertCircle, ChevronDown, ChevronUp, Play, Square, Bookmark, BookmarkCheck, Trash2, Star } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { ttsManager } from '../utils/ttsManager';
 import { sanitizeAIResponseForSpeech } from '../utils/textSanitizer';
@@ -38,7 +38,6 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
   const [savedItems, setSavedItems] = useState<SavedReflection[]>(() => loadReflections());
   const [savedTab, setSavedTab] = useState<'all' | 'favorites' | 'recent'>('all');
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<'grouped' | 'list'>('grouped');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [translating, setTranslating] = useState(false);
 
@@ -386,7 +385,7 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
     return (
       <div key={item.id} className={`ai-saved-card-v2 ${isExpanded ? 'expanded' : ''}`} onClick={toggleExpand}>
         <div className="ai-saved-card-v2-header" style={{ alignItems: 'stretch' }}>
-          <div className="ai-saved-card-v2-icon" style={viewMode === 'grouped' ? { background: 'transparent', width: 'auto', height: 'auto', fontSize: '1.2rem', marginLeft: '1px', marginRight: '8px' } : undefined}>
+          <div className="ai-saved-card-v2-icon" style={{ background: 'transparent', width: 'auto', height: 'auto', fontSize: '1.2rem', marginLeft: '1px', marginRight: '8px' }}>
             {item.categoryIcon}
           </div>
 
@@ -422,9 +421,6 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
 
           <div className="ai-saved-card-v2-right-col" style={{ justifyContent: 'space-between', marginTop: '3px' }}>
             <div className="ai-saved-card-v2-date-right">
-              {viewMode === 'list' && (
-                <span style={{ marginRight: '6px', opacity: 0.6 }}>{localizeCategory(item.category)} •</span>
-              )}
               {new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </div>
 
@@ -614,17 +610,17 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
             {/* View Mode Toggle */}
             <div className="ai-view-toggle">
               <button
-                className="ai-view-btn active"
+                className={`ai-view-btn ${expandedCategories.size > 0 ? 'active' : ''}`}
                 onClick={() => {
-                  setViewMode(prev => prev === 'grouped' ? 'list' : 'grouped');
-                  // Reset category expansion when returning to grouped view for a clean dashboard
-                  if (viewMode === 'list') {
+                  if (expandedCategories.size > 0) {
                     setExpandedCategories(new Set());
+                  } else {
+                    setExpandedCategories(new Set(Object.keys(groupedSaved)));
                   }
                 }}
-                title={viewMode === 'grouped' ? (language === 'es' ? 'Ver como lista' : 'View as list') : (language === 'es' ? 'Ver en grupos' : 'View as groups')}
+                title={expandedCategories.size > 0 ? (language === 'es' ? 'Contraer todo' : 'Collapse all') : (language === 'es' ? 'Expandir todo' : 'Expand all')}
               >
-                {viewMode === 'grouped' ? <List size={16} /> : <LayoutGrid size={16} />}
+                {expandedCategories.size > 0 ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
             </div>
           </div>
@@ -637,12 +633,7 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
             </div>
           ) : (
             <div className="ai-saved-list-scroll-area">
-              {viewMode === 'list' ? (
-                <div className="ai-saved-list">
-                  {filteredSaved.map((item) => renderCard(item))}
-                </div>
-              ) : (
-                <div className="ai-saved-groups-layout">
+              <div className="ai-saved-groups-layout">
                   {Object.entries(groupedSaved)
                     .sort(([catA], [catB]) => localizeCategory(catA).localeCompare(localizeCategory(catB)))
                     .map(([cat, items]) => {
@@ -675,9 +666,8 @@ export function AIChatWindow({ contextStr, topicName, source = 'Daily Readings',
                         </div>
                       );
                     })}
+                  </div>
                 </div>
-              )}
-            </div>
           )}
         </div>
       )}
