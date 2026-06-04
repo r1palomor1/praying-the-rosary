@@ -2,15 +2,12 @@
 
 ## 🛑 URGENT FIXES (Next Session)
 
-- [ ] **Sermon AI: Starters List State Reset**
-  - Bug: When "Generate" is clicked, `selectedStarterId` is reset to null. This causes the UI to interpret it as "nothing selected" and reopens the full list.
-  - Fix: Modify state logic to keep the list collapsed or handle the post-generation state more gracefully without reopening the selection menu.
-- [ ] **Daily Readings: Header Spacing & Centering**
-  - Issue: The new AI icon in the header has pushed the "Daily Readings" title to the left.
-  - Fix: Tighten the spacing between icons to restore the centered alignment of the title.
-- [ ] **Home Screen: Tablet View Layout Lock**
-  - Issue: The main page with cards is currently requiring a small scroll on tablets.
-  - Fix: Adjust card heights/gaps so the entire interface is "locked" into a single viewport without scrolling, restoring the previous behavior.
+- [x] **Inspiration AI: Starters List State Reset** ✅ FIXED
+- [x] **Daily Readings: Header Spacing & Centering** ✅ FIXED
+- [x] **Home Screen: Tablet View Layout Lock** ✅ FIXED
+- [ ] **Inspiration AI: Source Dropdown Redundancy (Visual Doubling)**
+  - Issue: When the Source dropdown is open, the current selection appears twice (once in the trigger box and once in the list).
+  - Proposed Fix: Implement a "Floating Menu" or "Exclusive Toggle" that replaces the trigger box without causing the layout to shift or jump vertically. Ensure horizontal padding is synchronized (14px) to prevent "left-shift" effect.
 
 ### 🎨 AI Companion UI & Flow Standardization (Completed Mar 7, 2026)
 - [x] **Dark Card UI for AI Topic Selection Modal**

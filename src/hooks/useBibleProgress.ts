@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 export const BIBLE_START_DATE_KEY = 'bible_start_date';
 export const BIBLE_COMPLETED_DAYS_KEY = 'bible_completed_days';
 export const BIBLE_COMPLETED_CHAPTERS_KEY = 'bible_completed_chapters';
+export const BIBLE_CHAPTER_CHUNK_PROGRESS_KEY = 'bible_chapter_chunk_progress';
 export const BIBLE_BACKUP_DAYS_KEY = 'bible_backup_days';
 export const BIBLE_BACKUP_CHAPTERS_KEY = 'bible_backup_chapters';
 export const BIBLE_BACKUP_START_DATE_KEY = 'bible_backup_start_date';
@@ -37,6 +38,7 @@ export const resetBibleProgress = () => {
     // 2. Wipe active data and intentionally set start date to today dynamically
     localStorage.removeItem(BIBLE_COMPLETED_DAYS_KEY);
     localStorage.removeItem(BIBLE_COMPLETED_CHAPTERS_KEY);
+    localStorage.removeItem(BIBLE_CHAPTER_CHUNK_PROGRESS_KEY);
     
     // Automatically reset start date to today when wiping progress so they don't have instant missed days
     const today = new Date();
@@ -109,6 +111,9 @@ export interface BibleProgress {
     unmarkChapter: (day: number, chapterId: string) => void;
     isChapterComplete: (day: number, chapterId: string) => boolean;
     getMissedDaysCount: () => number;
+    getChapterChunkProgress: (day: number, chapterId: string) => number;
+    saveChapterChunkProgress: (day: number, chapterId: string, chunkIndex: number) => void;
+    clearChapterChunkProgress: (day: number, chapterId: string) => void;
 }
 
 export function useBibleProgress(): BibleProgress {
@@ -248,6 +253,8 @@ export function useBibleProgress(): BibleProgress {
 
         localStorage.setItem(BIBLE_COMPLETED_CHAPTERS_KEY, JSON.stringify(updated));
         setCompletedChaptersState(updated);
+        // Clear sub-chapter chunk progress upon full completion
+        clearChapterChunkProgress(day, chapterId);
         window.dispatchEvent(new Event('bible-progress-updated'));
     };
 
@@ -271,6 +278,50 @@ export function useBibleProgress(): BibleProgress {
 
     const getMissedDaysCount = () => missedDays.length;
 
+    const getChapterChunkProgress = (day: number, chapterId: string): number => {
+        try {
+            const saved = localStorage.getItem(BIBLE_CHAPTER_CHUNK_PROGRESS_KEY);
+            if (!saved) return -1;
+            const progress = JSON.parse(saved);
+            const val = progress[`${day}_${chapterId}`];
+            const result = typeof val === 'number' ? val : -1;
+            console.log('GET chunk progress:', { day, chapterId, key: `${day}_${chapterId}`, val, result });
+            return result;
+        } catch (e) {
+            console.error('Error getting chapter progress:', e);
+            return -1;
+        }
+    };
+
+    const saveChapterChunkProgress = (day: number, chapterId: string, chunkIndex: number) => {
+        try {
+            const saved = localStorage.getItem(BIBLE_CHAPTER_CHUNK_PROGRESS_KEY);
+            const progress = saved ? JSON.parse(saved) : {};
+            const key = `${day}_${chapterId}`;
+            progress[key] = chunkIndex;
+            localStorage.setItem(BIBLE_CHAPTER_CHUNK_PROGRESS_KEY, JSON.stringify(progress));
+            console.log('SAVE chunk progress:', { day, chapterId, chunkIndex, key });
+            window.dispatchEvent(new Event('bible-progress-updated'));
+        } catch (e) {
+            console.error('Failed to save chapter chunk progress', e);
+        }
+    };
+
+    const clearChapterChunkProgress = (day: number, chapterId: string) => {
+        try {
+            const saved = localStorage.getItem(BIBLE_CHAPTER_CHUNK_PROGRESS_KEY);
+            if (!saved) return;
+            const progress = JSON.parse(saved);
+            const key = `${day}_${chapterId}`;
+            delete progress[key];
+            localStorage.setItem(BIBLE_CHAPTER_CHUNK_PROGRESS_KEY, JSON.stringify(progress));
+            console.log('CLEAR chunk progress:', { day, chapterId, key });
+            window.dispatchEvent(new Event('bible-progress-updated'));
+        } catch (e) {
+            console.error('Failed to clear chapter chunk progress', e);
+        }
+    };
+
     return {
         bibleStartDate,
         completedDays,
@@ -284,5 +335,8 @@ export function useBibleProgress(): BibleProgress {
         unmarkChapter,
         isChapterComplete,
         getMissedDaysCount,
+        getChapterChunkProgress,
+        saveChapterChunkProgress,
+        clearChapterChunkProgress,
     };
 }

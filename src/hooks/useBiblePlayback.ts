@@ -7,9 +7,13 @@ import { parseBibleChapters, chunkBibleText, type Reading, type Chapter } from '
 // ─── Module-level state (survives React component lifecycle / navigation) ────
 let _isPlaying = false;
 let _playVersion = 0;
+let _currentlyPlayingId: string | null = null;
+let _activeChapterId: string | null = null;
 
-/** True if Bible audio is active anywhere in the app via the hook. */
+/** True if Bible audio is active anywhere in the app. */
 export const getBiblePlaying = () => _isPlaying;
+export const getBiblePlayingId = () => _currentlyPlayingId;
+export const getBibleActiveChapterId = () => _activeChapterId;
 
 /**
  * Kill any in-flight Bible hook audio.
@@ -18,9 +22,27 @@ export const getBiblePlaying = () => _isPlaying;
 export const killBiblePlayback = () => {
     _playVersion++;
     _isPlaying = false;
+    _currentlyPlayingId = null;
+    _activeChapterId = null;
     window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
     window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
 };
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('bible:playState', (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        _isPlaying = detail.playing;
+        if (detail.playing) {
+            _currentlyPlayingId = detail.id || detail.type || 'all';
+        } else {
+            _currentlyPlayingId = null;
+            _activeChapterId = null;
+        }
+    });
+    window.addEventListener('bible:chapterActive', (e: Event) => {
+        _activeChapterId = (e as CustomEvent).detail.id;
+    });
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface BibleDay {
@@ -43,7 +65,14 @@ export function useBiblePlayback(
 ) {
     const { language, playAudio, stopAudio } = useApp();
     const { onComplete } = options;
-    const { markChapterComplete, isChapterComplete, isDayComplete, markDayComplete } = useBibleProgress();
+    const { 
+        markChapterComplete, 
+        isChapterComplete, 
+        isDayComplete, 
+        markDayComplete,
+        getChapterChunkProgress,
+        saveChapterChunkProgress
+    } = useBibleProgress();
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null);
@@ -185,7 +214,7 @@ export function useBiblePlayback(
         const capturedVersion = _playVersion;
 
         _isPlaying = true;
-        window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: true } }));
+        window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: true, type: 'all', id: 'all' } }));
         setCurrentSubtitle(null); // Reset subtitle on start
 
         // Parse all chapters to check completion
@@ -209,8 +238,27 @@ export function useBiblePlayback(
 
         const segments: any[] = [];
 
+        // Check if we are starting clean or resuming mid-chapter
+        let skipDayIntro = false;
+        let isFirstReading = true;
+
+        readings.forEach(reading => {
+            const chapters = parseBibleChapters(reading);
+            const chaptersToPlay = allComplete ? chapters : chapters.filter(c => !isChapterComplete(currentDay, c.title));
+            if (chaptersToPlay.length > 0) {
+                if (isFirstReading) {
+                    const firstChapter = chaptersToPlay[0];
+                    const savedProgress = getChapterChunkProgress(currentDay, firstChapter.title);
+                    if (savedProgress >= 0) {
+                        skipDayIntro = true;
+                    }
+                    isFirstReading = false;
+                }
+            }
+        });
+
         // Add intro
-        if (dayData) {
+        if (dayData && !skipDayIntro) {
             const periodString = translatePeriod(dayData.period);
             const introText = `${t.day} ${currentDay}. ${t.phase}: ${periodString}.`;
             segments.push({ text: introText, pause: 800, subtitle: `${t.day} ${currentDay} • ${periodString}` });
@@ -224,10 +272,16 @@ export function useBiblePlayback(
             const allChaptersComplete = chapters.every(ch => isChapterComplete(currentDay, ch.title));
             if (!allComplete && allChaptersComplete) return; // Skip entire reading if all chapters done unless replaying
 
-            // Reading title (only if reading has incomplete chapters)
-            let cleanTitle = reading.title.replace(/\//g, ' ').replace(/(Chapter|Capítulo)\s*/gi, '').trim();
-            cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
-            segments.push({ text: cleanTitle, pause: 500, subtitle: reading.title });
+            const firstChapter = chapters[0];
+            const firstChapterProgress = firstChapter ? getChapterChunkProgress(currentDay, firstChapter.title) : -1;
+            const skipHeaders = firstChapterProgress >= 0;
+
+            if (!skipHeaders) {
+                // Reading title (only if reading has incomplete chapters)
+                let cleanTitle = reading.title.replace(/\//g, ' ').replace(/(Chapter|Capítulo)\s*/gi, '').trim();
+                cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
+                segments.push({ text: cleanTitle, pause: 500, subtitle: reading.title });
+            }
 
             // Each chapter
             chapters.forEach(chapter => {
@@ -237,25 +291,30 @@ export function useBiblePlayback(
                     return;
                 }
 
+                const savedProgress = getChapterChunkProgress(currentDay, chapter.title);
+                const isResumingThisChapter = savedProgress >= 0;
+
                 // Chapter title (if different from reading title)
                 if (chapter.title !== reading.title && chapter.title !== reading.citation) {
-                    let chTitle = chapter.title.replace(/(Chapter|Capítulo)\s*/gi, '').trim();
-                    chTitle = chTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
+                    if (!isResumingThisChapter) {
+                        let chTitle = chapter.title.replace(/(Chapter|Capítulo)\s*/gi, '').trim();
+                        chTitle = chTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
 
-                    if (language === 'en') {
-                        chTitle = chTitle.replace(/:(\d+)-(\d+)/, ', verses $1 to $2');
-                        chTitle = chTitle.replace(/:(\d+)/, ', verse $1');
-                    } else {
-                        chTitle = chTitle.replace(/:(\d+)-(\d+)/, ', versículos $1 al $2');
-                        chTitle = chTitle.replace(/:(\d+)/, ', versículo $1');
+                        if (language === 'en') {
+                            chTitle = chTitle.replace(/:(\d+)-(\d+)/, ', verses $1 to $2');
+                            chTitle = chTitle.replace(/:(\d+)/, ', verse $1');
+                        } else {
+                            chTitle = chTitle.replace(/:(\d+)-(\d+)/, ', versículos $1 al $2');
+                            chTitle = chTitle.replace(/:(\d+)/, ', versículo $1');
+                        }
+
+                        segments.push({
+                            text: chTitle,
+                            pause: 400,
+                            chapterTitle: chapter.title,
+                            subtitle: `${reading.title} • ${chapter.title}`
+                        });
                     }
-
-                    segments.push({
-                        text: chTitle,
-                        pause: 400,
-                        chapterTitle: chapter.title,
-                        subtitle: `${reading.title} • ${chapter.title}`
-                    });
                 }
 
                 // Chapter text
@@ -268,15 +327,23 @@ export function useBiblePlayback(
 
                 const chunks = chunkBibleText(spokenText);
                 chunks.forEach((chunk, index) => {
+                    if (savedProgress >= 0 && index <= savedProgress) {
+                        return;
+                    }
+
                     const isLast = index === chunks.length - 1;
                     segments.push({
                         text: chunk,
                         pause: isLast ? 800 : 300,
                         chapterTitle: chapter.title,
                         subtitle: `${reading.title} • ${chapter.title}`,
-                        onComplete: isLast ? () => {
-                            markChapterComplete(currentDay, chapter.title);
-                        } : undefined
+                        onComplete: () => {
+                            if (isLast) {
+                                markChapterComplete(currentDay, chapter.title);
+                            } else {
+                                saveChapterChunkProgress(currentDay, chapter.title, index);
+                            }
+                        }
                     });
                 });
             });
@@ -334,7 +401,7 @@ export function useBiblePlayback(
         };
 
         playNext(0);
-    }, [readings, dayData, currentDay, blessingText, language, playAudio, onComplete, t, translatePeriod, isChapterComplete, markChapterComplete]);
+    }, [readings, dayData, currentDay, blessingText, language, playAudio, onComplete, t, translatePeriod, isChapterComplete, markChapterComplete, getChapterChunkProgress, saveChapterChunkProgress]);
 
     const stop = useCallback(() => {
         _playVersion++;
@@ -355,8 +422,33 @@ export function useBiblePlayback(
         allChapters.push(...chapters);
     });
 
-    const completedChaptersCount = allChapters.filter(ch => isChapterComplete(currentDay, ch.title)).length;
-    let progressPercentage = allChapters.length > 0 ? (completedChaptersCount / allChapters.length) * 100 : 0;
+    // Calculate granular chunk-level progress percentage
+    let totalChunksCount = 0;
+    let completedChunksCount = 0;
+
+    allChapters.forEach(chapter => {
+        let spokenText = chapter.text
+            .replace(/###\s*/g, '')
+            .replace(/\[\s*\d+\s*\]/g, '')
+            .replace(/\//g, ' ')
+            .replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
+        spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
+        
+        const chunks = chunkBibleText(spokenText);
+        const numChunks = chunks.length;
+        totalChunksCount += numChunks;
+
+        if (isChapterComplete(currentDay, chapter.title)) {
+            completedChunksCount += numChunks;
+        } else {
+            const savedProgress = getChapterChunkProgress(currentDay, chapter.title);
+            if (savedProgress >= 0) {
+                completedChunksCount += Math.min(savedProgress + 1, numChunks);
+            }
+        }
+    });
+
+    let progressPercentage = totalChunksCount > 0 ? (completedChunksCount / totalChunksCount) * 100 : 0;
     if (isDayComplete(currentDay)) {
         progressPercentage = 100;
     }
@@ -374,3 +466,4 @@ export function useBiblePlayback(
         progressPercentage
     };
 }
+// Trigger reload

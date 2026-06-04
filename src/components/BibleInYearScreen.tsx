@@ -15,7 +15,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { useBibleProgress, archiveAndRestartBible } from '../hooks/useBibleProgress';
-import { killBiblePlayback, getBiblePlaying } from '../hooks/useBiblePlayback';
+import { killBiblePlayback, getBiblePlaying, getBiblePlayingId, getBibleActiveChapterId } from '../hooks/useBiblePlayback';
 import biblePlan from '../data/bibleInYearPlan.json';
 import { parseBibleChapters, chunkBibleText, type Reading, type Chapter } from '../utils/bibleParser';
 import { BibleProgressModal } from './BibleProgressModal';
@@ -52,7 +52,9 @@ export default function BibleInYearScreen({ onBack }: Props) {
         markChapterComplete,
         isChapterComplete,
         completedChapters,
-        completedDays
+        completedDays,
+        getChapterChunkProgress,
+        saveChapterChunkProgress
     } = useBibleProgress();
 
     const [currentDay, setCurrentDay] = useState(() => {
@@ -69,14 +71,24 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [readings, setReadings] = useState<Reading[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
-    const [activeChapterId, setActiveChapterId] = useState<string | null>(null);
+    const [isPlaying, setIsPlaying] = useState(() => getBiblePlaying());
+    const [currentlyPlayingId, setCurrentlyPlayingId] = useState(() => getBiblePlayingId());
+    const [activeChapterId, setActiveChapterId] = useState(() => getBibleActiveChapterId());
 
     const [isBibleGlobalActive, setIsBibleGlobalActive] = useState(() => getBiblePlaying());
 
     useEffect(() => {
-        const handlePlayState = (e: Event) => setIsBibleGlobalActive((e as CustomEvent).detail.playing);
+        const handlePlayState = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            setIsBibleGlobalActive(detail.playing);
+            setIsPlaying(detail.playing);
+            if (detail.playing) {
+                setCurrentlyPlayingId(detail.id || detail.type || 'all');
+            } else {
+                setCurrentlyPlayingId(null);
+                setActiveChapterId(null);
+            }
+        };
         const handleChapterActive = (e: Event) => setActiveChapterId((e as CustomEvent).detail.id);
 
         window.addEventListener('bible:playState', handlePlayState);
@@ -241,6 +253,41 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
     const dayData: BibleDay = (biblePlan as BibleDay[])[currentDay - 1];
 
+    const dayProgressPercentage = useMemo(() => {
+        if (isDayComplete(currentDay)) return 100;
+        if (!readings || readings.length === 0) return 0;
+
+        let totalChunksCount = 0;
+        let completedChunksCount = 0;
+
+        readings.forEach(reading => {
+            const chapters = parseBibleChapters(reading);
+            chapters.forEach(chapter => {
+                let spokenText = chapter.text
+                    .replace(/###\s*/g, '')
+                    .replace(/\[\s*\d+\s*\]/g, '')
+                    .replace(/\//g, ' ')
+                    .replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
+                spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
+                
+                const chunks = chunkBibleText(spokenText);
+                const numChunks = chunks.length;
+                totalChunksCount += numChunks;
+
+                if (isChapterComplete(currentDay, chapter.title)) {
+                    completedChunksCount += numChunks;
+                } else {
+                    const savedProgress = getChapterChunkProgress(currentDay, chapter.title);
+                    if (savedProgress >= 0) {
+                        completedChunksCount += Math.min(savedProgress + 1, numChunks);
+                    }
+                }
+            });
+        });
+
+        return totalChunksCount > 0 ? (completedChunksCount / totalChunksCount) * 100 : 0;
+    }, [currentDay, readings, completedChapters, getChapterChunkProgress, isDayComplete, isChapterComplete]);
+
     const translationsObj = useMemo(() => ({
         en: {
             title: 'Bible in a Year',
@@ -380,31 +427,45 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const buildSegmentsForChapters = (readingTitle: string, readingCitation: string, chapters: Chapter[]) => {
         const segments: any[] = [];
 
-        // Reading Title
-        let cleanTitle = readingTitle.replace(/\//g, ' ').replace(/(Chapter|Capítulo)\s*/gi, '').trim();
-        cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
-        segments.push({ text: cleanTitle, gender: 'female' as const, postPause: 500 });
+        const firstChapter = chapters[0];
+        const firstChapterProgress = firstChapter ? getChapterChunkProgress(currentDay, firstChapter.title) : -1;
+        const skipHeaders = firstChapterProgress >= 0;
+
+        if (!skipHeaders) {
+            // Reading Title
+            let cleanTitle = readingTitle.replace(/\//g, ' ').replace(/(Chapter|Capítulo)\s*/gi, '').trim();
+            cleanTitle = cleanTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
+            segments.push({ text: cleanTitle, gender: 'female' as const, postPause: 500 });
+        }
 
         chapters.forEach((chapter, index) => {
+            const savedProgress = getChapterChunkProgress(currentDay, chapter.title);
+            const isResumingThisChapter = savedProgress >= 0;
+
             // Chapter Title
             if (chapter.title !== readingTitle && chapter.title !== readingCitation) {
-                let pgTitle = chapter.title.replace(/(Chapter|Capítulo)\s*/gi, '').trim();
-                pgTitle = pgTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
+                if (!isResumingThisChapter) {
+                    let pgTitle = chapter.title.replace(/(Chapter|Capítulo)\s*/gi, '').trim();
+                    pgTitle = pgTitle.replace(/([a-zA-Z])\s+(\d)/, '$1, $2');
 
-                if (language === 'en') {
-                    pgTitle = pgTitle.replace(/:(\d+)-(\d+)/, ', verses $1 to $2');
-                    pgTitle = pgTitle.replace(/:(\d+)/, ', verse $1');
-                } else {
-                    pgTitle = pgTitle.replace(/:(\d+)-(\d+)/, ', versículos $1 al $2');
-                    pgTitle = pgTitle.replace(/:(\d+)/, ', versículo $1');
+                    if (language === 'en') {
+                        pgTitle = pgTitle.replace(/:(\d+)-(\d+)/, ', verses $1 to $2');
+                        pgTitle = pgTitle.replace(/:(\d+)/, ', verse $1');
+                    } else {
+                        pgTitle = pgTitle.replace(/:(\d+)-(\d+)/, ', versículos $1 al $2');
+                        pgTitle = pgTitle.replace(/:(\d+)/, ', versículo $1');
+                    }
+
+                    segments.push({
+                        text: pgTitle,
+                        gender: 'female' as const,
+                        postPause: 400,
+                        onStart: () => {
+                            setActiveChapterId(chapter.title);
+                            window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: chapter.title } }));
+                        }
+                    });
                 }
-
-                segments.push({
-                    text: pgTitle,
-                    gender: 'female' as const,
-                    postPause: 400,
-                    onStart: () => setActiveChapterId(chapter.title)
-                });
             }
 
             // Body
@@ -413,14 +474,21 @@ export default function BibleInYearScreen({ onBack }: Props) {
             const chunks = chunkBibleText(spokenText);
 
             chunks.forEach((chunk, chunkIndex) => {
+                if (savedProgress >= 0 && chunkIndex <= savedProgress) {
+                    return;
+                }
+
                 const isLastChunk = chunkIndex === chunks.length - 1;
                 segments.push({
                     text: chunk,
                     gender: 'female' as const,
                     onStart: () => {
                         setActiveChapterId(chapter.title);
+                        window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: chapter.title } }));
                         if (isLastChunk) {
                             markChapterComplete(currentDay, chapter.title);
+                        } else {
+                            saveChapterChunkProgress(currentDay, chapter.title, chunkIndex);
                         }
                     }
                 });
@@ -451,6 +519,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
+            window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
+            window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
             return;
         }
 
@@ -463,15 +533,35 @@ export default function BibleInYearScreen({ onBack }: Props) {
             }
         });
 
-        // Add intro (play it for standard play and replays)
-        const periodString = translatePeriod(dayData?.period || '');
-        const introText = `${t.day} ${currentDay}. ${t.phase}: ${periodString}.`;
+        let skipDayIntro = false;
+        let isFirstReading = true;
 
-        segments.push({
-            text: introText,
-            gender: 'female' as const,
-            postPause: 800
+        readings.forEach(r => {
+            const chapters = parseBibleChapters(r);
+            const chaptersToPlay = allDayCompleted ? chapters : chapters.filter(c => !isChapterComplete(currentDay, c.title));
+            if (chaptersToPlay.length > 0) {
+                if (isFirstReading) {
+                    const firstChapter = chaptersToPlay[0];
+                    const savedProgress = getChapterChunkProgress(currentDay, firstChapter.title);
+                    if (savedProgress >= 0) {
+                        skipDayIntro = true;
+                    }
+                    isFirstReading = false;
+                }
+            }
         });
+
+        if (!skipDayIntro) {
+            // Add intro (play it for standard play and replays)
+            const periodString = translatePeriod(dayData?.period || '');
+            const introText = `${t.day} ${currentDay}. ${t.phase}: ${periodString}.`;
+
+            segments.push({
+                text: introText,
+                gender: 'female' as const,
+                postPause: 800
+            });
+        }
 
         readings.forEach(r => {
             const chapters = parseBibleChapters(r);
@@ -493,7 +583,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
+            window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
+            window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
         });
+        window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: true, type: 'all', id: 'all' } }));
         await ttsManager.speakSegments(segments);
     };
 
@@ -506,6 +599,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
+            window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
+            window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
             return;
         }
 
@@ -528,7 +623,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
+            window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
+            window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
         });
+        window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: true, type: 'section', id } }));
         await ttsManager.speakSegments(segments);
     };
 
@@ -541,6 +639,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
+            window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
+            window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
             return;
         }
 
@@ -558,7 +658,10 @@ export default function BibleInYearScreen({ onBack }: Props) {
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
+            window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: false } }));
+            window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
         });
+        window.dispatchEvent(new CustomEvent('bible:playState', { detail: { playing: true, type: 'chapter', id } }));
         await ttsManager.speakSegments(segments);
     };
 
@@ -668,12 +771,12 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         </div>
 
                         <span className="day-counter-small" style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'absolute', right: 0 }}>
-                            {Math.round((completedDays.length / 365) * 100)}% <Flag size={14} />
+                            {Math.round(dayProgressPercentage)}% <Flag size={14} />
                         </span>
                     </div>
 
                     <div className="progress-container" style={{ marginBottom: '1.5rem' }}>
-                        <div className="progress-fill" style={{ width: `${(completedDays.length / 365) * 100}%` }}></div>
+                        <div className="progress-fill" style={{ width: `${dayProgressPercentage}%` }}></div>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0' }}>
@@ -1022,6 +1125,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
         </div>
     );
 }
+// Trigger reload
 
 
 
