@@ -60,3 +60,22 @@ export const chunkBibleText = (text: string, maxLength: number = 200): string[] 
         return chunk.match(/.{1,250}(?:\s|$)|.{1,250}/g) || [chunk];
     });
 };
+
+export const getChapterChunks = (text: string): string[] => {
+    const paragraphs = text.split('\n').filter(p => p.trim() !== '');
+    const chunks: string[] = [];
+    paragraphs.forEach(p => {
+        const cleanP = p.replace(/###\s*/g, '').trim();
+        if (!cleanP) return;
+        if (p.startsWith('###')) return; // Headers are not part of body chunks
+
+        let spokenP = cleanP
+            .replace(/\[\s*\d+\s*\]/g, '')
+            .replace(/\//g, ' ')
+            .replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
+        spokenP = spokenP.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
+
+        chunks.push(...chunkBibleText(spokenP));
+    });
+    return chunks;
+};

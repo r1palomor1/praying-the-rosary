@@ -15,9 +15,9 @@ import {
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { useBibleProgress, archiveAndRestartBible } from '../hooks/useBibleProgress';
-import { killBiblePlayback, getBiblePlaying, getBiblePlayingId, getBibleActiveChapterId } from '../hooks/useBiblePlayback';
+import { killBiblePlayback, getBiblePlaying, getBiblePlayingId, getBibleActiveChapterId, getBibleActiveChapterTitle, getBibleActiveChunkIndex } from '../hooks/useBiblePlayback';
 import biblePlan from '../data/bibleInYearPlan.json';
-import { parseBibleChapters, chunkBibleText, type Reading, type Chapter } from '../utils/bibleParser';
+import { parseBibleChapters, chunkBibleText, getChapterChunks, type Reading, type Chapter } from '../utils/bibleParser';
 import { BibleProgressModal } from './BibleProgressModal';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { useAI } from '../context/AIContext';
@@ -74,6 +74,8 @@ export default function BibleInYearScreen({ onBack }: Props) {
     const [isPlaying, setIsPlaying] = useState(() => getBiblePlaying());
     const [currentlyPlayingId, setCurrentlyPlayingId] = useState(() => getBiblePlayingId());
     const [activeChapterId, setActiveChapterId] = useState(() => getBibleActiveChapterId());
+    const [activeChapterTitle, setActiveChapterTitle] = useState(() => getBibleActiveChapterTitle());
+    const [activeChunkIndex, setActiveChunkIndex] = useState(() => getBibleActiveChunkIndex());
 
     const [isBibleGlobalActive, setIsBibleGlobalActive] = useState(() => getBiblePlaying());
 
@@ -87,16 +89,25 @@ export default function BibleInYearScreen({ onBack }: Props) {
             } else {
                 setCurrentlyPlayingId(null);
                 setActiveChapterId(null);
+                setActiveChapterTitle(null);
+                setActiveChunkIndex(null);
             }
         };
         const handleChapterActive = (e: Event) => setActiveChapterId((e as CustomEvent).detail.id);
+        const handleChunkActive = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            setActiveChapterTitle(detail.chapterTitle);
+            setActiveChunkIndex(detail.chunkIndex);
+        };
 
         window.addEventListener('bible:playState', handlePlayState);
         window.addEventListener('bible:chapterActive', handleChapterActive);
+        window.addEventListener('bible:chunkActive', handleChunkActive);
 
         return () => {
             window.removeEventListener('bible:playState', handlePlayState);
             window.removeEventListener('bible:chapterActive', handleChapterActive);
+            window.removeEventListener('bible:chunkActive', handleChunkActive);
         };
     }, []);
 
@@ -463,15 +474,14 @@ export default function BibleInYearScreen({ onBack }: Props) {
                         onStart: () => {
                             setActiveChapterId(chapter.title);
                             window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: chapter.title } }));
+                            window.dispatchEvent(new CustomEvent('bible:chunkActive', { detail: { chapterTitle: null, chunkIndex: null } }));
                         }
                     });
                 }
             }
 
             // Body
-            let spokenText = chapter.text.replace(/###\s*/g, '').replace(/\[\s*\d+\s*\]/g, '').replace(/\//g, ' ').replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
-            spokenText = spokenText.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
-            const chunks = chunkBibleText(spokenText);
+            const chunks = getChapterChunks(chapter.text);
 
             chunks.forEach((chunk, chunkIndex) => {
                 if (savedProgress >= 0 && chunkIndex <= savedProgress) {
@@ -485,6 +495,12 @@ export default function BibleInYearScreen({ onBack }: Props) {
                     onStart: () => {
                         setActiveChapterId(chapter.title);
                         window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: chapter.title } }));
+                        window.dispatchEvent(new CustomEvent('bible:chunkActive', {
+                            detail: {
+                                chapterTitle: chapter.title,
+                                chunkIndex
+                            }
+                        }));
                         if (isLastChunk) {
                             markChapterComplete(currentDay, chapter.title);
                         } else {
@@ -559,7 +575,12 @@ export default function BibleInYearScreen({ onBack }: Props) {
             segments.push({
                 text: introText,
                 gender: 'female' as const,
-                postPause: 800
+                postPause: 800,
+                onStart: () => {
+                    setActiveChapterId(null);
+                    window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
+                    window.dispatchEvent(new CustomEvent('bible:chunkActive', { detail: { chapterTitle: null, chunkIndex: null } }));
+                }
             });
         }
 
@@ -575,7 +596,16 @@ export default function BibleInYearScreen({ onBack }: Props) {
         if (segments.length === 0) return;
 
         // Play All always gets the blessing appended as a reward
-        segments.push({ text: t.blessing, gender: 'female' as const, postPause: 1000 });
+        segments.push({
+            text: t.blessing,
+            gender: 'female' as const,
+            postPause: 1000,
+            onStart: () => {
+                setActiveChapterId(null);
+                window.dispatchEvent(new CustomEvent('bible:chapterActive', { detail: { id: null } }));
+                window.dispatchEvent(new CustomEvent('bible:chunkActive', { detail: { chapterTitle: null, chunkIndex: null } }));
+            }
+        });
 
         setIsPlaying(true);
         setCurrentlyPlayingId('all');
@@ -670,14 +700,73 @@ export default function BibleInYearScreen({ onBack }: Props) {
     };
 
     // Render Helpers
-    const renderContent = (text: string) => {
-        // Simple markdown stripper for display
-        return text.split('\n').map((line, i) => {
-            if (!line.trim()) return <br key={i} />;
-            if (line.startsWith('###')) {
-                return <h4 key={i} className="font-bold text-primary mt-4 mb-2">{line.replace('###', '')}</h4>;
+    const renderContent = (text: string, chapterTitle: string) => {
+        const paragraphs = text.split('\n').filter(p => p.trim() !== '');
+        let absoluteIndex = 0;
+
+        return paragraphs.map((p, pIdx) => {
+            const cleanP = p.replace(/###\s*/g, '').trim();
+            if (!cleanP) return null;
+
+            if (p.startsWith('###')) {
+                return <h4 key={pIdx} className="font-bold text-primary mt-4 mb-2">{cleanP}</h4>;
             }
-            return <p key={i} className="mb-2">{line}</p>;
+
+            // Treat this paragraph as a set of chunks
+            let spokenP = cleanP
+                .replace(/\[\s*\d+\s*\]/g, '')
+                .replace(/\//g, ' ')
+                .replace(/(Chapter|Capítulo)\s+(?=\d)/gi, '');
+            spokenP = spokenP.replace(/([a-zA-Z])\s+(\d+)/g, '$1, $2');
+
+            const pChunks = chunkBibleText(spokenP);
+
+            return (
+                <p key={pIdx} className="mb-4 leading-relaxed text-justify text-base" style={{ display: 'inline-block', width: '100%' }}>
+                    {pChunks.map((chunk, cIdx) => {
+                        const currentIdx = absoluteIndex++;
+                        const isActive = (isPlaying || isBibleGlobalActive) && activeChapterId === chapterTitle && activeChapterTitle === chapterTitle && activeChunkIndex === currentIdx;
+                        const isNext = (isPlaying || isBibleGlobalActive) && activeChapterId === chapterTitle && activeChapterTitle === chapterTitle && activeChunkIndex !== null && (activeChunkIndex + 1) === currentIdx;
+
+                        let highlightStyle: React.CSSProperties = {
+                            transition: 'all 0.3s ease',
+                        };
+
+                        if (isActive) {
+                            highlightStyle = {
+                                ...highlightStyle,
+                                color: '#D4AF37', // Gold
+                                fontWeight: 'bold',
+                                textShadow: '0 0 8px rgba(212, 175, 55, 0.3)',
+                                backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                                padding: '0 4px',
+                                borderRadius: '4px'
+                            };
+                        } else if (isNext) {
+                            highlightStyle = {
+                                ...highlightStyle,
+                                color: '#ffffff', // Bright white
+                                fontWeight: '500',
+                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                padding: '0 4px',
+                                borderRadius: '4px'
+                            };
+                        } else {
+                            // Dim non-active text slightly to make the highlight stand out
+                            highlightStyle = {
+                                ...highlightStyle,
+                                color: 'rgba(255, 255, 255, 0.55)',
+                            };
+                        }
+
+                        return (
+                            <span key={cIdx} style={highlightStyle}>
+                                {chunk}{' '}
+                            </span>
+                        );
+                    })}
+                </p>
+            );
         });
     };
 
@@ -940,7 +1029,7 @@ export default function BibleInYearScreen({ onBack }: Props) {
 
                                                 {expandedSections[rowKey] && (
                                                     <div className="card-content-expanded fade-in">
-                                                        {renderContent(chapter.text)}
+                                                        {renderContent(chapter.text, chapter.title)}
 
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
                                                             {aiEnabled && (
