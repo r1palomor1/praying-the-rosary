@@ -8,6 +8,8 @@
 - [ ] **Inspiration AI: Source Dropdown Redundancy (Visual Doubling)**
   - Issue: When the Source dropdown is open, the current selection appears twice (once in the trigger box and once in the list).
   - Proposed Fix: Implement a "Floating Menu" or "Exclusive Toggle" that replaces the trigger box without causing the layout to shift or jump vertically. Ensure horizontal padding is synchronized (14px) to prevent "left-shift" effect.
+- [ ] **Daily Readings: Granular Chunk Persistence & Highlight Sync**
+  - Implement sentence-level tracking and TTS highlight synchronization for the Daily Readings player, matching the Bible in a Year player architecture.
 
 ### 🎨 AI Companion UI & Flow Standardization (Completed Mar 7, 2026)
 - [x] **Dark Card UI for AI Topic Selection Modal**

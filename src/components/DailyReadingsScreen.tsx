@@ -13,7 +13,13 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
-import { killDailyReadingsPlayback, getDailyReadingsActiveId } from '../hooks/useDailyReadingsPlayback';
+import {
+    killDailyReadingsPlayback,
+    getDailyReadingsActiveId,
+    getDailyReadingsActiveChunkIndex,
+    getDailyReadingsPlaying
+} from '../hooks/useDailyReadingsPlayback';
+import { getDailyReadingChunks, chunkBibleText } from '../utils/bibleParser';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
 import { fetchLiturgicalDay, getLiturgicalColorHex } from '../utils/liturgicalCalendar';
 import { formatCitation } from '../utils/textSanitizer';
@@ -50,9 +56,10 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
     const [reflection, setReflection] = useState<DailyReflection | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
-    const [activeChapterId, setActiveChapterId] = useState<string | null>(getDailyReadingsActiveId());
+    const [isPlaying, setIsPlaying] = useState(() => getDailyReadingsPlaying());
+    const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(() => getDailyReadingsPlaying() ? (getDailyReadingsActiveId() || 'all') : null);
+    const [activeChapterId, setActiveChapterId] = useState<string | null>(() => getDailyReadingsActiveId());
+    const [activeChunkIndex, setActiveChunkIndex] = useState<number | null>(() => getDailyReadingsActiveChunkIndex());
     const [showSettings, setShowSettings] = useState(false);
     const [liturgicalColor, setLiturgicalColor] = useState('#a87d3e');
     const [liturgicalData, setLiturgicalData] = useState<any>(null);
@@ -184,6 +191,22 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
     // Helper for date-keyed localStorage
     const getDateKey = (date: Date) =>
         `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    const getReadingChunkProgress = (readingId: string): number => {
+        const dateKey = getDateKey(currentDate);
+        const val = localStorage.getItem(`dailyReadings_chunk_progress_${dateKey}_${readingId}`);
+        return val ? parseInt(val, 10) : -1;
+    };
+
+    const saveReadingChunkProgress = (readingId: string, chunkIndex: number) => {
+        const dateKey = getDateKey(currentDate);
+        localStorage.setItem(`dailyReadings_chunk_progress_${dateKey}_${readingId}`, chunkIndex.toString());
+    };
+
+    const clearReadingChunkProgress = (readingId: string) => {
+        const dateKey = getDateKey(currentDate);
+        localStorage.removeItem(`dailyReadings_chunk_progress_${dateKey}_${readingId}`);
+    };
 
     // Mark a single section as manually read
     const markSectionComplete = (id: string, collapse = true) => {
@@ -321,20 +344,46 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
 
     // Audio lifecycle is owned by ttsManager singleton — no cleanup needed here.
 
-    // Listen for church icon playback events (hook running in background after navigation)
+    // Listen for playState, readingActive, chunkActive, and readingComplete events
     useEffect(() => {
+        // Stop audio if user enters the screen from main UI playing state
+        if (getDailyReadingsPlaying()) {
+            killDailyReadingsPlayback();
+        }
+
+        const handlePlayState = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            setIsPlaying(detail.playing);
+            if (detail.playing) {
+                setCurrentlyPlayingId(detail.id || detail.type || 'all');
+            } else {
+                setCurrentlyPlayingId(null);
+                setActiveChapterId(null);
+                setActiveChunkIndex(null);
+            }
+        };
         const handleReadingActive = (e: Event) => {
             const id = (e as CustomEvent).detail.id as string | null;
             setActiveChapterId(id);
+        };
+        const handleChunkActive = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            setActiveChunkIndex(detail.chunkIndex);
         };
         const handleReadingComplete = (e: Event) => {
             const id = (e as CustomEvent).detail.id as string;
             setCompletedItems(prev => prev.includes(id) ? prev : [...prev, id]);
         };
+
+        window.addEventListener('dailyReading:playState', handlePlayState);
         window.addEventListener('dailyReading:readingActive', handleReadingActive);
+        window.addEventListener('dailyReading:chunkActive', handleChunkActive);
         window.addEventListener('dailyReading:readingComplete', handleReadingComplete);
+
         return () => {
+            window.removeEventListener('dailyReading:playState', handlePlayState);
             window.removeEventListener('dailyReading:readingActive', handleReadingActive);
+            window.removeEventListener('dailyReading:chunkActive', handleChunkActive);
             window.removeEventListener('dailyReading:readingComplete', handleReadingComplete);
         };
     }, []);
@@ -360,18 +409,32 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
         return title;
     };
 
-    const renderReadingText = (text: string) => {
+    const renderReadingText = (text: string, readingId: string) => {
         let cleanText = text.replace(/\u003cbr\s*\/?\u003e/gi, '\n');
-
-        // Strip out citation numbers like (17b) or (2) immediately following R.
         cleanText = cleanText.replace(/(R\.|R\/\.)\s*\(\d+[a-zA-Z]?\)\s*/g, '$1 ');
 
-        return cleanText.split('\n').map((line, lineIndex) => {
+        const lines = cleanText.split('\n');
+        let absoluteIndex = 0;
+
+        return lines.map((line, lineIndex) => {
             const trimmed = line.trim();
             if (!trimmed) return null;
 
+            let clean = trimmed
+                .replace(/<[^>]+>/g, '')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>');
+            clean = clean.replace(/\[\s*\d+\s*\]/g, '');
+            clean = clean.replace(/\(\d+.*?\)/g, '');
+
             const startsWithR = /^(R\.|R\/\.)\s/.test(trimmed);
             const endsWithR = /\s+(R\.|R\/\.)$/.test(trimmed);
+
+            const responseWord = language === 'es' ? 'Respuesta.' : 'Response.';
+            const spokenClean = clean.replace(/R\.|R\/\./g, responseWord);
+            const lineChunks = chunkBibleText(spokenClean);
 
             if (startsWithR || endsWithR) {
                 return (
@@ -380,42 +443,96 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
                         style={{
                             fontWeight: '700',
                             color: liturgicalColor,
-                            margin: '1.25rem 0 0.5rem 0'
+                            margin: '1.25rem 0 0.5rem 0',
+                            display: 'block'
                         }}
                     >
-                        {trimmed.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}
+                        {lineChunks.map((chunk, cIdx) => {
+                            const currentIdx = absoluteIndex++;
+                            const isGlobalActive = getDailyReadingsPlaying();
+                            const isCurrentReadingActive = activeChapterId === readingId;
+                            const isActive = (isPlaying || isGlobalActive) && isCurrentReadingActive && activeChunkIndex === currentIdx;
+                            const isNext = (isPlaying || isGlobalActive) && isCurrentReadingActive && activeChunkIndex !== null && (activeChunkIndex + 1) === currentIdx;
+
+                            let highlightStyle: React.CSSProperties = {
+                                transition: 'all 0.3s ease',
+                            };
+
+                            if (isActive) {
+                                highlightStyle = {
+                                    ...highlightStyle,
+                                    color: '#D4AF37', // Gold
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 8px rgba(212, 175, 55, 0.3)',
+                                    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                                    padding: '0 4px',
+                                    borderRadius: '4px'
+                                };
+                            } else if (isNext) {
+                                highlightStyle = {
+                                    ...highlightStyle,
+                                    color: '#ffffff', // Bright white
+                                    fontWeight: '500',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                    padding: '0 4px',
+                                    borderRadius: '4px'
+                                };
+                            }
+
+                            return (
+                                <span key={cIdx} style={highlightStyle}>
+                                    {chunk}{' '}
+                                </span>
+                            );
+                        })}
                     </p>
                 );
             }
 
-            const verseStyle = { margin: '0.4rem 0' };
+            const verseStyle: React.CSSProperties = { margin: '0.4rem 0', display: 'block' };
 
-            if (trimmed.includes('<strong>')) {
-                const parts: React.ReactNode[] = [];
-                let lastIndex = 0;
-                const strongRegex = /<strong>(.*?)<\/strong>/g;
-                let match;
+            return (
+                <p key={lineIndex} style={verseStyle}>
+                    {lineChunks.map((chunk, cIdx) => {
+                        const currentIdx = absoluteIndex++;
+                        const isGlobalActive = getDailyReadingsPlaying();
+                        const isCurrentReadingActive = activeChapterId === readingId;
+                        const isActive = (isPlaying || isGlobalActive) && isCurrentReadingActive && activeChunkIndex === currentIdx;
+                        const isNext = (isPlaying || isGlobalActive) && isCurrentReadingActive && activeChunkIndex !== null && (activeChunkIndex + 1) === currentIdx;
 
-                while ((match = strongRegex.exec(trimmed)) !== null) {
-                    if (match.index > lastIndex) {
-                        const beforeText = trimmed.substring(lastIndex, match.index);
-                        parts.push(beforeText.replace(/<[^>]+>/g, ''));
-                    }
-                    parts.push(
-                        <span key={match.index} className="response-highlight" style={{ color: liturgicalColor, fontStyle: 'italic' }}>
-                            {match[1]}
-                        </span>
-                    );
-                    lastIndex = match.index + match[0].length;
-                }
-                if (lastIndex < trimmed.length) {
-                    const afterText = trimmed.substring(lastIndex);
-                    parts.push(afterText.replace(/<[^>]+>/g, ''));
-                }
-                return <p key={lineIndex} style={verseStyle}>{parts}</p>;
-            }
+                        let highlightStyle: React.CSSProperties = {
+                            transition: 'all 0.3s ease',
+                        };
 
-            return <p key={lineIndex} style={verseStyle}>{trimmed.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '')}</p>;
+                        if (isActive) {
+                            highlightStyle = {
+                                ...highlightStyle,
+                                color: '#D4AF37', // Gold
+                                fontWeight: 'bold',
+                                textShadow: '0 0 8px rgba(212, 175, 55, 0.3)',
+                                backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                                padding: '0 4px',
+                                borderRadius: '4px'
+                            };
+                        } else if (isNext) {
+                            highlightStyle = {
+                                ...highlightStyle,
+                                color: '#ffffff', // Bright white
+                                fontWeight: '500',
+                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                padding: '0 4px',
+                                borderRadius: '4px'
+                            };
+                        }
+
+                        return (
+                            <span key={cIdx} style={highlightStyle}>
+                                {chunk}{' '}
+                            </span>
+                        );
+                    })}
+                </p>
+            );
         });
     };
 
@@ -426,62 +543,68 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
         return uncompleted.length > 0 && uncompleted.every(id => id === playingId);
     };
 
-    const chunkText = (text: string, maxLength: number = 200): string[] => {
-        // Broaden punctuation to include colons, semicolons, and newlines to prevent Safari cutoffs
-        const sentences = text.match(/[^.!?\n:;]+[.!?\n:;]+|[^.!?\n:;]+$/g) || [text];
-        const chunks: string[] = [];
-        let currentChunk = '';
-
-        sentences.forEach(sentence => {
-            if (currentChunk.length + sentence.length > maxLength) {
-                if (currentChunk) chunks.push(currentChunk.trim());
-                currentChunk = sentence;
-            } else {
-                currentChunk += sentence;
-            }
-        });
-        if (currentChunk) chunks.push(currentChunk.trim());
-
-        // Final safety net: slice chunks strictly exceeding 250 characters if they lacked any delimiters
-        return chunks.flatMap(chunk => {
-            if (chunk.length <= 250) return [chunk];
-            return chunk.match(/.{1,250}(?:\s|$)|.{1,250}/g) || [chunk];
-        });
-    };
-
-    const getSpokenText = (rawText: string) => {
-        let clean = rawText.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-        // Strip out verse numbers in brackets (e.g., [ 1 ])
-        clean = clean.replace(/\[\s*\d+\s*\]/g, '');
-        // Strip out verse references in parenthesis after R. (e.g., (17b))
-        clean = clean.replace(/(R\.|R\/\.)\s*\(\d+[a-zA-Z]?\)\s*/g, '$1 ');
-        // Replace "R." or "R/." with Response
-        const responseWord = language === 'es' ? 'Respuesta.' : 'Response.';
-        clean = clean.replace(/R\.|R\/\./g, responseWord);
-        return clean;
-    };
-
     const handlePlayContent = async (e: React.MouseEvent, id: string, title: string, text: string) => {
         e.stopPropagation();
+        
+        // Kill any global playback first
+        killDailyReadingsPlayback();
+
         if (isPlaying && currentlyPlayingId === id) {
             ttsManager.stop();
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
+            setActiveChunkIndex(null);
+            window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
+            window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
+            window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: null, chunkIndex: null } }));
         } else {
-            const spokenText = getSpokenText(text);
-            const segments: any[] = [
-                { text: title, gender: 'female' as const, postPause: 800, onStart: () => setActiveChapterId(id) }
-            ];
+            // Stop any current local playback first
+            ttsManager.stop();
 
-            const chunks = chunkText(spokenText);
-            chunks.forEach((chunk, cIndex) => {
-                const isLast = cIndex === chunks.length - 1;
+            const normTitle = normalizeReadingTitle(title);
+            const savedProgress = getReadingChunkProgress(id);
+            const skipHeaders = savedProgress >= 0;
+
+            const segments: any[] = [];
+            
+            if (!skipHeaders) {
+                segments.push({
+                    text: normTitle,
+                    gender: 'female' as const,
+                    postPause: 800,
+                    onStart: () => {
+                        setActiveChapterId(id);
+                        setActiveChunkIndex(null);
+                        window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id } }));
+                        window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: id, chunkIndex: null } }));
+                    }
+                });
+            }
+
+            const chunks = getDailyReadingChunks(text, language);
+            chunks.forEach((chunk, chunkIndex) => {
+                if (savedProgress >= 0 && chunkIndex <= savedProgress) {
+                    return;
+                }
+
+                const isLast = chunkIndex === chunks.length - 1;
                 segments.push({
                     text: chunk,
                     gender: 'female' as const,
                     postPause: isLast ? 0 : 300,
-                    onStart: () => setActiveChapterId(id),
+                    onStart: () => {
+                        setActiveChapterId(id);
+                        setActiveChunkIndex(chunkIndex);
+                        window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id } }));
+                        window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: id, chunkIndex } }));
+                        
+                        if (isLast) {
+                            clearReadingChunkProgress(id);
+                        } else {
+                            saveReadingChunkProgress(id, chunkIndex);
+                        }
+                    },
                     onEnd: () => {
                         if (isLast) {
                             setCompletedItems(prev => {
@@ -497,17 +620,33 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
             });
 
             if (checkWillCompleteDaily(id)) {
-                segments.push({ text: blessingText, gender: 'female' as const, postPause: 1000 });
+                segments.push({
+                    text: blessingText,
+                    gender: 'female' as const,
+                    postPause: 1000,
+                    onStart: () => {
+                        setActiveChapterId(null);
+                        setActiveChunkIndex(null);
+                        window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
+                        window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: null, chunkIndex: null } }));
+                    }
+                });
             }
 
             setIsPlaying(true);
             setCurrentlyPlayingId(id);
             await ttsManager.setLanguage(language);
 
+            window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: true, id } }));
+
             ttsManager.setOnEnd(() => {
                 setIsPlaying(false);
                 setCurrentlyPlayingId(null);
                 setActiveChapterId(null);
+                setActiveChunkIndex(null);
+                window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
+                window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
+                window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: null, chunkIndex: null } }));
             });
 
             try {
@@ -517,6 +656,10 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
                 setIsPlaying(false);
                 setCurrentlyPlayingId(null);
                 setActiveChapterId(null);
+                setActiveChunkIndex(null);
+                window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
+                window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
+                window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: null, chunkIndex: null } }));
             }
         }
     };
@@ -530,6 +673,10 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
+            setActiveChunkIndex(null);
+            window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
+            window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
+            window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: null, chunkIndex: null } }));
             return;
         }
 
@@ -545,34 +692,81 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
             titleFallback = vaticanData.readings[0].title;
         }
 
-        if (titleFallback) {
-            segments.push({ text: titleFallback, gender: 'female' as const, postPause: 1000 });
-        }
-
         const allReadingIds = readingsToPlay.map((_, i) => `usccb-${i}`);
         const allIds = reflection ? [...allReadingIds, 'reflection'] : allReadingIds;
         const isAllComplete = allIds.length > 0 && allIds.every(id => completedItems.includes(id));
 
+        // Skip day intro if we are resuming any reading
+        let skipDayIntro = false;
+        let isFirstCheck = true;
+        allIds.forEach(id => {
+            if (isFirstCheck) {
+                const prog = getReadingChunkProgress(id);
+                if (prog >= 0) {
+                    skipDayIntro = true;
+                }
+                isFirstCheck = false;
+            }
+        });
+
+        if (titleFallback && !skipDayIntro) {
+            segments.push({
+                text: titleFallback,
+                gender: 'female' as const,
+                postPause: 1000,
+                onStart: () => {
+                    setActiveChapterId(null);
+                    setActiveChunkIndex(null);
+                    window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
+                    window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: null, chunkIndex: null } }));
+                }
+            });
+        }
+
         readingsToPlay.forEach((reading, index) => {
             const id = `usccb-${index}`;
             if (!isAllComplete && completedItems.includes(id)) return; // Skip if already completed unless replaying
-            const spokenText = getSpokenText(reading.text);
+            
+            const savedProgress = getReadingChunkProgress(id);
+            const skipHeaders = savedProgress >= 0;
 
-            segments.push({
-                text: normalizeReadingTitle(reading.title),
-                gender: 'female' as const,
-                postPause: 800,
-                onStart: () => setActiveChapterId(id)
-            });
+            if (!skipHeaders) {
+                segments.push({
+                    text: normalizeReadingTitle(reading.title),
+                    gender: 'female' as const,
+                    postPause: 800,
+                    onStart: () => {
+                        setActiveChapterId(id);
+                        setActiveChunkIndex(null);
+                        window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id } }));
+                        window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: id, chunkIndex: null } }));
+                    }
+                });
+            }
 
-            const chunks = chunkText(spokenText);
+            const chunks = getDailyReadingChunks(reading.text, language);
             chunks.forEach((chunk, cIndex) => {
+                if (savedProgress >= 0 && cIndex <= savedProgress) {
+                    return;
+                }
+
                 const isLast = cIndex === chunks.length - 1;
                 segments.push({
                     text: chunk,
                     gender: 'female' as const,
                     postPause: isLast ? 1500 : 300,
-                    onStart: () => setActiveChapterId(id),
+                    onStart: () => {
+                        setActiveChapterId(id);
+                        setActiveChunkIndex(cIndex);
+                        window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id } }));
+                        window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: id, chunkIndex: cIndex } }));
+                        
+                        if (isLast) {
+                            clearReadingChunkProgress(id);
+                        } else {
+                            saveReadingChunkProgress(id, cIndex);
+                        }
+                    },
                     onEnd: () => {
                         if (isLast) {
                             setCompletedItems(prev => {
@@ -590,22 +784,46 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
 
         if (reflection && (isAllComplete || !completedItems.includes('reflection'))) {
             const id = 'reflection';
-            const spokenText = getSpokenText(reflection.content);
-            segments.push({
-                text: reflection.title,
-                gender: 'female' as const,
-                postPause: 800,
-                onStart: () => setActiveChapterId(id)
-            });
+            const savedProgress = getReadingChunkProgress(id);
+            const skipHeaders = savedProgress >= 0;
 
-            const chunks = chunkText(spokenText);
+            if (!skipHeaders) {
+                segments.push({
+                    text: reflection.title,
+                    gender: 'female' as const,
+                    postPause: 800,
+                    onStart: () => {
+                        setActiveChapterId(id);
+                        setActiveChunkIndex(null);
+                        window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id } }));
+                        window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: id, chunkIndex: null } }));
+                    }
+                });
+            }
+
+            const chunks = getDailyReadingChunks(reflection.content, language);
             chunks.forEach((chunk, cIndex) => {
+                if (savedProgress >= 0 && cIndex <= savedProgress) {
+                    return;
+                }
+
                 const isLast = cIndex === chunks.length - 1;
                 segments.push({
                     text: chunk,
                     gender: 'female' as const,
                     postPause: isLast ? 0 : 300,
-                    onStart: () => setActiveChapterId(id),
+                    onStart: () => {
+                        setActiveChapterId(id);
+                        setActiveChunkIndex(cIndex);
+                        window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id } }));
+                        window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: id, chunkIndex: cIndex } }));
+                        
+                        if (isLast) {
+                            clearReadingChunkProgress(id);
+                        } else {
+                            saveReadingChunkProgress(id, cIndex);
+                        }
+                    },
                     onEnd: () => {
                         if (isLast) {
                             setCompletedItems(prev => {
@@ -623,16 +841,32 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
 
         if (segments.length === 0) return;
 
-        segments.push({ text: blessingText, gender: 'female' as const, postPause: 1000 });
+        segments.push({
+            text: blessingText,
+            gender: 'female' as const,
+            postPause: 1000,
+            onStart: () => {
+                setActiveChapterId(null);
+                setActiveChunkIndex(null);
+                window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
+                window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: null, chunkIndex: null } }));
+            }
+        });
 
         setIsPlaying(true);
         setCurrentlyPlayingId('all');
         await ttsManager.setLanguage(language);
 
+        window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: true, id: 'all' } }));
+
         ttsManager.setOnEnd(() => {
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
+            setActiveChunkIndex(null);
+            window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
+            window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
+            window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: null, chunkIndex: null } }));
         });
 
         try {
@@ -642,6 +876,10 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
             setIsPlaying(false);
             setCurrentlyPlayingId(null);
             setActiveChapterId(null);
+            setActiveChunkIndex(null);
+            window.dispatchEvent(new CustomEvent('dailyReading:playState', { detail: { playing: false } }));
+            window.dispatchEvent(new CustomEvent('dailyReading:readingActive', { detail: { id: null } }));
+            window.dispatchEvent(new CustomEvent('dailyReading:chunkActive', { detail: { readingId: null, chunkIndex: null } }));
         }
     };
 
@@ -887,16 +1125,16 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
                                         </div>
                                         <ChevronDown
                                             size={20}
-                                            className={`expand-chevron ${isExpanded ? 'expanded' : ''}`}
+                                            className={`expand-chevron ${isExpanded || isActive ? 'expanded' : ''}`}
                                         />
                                     </div>
 
-                                    {isExpanded && (
+                                    {(isExpanded || isActive) && (
                                         <div
                                             className="card-content-expanded"
                                             onClick={(e) => e.stopPropagation()}
                                         >
-                                            {renderReadingText(reading.text)}
+                                            {renderReadingText(reading.text, readingId)}
 
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
                                                 {aiEnabled && (
@@ -979,14 +1217,12 @@ export default function DailyReadingsScreen({ onBack, onOpenSermon }: { onBack: 
                                     />
                                 </div>
 
-                                {expandedSections['reflection'] && (
+                                {(expandedSections['reflection'] || activeChapterId === 'reflection') && (
                                     <div
                                         className="card-content-expanded"
                                         onClick={(e) => e.stopPropagation()}
                                     >
-                                        {reflection.content.split('\n\n').map((para, i) => (
-                                            <p key={i} style={{ margin: '0.3rem 0' }}>{para.replace(/<[^>]+>/g, '')}</p>
-                                        ))}
+                                        {renderReadingText(reflection.content, 'reflection')}
 
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
                                             {aiEnabled && (

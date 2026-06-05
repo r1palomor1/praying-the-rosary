@@ -285,7 +285,6 @@ export function useBibleProgress(): BibleProgress {
             const progress = JSON.parse(saved);
             const val = progress[`${day}_${chapterId}`];
             const result = typeof val === 'number' ? val : -1;
-            console.log('GET chunk progress:', { day, chapterId, key: `${day}_${chapterId}`, val, result });
             return result;
         } catch (e) {
             console.error('Error getting chapter progress:', e);
@@ -300,7 +299,6 @@ export function useBibleProgress(): BibleProgress {
             const key = `${day}_${chapterId}`;
             progress[key] = chunkIndex;
             localStorage.setItem(BIBLE_CHAPTER_CHUNK_PROGRESS_KEY, JSON.stringify(progress));
-            console.log('SAVE chunk progress:', { day, chapterId, chunkIndex, key });
             window.dispatchEvent(new Event('bible-progress-updated'));
         } catch (e) {
             console.error('Failed to save chapter chunk progress', e);
@@ -315,7 +313,6 @@ export function useBibleProgress(): BibleProgress {
             const key = `${day}_${chapterId}`;
             delete progress[key];
             localStorage.setItem(BIBLE_CHAPTER_CHUNK_PROGRESS_KEY, JSON.stringify(progress));
-            console.log('CLEAR chunk progress:', { day, chapterId, key });
             window.dispatchEvent(new Event('bible-progress-updated'));
         } catch (e) {
             console.error('Failed to clear chapter chunk progress', e);

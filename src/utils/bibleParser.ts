@@ -79,3 +79,33 @@ export const getChapterChunks = (text: string): string[] => {
     });
     return chunks;
 };
+
+export const getDailyReadingChunks = (text: string, language: string): string[] => {
+    let cleanText = text.replace(/\u003cbr\s*\/?\u003e/gi, '\n');
+    // Strip out citation numbers like (17b) or (2) immediately following R.
+    cleanText = cleanText.replace(/(R\.|R\/\.)\s*\(\d+[a-zA-Z]?\)\s*/g, '$1 ');
+
+    const lines = cleanText.split('\n');
+    const chunks: string[] = [];
+    lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+
+        let clean = trimmed
+            .replace(/<[^>]+>/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>');
+        // Strip bracket verse numbers e.g. [1]
+        clean = clean.replace(/\[\s*\d+\s*\]/g, '');
+        // Strip parenthesis scripture citations e.g. (40:5a) or (12)
+        clean = clean.replace(/\(\d+.*?\)/g, '');
+        
+        const responseWord = language === 'es' ? 'Respuesta.' : 'Response.';
+        clean = clean.replace(/R\.|R\/\./g, responseWord);
+
+        chunks.push(...chunkBibleText(clean));
+    });
+    return chunks;
+};
