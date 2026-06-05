@@ -108,7 +108,7 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                                     className={`tab-button ${activeTab === 'ai' ? 'active' : ''}`}
                                     onClick={() => setActiveTab('ai')}
                                 >
-                                    {language === 'es' ? 'Compañero IA' : 'AI Companion'}
+                                    {language === 'es' ? 'Chat IA' : 'AI Chat'}
                                 </button>
                             </div>
                             <main className={`learn-more-body ${activeTab === 'ai' ? 'ai-chat-active' : ''}`}>
@@ -203,7 +203,7 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                                 className={`tab-button ${activeTab === 'ai' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('ai')}
                             >
-                                {language === 'es' ? 'Compañero IA' : 'AI Companion'}
+                                {language === 'es' ? 'Chat IA' : 'AI Chat'}
                             </button>
                         )}
                     </div>

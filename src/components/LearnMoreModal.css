@@ -744,4 +744,19 @@
     border: none;
     border-radius: 0;
     background: transparent;
+}
+
+/* Mobile responsive adjustments for 3-tab layout */
+@media (max-width: 480px) {
+    .learn-more-content .learn-more-tabs {
+        gap: 4px !important;
+        padding: 4px !important;
+    }
+
+    .learn-more-content .tab-button {
+        padding: 8px 4px !important;
+        font-size: 0.85rem !important;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+    }
 }
