@@ -22,12 +22,12 @@ import {
 import { useApp } from '../context/AppContext';
 import { ttsManager } from '../utils/ttsManager';
 import { sanitizeAIResponseForSpeech } from '../utils/textSanitizer';
-import { saveSermon, updateSavedSermonTranslation, updateSavedSermonFlags, loadSavedSermons, deleteSavedSermon, type SavedSermon } from '../utils/savedSermons';
+import { saveInspiration, updateSavedInspirationTranslation, updateSavedInspirationFlags, loadSavedInspirations, deleteSavedInspiration, type SavedInspiration } from '../utils/savedInspirations';
 import { SettingsModalV2 as SettingsModal } from './settings/SettingsModalV2';
-import './SermonAIScreen.css';
+import './InspirationAIScreen.css';
 
 /* ─── Strip markdown & structural labels from LLM output for visual display ─── */
-function sanitizeSermonDisplay(text: string): string {
+function sanitizeInspirationDisplay(text: string): string {
   return text
     .replace(/^\**\s*\d+\.\s*[A-ZÁÉÍÓÚÑ\s&:()\-]+\**\s*$/gm, '')
     .replace(/^#{1,6}\s*.+$/gm, '')
@@ -71,15 +71,15 @@ const STARTERS_ES = [
 
 /* ─── Types ─── */
 type InputMode   = 'readings' | 'suggestions' | 'custom';
-type SermonMode  = 'standard' | 'abstract';
-type SermonLen   = 'short' | 'medium' | 'long';
-type SermonTone  = 'pastoral' | 'reflective' | 'teaching';
+type InspirationMode  = 'standard' | 'abstract';
+type InspirationLen   = 'short' | 'medium' | 'long';
+type InspirationTone  = 'pastoral' | 'reflective' | 'teaching';
 
 interface ReadingOption { label: string; citation: string; }
 
 const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
-export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => void; initialDate?: Date }) {
+export default function InspirationAIScreen({ onBack, initialDate }: { onBack: () => void; initialDate?: Date }) {
   const { language } = useApp();
   const starters = language === 'es' ? STARTERS_ES : STARTERS_EN;
 
@@ -116,9 +116,9 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
   const [customText, setCustomText]                 = useState(() => localStorage.getItem('sermonAI_customText') || '');
 
   /* Step 2: Style */
-  const [sermonMode,   setSermonMode]   = useState<SermonMode>(() => (localStorage.getItem('sermonAI_sermonMode') as SermonMode) || 'standard');
-  const [sermonLength, setSermonLength] = useState<SermonLen>(() => (localStorage.getItem('sermonAI_sermonLength') as SermonLen) || 'medium');
-  const [sermonTone,   setSermonTone]   = useState<SermonTone>(() => (localStorage.getItem('sermonAI_sermonTone') as SermonTone) || 'pastoral');
+  const [inspirationMode,   setInspirationMode]   = useState<InspirationMode>(() => (localStorage.getItem('sermonAI_sermonMode') as InspirationMode) || 'standard');
+  const [inspirationLength, setInspirationLength] = useState<InspirationLen>(() => (localStorage.getItem('sermonAI_sermonLength') as InspirationLen) || 'medium');
+  const [inspirationTone,   setInspirationTone]   = useState<InspirationTone>(() => (localStorage.getItem('sermonAI_sermonTone') as InspirationTone) || 'pastoral');
   const [showStyleOptions, setShowStyleOptions] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -127,13 +127,13 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
   const [output,       setOutput]       = useState(() => localStorage.getItem('sermonAI_lastOutput') || '');
   const [translatedOutput, setTranslatedOutput] = useState(() => localStorage.getItem('sermonAI_lastOutput_translated') || '');
   const [originLang, setOriginLang] = useState(() => localStorage.getItem('sermonAI_lastOutput_originLang') || language);
-  const [activeSermonId, setActiveSermonId] = useState<string | null>(() => localStorage.getItem('sermonAI_lastOutput_id') || null);
+  const [activeInspirationId, setActiveInspirationId] = useState<string | null>(() => localStorage.getItem('sermonAI_lastOutput_id') || null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [genError,     setGenError]     = useState('');
   const [isExpanded,   setIsExpanded]   = useState(false);
   const [isPlaying,    setIsPlaying]    = useState(false);
   const [copySuccess,  setCopySuccess]  = useState(false);
-  const [savedItems, setSavedItems] = useState(loadSavedSermons());
+  const [savedItems, setSavedItems] = useState(loadSavedInspirations());
 
   /* Refs */
   const dateInputRef = useRef<HTMLInputElement>(null);
@@ -154,15 +154,22 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [showInputModeOptions, showReadingOptions]);
 
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      ttsManager.stop();
+    };
+  }, []);
+
   const prevDeps = useRef([
     inputMode, 
     readingsDate.toISOString(), 
     selectedReadingIdx, 
     selectedStarterId, 
     customText, 
-    sermonMode, 
-    sermonLength, 
-    sermonTone
+    inspirationMode, 
+    inspirationLength, 
+    inspirationTone
   ]);
 
   /* ── Persistence Logic ── */
@@ -172,21 +179,21 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
     if (selectedStarterId) localStorage.setItem('sermonAI_selectedStarterId', selectedStarterId);
     else localStorage.removeItem('sermonAI_selectedStarterId');
     localStorage.setItem('sermonAI_customText', customText);
-    localStorage.setItem('sermonAI_sermonMode', sermonMode);
-    localStorage.setItem('sermonAI_sermonLength', sermonLength);
-    localStorage.setItem('sermonAI_sermonTone', sermonTone);
+    localStorage.setItem('sermonAI_sermonMode', inspirationMode);
+    localStorage.setItem('sermonAI_sermonLength', inspirationLength);
+    localStorage.setItem('sermonAI_sermonTone', inspirationTone);
     if (output) {
       localStorage.setItem('sermonAI_lastOutput', output);
       localStorage.setItem('sermonAI_lastOutput_translated', translatedOutput);
       localStorage.setItem('sermonAI_lastOutput_originLang', originLang);
-      if (activeSermonId) localStorage.setItem('sermonAI_lastOutput_id', activeSermonId);
+      if (activeInspirationId) localStorage.setItem('sermonAI_lastOutput_id', activeInspirationId);
     } else {
       localStorage.removeItem('sermonAI_lastOutput');
       localStorage.removeItem('sermonAI_lastOutput_translated');
       localStorage.removeItem('sermonAI_lastOutput_originLang');
       localStorage.removeItem('sermonAI_lastOutput_id');
     }
-  }, [inputMode, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone, output, translatedOutput, originLang, activeSermonId]);
+  }, [inputMode, selectedReadingIdx, selectedStarterId, customText, inspirationMode, inspirationLength, inspirationTone, output, translatedOutput, originLang, activeInspirationId]);
 
   useEffect(() => {
     const currentDeps = [
@@ -195,9 +202,9 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
       selectedReadingIdx, 
       selectedStarterId, 
       customText, 
-      sermonMode, 
-      sermonLength, 
-      sermonTone
+      inspirationMode, 
+      inspirationLength, 
+      inspirationTone
     ];
     
     // Check if dependencies truly changed to avoid React Strict Mode / mount bugs
@@ -206,11 +213,11 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
       if (output) {
         setOutput('');
         setTranslatedOutput('');
-        setActiveSermonId(null);
+        setActiveInspirationId(null);
       }
     }
     prevDeps.current = currentDeps;
-  }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone]);
+  }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, inspirationMode, inspirationLength, inspirationTone]);
 
   // Caveman simple: whenever the language toggles, re-read the background translation from memory!
   useEffect(() => {
@@ -276,9 +283,9 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ 
           sourceText, 
-          mode: sermonMode, 
-          tone: sermonTone === 'reflective' ? 'contemplative' : sermonTone, 
-          duration: sermonLength, 
+          mode: inspirationMode, 
+          tone: inspirationTone === 'reflective' ? 'contemplative' : inspirationTone, 
+          duration: inspirationLength, 
           language 
         }),
       });
@@ -291,23 +298,23 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
       const data = JSON.parse(rawText);
       if (!res.ok) throw new Error(data.message || 'Failed to generate.');
       
-      const finalOutput = sanitizeSermonDisplay(data.response ?? '');
+      const finalOutput = sanitizeInspirationDisplay(data.response ?? '');
       setOutput(finalOutput);
       setOriginLang(language);
       
       // Save to 48-hour history
-      const saved = saveSermon({
+      const saved = saveInspiration({
         sourceText,
         sourceType: inputMode === 'suggestions' ? 'starters' : inputMode,
-        mode: sermonMode,
-        duration: sermonLength,
-        tone: sermonTone,
+        mode: inspirationMode,
+        duration: inspirationLength,
+        tone: inspirationTone,
         response: finalOutput,
         lang: language,
         isTemporary: true
       });
-      setActiveSermonId(saved.id);
-      setSavedItems(loadSavedSermons());
+      setActiveInspirationId(saved.id);
+      setSavedItems(loadSavedInspirations());
       
       // Scroll to result
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
@@ -324,10 +331,10 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
           const trans = transData.translated[0];
           setTranslatedOutput(trans);
           localStorage.setItem('sermonAI_lastOutput_translated', trans);
-          updateSavedSermonTranslation(saved.id, trans);
-          setSavedItems(loadSavedSermons());
+          updateSavedInspirationTranslation(saved.id, trans);
+          setSavedItems(loadSavedInspirations());
         }
-      }).catch(e => console.warn('[SermonAIScreen] Background auto-translation failed', e))
+      }).catch(e => console.warn('[InspirationAIScreen] Background auto-translation failed', e))
         .finally(() => setIsTranslating(false));
 
     } catch (err: any) {
@@ -338,41 +345,54 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
   };
 
   const handleToggleBookmark = () => {
-    if (!activeSermonId) return;
-    const item = savedItems.find(r => r.id === activeSermonId);
+    if (!activeInspirationId) return;
+    const item = savedItems.find(r => r.id === activeInspirationId);
     if (!item) return;
 
     const newTempStatus = !item.isTemporary;
-    updateSavedSermonFlags(activeSermonId, {
+    updateSavedInspirationFlags(activeInspirationId, {
       isTemporary: newTempStatus,
       isFavorite: newTempStatus ? false : item.isFavorite,
       ...(newTempStatus ? { timestamp: Date.now() } : {})
     });
-    setSavedItems(loadSavedSermons());
+    setSavedItems(loadSavedInspirations());
   };
 
   const handleToggleFavorite = () => {
-    if (!activeSermonId) return;
-    const item = savedItems.find(r => r.id === activeSermonId);
+    if (!activeInspirationId) return;
+    const item = savedItems.find(r => r.id === activeInspirationId);
     if (!item) return;
 
     const newFav = !item.isFavorite;
     if (newFav) {
-      updateSavedSermonFlags(activeSermonId, { isFavorite: true, isTemporary: false });
+      updateSavedInspirationFlags(activeInspirationId, { isFavorite: true, isTemporary: false });
     } else {
-      updateSavedSermonFlags(activeSermonId, { isFavorite: false });
+      updateSavedInspirationFlags(activeInspirationId, { isFavorite: false });
     }
-    setSavedItems(loadSavedSermons());
+    setSavedItems(loadSavedInspirations());
   };
 
-  const activeSermonRecord = savedItems.find(r => r.id === activeSermonId);
+  const activeInspirationRecord = savedItems.find(r => r.id === activeInspirationId);
 
   const handleDeleteSaved = (id: string) => {
-    deleteSavedSermon(id);
-    setSavedItems(loadSavedSermons());
+    deleteSavedInspiration(id);
+    setSavedItems(loadSavedInspirations());
   };
 
-  const handlePlaySaved = async (item: SavedSermon) => {
+  const getInspirationChunkProgress = (inspirationId: string): number => {
+    const val = localStorage.getItem(`sermonAI_chunk_progress_${inspirationId}`);
+    return val ? parseInt(val, 10) : -1;
+  };
+
+  const saveInspirationChunkProgress = (inspirationId: string, chunkIndex: number) => {
+    localStorage.setItem(`sermonAI_chunk_progress_${inspirationId}`, chunkIndex.toString());
+  };
+
+  const clearInspirationChunkProgress = (inspirationId: string) => {
+    localStorage.removeItem(`sermonAI_chunk_progress_${inspirationId}`);
+  };
+
+  const handlePlaySaved = async (item: SavedInspiration) => {
     if (playingSavedId === item.id) {
       ttsManager.stop();
       setPlayingSavedId(null);
@@ -382,37 +402,67 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
     setIsPlaying(false);
     setPlayingSavedId(item.id);
     await ttsManager.setLanguage(language as any);
-    ttsManager.setOnEnd(() => setPlayingSavedId(null));
     
     const originLang = item.lang || 'en';
     const textToSpeak = (originLang !== language && item.response_translated) ? item.response_translated : item.response;
     const spokenText = sanitizeAIResponseForSpeech(textToSpeak, language);
     const chunks = spokenText.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) ?? [spokenText];
+    
+    const savedProgress = getInspirationChunkProgress(item.id);
+    
+    const segments = chunks.map((text, i) => {
+      if (savedProgress >= 0 && i < savedProgress) {
+        return null;
+      }
+      
+      const isLast = i === chunks.length - 1;
+      return {
+        text: text.trim(),
+        gender: 'female' as const,
+        postPause: isLast ? 0 : 200,
+        onStart: () => {
+          if (isLast) {
+            clearInspirationChunkProgress(item.id);
+          } else {
+            saveInspirationChunkProgress(item.id, i);
+          }
+        }
+      };
+    }).filter(Boolean) as any[];
+
+    if (segments.length === 0) {
+      clearInspirationChunkProgress(item.id);
+      handlePlaySaved(item);
+      return;
+    }
+
+    ttsManager.setOnEnd(() => setPlayingSavedId(null));
+
     try {
-      await ttsManager.speakSegments(
-        chunks.map((text, i) => ({ text: text.trim(), gender: 'female' as const, postPause: i < chunks.length - 1 ? 200 : 0 }))
-      );
-    } catch { setPlayingSavedId(null); }
+      await ttsManager.speakSegments(segments);
+    } catch { 
+      setPlayingSavedId(null); 
+    }
   };
 
-  const handleToggleSavedBookmark = (item: SavedSermon) => {
+  const handleToggleSavedBookmark = (item: SavedInspiration) => {
     const newTempStatus = !item.isTemporary;
-    updateSavedSermonFlags(item.id, {
+    updateSavedInspirationFlags(item.id, {
       isTemporary: newTempStatus,
       isFavorite: newTempStatus ? false : item.isFavorite,
       ...(newTempStatus ? { timestamp: Date.now() } : {})
     });
-    setSavedItems(loadSavedSermons());
+    setSavedItems(loadSavedInspirations());
   };
 
-  const handleToggleSavedFavorite = (item: SavedSermon) => {
+  const handleToggleSavedFavorite = (item: SavedInspiration) => {
     const newFav = !item.isFavorite;
     if (newFav) {
-      updateSavedSermonFlags(item.id, { isFavorite: true, isTemporary: false });
+      updateSavedInspirationFlags(item.id, { isFavorite: true, isTemporary: false });
     } else {
-      updateSavedSermonFlags(item.id, { isFavorite: false });
+      updateSavedInspirationFlags(item.id, { isFavorite: false });
     }
-    setSavedItems(loadSavedSermons());
+    setSavedItems(loadSavedInspirations());
   };
 
   const handleCopyText = async (text: string) => {
@@ -429,19 +479,62 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
 
   const handleSpeak = async () => {
     if (!output) return;
-    if (isPlaying) { ttsManager.stop(); setIsPlaying(false); return; }
+    
+    const inspirationId = activeInspirationId || 'active';
+
+    if (isPlaying) { 
+      ttsManager.stop(); 
+      setIsPlaying(false); 
+      return; 
+    }
+
+    if (playingSavedId) {
+      ttsManager.stop();
+      setPlayingSavedId(null);
+    }
+
     await ttsManager.setLanguage(language);
-    ttsManager.setOnEnd(() => setIsPlaying(false));
     
     const textToSpeak = (originLang !== language && translatedOutput) ? translatedOutput : output;
     const spokenText = sanitizeAIResponseForSpeech(textToSpeak, language);
     const chunks = spokenText.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) ?? [spokenText];
+    
+    const savedProgress = getInspirationChunkProgress(inspirationId);
+    
+    const segments = chunks.map((text, i) => {
+      if (savedProgress >= 0 && i < savedProgress) {
+        return null;
+      }
+      
+      const isLast = i === chunks.length - 1;
+      return {
+        text: text.trim(),
+        gender: 'female' as const,
+        postPause: isLast ? 0 : 200,
+        onStart: () => {
+          if (isLast) {
+            clearInspirationChunkProgress(inspirationId);
+          } else {
+            saveInspirationChunkProgress(inspirationId, i);
+          }
+        }
+      };
+    }).filter(Boolean) as any[];
+
+    if (segments.length === 0) {
+      clearInspirationChunkProgress(inspirationId);
+      handleSpeak();
+      return;
+    }
+
     setIsPlaying(true);
+    ttsManager.setOnEnd(() => setIsPlaying(false));
+    
     try {
-      await ttsManager.speakSegments(
-        chunks.map((text, i) => ({ text: text.trim(), gender: 'female' as const, postPause: i < chunks.length - 1 ? 200 : 0 }))
-      );
-    } catch { setIsPlaying(false); }
+      await ttsManager.speakSegments(segments);
+    } catch { 
+      setIsPlaying(false); 
+    }
   };
 
   const handleCopy = async () => {
@@ -470,7 +563,7 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
   const dStr = String(readingsDate.getDate()).padStart(2, '0');
   const htmlDate = `${yyyy}-${mStr}-${dStr}`;
 
-  const renderSavedCard = (item: SavedSermon) => {
+  const renderSavedCard = (item: SavedInspiration) => {
     const originLang = item.lang || 'en';
     const responseDisplay = (originLang !== language && item.response_translated) ? item.response_translated : item.response;
     const isExpanded = expandedCards.has(item.id);
@@ -482,28 +575,28 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
     });
 
     return (
-      <div key={item.id} className={`sermon-saved-card ${isExpanded ? 'expanded' : ''}`} onClick={toggleExpand}>
-        <div className="sermon-saved-card-header">
-          <div className="sermon-saved-card-title-area">
-            <div className="sermon-saved-card-title">{item.sourceText}</div>
-            <div className="sermon-saved-card-meta">
+      <div key={item.id} className={`inspiration-saved-card ${isExpanded ? 'expanded' : ''}`} onClick={toggleExpand}>
+        <div className="inspiration-saved-card-header">
+          <div className="inspiration-saved-card-title-area">
+            <div className="inspiration-saved-card-title">{item.sourceText}</div>
+            <div className="inspiration-saved-card-meta">
               {item.mode === 'standard' ? (language === 'es' ? 'Estándar' : 'Standard') : (language === 'es' ? 'Abstracto' : 'Abstract')} • {item.duration} • {item.tone}
             </div>
-            <div className="sermon-saved-card-actions" onClick={(e) => e.stopPropagation()}>
-              <button className={`sermon-icon-btn ${isPlayingThis ? 'playing' : ''}`} onClick={(e) => { e.stopPropagation(); handlePlaySaved(item); }}>
+            <div className="inspiration-saved-card-actions" onClick={(e) => e.stopPropagation()}>
+              <button className={`inspiration-icon-btn ${isPlayingThis ? 'playing' : ''}`} onClick={(e) => { e.stopPropagation(); handlePlaySaved(item); }}>
                 {isPlayingThis ? <Square size={16} fill="currentColor" /> : <Volume2 size={16} />}
               </button>
-              <button className={`sermon-icon-btn ${!item.isTemporary ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedBookmark(item); }}>
+              <button className={`inspiration-icon-btn ${!item.isTemporary ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedBookmark(item); }}>
                 {!item.isTemporary ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
               </button>
-              <button className={`sermon-icon-btn ${item.isFavorite ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedFavorite(item); }}>
+              <button className={`inspiration-icon-btn ${item.isFavorite ? 'saved' : ''}`} onClick={(e) => { e.stopPropagation(); handleToggleSavedFavorite(item); }}>
                 <Star size={16} fill={item.isFavorite ? 'currentColor' : 'none'} color={item.isFavorite ? 'inherit' : 'currentColor'} />
               </button>
-              <button className="sermon-icon-btn" onClick={(e) => { e.stopPropagation(); handleCopyText(responseDisplay); }} title={language === 'es' ? 'Copiar' : 'Copy'}>
+              <button className="inspiration-icon-btn" onClick={(e) => { e.stopPropagation(); handleCopyText(responseDisplay); }} title={language === 'es' ? 'Copiar' : 'Copy'}>
                 <Copy size={16} />
               </button>
               <button 
-                className="sermon-icon-btn sermon-card-trash" 
+                className="inspiration-icon-btn inspiration-card-trash" 
                 style={{ marginLeft: '12px' }} 
                 onClick={(e) => { e.stopPropagation(); handleDeleteSaved(item.id); }}
                 title={language === 'es' ? 'Eliminar' : 'Delete'}
@@ -512,21 +605,21 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
               </button>
             </div>
           </div>
-          <div className="sermon-saved-card-right">
-             <div className="sermon-saved-card-date">
-               {new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          <div className="inspiration-saved-card-right">
+             <div className="inspiration-saved-card-date">
+                {new Date(item.date + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
              </div>
-             <div className="sermon-saved-card-chevron">
-               {isExpanded ? <ChevronUp size={18} color="var(--sermon-gold)" /> : <ChevronDown size={18} color="rgba(244, 231, 212, 0.4)" />}
+             <div className="inspiration-saved-card-chevron">
+                {isExpanded ? <ChevronUp size={18} color="var(--inspiration-gold)" /> : <ChevronDown size={18} color="rgba(244, 231, 212, 0.4)" />}
              </div>
           </div>
         </div>
         {isExpanded && (
-          <div className="sermon-saved-card-content" onClick={e => e.stopPropagation()}>
-            <div className="sermon-saved-card-response">{responseDisplay}</div>
-            <div className="sermon-saved-card-footer">
-              <span className="sermon-badge-draft">{originLang.toUpperCase()}</span>
-              <button className="sermon-saved-card-discard" onClick={(e) => { e.stopPropagation(); handleDeleteSaved(item.id); }}>
+          <div className="inspiration-saved-card-content" onClick={e => e.stopPropagation()}>
+            <div className="inspiration-saved-card-response">{responseDisplay}</div>
+            <div className="inspiration-saved-card-footer">
+              <span className="inspiration-badge-draft">{originLang.toUpperCase()}</span>
+              <button className="inspiration-saved-card-discard" onClick={(e) => { e.stopPropagation(); handleDeleteSaved(item.id); }}>
                 <Trash2 size={14} />
                 {language === 'es' ? 'DESCARTAR' : 'DISCARD'}
               </button>
@@ -565,19 +658,19 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
   };
 
   return (
-    <div className="sermon-screen">
+    <div className="inspiration-screen">
       {/* ── Header ── */}
-      <header className="sermon-header">
-        <button className="sermon-back-btn-abs" onClick={onBack} aria-label={language === 'es' ? 'Volver' : 'Back'}>
+      <header className="inspiration-header">
+        <button className="inspiration-back-btn-abs" onClick={onBack} aria-label={language === 'es' ? 'Volver' : 'Back'}>
           <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>family_home</span>
         </button>
-        <div className="sermon-brand-group">
-          <h1 className="sermon-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Sparkles size={24} color="var(--sermon-gold)" />
+        <div className="inspiration-brand-group">
+          <h1 className="inspiration-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Sparkles size={24} color="var(--inspiration-gold)" />
             {t.title}
           </h1>
         </div>
-        <button className="sermon-help-btn-abs" onClick={() => setShowSettings(true)} aria-label="Settings">
+        <button className="inspiration-help-btn-abs" onClick={() => setShowSettings(true)} aria-label="Settings">
           <Settings size={22} />
         </button>
       </header>
@@ -585,22 +678,22 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
       {/* Settings Modal */}
       <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
 
-      <div className="sermon-body">
+      <div className="inspiration-body">
         
         {activeTab === 'build' ? (
           <>
             {/* ── Step 1: Source ── */}
-        <section className="sermon-step-card">
-          <div className="sermon-step-header">
-            <h2 className="sermon-step-title">{t.step1}</h2>
+        <section className="inspiration-step-card">
+          <div className="inspiration-step-header">
+            <h2 className="inspiration-step-title">{t.step1}</h2>
           </div>
-          <p className="sermon-step-desc">{t.step1Desc}</p>
+          <p className="inspiration-step-desc">{t.step1Desc}</p>
 
-          <div className="sermon-control-group" ref={sourceDropdownRef}>
-            <div className="sermon-select-with-action">
+          <div className="inspiration-control-group" ref={sourceDropdownRef}>
+            <div className="inspiration-select-with-action">
               <div style={{ flex: 1, position: 'relative' }}>
                 <div 
-                  className="sermon-style-summary" 
+                  className="inspiration-style-summary" 
                   style={{ 
                     margin: 0, 
                     opacity: showInputModeOptions ? 0 : 1, 
@@ -608,35 +701,35 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
                   }} 
                   onClick={() => setShowInputModeOptions(true)}
                 >
-                  <div className="sermon-style-summary-content">
-                    <span className="sermon-input-icon" style={{ position: 'static', transform: 'none', color: 'var(--sermon-gold)' }}>
+                  <div className="inspiration-style-summary-content">
+                    <span className="inspiration-input-icon" style={{ position: 'static', transform: 'none', color: 'var(--inspiration-gold)' }}>
                       {inputMode === 'readings' ? <BookOpen size={18} /> : inputMode === 'suggestions' ? <List size={18} /> : <Type size={18} />}
                     </span>
-                    <span className="sermon-style-summary-values" style={{ color: 'var(--sermon-text)' }}>
+                    <span className="inspiration-style-summary-values" style={{ color: 'var(--inspiration-text)' }}>
                       {inputMode === 'readings' ? t.dailyReadings : inputMode === 'suggestions' ? t.starters : t.custom}
                     </span>
                   </div>
-                  <ChevronDown size={18} className={`sermon-style-expand-icon${showInputModeOptions ? ' expanded' : ''}`} />
+                  <ChevronDown size={18} className={`inspiration-style-expand-icon${showInputModeOptions ? ' expanded' : ''}`} />
                 </div>
 
                 {showInputModeOptions && (
-                  <div className="sermon-starter-select-list sermon-floating-dropdown">
-                    <div className={`sermon-starter-item${inputMode === 'readings' ? ' selected' : ''}`} onClick={() => { setInputMode('readings'); setShowInputModeOptions(false); }}>
-                      <BookOpen size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
-                      <div className="sermon-starter-item-text">
-                         <span className="sermon-starter-item-title">{t.dailyReadings}</span>
+                  <div className="inspiration-starter-select-list inspiration-floating-dropdown">
+                    <div className={`inspiration-starter-item${inputMode === 'readings' ? ' selected' : ''}`} onClick={() => { setInputMode('readings'); setShowInputModeOptions(false); }}>
+                      <BookOpen size={18} className="inspiration-starter-item-icon" style={{ color: 'var(--inspiration-gold)' }} />
+                      <div className="inspiration-starter-item-text">
+                         <span className="inspiration-starter-item-title">{t.dailyReadings}</span>
                       </div>
                     </div>
-                    <div className={`sermon-starter-item${inputMode === 'suggestions' ? ' selected' : ''}`} onClick={() => { setInputMode('suggestions'); setShowInputModeOptions(false); }}>
-                      <List size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
-                      <div className="sermon-starter-item-text">
-                         <span className="sermon-starter-item-title">{t.starters}</span>
+                    <div className={`inspiration-starter-item${inputMode === 'suggestions' ? ' selected' : ''}`} onClick={() => { setInputMode('suggestions'); setShowInputModeOptions(false); }}>
+                      <List size={18} className="inspiration-starter-item-icon" style={{ color: 'var(--inspiration-gold)' }} />
+                      <div className="inspiration-starter-item-text">
+                         <span className="inspiration-starter-item-title">{t.starters}</span>
                       </div>
                     </div>
-                    <div className={`sermon-starter-item${inputMode === 'custom' ? ' selected' : ''}`} onClick={() => { setInputMode('custom'); setShowInputModeOptions(false); }}>
-                      <Type size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
-                      <div className="sermon-starter-item-text">
-                         <span className="sermon-starter-item-title">{t.custom}</span>
+                    <div className={`inspiration-starter-item${inputMode === 'custom' ? ' selected' : ''}`} onClick={() => { setInputMode('custom'); setShowInputModeOptions(false); }}>
+                      <Type size={18} className="inspiration-starter-item-icon" style={{ color: 'var(--inspiration-gold)' }} />
+                      <div className="inspiration-starter-item-text">
+                         <span className="inspiration-starter-item-title">{t.custom}</span>
                       </div>
                     </div>
                   </div>
@@ -646,7 +739,7 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
               {inputMode === 'readings' && (
                 <div style={{ position: 'relative' }}>
                   <button 
-                    className="sermon-inline-action-btn" 
+                    className="inspiration-inline-action-btn" 
                     onClick={triggerDatePicker}
                     aria-label="Select date"
                   >
@@ -663,11 +756,11 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
 
           {/* Dynamic Content based on Source */}
           {inputMode === 'readings' && (
-            <div className="sermon-control-group" ref={readingDropdownRef}>
-              <label className="sermon-label">{language === 'es' ? 'Lectura' : 'Reading'}</label>
+            <div className="inspiration-control-group" ref={readingDropdownRef}>
+              <label className="inspiration-label">{language === 'es' ? 'Lectura' : 'Reading'}</label>
               <div style={{ position: 'relative' }}>
                 <div 
-                  className="sermon-style-summary" 
+                  className="inspiration-style-summary" 
                   style={{ 
                     margin: 0,
                     opacity: showReadingOptions ? 0 : 1,
@@ -675,21 +768,21 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
                   }} 
                   onClick={() => setShowReadingOptions(true)}
                 >
-                  <div className="sermon-style-summary-content">
-                     <span className="sermon-style-summary-values" style={{ color: 'var(--sermon-text)' }}>
+                  <div className="inspiration-style-summary-content">
+                     <span className="inspiration-style-summary-values" style={{ color: 'var(--inspiration-text)' }}>
                        {loadingReadings ? (language === 'es' ? 'Cargando...' : 'Loading...') : readingOptions.length > 0 ? (readingOptions[selectedReadingIdx]?.label + (readingOptions[selectedReadingIdx]?.citation ? ` — ${readingOptions[selectedReadingIdx].citation}` : '')) : (language === 'es' ? 'No hay lecturas' : 'No readings')}
                      </span>
                   </div>
-                  <ChevronDown size={18} className={`sermon-style-expand-icon${showReadingOptions ? ' expanded' : ''}`} />
+                  <ChevronDown size={18} className={`inspiration-style-expand-icon${showReadingOptions ? ' expanded' : ''}`} />
                 </div>
 
                 {showReadingOptions && readingOptions.length > 0 && (
-                  <div className="sermon-starter-select-list sermon-floating-dropdown">
+                  <div className="inspiration-starter-select-list inspiration-floating-dropdown">
                     {readingOptions.map((opt, i) => (
-                      <div key={i} className={`sermon-starter-item${selectedReadingIdx === i ? ' selected' : ''}`} onClick={() => { setSelectedReadingIdx(i); setShowReadingOptions(false); }}>
-                        <div className="sermon-starter-item-text">
-                           <span className="sermon-starter-item-title">{opt.label}</span>
-                           {opt.citation && <span className="sermon-starter-item-sub">{opt.citation}</span>}
+                      <div key={i} className={`inspiration-starter-item${selectedReadingIdx === i ? ' selected' : ''}`} onClick={() => { setSelectedReadingIdx(i); setShowReadingOptions(false); }}>
+                        <div className="inspiration-starter-item-text">
+                           <span className="inspiration-starter-item-title">{opt.label}</span>
+                           {opt.citation && <span className="inspiration-starter-item-sub">{opt.citation}</span>}
                         </div>
                       </div>
                     ))}
@@ -700,25 +793,25 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
           )}
 
           {inputMode === 'suggestions' && (
-            <div className="sermon-starter-select-list">
+            <div className="inspiration-starter-select-list">
               {selectedStarterId && !showStartersList ? (
-                <div className="sermon-starter-item selected" onClick={() => setShowStartersList(true)}>
-                  <span className="sermon-starter-item-icon">{starters.find(s => s.id === selectedStarterId)?.icon}</span>
-                  <div className="sermon-starter-item-text">
-                    <span className="sermon-starter-item-title">{starters.find(s => s.id === selectedStarterId)?.title}</span>
-                    <span className="sermon-starter-item-sub">{t.tapToChange}</span>
+                <div className="inspiration-starter-item selected" onClick={() => setShowStartersList(true)}>
+                  <span className="inspiration-starter-item-icon">{starters.find(s => s.id === selectedStarterId)?.icon}</span>
+                  <div className="inspiration-starter-item-text">
+                    <span className="inspiration-starter-item-title">{starters.find(s => s.id === selectedStarterId)?.title}</span>
+                    <span className="inspiration-starter-item-sub">{t.tapToChange}</span>
                   </div>
-                  <ChevronDown size={18} color="var(--sermon-gold)" />
+                  <ChevronDown size={18} color="var(--inspiration-gold)" />
                 </div>
               ) : (
                 starters.map(s => (
-                  <div key={s.id} className={`sermon-starter-item${selectedStarterId === s.id ? ' selected' : ''}`} onClick={() => { setSelectedStarterId(s.id); setShowStartersList(false); }}>
-                    <span className="sermon-starter-item-icon">{s.icon}</span>
-                    <div className="sermon-starter-item-text">
-                      <span className="sermon-starter-item-title">{s.title}</span>
-                      <span className="sermon-starter-item-sub">{s.sub}</span>
+                  <div key={s.id} className={`inspiration-starter-item${selectedStarterId === s.id ? ' selected' : ''}`} onClick={() => { setSelectedStarterId(s.id); setShowStartersList(false); }}>
+                    <span className="inspiration-starter-item-icon">{s.icon}</span>
+                    <div className="inspiration-starter-item-text">
+                      <span className="inspiration-starter-item-title">{s.title}</span>
+                      <span className="inspiration-starter-item-sub">{s.sub}</span>
                     </div>
-                    <ChevronRight size={18} color="var(--sermon-text-dim)" />
+                    <ChevronRight size={18} color="var(--inspiration-text-dim)" />
                   </div>
                 ))
               )}
@@ -726,9 +819,9 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
           )}
 
           {inputMode === 'custom' && (
-            <div className="sermon-textarea-wrapper" style={{ position: 'relative' }}>
+            <div className="inspiration-textarea-wrapper" style={{ position: 'relative' }}>
               <textarea 
-                className="sermon-textarea" 
+                className="inspiration-textarea" 
                 value={customText} 
                 onChange={e => setCustomText(e.target.value)}
                 placeholder={t.placeholder}
@@ -736,7 +829,7 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
               />
               {customText && (
                 <button 
-                  className="sermon-textarea-clear" 
+                  className="inspiration-textarea-clear" 
                   onClick={() => setCustomText('')}
                   style={{ 
                     position: 'absolute', 
@@ -744,7 +837,7 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
                     right: '12px', 
                     background: 'transparent', 
                     border: 'none', 
-                    color: 'var(--sermon-text-dim)', 
+                    color: 'var(--inspiration-text-dim)', 
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -764,65 +857,65 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
         </section>
 
         {/* ── Step 2: Style (Collapsible + Chips) ── */}
-        <section className="sermon-step-card">
-          <div className="sermon-step-header">
-            <h2 className="sermon-step-title">{t.step2}</h2>
+        <section className="inspiration-step-card">
+          <div className="inspiration-step-header">
+            <h2 className="inspiration-step-title">{t.step2}</h2>
           </div>
 
-          <div className="sermon-style-summary" onClick={() => setShowStyleOptions(!showStyleOptions)}>
-            <div className="sermon-style-summary-content">
-              <span className="sermon-style-summary-values">
-                {sermonMode === 'standard' ? (language === 'es' ? 'Estándar' : 'Standard') : (language === 'es' ? 'Abstracto' : 'Abstract')} • {sermonLength === 'short' ? 'Short' : sermonLength === 'medium' ? 'Medium' : 'Long'} • {sermonTone.charAt(0).toUpperCase() + sermonTone.slice(1)}
+          <div className="inspiration-style-summary" onClick={() => setShowStyleOptions(!showStyleOptions)}>
+            <div className="inspiration-style-summary-content">
+              <span className="inspiration-style-summary-values">
+                {inspirationMode === 'standard' ? (language === 'es' ? 'Estándar' : 'Standard') : (language === 'es' ? 'Abstracto' : 'Abstract')} • {inspirationLength === 'short' ? 'Short' : inspirationLength === 'medium' ? 'Medium' : 'Long'} • {inspirationTone.charAt(0).toUpperCase() + inspirationTone.slice(1)}
               </span>
             </div>
-            <ChevronDown size={18} className={`sermon-style-expand-icon${showStyleOptions ? ' expanded' : ''}`} />
+            <ChevronDown size={18} className={`inspiration-style-expand-icon${showStyleOptions ? ' expanded' : ''}`} />
           </div>
 
           {showStyleOptions && (
             <>
-              <div className="sermon-control-group">
-                <label className="sermon-label">{language === 'es' ? 'Modo' : 'Mode'}</label>
-                <div className="sermon-segments">
-                  <button className={`sermon-segment-btn${sermonMode === 'standard' ? ' active' : ''}`} onClick={() => setSermonMode('standard')}>
+              <div className="inspiration-control-group">
+                <label className="inspiration-label">{language === 'es' ? 'Modo' : 'Mode'}</label>
+                <div className="inspiration-segments">
+                  <button className={`inspiration-segment-btn${inspirationMode === 'standard' ? ' active' : ''}`} onClick={() => setInspirationMode('standard')}>
                     {language === 'es' ? 'Estándar' : 'Standard'}
                   </button>
-                  <button className={`sermon-segment-btn${sermonMode === 'abstract' ? ' active' : ''}`} onClick={() => setSermonMode('abstract')}>
+                  <button className={`inspiration-segment-btn${inspirationMode === 'abstract' ? ' active' : ''}`} onClick={() => setInspirationMode('abstract')}>
                     {language === 'es' ? 'Abstracto' : 'Abstract'}
                   </button>
                 </div>
               </div>
 
-              <div className="sermon-control-group">
-                <label className="sermon-label">{language === 'es' ? 'Duración' : 'Length'}</label>
-                <div className="sermon-segments">
-                  <button className={`sermon-segment-btn${sermonLength === 'short' ? ' active' : ''}`} onClick={() => setSermonLength('short')}>
+              <div className="inspiration-control-group">
+                <label className="inspiration-label">{language === 'es' ? 'Duración' : 'Length'}</label>
+                <div className="inspiration-segments">
+                  <button className={`inspiration-segment-btn${inspirationLength === 'short' ? ' active' : ''}`} onClick={() => setInspirationLength('short')}>
                     {language === 'es' ? 'Corto' : 'Short'}
                   </button>
-                  <button className={`sermon-segment-btn${sermonLength === 'medium' ? ' active' : ''}`} onClick={() => setSermonLength('medium')}>
+                  <button className={`inspiration-segment-btn${inspirationLength === 'medium' ? ' active' : ''}`} onClick={() => setInspirationLength('medium')}>
                     {language === 'es' ? 'Medio' : 'Medium'}
                   </button>
-                  <button className={`sermon-segment-btn${sermonLength === 'long' ? ' active' : ''}`} onClick={() => setSermonLength('long')}>
+                  <button className={`inspiration-segment-btn${inspirationLength === 'long' ? ' active' : ''}`} onClick={() => setInspirationLength('long')}>
                     {language === 'es' ? 'Largo' : 'Long'}
                   </button>
                 </div>
               </div>
 
-              <div className="sermon-control-group">
-                <label className="sermon-label">{language === 'es' ? 'Tono' : 'Tone'}</label>
-                <div className="sermon-segments">
-                  <button className={`sermon-segment-btn${sermonTone === 'pastoral' ? ' active' : ''}`} onClick={() => setSermonTone('pastoral')}>
+              <div className="inspiration-control-group">
+                <label className="inspiration-label">{language === 'es' ? 'Tono' : 'Tone'}</label>
+                <div className="inspiration-segments">
+                  <button className={`inspiration-segment-btn${inspirationTone === 'pastoral' ? ' active' : ''}`} onClick={() => setInspirationTone('pastoral')}>
                     {language === 'es' ? 'Pastoral' : 'Pastoral'}
                   </button>
-                  <button className={`sermon-segment-btn${sermonTone === 'reflective' ? ' active' : ''}`} onClick={() => setSermonTone('reflective')}>
+                  <button className={`inspiration-segment-btn${inspirationTone === 'reflective' ? ' active' : ''}`} onClick={() => setInspirationTone('reflective')}>
                     {language === 'es' ? 'Reflexivo' : 'Reflective'}
                   </button>
-                  <button className={`sermon-segment-btn${sermonTone === 'teaching' ? ' active' : ''}`} onClick={() => setSermonTone('teaching')}>
+                  <button className={`inspiration-segment-btn${inspirationTone === 'teaching' ? ' active' : ''}`} onClick={() => setInspirationTone('teaching')}>
                     {language === 'es' ? 'Didáctico' : 'Teaching'}
                   </button>
                 </div>
               </div>
 
-              <div className="sermon-helper-box">
+              <div className="inspiration-helper-box">
                 <Sparkles size={14} />
                 <span>{t.helper}</span>
               </div>
@@ -831,16 +924,16 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
         </section>
 
         {/* ── Step 3: Generate ── */}
-        <section className="sermon-step-card sermon-generate-card">
-          <div className="sermon-step-header" style={{ alignSelf: 'flex-start' }}>
-            <h2 className="sermon-step-title">{t.step3}</h2>
+        <section className="inspiration-step-card inspiration-generate-card">
+          <div className="inspiration-step-header" style={{ alignSelf: 'flex-start' }}>
+            <h2 className="inspiration-step-title">{t.step3}</h2>
           </div>
-          <p className="sermon-step-desc" style={{ alignSelf: 'flex-start', textAlign: 'left' }}>{t.step3Desc}</p>
+          <p className="inspiration-step-desc" style={{ alignSelf: 'flex-start', textAlign: 'left' }}>{t.step3Desc}</p>
 
-          <button className="sermon-btn-generate" onClick={handleGenerate} disabled={!canGenerate || isGenerating}>
+          <button className="inspiration-btn-generate" onClick={handleGenerate} disabled={!canGenerate || isGenerating}>
             {isGenerating ? (
               <>
-                <div className="sermon-spinner" />
+                <div className="inspiration-spinner" />
                 <span>{t.generating}</span>
               </>
             ) : (
@@ -854,43 +947,43 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
 
         {/* ── Result Preview Card ── */}
         {(output || genError) && (
-          <div className="sermon-result-card" ref={resultRef}>
+          <div className="inspiration-result-card" ref={resultRef}>
             {genError ? (
-              <div className="sermon-error-msg">{genError}</div>
+              <div className="inspiration-error-msg">{genError}</div>
             ) : (
               <>
-                <div className="sermon-result-header" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div className="sermon-result-title-group">
-                    <h3 className="sermon-result-title">{t.yourSermon}</h3>
+                <div className="inspiration-result-header" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div className="inspiration-result-title-group">
+                    <h3 className="inspiration-result-title">{t.yourSermon}</h3>
                   </div>
-                  <div className="sermon-result-meta" style={{ fontSize: '0.75rem', color: 'var(--sermon-text-dim)', letterSpacing: '0.02em' }}>
-                    {getPromptValue().split(' — ')[1] || getPromptValue()} • {sermonMode === 'standard' ? 'Standard' : 'Abstract'} • {sermonLength} • {sermonTone}
+                  <div className="inspiration-result-meta" style={{ fontSize: '0.75rem', color: 'var(--inspiration-text-dim)', letterSpacing: '0.02em' }}>
+                    {getPromptValue().split(' — ')[1] || getPromptValue()} • {inspirationMode === 'standard' ? 'Standard' : 'Abstract'} • {inspirationLength} • {inspirationTone}
                   </div>
                 </div>
 
-                <div className={`sermon-result-body${!isExpanded ? ' sermon-text-collapsed' : ''}`}>
+                <div className={`inspiration-result-body${!isExpanded ? ' inspiration-text-collapsed' : ''}`}>
                   {(originLang !== language && translatedOutput) ? translatedOutput : output}
                   {(originLang !== language && !translatedOutput && isTranslating) && (
                     <span className="ai-translating-indicator" style={{fontStyle: 'italic', opacity: 0.7}}> {language === 'es' ? '(traduciendo...)' : '(translating...)'}</span>
                   )}
                 </div>
 
-                <div className="sermon-result-footer-actions">
-                  <button className="sermon-icon-btn" onClick={handleSpeak} title={isPlaying ? 'Stop' : 'Listen'}>
+                <div className="inspiration-result-footer-actions">
+                  <button className="inspiration-icon-btn" onClick={handleSpeak} title={isPlaying ? 'Stop' : 'Listen'}>
                     {isPlaying ? <Square size={18} fill="currentColor" /> : <Volume2 size={18} />}
                   </button>
-                  <button className={`sermon-icon-btn ${activeSermonRecord && !activeSermonRecord.isTemporary ? 'saved' : ''}`} onClick={handleToggleBookmark} title={language === 'es' ? 'Guardar' : 'Save'}>
-                    {(activeSermonRecord && !activeSermonRecord.isTemporary) ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
+                  <button className={`inspiration-icon-btn ${activeInspirationRecord && !activeInspirationRecord.isTemporary ? 'saved' : ''}`} onClick={handleToggleBookmark} title={language === 'es' ? 'Guardar' : 'Save'}>
+                    {(activeInspirationRecord && !activeInspirationRecord.isTemporary) ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
                   </button>
-                  <button className={`sermon-icon-btn ${activeSermonRecord?.isFavorite ? 'saved' : ''}`} onClick={handleToggleFavorite} title={language === 'es' ? 'Favorito' : 'Favorite'}>
-                    <Star size={18} fill={activeSermonRecord?.isFavorite ? 'currentColor' : 'none'} color={activeSermonRecord?.isFavorite ? 'inherit' : 'currentColor'} />
+                  <button className={`inspiration-icon-btn ${activeInspirationRecord?.isFavorite ? 'saved' : ''}`} onClick={handleToggleFavorite} title={language === 'es' ? 'Favorito' : 'Favorite'}>
+                    <Star size={18} fill={activeInspirationRecord?.isFavorite ? 'currentColor' : 'none'} color={activeInspirationRecord?.isFavorite ? 'inherit' : 'currentColor'} />
                   </button>
-                  <button className="sermon-icon-btn" onClick={handleCopy} title={language === 'es' ? 'Copiar' : 'Copy'}>
+                  <button className="inspiration-icon-btn" onClick={handleCopy} title={language === 'es' ? 'Copiar' : 'Copy'}>
                     {copySuccess ? <Check size={18} color="#4ade80" /> : <Copy size={18} />}
                   </button>
                 </div>
 
-                <button className="sermon-expand-btn" onClick={() => setIsExpanded(!isExpanded)}>
+                <button className="inspiration-expand-btn" onClick={() => setIsExpanded(!isExpanded)}>
                   <span>{isExpanded ? t.collapse : t.expand}</span>
                   <ChevronDown size={18} style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                 </button>
@@ -900,10 +993,10 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
         )}
           </>
         ) : (
-          <div className="sermon-saved-tab">
-            <div className="sermon-saved-tab-header">
-                <div className="sermon-saved-filter-scroll">
-                  <div className="sermon-saved-filter-row">
+          <div className="inspiration-saved-tab">
+            <div className="inspiration-saved-tab-header">
+                <div className="inspiration-saved-filter-scroll">
+                  <div className="inspiration-saved-filter-row">
                     {['All Inspirations', 'Favorites', 'Recent 48h history'].map((tabStr, idx) => {
                       const tabVal = ['all', 'favorites', 'recent'][idx] as 'all' | 'favorites' | 'recent';
                       const langStr = language === 'es'
@@ -920,7 +1013,7 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
                         <button
                           key={tabVal}
                           onClick={() => setSavedTabFilter(tabVal)}
-                          className={`sermon-saved-filter-btn ${savedTabFilter === tabVal ? 'active' : ''}`}
+                          className={`inspiration-saved-filter-btn ${savedTabFilter === tabVal ? 'active' : ''}`}
                         >
                           {langStr} ( {count} )
                         </button>
@@ -929,9 +1022,9 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
                   </div>
                 </div>
 
-                <div className="sermon-view-toggle" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-4px' }}>
+                <div className="inspiration-view-toggle" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-4px' }}>
                   <button
-                    className={`sermon-view-toggle-btn ${expandedGroups.size > 0 ? 'active' : ''}`}
+                    className={`inspiration-view-toggle-btn ${expandedGroups.size > 0 ? 'active' : ''}`}
                     onClick={toggleAllGroups}
                     title={expandedGroups.size > 0 ? (language === 'es' ? 'Contraer todo' : 'Collapse all') : (language === 'es' ? 'Expandir todo' : 'Expand all')}
                   >
@@ -945,11 +1038,11 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
                 if (savedTabFilter === 'recent') return item.isTemporary;
                 return !item.isTemporary;
               }).length === 0 ? (
-                <div className="sermon-saved-empty">
+                <div className="inspiration-saved-empty">
                   {language === 'es' ? 'No hay inspiraciones guardadas aún.' : 'No saved inspirations yet.'}
                 </div>
               ) : (
-                <div className="sermon-saved-groups">
+                <div className="inspiration-saved-groups">
                   {Object.entries(
                     savedItems.filter(item => {
                       if (savedTabFilter === 'favorites') return item.isFavorite;
@@ -960,7 +1053,7 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
                       if (!acc[group]) acc[group] = [];
                       acc[group].push(item);
                       return acc;
-                    }, {} as Record<string, SavedSermon[]>)
+                    }, {} as Record<string, SavedInspiration[]>)
                   ).sort((a, b) => a[0].localeCompare(b[0])).map(([group, items]) => {
                     const isExpanded = expandedGroups.has(group);
                     const toggleGroup = () => setExpandedGroups(prev => {
@@ -977,16 +1070,16 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
                     };
 
                     return (
-                      <div key={group} className="sermon-saved-group-container">
-                        <div className="sermon-saved-group-header" onClick={toggleGroup}>
-                          <div className="sermon-saved-group-title">
+                      <div key={group} className="inspiration-saved-group-container">
+                        <div className="inspiration-saved-group-header" onClick={toggleGroup}>
+                          <div className="inspiration-saved-group-title">
                             <span style={{ fontSize: '1.1rem' }}>{groupIcons[group] || '📁'}</span>
                             {groupNames[group] || group} ({items.length})
                           </div>
-                          {isExpanded ? <ChevronUp size={18} color="var(--sermon-gold)" /> : <ChevronDown size={18} color="var(--sermon-text-dim)" />}
+                          {isExpanded ? <ChevronUp size={18} color="var(--inspiration-gold)" /> : <ChevronDown size={18} color="var(--inspiration-text-dim)" />}
                         </div>
                         {isExpanded && (
-                          <div className="sermon-saved-group-content">
+                          <div className="inspiration-saved-group-content">
                             {items.map(item => renderSavedCard(item))}
                           </div>
                         )}
@@ -1000,12 +1093,12 @@ export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => 
 
       </div>
 
-      <div className="sermon-tab-strip">
-        <button className={`sermon-tab ${activeTab === 'build' ? 'active' : ''}`} onClick={() => setActiveTab('build')}>
+      <div className="inspiration-tab-strip">
+        <button className={`inspiration-tab ${activeTab === 'build' ? 'active' : ''}`} onClick={() => setActiveTab('build')}>
           <Sparkles size={20} />
           <span>{language === 'es' ? 'Crear' : 'Build'}</span>
         </button>
-        <button className={`sermon-tab ${activeTab === 'saved' ? 'active' : ''}`} onClick={() => setActiveTab('saved')}>
+        <button className={`inspiration-tab ${activeTab === 'saved' ? 'active' : ''}`} onClick={() => setActiveTab('saved')}>
           <Bookmark size={20} />
           <span>{language === 'es' ? 'Guardado' : 'Saved'}</span>
         </button>

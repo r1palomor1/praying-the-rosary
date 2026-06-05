@@ -1,14 +1,14 @@
-// ─── Saved Sermons — Single Source of Truth ───────────────────────────
-// localStorage key: sermonAI_saved_sermons
-// Used by: SermonAIScreen (Saved Tab)
+// ─── Saved Inspirations — Single Source of Truth ───────────────────────────
+// localStorage key: sermonAI_saved_sermons (kept for backward compatibility)
+// Used by: InspirationAIScreen (Saved Tab)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'sermonAI_saved_sermons';
 
-export interface SavedSermon {
+export interface SavedInspiration {
     id: string;
     date: string;                   // ISO "YYYY-MM-DD"
-    sourceText: string;             // What the sermon was based on (e.g., Reading citation or custom topic)
+    sourceText: string;             // What the inspiration was based on (e.g., Reading citation or custom topic)
     mode: string;                   // 'standard' | 'abstract'
     duration: string;               // 'short' | 'medium' | 'long'
     tone: string;                   // 'pastoral' | 'teaching' | etc.
@@ -22,13 +22,13 @@ export interface SavedSermon {
 }
 
 // ─── CRUD ──────────────────────────────────────────────────────────────────
-export function loadSavedSermons(): SavedSermon[] {
+export function loadSavedInspirations(): SavedInspiration[] {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return [];
-        const items: SavedSermon[] = JSON.parse(raw);
+        const items: SavedInspiration[] = JSON.parse(raw);
 
-        // Auto-cleanup temporary sermons older than 48 hours
+        // Auto-cleanup temporary inspirations older than 48 hours
         const now = Date.now();
         const fortyEightHours = 48 * 60 * 60 * 1000;
         const validItems = items.filter(item => {
@@ -48,51 +48,51 @@ export function loadSavedSermons(): SavedSermon[] {
     }
 }
 
-export function saveSermon(item: Omit<SavedSermon, 'id' | 'date'>): SavedSermon {
-    const sermons = loadSavedSermons();
+export function saveInspiration(item: Omit<SavedInspiration, 'id' | 'date'>): SavedInspiration {
+    const inspirations = loadSavedInspirations();
     
-    // De-duplication check: if a sermon with same response/source exists within last 5 mins
+    // De-duplication check: if an inspiration with same response/source exists within last 5 mins
     const now = Date.now();
-    const duplicate = sermons.find(s => 
+    const duplicate = inspirations.find(s => 
         s.response === item.response && 
         s.sourceText === item.sourceText && 
         (now - (s.timestamp || 0)) < 5 * 60 * 1000
     );
     if (duplicate) return duplicate;
 
-    const newItem: SavedSermon = {
+    const newItem: SavedInspiration = {
         ...item,
         id: now.toString(),
         timestamp: now,
         date: new Date().toISOString().split('T')[0],
         lang: item.lang || 'en',
     };
-    sermons.unshift(newItem); // newest first
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sermons));
+    inspirations.unshift(newItem); // newest first
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inspirations));
     return newItem;
 }
 
-export function deleteSavedSermon(id: string): void {
-    const sermons = loadSavedSermons().filter(r => r.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sermons));
+export function deleteSavedInspiration(id: string): void {
+    const inspirations = loadSavedInspirations().filter(r => r.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inspirations));
 }
 
-export function updateSavedSermonTranslation(id: string, response_translated: string): void {
-    const sermons = loadSavedSermons().map(r =>
+export function updateSavedInspirationTranslation(id: string, response_translated: string): void {
+    const inspirations = loadSavedInspirations().map(r =>
         r.id === id ? { ...r, response_translated } : r
     );
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sermons));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inspirations));
 }
 
-export function updateSavedSermonFlags(id: string, flags: { isTemporary?: boolean, isFavorite?: boolean, timestamp?: number }): SavedSermon | undefined {
-    let updatedItem: SavedSermon | undefined;
-    const sermons = loadSavedSermons().map(r => {
+export function updateSavedInspirationFlags(id: string, flags: { isTemporary?: boolean, isFavorite?: boolean, timestamp?: number }): SavedInspiration | undefined {
+    let updatedItem: SavedInspiration | undefined;
+    const inspirations = loadSavedInspirations().map(r => {
         if (r.id === id) {
             updatedItem = { ...r, ...flags };
             return updatedItem;
         }
         return r;
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sermons));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inspirations));
     return updatedItem;
 }

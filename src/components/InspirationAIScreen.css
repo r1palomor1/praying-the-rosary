@@ -1,33 +1,33 @@
 /* ═══════════════════════════════════════════════════
-   SermonAIScreen.css
+   InspirationAIScreen.css
    Modern Liturgical Wizard Design
    ═══════════════════════════════════════════════════ */
 
 :root {
-  --sermon-bg: #1a1410;
-  --sermon-card-bg: rgba(255, 255, 255, 0.035);
-  --sermon-border: rgba(212, 175, 55, 0.15);
-  --sermon-gold: #d4af37;
-  --sermon-gold-muted: rgba(212, 175, 55, 0.15);
-  --sermon-text: #f4e7d4;
-  --sermon-text-dim: rgba(244, 231, 212, 0.55);
-  --sermon-input-bg: rgba(0, 0, 0, 0.28);
+  --inspiration-bg: #1a1410;
+  --inspiration-card-bg: rgba(255, 255, 255, 0.035);
+  --inspiration-border: rgba(212, 175, 55, 0.15);
+  --inspiration-gold: #d4af37;
+  --inspiration-gold-muted: rgba(212, 175, 55, 0.15);
+  --inspiration-text: #f4e7d4;
+  --inspiration-text-dim: rgba(244, 231, 212, 0.55);
+  --inspiration-input-bg: rgba(0, 0, 0, 0.28);
 }
 
 /* ── Screen wrapper ── */
-.sermon-screen {
+.inspiration-screen {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  background: var(--sermon-bg);
-  color: var(--sermon-text);
+  background: var(--inspiration-bg);
+  color: var(--inspiration-text);
   font-family: 'Manrope', -apple-system, sans-serif;
   overflow-x: hidden;
   padding-bottom: 0;
 }
 
 /* ── Header ── */
-.sermon-header {
+.inspiration-header {
   padding: 32px 16px 8px;
   display: flex;
   justify-content: space-between;
@@ -38,7 +38,7 @@
   box-sizing: border-box;
 }
 
-.sermon-brand-group {
+.inspiration-brand-group {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -46,10 +46,10 @@
   flex: 1;
 }
 
-.sermon-back-btn-abs, .sermon-help-btn-abs {
+.inspiration-back-btn-abs, .inspiration-help-btn-abs {
   background: transparent;
   border: none;
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
   cursor: pointer;
   padding: 8px;
   display: flex;
@@ -58,17 +58,17 @@
   flex-shrink: 0;
 }
 
-.sermon-title {
+.inspiration-title {
   font-family: 'Noto Serif', serif;
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
-  color: var(--sermon-text);
+  color: var(--inspiration-text);
   letter-spacing: -0.01em;
 }
 
 /* ── Wizard Body ── */
-.sermon-body {
+.inspiration-body {
   flex: 1;
   padding: 16px;
   display: flex;
@@ -81,9 +81,9 @@
 }
 
 /* ── Wizard Step Card ── */
-.sermon-step-card {
-  background: var(--sermon-card-bg);
-  border: 1px solid var(--sermon-border);
+.inspiration-step-card {
+  background: var(--inspiration-card-bg);
+  border: 1px solid var(--inspiration-border);
   border-radius: 20px;
   padding: 24px;
   display: flex;
@@ -92,69 +92,69 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sermon-step-card:hover {
+.inspiration-step-card:hover {
   border-color: rgba(212, 175, 55, 0.4);
   background: rgba(255, 255, 255, 0.05);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-.sermon-step-header {
+.inspiration-step-header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: -8px;
 }
 
-.sermon-step-title {
+.inspiration-step-title {
   font-size: 0.85rem;
   font-weight: 800;
-  color: var(--sermon-gold);
+  color: var(--inspiration-gold);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
-.sermon-step-desc {
+.inspiration-step-desc {
   font-size: 1rem;
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
   margin: -4px 0 0 0;
 }
 
 /* ── Inputs & Controls ── */
-.sermon-control-group {
+.inspiration-control-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.sermon-label {
+.inspiration-label {
   font-size: 0.75rem;
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.sermon-input-wrapper {
+.inspiration-input-wrapper {
   position: relative;
   width: 100%;
 }
 
-.sermon-input-icon {
+.inspiration-input-icon {
   position: absolute;
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--sermon-gold);
+  color: var(--inspiration-gold);
   pointer-events: none;
 }
 
-.sermon-select, .sermon-input-field, .sermon-textarea {
+.inspiration-select, .inspiration-input-field, .inspiration-textarea {
   width: 100%;
   background-color: #2a1d15 !important;
-  border: 1px solid var(--sermon-border);
+  border: 1px solid var(--inspiration-border);
   border-radius: 12px;
-  color: var(--sermon-text);
+  color: var(--inspiration-text);
   padding: 12px 12px 12px 40px;
   font-size: 0.95rem;
   font-family: inherit;
@@ -164,76 +164,76 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.sermon-select:focus, .sermon-input-field:focus, .sermon-textarea:focus {
+.inspiration-select:focus, .inspiration-input-field:focus, .inspiration-textarea:focus {
   outline: none;
   background-color: #2a1d15 !important;
-  border-color: var(--sermon-gold);
+  border-color: var(--inspiration-gold);
 }
 
 /* Fix for dropdown contrast */
-.sermon-select option, .sermon-select optgroup {
+.inspiration-select option, .inspiration-select optgroup {
   background-color: #2a1d15 !important;
-  color: var(--sermon-text) !important;
+  color: var(--inspiration-text) !important;
 }
 
-.sermon-select-with-action {
+.inspiration-select-with-action {
   display: flex;
   gap: 8px;
   align-items: center;
 }
 
-.sermon-inline-action-btn {
+.inspiration-inline-action-btn {
   width: 48px;
   height: 48px;
-  background: var(--sermon-input-bg);
-  border: 1px solid var(--sermon-border);
+  background: var(--inspiration-input-bg);
+  border: 1px solid var(--inspiration-border);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--sermon-gold);
+  color: var(--inspiration-gold);
   cursor: pointer;
   flex-shrink: 0;
 }
 
-.sermon-select {
+.inspiration-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 18px;
 }
 
-.sermon-textarea {
+.inspiration-textarea {
   padding-left: 12px;
   min-height: 100px;
   resize: vertical;
 }
 
 /* ── Date Picker ── */
-.sermon-date-row {
+.inspiration-date-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--sermon-input-bg);
-  border: 1px solid var(--sermon-border);
+  background: var(--inspiration-input-bg);
+  border: 1px solid var(--inspiration-border);
   border-radius: 12px;
   padding: 12px;
   cursor: pointer;
 }
 
-.sermon-date-info {
+.inspiration-date-info {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--sermon-text);
+  color: var(--inspiration-text);
   font-size: 0.95rem;
 }
 
 /* ── Segmented Controls / Chips ── */
-.sermon-segments {
+.inspiration-segments {
   display: flex;
-  background: var(--sermon-input-bg);
-  border: 1px solid var(--sermon-border);
+  background: var(--inspiration-input-bg);
+  border: 1px solid var(--inspiration-border);
   border-radius: 12px;
   padding: 4px;
   width: 100%;
@@ -241,11 +241,11 @@
   gap: 4px;
 }
 
-.sermon-segment-btn {
+.inspiration-segment-btn {
   flex: 1;
   background: transparent;
   border: none;
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
   padding: 8px 4px;
   font-size: 0.95rem;
   font-weight: 600;
@@ -255,67 +255,67 @@
   font-family: inherit;
 }
 
-.sermon-segment-btn.active {
-  background: var(--sermon-gold);
+.inspiration-segment-btn.active {
+  background: var(--inspiration-gold);
   color: #120c08;
 }
 
 /* Style Summary (Option 1) */
-.sermon-style-summary {
+.inspiration-style-summary {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 14px;
-  background: var(--sermon-input-bg);
-  border: 1px solid var(--sermon-border);
+  background: var(--inspiration-input-bg);
+  border: 1px solid var(--inspiration-border);
   border-radius: 12px;
   cursor: pointer;
   margin-bottom: 4px;
 }
 
-.sermon-style-summary-content {
+.inspiration-style-summary-content {
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 1.05rem;
-  color: var(--sermon-text);
+  color: var(--inspiration-text);
 }
 
-.sermon-style-summary-label {
+.inspiration-style-summary-label {
   font-weight: 700;
-  color: var(--sermon-gold);
+  color: var(--inspiration-gold);
 }
 
-.sermon-style-summary-values {
-  color: var(--sermon-text-dim);
+.inspiration-style-summary-values {
+  color: var(--inspiration-text-dim);
 }
 
-.sermon-style-expand-icon {
-  color: var(--sermon-gold);
+.inspiration-style-expand-icon {
+  color: var(--inspiration-gold);
   transition: transform 0.3s ease;
 }
 
-.sermon-style-expand-icon.expanded {
+.inspiration-style-expand-icon.expanded {
   transform: rotate(180deg);
 }
 
-.sermon-helper-box {
+.inspiration-helper-box {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.78rem;
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
   margin-top: 4px;
 }
 
 /* ── Generate Section ── */
-.sermon-generate-card {
+.inspiration-generate-card {
   text-align: center;
   align-items: center;
   padding: 24px 20px;
 }
 
-.sermon-btn-generate {
+.inspiration-btn-generate {
   align-self: center;
   background-color: #a87d3e;
   color: #191b1f;
@@ -333,43 +333,43 @@
   font-family: inherit;
   box-shadow: 0 4px 14px 0 rgba(168, 125, 62, 0.39);
 }
-.sermon-btn-generate:hover:not(:disabled) {
+.inspiration-btn-generate:hover:not(:disabled) {
   transform: scale(1.02);
 }
-.sermon-btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.inspiration-btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* ── Result Card ── */
-.sermon-result-card {
-  background: var(--sermon-card-bg);
-  border: 1px solid var(--sermon-border);
+.inspiration-result-card {
+  background: var(--inspiration-card-bg);
+  border: 1px solid var(--inspiration-border);
   border-radius: 20px;
   padding: 20px;
   margin-top: 10px;
 }
 
-.sermon-result-header {
+.inspiration-result-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
 }
 
-.sermon-result-title-group {
+.inspiration-result-title-group {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.sermon-result-title {
+.inspiration-result-title {
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0;
 }
 
-.sermon-badge-draft {
+.inspiration-badge-draft {
   background: rgba(212, 175, 55, 0.1);
-  border: 1px solid var(--sermon-gold);
-  color: var(--sermon-gold);
+  border: 1px solid var(--inspiration-gold);
+  color: var(--inspiration-gold);
   font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -378,14 +378,14 @@
   letter-spacing: 0.05em;
 }
 
-.sermon-result-actions {
+.inspiration-result-actions {
   display: flex;
   gap: 8px;
 }
 
-.sermon-action-btn {
-  background: var(--sermon-input-bg);
-  border: 1px solid var(--sermon-border);
+.inspiration-action-btn {
+  background: var(--inspiration-input-bg);
+  border: 1px solid var(--inspiration-border);
   border-radius: 10px;
   padding: 6px 12px;
   display: flex;
@@ -393,27 +393,27 @@
   gap: 6px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--sermon-text);
+  color: var(--inspiration-text);
   cursor: pointer;
   font-family: inherit;
 }
 
-.sermon-result-body {
+.inspiration-result-body {
   font-size: 0.95rem;
   line-height: 1.7;
-  color: var(--sermon-text);
+  color: var(--inspiration-text);
   margin-bottom: 12px;
   position: relative;
 }
 
-.sermon-text-collapsed {
+.inspiration-text-collapsed {
   max-height: 120px;
   overflow: hidden;
   mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
 
-.sermon-expand-btn {
+.inspiration-expand-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -421,7 +421,7 @@
   width: 100%;
   background: transparent;
   border: none;
-  color: var(--sermon-gold);
+  color: var(--inspiration-gold);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -429,14 +429,14 @@
   font-family: inherit;
 }
 
-.sermon-result-footer-actions {
+.inspiration-result-footer-actions {
   display: flex;
   gap: 12px;
   margin-top: 8px;
   align-items: center;
 }
 
-.sermon-icon-btn {
+.inspiration-icon-btn {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -451,62 +451,62 @@
   line-height: 1;
   border: 1px solid rgba(212, 175, 55, 0.3);
   background-color: rgba(255, 255, 255, 0.05);
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
 }
 
-.sermon-icon-btn:hover {
+.inspiration-icon-btn:hover {
   background-color: rgba(212, 175, 55, 0.15);
   border-color: rgba(212, 175, 55, 0.6);
-  color: var(--sermon-gold);
+  color: var(--inspiration-gold);
   transform: scale(1.08);
 }
 
-.sermon-icon-btn.playing {
+.inspiration-icon-btn.playing {
   background-color: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.5);
   color: #ef4444;
 }
 
-.sermon-icon-btn.saved {
+.inspiration-icon-btn.saved {
   background-color: rgba(212, 175, 55, 0.15);
   border-color: rgba(212, 175, 55, 0.5);
-  color: var(--sermon-gold);
+  color: var(--inspiration-gold);
 }
 
-.sermon-result-footer {
+.inspiration-result-footer {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid var(--sermon-border);
+  border-top: 1px solid var(--inspiration-border);
   font-size: 0.72rem;
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
   text-align: center;
   letter-spacing: 0.02em;
 }
 
 /* ── States & Animations ── */
-.sermon-loading-state {
+.inspiration-loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px 0;
   gap: 16px;
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
 }
 
-.sermon-spinner {
+.inspiration-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--sermon-gold-muted);
-  border-top-color: var(--sermon-gold);
+  border: 3px solid var(--inspiration-gold-muted);
+  border-top-color: var(--inspiration-gold);
   border-radius: 50%;
-  animation: sermon-spin 0.8s linear infinite;
+  animation: inspiration-spin 0.8s linear infinite;
 }
 
-@keyframes sermon-spin { to { transform: rotate(360deg); } }
+@keyframes inspiration-spin { to { transform: rotate(360deg); } }
 
 /* ── Error ── */
-.sermon-error-msg {
+.inspiration-error-msg {
   background: rgba(224, 122, 122, 0.1);
   border: 1px solid #e07a7a;
   color: #e07a7a;
@@ -517,16 +517,16 @@
 }
 
 /* ── Source Select List (Starters) ── */
-.sermon-starter-select-list {
+.inspiration-starter-select-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 8px;
 }
 
-.sermon-starter-item {
-  background: var(--sermon-input-bg);
-  border: 1px solid var(--sermon-border);
+.inspiration-starter-item {
+  background: var(--inspiration-input-bg);
+  border: 1px solid var(--inspiration-border);
   border-radius: 12px;
   padding: 12px;
   cursor: pointer;
@@ -534,31 +534,31 @@
   align-items: center;
   gap: 12px;
 }
-.sermon-starter-item.selected {
-  border-color: var(--sermon-gold);
-  background: var(--sermon-gold-muted);
+.inspiration-starter-item.selected {
+  border-color: var(--inspiration-gold);
+  background: var(--inspiration-gold-muted);
 }
-.sermon-starter-item-icon { font-size: 1.2rem; }
-.sermon-starter-item-text { flex: 1; }
-.sermon-starter-item-title { display: block; font-size: 0.9rem; font-weight: 700; }
-.sermon-starter-item-sub { display: block; font-size: 0.75rem; color: var(--sermon-text-dim); }
+.inspiration-starter-item-icon { font-size: 1.2rem; }
+.inspiration-starter-item-text { flex: 1; }
+.inspiration-starter-item-title { display: block; font-size: 0.9rem; font-weight: 700; }
+.inspiration-starter-item-sub { display: block; font-size: 0.75rem; color: var(--inspiration-text-dim); }
 
 /* ── Floating Dropdown Menu ── */
-.sermon-floating-dropdown {
+.inspiration-floating-dropdown {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
   background-color: #2a1d15 !important;
-  border: 1px solid var(--sermon-gold) !important;
+  border: 1px solid var(--inspiration-gold) !important;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
   padding: 4px 0 !important;
   margin-top: 0 !important;
 }
 
-.sermon-floating-dropdown .sermon-starter-item {
+.inspiration-floating-dropdown .inspiration-starter-item {
   border: none !important;
   background: transparent !important;
   border-radius: 8px;
@@ -567,25 +567,25 @@
   transition: background-color 0.2s;
 }
 
-.sermon-floating-dropdown .sermon-starter-item:hover {
+.inspiration-floating-dropdown .inspiration-starter-item:hover {
   background-color: rgba(212, 175, 55, 0.12) !important;
 }
 
-.sermon-floating-dropdown .sermon-starter-item.selected {
+.inspiration-floating-dropdown .inspiration-starter-item.selected {
   background-color: rgba(212, 175, 55, 0.08) !important;
-  color: var(--sermon-gold) !important;
+  color: var(--inspiration-gold) !important;
 }
 
 /* ── Responsive ── */
 @media (max-width: 480px) {
-  .sermon-title { font-size: 1.5rem; }
-  .sermon-step-card { padding: 16px; }
-  .sermon-segments { flex-direction: column; gap: 4px; padding: 6px; }
-  .sermon-segment-btn { width: 100%; }
+  .inspiration-title { font-size: 1.5rem; }
+  .inspiration-step-card { padding: 16px; }
+  .inspiration-segments { flex-direction: column; gap: 4px; padding: 6px; }
+  .inspiration-segment-btn { width: 100%; }
 }
 
 /* ── Tab Strip ── */
-.sermon-tab-strip {
+.inspiration-tab-strip {
   display: flex;
   background-color: rgba(0, 0, 0, 0.3);
   flex-shrink: 0;
@@ -599,7 +599,7 @@
   gap: 12px;
 }
 
-.sermon-tab {
+.inspiration-tab {
   flex: 1;
   padding: 10px 16px;
   display: flex;
@@ -609,7 +609,7 @@
   gap: 8px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -618,47 +618,47 @@
   font-family: inherit;
 }
 
-.sermon-tab:hover {
+.inspiration-tab:hover {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(212, 175, 55, 0.3);
 }
 
-.sermon-tab.active {
-  color: var(--sermon-gold);
-  border-color: var(--sermon-gold);
+.inspiration-tab.active {
+  color: var(--inspiration-gold);
+  border-color: var(--inspiration-gold);
   background-color: rgba(212, 175, 55, 0.08);
 }
 
 /* ── Saved Tab Layout ── */
-.sermon-saved-tab {
+.inspiration-saved-tab {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.sermon-saved-tab-header {
+.inspiration-saved-tab-header {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
 }
 
-.sermon-saved-filter-scroll {
+.inspiration-saved-filter-scroll {
   flex: 1;
   overflow-x: auto;
   padding-bottom: 4px;
 }
-.sermon-saved-filter-scroll::-webkit-scrollbar { display: none; }
+.inspiration-saved-filter-scroll::-webkit-scrollbar { display: none; }
 
-.sermon-saved-filter-row {
+.inspiration-saved-filter-row {
   display: flex;
   gap: 8px;
 }
 
-.sermon-saved-filter-btn {
-  background: var(--sermon-card-bg);
-  border: 1px solid var(--sermon-border);
-  color: var(--sermon-text-dim);
+.inspiration-saved-filter-btn {
+  background: var(--inspiration-card-bg);
+  border: 1px solid var(--inspiration-border);
+  color: var(--inspiration-text-dim);
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -669,16 +669,16 @@
   transition: all 0.2s;
 }
 
-.sermon-saved-filter-btn.active {
-  background: var(--sermon-gold-muted);
-  border-color: var(--sermon-gold);
-  color: var(--sermon-gold);
+.inspiration-saved-filter-btn.active {
+  background: var(--inspiration-gold-muted);
+  border-color: var(--inspiration-gold);
+  color: var(--inspiration-gold);
 }
 
-.sermon-view-toggle-btn {
-  background: var(--sermon-input-bg);
-  border: 1px solid var(--sermon-border);
-  color: var(--sermon-text-dim);
+.inspiration-view-toggle-btn {
+  background: var(--inspiration-input-bg);
+  border: 1px solid var(--inspiration-border);
+  color: var(--inspiration-text-dim);
   width: 36px;
   height: 36px;
   border-radius: 10px;
@@ -691,74 +691,74 @@
   align-self: flex-end;
 }
 
-.sermon-view-toggle-btn.active {
-  color: var(--sermon-gold);
-  border-color: var(--sermon-gold);
-  background: var(--sermon-gold-muted);
+.inspiration-view-toggle-btn.active {
+  color: var(--inspiration-gold);
+  border-color: var(--inspiration-gold);
+  background: var(--inspiration-gold-muted);
 }
 
-.sermon-saved-empty {
+.inspiration-saved-empty {
   text-align: center;
   padding: 40px 20px;
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
   font-size: 0.95rem;
 }
 
-.sermon-saved-groups {
+.inspiration-saved-groups {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.sermon-saved-group-container {
+.inspiration-saved-group-container {
   display: flex;
   flex-direction: column;
 }
 
-.sermon-saved-group-header {
+.inspiration-saved-group-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--sermon-border);
+  border: 1px solid var(--inspiration-border);
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.sermon-saved-group-header:hover {
+.inspiration-saved-group-header:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.sermon-saved-group-title {
+.inspiration-saved-group-title {
   display: flex;
   align-items: center;
   gap: 10px;
   font-weight: 700;
-  color: var(--sermon-text);
+  color: var(--inspiration-text);
   font-size: 1rem;
 }
 
-.sermon-saved-group-content {
+.inspiration-saved-group-content {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 12px 0 12px 16px;
-  border-left: 1px solid var(--sermon-border);
+  border-left: 1px solid var(--inspiration-border);
   margin-left: 24px;
   margin-top: 4px;
 }
 
-.sermon-saved-list {
+.inspiration-saved-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.sermon-saved-card {
-  background: var(--sermon-card-bg);
-  border: 1px solid var(--sermon-border);
+.inspiration-saved-card {
+  background: var(--inspiration-card-bg);
+  border: 1px solid var(--inspiration-border);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -767,45 +767,45 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sermon-saved-card:hover {
-  border-color: var(--sermon-gold);
+.inspiration-saved-card:hover {
+  border-color: var(--inspiration-gold);
   background: rgba(255, 255, 255, 0.06);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-.sermon-saved-card-header {
+.inspiration-saved-card-header {
   display: flex;
   justify-content: space-between;
 }
 
-.sermon-saved-card-title-area {
+.inspiration-saved-card-title-area {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.sermon-saved-card-title {
+.inspiration-saved-card-title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--sermon-text);
+  color: var(--inspiration-text);
   line-height: 1.3;
 }
 
-.sermon-saved-card-meta {
+.inspiration-saved-card-meta {
   font-size: 0.8rem;
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
 }
 
-.sermon-saved-card-actions {
+.inspiration-saved-card-actions {
   display: flex;
   gap: 12px;
   margin-top: 8px;
   align-items: center;
 }
 
-.sermon-saved-card-right {
+.inspiration-saved-card-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -813,36 +813,36 @@
   padding-left: 12px;
 }
 
-.sermon-saved-card-date {
+.inspiration-saved-card-date {
   font-size: 0.75rem;
-  color: var(--sermon-text-dim);
+  color: var(--inspiration-text-dim);
   white-space: nowrap;
 }
 
-.sermon-saved-card-content {
+.inspiration-saved-card-content {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid var(--sermon-border);
+  border-top: 1px solid var(--inspiration-border);
   display: flex;
   flex-direction: column;
   gap: 16px;
   cursor: default;
 }
 
-.sermon-saved-card-response {
+.inspiration-saved-card-response {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--sermon-text);
+  color: var(--inspiration-text);
   white-space: pre-wrap;
 }
 
-.sermon-saved-card-footer {
+.inspiration-saved-card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.sermon-saved-card-discard {
+.inspiration-saved-card-discard {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -856,26 +856,26 @@
   border-radius: 6px;
 }
 
-.sermon-saved-card-discard:hover {
+.inspiration-saved-card-discard:hover {
   background: rgba(255, 107, 107, 0.1);
 }
 
 /* Custom Scrollbars */
-.sermon-screen::-webkit-scrollbar {
+.inspiration-screen::-webkit-scrollbar {
   width: 4px;
 }
-.sermon-screen::-webkit-scrollbar-track {
+.inspiration-screen::-webkit-scrollbar-track {
   background: transparent;
 }
-.sermon-screen::-webkit-scrollbar-thumb {
+.inspiration-screen::-webkit-scrollbar-thumb {
   background: rgba(212, 175, 55, 0.05);
   border-radius: 10px;
 }
-.sermon-screen::-webkit-scrollbar-thumb:hover {
+.inspiration-screen::-webkit-scrollbar-thumb:hover {
   background: rgba(212, 175, 55, 0.1);
 }
 
-.sermon-card-trash:hover {
+.inspiration-card-trash:hover {
   color: #ff6b6b !important;
   border-color: rgba(255, 107, 107, 0.4) !important;
   background-color: rgba(255, 107, 107, 0.1) !important;

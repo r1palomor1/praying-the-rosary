@@ -26,12 +26,12 @@ interface PrayerSelectionScreenProps {
     onSelectSacredPrayers: () => void;
     onSelectDailyReadings: () => void;
     onSelectBibleInYear?: () => void;
-    onSelectSermonAI: () => void;
+    onSelectInspirationAI: () => void;
     onResetProgress?: () => void;
     onStartSacredWithContinuous?: () => void;
 }
 
-export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinuous, onSelectSacredPrayers, onStartSacredWithContinuous, onSelectDailyReadings, onSelectBibleInYear, onSelectSermonAI, onResetProgress }: PrayerSelectionScreenProps) {
+export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinuous, onSelectSacredPrayers, onStartSacredWithContinuous, onSelectDailyReadings, onSelectBibleInYear, onSelectInspirationAI, onResetProgress }: PrayerSelectionScreenProps) {
     const { language, currentMysterySet, playAudio } = useApp();
     const { aiEnabled } = useAI();
     const [showSettings, setShowSettings] = useState(false);
@@ -1044,7 +1044,7 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
 
                 {/* Inspiration AI Card */}
                 <button
-                    onClick={onSelectSermonAI}
+                    onClick={onSelectInspirationAI}
                     className="prayer-card"
                     style={{
                         position: 'relative',

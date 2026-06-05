@@ -22,17 +22,17 @@ const SacredPrayersScreen = lazy(() => import('./components/SacredPrayersScreen'
 const SacredCompletionScreen = lazy(() => import('./components/SacredCompletionScreen'));
 const DailyReadingsScreen = lazy(() => import('./components/DailyReadingsScreen'));
 const BibleInYearScreen = lazy(() => import('./components/BibleInYearScreen'));
-const SermonAIScreen = lazy(() => import('./components/SermonAIScreen'));
+const InspirationAIScreen = lazy(() => import('./components/InspirationAIScreen'));
 import { DebugPanel } from './components/DebugPanel';
 
 import './styles/index.css';
 
-type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete' | 'progress' | 'prayer-selection' | 'sacred-prayers' | 'sacred-complete' | 'daily-readings' | 'bible-in-year' | 'sermon-ai';
+type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'complete' | 'progress' | 'prayer-selection' | 'sacred-prayers' | 'sacred-complete' | 'daily-readings' | 'bible-in-year' | 'inspiration-ai';
 
 function AppContent() {
   const { language, clearSession, completeSession, currentMysterySet } = useApp();
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
-  const [sermonAIDate, setSermonAIDate] = useState<Date | undefined>(undefined);
+  const [inspirationAIDate, setInspirationAIDate] = useState<Date | undefined>(undefined);
 
   const [hasSelectedLanguage, setHasSelectedLanguage] = useState(false);
   const [startWithContinuous, setStartWithContinuous] = useState(false);
@@ -283,9 +283,9 @@ function AppContent() {
             onStartSacredWithContinuous={handleStartSacredWithContinuous}
             onSelectDailyReadings={() => setCurrentScreen('daily-readings')}
             onSelectBibleInYear={() => setCurrentScreen('bible-in-year')}
-            onSelectSermonAI={() => {
-              setSermonAIDate(undefined);
-              setCurrentScreen('sermon-ai');
+            onSelectInspirationAI={() => {
+              setInspirationAIDate(undefined);
+              setCurrentScreen('inspiration-ai');
             }}
             onResetProgress={handleResetProgress}
           />
@@ -310,11 +310,11 @@ function AppContent() {
         {currentScreen === 'sacred-complete' && (
           <SacredCompletionScreen onHome={handleBackToSelection} />
         )}
-        {currentScreen === 'sermon-ai' && (
-          <SermonAIScreen
-            initialDate={sermonAIDate}
+        {currentScreen === 'inspiration-ai' && (
+          <InspirationAIScreen
+            initialDate={inspirationAIDate}
             onBack={() => {
-              setSermonAIDate(undefined);
+              setInspirationAIDate(undefined);
               setCurrentScreen('prayer-selection');
             }}
           />
