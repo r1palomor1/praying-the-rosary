@@ -1,5 +1,7 @@
 import React from 'react';
 import { X, BookOpen, Heart, Lightbulb, Anchor, History, Sparkles } from 'lucide-react';
+import { AIChatWindow } from './AIChatWindow';
+import { useAI } from '../context/AIContext';
 import './LearnMoreModal.css';
 
 export interface GlobalContent {
@@ -35,6 +37,27 @@ interface LearnMoreModalProps {
 }
 
 export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreModalProps) {
+    const { aiEnabled } = useAI();
+    const [activeTab, setActiveTab] = React.useState<'context' | 'reflection' | 'ai'>('context');
+
+    // Reset tab when data changes
+    React.useEffect(() => {
+        setActiveTab('context');
+    }, [data]);
+
+    const isGlobal = (content: EducationalContent): content is GlobalContent => {
+        return 'theological_foundation' in content;
+    };
+
+    const contextStr = React.useMemo(() => {
+        if (!data) return '';
+        if (isGlobal(data)) {
+            return `Title: ${data.title}\n\nTheological Foundation: ${data.theological_foundation}\n\nGospel Compendium: ${data.gospel_compendium}`;
+        } else {
+            return `Mystery: ${data.title} (${data.mystery_name}, Decade ${data.mystery_number})\n\nMeaning: ${data.meaning}\n\nPrimary Scripture: ${data.scripture_primary}\n\nSecondary Scripture: ${data.scripture_secondary || ''}\n\nSpiritual Fruit: ${data.fruit}\n\nFruit Explanation: ${data.fruit_explanation}\n\nMeditation: ${data.meditation}\n\nDeeper Theology: ${data.deeper_theology}\n\nHistorical Context: ${data.historical_context}\n\nRole of Christ and Mary: ${data.mary_and_christ_role}\n\nVirtue Formation: ${data.virtue_formation}\n\nLife Application: ${data.life_application}`;
+        }
+    }, [data]);
+
     if (!isOpen || !data) return null;
 
     const t = language === 'es' ? {
@@ -59,17 +82,6 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
         close: 'Close'
     };
 
-    const [activeTab, setActiveTab] = React.useState<'context' | 'reflection'>('context');
-
-    // Reset tab when data changes
-    React.useEffect(() => {
-        setActiveTab('context');
-    }, [data]);
-
-    const isGlobal = (content: EducationalContent): content is GlobalContent => {
-        return 'theological_foundation' in content;
-    };
-
     if (isGlobal(data)) {
         return (
             <div className="learn-more-overlay" onClick={onClose}>
@@ -83,23 +95,75 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                             <X size={24} />
                         </button>
                     </header>
-                    <main className="learn-more-body">
-                        <h1 className="mystery-title-large">{data.title}</h1>
-                        <section className="info-section">
-                            <div className="section-header">
-                                <Anchor size={20} />
-                                <h3>{language === 'es' ? 'Fundamento Teológico' : 'Theological Foundation'}</h3>
+                    {aiEnabled ? (
+                        <>
+                            <div className="learn-more-tabs" style={{ paddingLeft: '1.5rem', paddingRight: '1.5rem', marginTop: '1rem', marginBottom: 0 }}>
+                                <button
+                                    className={`tab-button ${activeTab === 'context' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('context')}
+                                >
+                                    {language === 'es' ? 'Información' : 'Info'}
+                                </button>
+                                <button
+                                    className={`tab-button ${activeTab === 'ai' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('ai')}
+                                >
+                                    {language === 'es' ? 'Compañero IA' : 'AI Companion'}
+                                </button>
                             </div>
-                            <p>{data.theological_foundation}</p>
-                        </section>
-                        <section className="info-section">
-                            <div className="section-header">
-                                <BookOpen size={20} />
-                                <h3>{language === 'es' ? 'Compendio del Evangelio' : 'Gospel Compendium'}</h3>
-                            </div>
-                            <p>{data.gospel_compendium}</p>
-                        </section>
-                    </main>
+                            <main className={`learn-more-body ${activeTab === 'ai' ? 'ai-chat-active' : ''}`}>
+                                {activeTab === 'ai' ? (
+                                    <AIChatWindow
+                                        contextStr={contextStr}
+                                        topicName={data.title}
+                                        source="Rosary"
+                                        language={language}
+                                        initialMessage={
+                                            language === 'es'
+                                                ? `He leído la sección de: ${data.title}. ¿Sobre qué te gustaría reflexionar o hacer una pregunta?`
+                                                : `I have read the section for: ${data.title}. What would you like to reflect on or ask a question about?`
+                                        }
+                                    />
+                                ) : (
+                                    <>
+                                        <h1 className="mystery-title-large">{data.title}</h1>
+                                        <section className="info-section">
+                                            <div className="section-header">
+                                                <Anchor size={20} />
+                                                <h3>{language === 'es' ? 'Fundamento Teológico' : 'Theological Foundation'}</h3>
+                                            </div>
+                                            <p>{data.theological_foundation}</p>
+                                        </section>
+                                        <section className="info-section">
+                                            <div className="section-header">
+                                                <BookOpen size={20} />
+                                                <h3>{language === 'es' ? 'Compendio del Evangelio' : 'Gospel Compendium'}</h3>
+                                            </div>
+                                            <p>{data.gospel_compendium}</p>
+                                        </section>
+                                    </>
+                                )}
+                            </main>
+                        </>
+                    ) : (
+                        <main className="learn-more-body">
+                            <h1 className="mystery-title-large">{data.title}</h1>
+                            <section className="info-section">
+                                <div className="section-header">
+                                    <Anchor size={20} />
+                                    <h3>{language === 'es' ? 'Fundamento Teológico' : 'Theological Foundation'}</h3>
+                                </div>
+                                <p>{data.theological_foundation}</p>
+                            </section>
+                            <section className="info-section">
+                                <div className="section-header">
+                                    <BookOpen size={20} />
+                                    <h3>{language === 'es' ? 'Compendio del Evangelio' : 'Gospel Compendium'}</h3>
+                                </div>
+                                <p>{data.gospel_compendium}</p>
+                            </section>
+                        </main>
+                    )}
                 </div>
             </div>
         );
@@ -118,10 +182,10 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                     </button>
                 </header>
 
-                <main className="learn-more-body">
+                <main className={`learn-more-body ${activeTab === 'ai' ? 'ai-chat-active' : ''}`}>
                     <h1 className="mystery-title-large">{data.title}</h1>
 
-                    <div className="learn-more-tabs">
+                    <div className="learn-more-tabs" style={{ marginBottom: activeTab === 'ai' ? '0' : '1.5rem' }}>
                         <button
                             className={`tab-button ${activeTab === 'context' ? 'active' : ''}`}
                             onClick={() => setActiveTab('context')}
@@ -134,9 +198,17 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                         >
                             {language === 'es' ? 'Reflexión' : 'Reflection'}
                         </button>
+                        {aiEnabled && (
+                            <button
+                                className={`tab-button ${activeTab === 'ai' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('ai')}
+                            >
+                                {language === 'es' ? 'Compañero IA' : 'AI Companion'}
+                            </button>
+                        )}
                     </div>
 
-                    {activeTab === 'context' ? (
+                    {activeTab === 'context' && (
                         <div className="tab-content fade-in">
                             <section className="info-section highlight-section">
                                 <p className="meaning-text">{data.meaning}</p>
@@ -169,7 +241,9 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                                 <p>{data.mary_and_christ_role}</p>
                             </section>
                         </div>
-                    ) : (
+                    )}
+
+                    {activeTab === 'reflection' && (
                         <div className="tab-content fade-in">
                             <section className="info-section">
                                 <div className="section-header">
@@ -204,6 +278,20 @@ export function LearnMoreModal({ isOpen, onClose, data, language }: LearnMoreMod
                                 </div>
                             </section>
                         </div>
+                    )}
+
+                    {activeTab === 'ai' && (
+                        <AIChatWindow
+                            contextStr={contextStr}
+                            topicName={data.title}
+                            source="Rosary"
+                            language={language}
+                            initialMessage={
+                                language === 'es'
+                                    ? `He leído la sección de: ${data.title}. ¿Sobre qué te gustaría reflexionar o hacer una pregunta?`
+                                    : `I have read the section for: ${data.title}. What would you like to reflect on or ask a question about?`
+                            }
+                        />
                     )}
                 </main>
             </div>

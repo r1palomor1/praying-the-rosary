@@ -731,3 +731,17 @@
     background: rgba(0, 0, 0, 0.05) !important;
     color: #1C1917 !important;
 }
+
+/* AI Companion Chat Tab Integrations */
+.learn-more-body.ai-chat-active {
+    padding: 0 !important;
+    gap: 0 !important;
+    overflow-y: hidden !important;
+}
+
+.learn-more-body.ai-chat-active .ai-chat-container {
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+}
