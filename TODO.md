@@ -5,10 +5,10 @@
 - [x] **Inspiration AI: Starters List State Reset** ✅ FIXED
 - [x] **Daily Readings: Header Spacing & Centering** ✅ FIXED
 - [x] **Home Screen: Tablet View Layout Lock** ✅ FIXED
-- [ ] **Inspiration AI: Source Dropdown Redundancy (Visual Doubling)**
+- [x] **Inspiration AI: Source Dropdown Redundancy (Visual Doubling)** ✅ FIXED
   - Issue: When the Source dropdown is open, the current selection appears twice (once in the trigger box and once in the list).
   - Proposed Fix: Implement a "Floating Menu" or "Exclusive Toggle" that replaces the trigger box without causing the layout to shift or jump vertically. Ensure horizontal padding is synchronized (14px) to prevent "left-shift" effect.
-- [ ] **Daily Readings: Granular Chunk Persistence & Highlight Sync**
+- [x] **Daily Readings: Granular Chunk Persistence & Highlight Sync** ✅ FIXED
   - Implement sentence-level tracking and TTS highlight synchronization for the Daily Readings player, matching the Bible in a Year player architecture.
 
 ### 🎨 AI Companion UI & Flow Standardization (Completed Mar 7, 2026)
@@ -521,8 +521,8 @@ git push
 - [x] Built the `AIModal.tsx` and `AIChatWindow.tsx` UI Components
 - [x] Created "Saved" tab with local storage state for spiritual bookmarks
 
-#### **Phase 1.3: Sermon AI Integration** (NEXT IMMEDIATE TARGET)
-- [ ] **Sermon AI Save & History Feature**
+#### **Phase 1.3: Sermon AI Integration** ✅ COMPLETED
+- [x] **Sermon AI Save & History Feature**
   - Implement Save icon (Bookmark) alongside Listen and Copy icons for generated sermons.
   - Add 48-hour Unsaved history queue for Sermon AI.
   - Create a "View Saved" modal/tab mirroring the AI Chat saved logic.
@@ -1415,9 +1415,9 @@ All critical bugs resolved. App is stable and production-ready.
     - Section is fully checkmarked (via audio finish or global completion): AI is 100% undimmed permanently.
 
 
-### ?? Hybrid Reading & Listening Sync (UX Refinement)
-- [ ] **Daily Readings 'Mark as Complete' Button**: Add a global completion button at the bottom of the Daily Readings screen (feature parity with Bible In A Year).
-- [ ] **Inline 'Mark as Read' for Individual Sections**: Add a checkmark button at the bottom of the text inside expanded sections for *both* Daily Readings and Bible in a Year.
+### 🔄 Hybrid Reading & Listening Sync (UX Refinement) - COMPLETE
+- [x] **Daily Readings 'Mark as Complete' Button**: Add a global completion button at the bottom of the Daily Readings screen (feature parity with Bible In A Year). ✅ FIXED
+- [x] **Inline 'Mark as Read' for Individual Sections**: Add a checkmark button at the bottom of the text inside expanded sections for *both* Daily Readings and Bible in a Year. ✅ FIXED
   - *Behavior*: Clicking it marks that specific section as complete (green checkmark appears in header), triggers the completion logic, and auto-collapses the section.
   - *Audio Sync Goal*: If a user reads 2 sections manually and clicks 'Mark as Read', pressing the main 'Play Audio' button at the top should skip the read sections and begin playing from the 3rd section.
   - *Note on 'Un-checking'*: Keep it simple. Avoid adding an 'X' to uncheck. If they want to re-experience it, they can simply unfold the text to read again, or click the individual section's 'Play' button to listen again. Keep UI positive-action only.
