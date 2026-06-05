@@ -543,6 +543,39 @@
 .sermon-starter-item-title { display: block; font-size: 0.9rem; font-weight: 700; }
 .sermon-starter-item-sub { display: block; font-size: 0.75rem; color: var(--sermon-text-dim); }
 
+/* ── Floating Dropdown Menu ── */
+.sermon-floating-dropdown {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #2a1d15 !important;
+  border: 1px solid var(--sermon-gold) !important;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  padding: 4px 0 !important;
+  margin-top: 0 !important;
+}
+
+.sermon-floating-dropdown .sermon-starter-item {
+  border: none !important;
+  background: transparent !important;
+  border-radius: 8px;
+  margin: 2px 4px !important;
+  padding: 10px 14px !important; /* Synchronized 14px horizontal padding to match trigger box */
+  transition: background-color 0.2s;
+}
+
+.sermon-floating-dropdown .sermon-starter-item:hover {
+  background-color: rgba(212, 175, 55, 0.12) !important;
+}
+
+.sermon-floating-dropdown .sermon-starter-item.selected {
+  background-color: rgba(212, 175, 55, 0.08) !important;
+  color: var(--sermon-gold) !important;
+}
+
 /* ── Responsive ── */
 @media (max-width: 480px) {
   .sermon-title { font-size: 1.5rem; }

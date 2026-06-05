@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { 
-  ArrowLeft, 
   Calendar, 
   Volume2, 
   Square, 
@@ -80,7 +79,7 @@ interface ReadingOption { label: string; citation: string; }
 
 const API_BASE = import.meta.env.DEV ? 'https://praying-the-rosary.vercel.app' : '';
 
-export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
+export default function SermonAIScreen({ onBack, initialDate }: { onBack: () => void; initialDate?: Date }) {
   const { language } = useApp();
   const starters = language === 'es' ? STARTERS_ES : STARTERS_EN;
 
@@ -105,8 +104,7 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   
   /* Step 1: Source */
   const [readingsDate, setReadingsDate] = useState(() => {
-    const saved = localStorage.getItem('sermonAI_readingsDate');
-    return saved ? new Date(saved) : new Date();
+    return initialDate || new Date();
   });
   const [readingOptions, setReadingOptions]         = useState<ReadingOption[]>([]);
   const [selectedReadingIdx, setSelectedReadingIdx] = useState(() => Number(localStorage.getItem('sermonAI_selectedReadingIdx')) || 0);
@@ -140,6 +138,21 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   /* Refs */
   const dateInputRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+  const sourceDropdownRef = useRef<HTMLDivElement>(null);
+  const readingDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (showInputModeOptions && sourceDropdownRef.current && !sourceDropdownRef.current.contains(e.target as Node)) {
+        setShowInputModeOptions(false);
+      }
+      if (showReadingOptions && readingDropdownRef.current && !readingDropdownRef.current.contains(e.target as Node)) {
+        setShowReadingOptions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [showInputModeOptions, showReadingOptions]);
 
   const prevDeps = useRef([
     inputMode, 
@@ -155,7 +168,6 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
   /* ── Persistence Logic ── */
   useEffect(() => {
     localStorage.setItem('sermonAI_inputMode', inputMode);
-    localStorage.setItem('sermonAI_readingsDate', readingsDate.toISOString());
     localStorage.setItem('sermonAI_selectedReadingIdx', String(selectedReadingIdx));
     if (selectedStarterId) localStorage.setItem('sermonAI_selectedStarterId', selectedStarterId);
     else localStorage.removeItem('sermonAI_selectedStarterId');
@@ -174,7 +186,7 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
       localStorage.removeItem('sermonAI_lastOutput_originLang');
       localStorage.removeItem('sermonAI_lastOutput_id');
     }
-  }, [inputMode, readingsDate, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone, output, translatedOutput, originLang, activeSermonId]);
+  }, [inputMode, selectedReadingIdx, selectedStarterId, customText, sermonMode, sermonLength, sermonTone, output, translatedOutput, originLang, activeSermonId]);
 
   useEffect(() => {
     const currentDeps = [
@@ -557,7 +569,7 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
       {/* ── Header ── */}
       <header className="sermon-header">
         <button className="sermon-back-btn-abs" onClick={onBack} aria-label={language === 'es' ? 'Volver' : 'Back'}>
-          <ArrowLeft size={24} />
+          <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>family_home</span>
         </button>
         <div className="sermon-brand-group">
           <h1 className="sermon-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -584,18 +596,51 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
           </div>
           <p className="sermon-step-desc">{t.step1Desc}</p>
 
-          <div className="sermon-control-group">
+          <div className="sermon-control-group" ref={sourceDropdownRef}>
             <div className="sermon-select-with-action">
-              <div className="sermon-style-summary" style={{ flex: 1, margin: 0 }} onClick={() => setShowInputModeOptions(!showInputModeOptions)}>
-                <div className="sermon-style-summary-content">
-                  <span className="sermon-input-icon" style={{ position: 'static', transform: 'none', color: 'var(--sermon-gold)' }}>
-                    {inputMode === 'readings' ? <BookOpen size={18} /> : inputMode === 'suggestions' ? <List size={18} /> : <Type size={18} />}
-                  </span>
-                  <span className="sermon-style-summary-values" style={{ color: 'var(--sermon-text)' }}>
-                    {inputMode === 'readings' ? t.dailyReadings : inputMode === 'suggestions' ? t.starters : t.custom}
-                  </span>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <div 
+                  className="sermon-style-summary" 
+                  style={{ 
+                    margin: 0, 
+                    opacity: showInputModeOptions ? 0 : 1, 
+                    pointerEvents: showInputModeOptions ? 'none' : 'auto' 
+                  }} 
+                  onClick={() => setShowInputModeOptions(true)}
+                >
+                  <div className="sermon-style-summary-content">
+                    <span className="sermon-input-icon" style={{ position: 'static', transform: 'none', color: 'var(--sermon-gold)' }}>
+                      {inputMode === 'readings' ? <BookOpen size={18} /> : inputMode === 'suggestions' ? <List size={18} /> : <Type size={18} />}
+                    </span>
+                    <span className="sermon-style-summary-values" style={{ color: 'var(--sermon-text)' }}>
+                      {inputMode === 'readings' ? t.dailyReadings : inputMode === 'suggestions' ? t.starters : t.custom}
+                    </span>
+                  </div>
+                  <ChevronDown size={18} className={`sermon-style-expand-icon${showInputModeOptions ? ' expanded' : ''}`} />
                 </div>
-                <ChevronDown size={18} className={`sermon-style-expand-icon${showInputModeOptions ? ' expanded' : ''}`} />
+
+                {showInputModeOptions && (
+                  <div className="sermon-starter-select-list sermon-floating-dropdown">
+                    <div className={`sermon-starter-item${inputMode === 'readings' ? ' selected' : ''}`} onClick={() => { setInputMode('readings'); setShowInputModeOptions(false); }}>
+                      <BookOpen size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
+                      <div className="sermon-starter-item-text">
+                         <span className="sermon-starter-item-title">{t.dailyReadings}</span>
+                      </div>
+                    </div>
+                    <div className={`sermon-starter-item${inputMode === 'suggestions' ? ' selected' : ''}`} onClick={() => { setInputMode('suggestions'); setShowInputModeOptions(false); }}>
+                      <List size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
+                      <div className="sermon-starter-item-text">
+                         <span className="sermon-starter-item-title">{t.starters}</span>
+                      </div>
+                    </div>
+                    <div className={`sermon-starter-item${inputMode === 'custom' ? ' selected' : ''}`} onClick={() => { setInputMode('custom'); setShowInputModeOptions(false); }}>
+                      <Type size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
+                      <div className="sermon-starter-item-text">
+                         <span className="sermon-starter-item-title">{t.custom}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {inputMode === 'readings' && (
@@ -614,56 +659,43 @@ export default function SermonAIScreen({ onBack }: { onBack: () => void }) {
                 </div>
               )}
             </div>
-
-            {showInputModeOptions && (
-              <div className="sermon-starter-select-list" style={{ marginTop: '4px' }}>
-                  <div className={`sermon-starter-item${inputMode === 'readings' ? ' selected' : ''}`} onClick={() => { setInputMode('readings'); setShowInputModeOptions(false); }}>
-                    <BookOpen size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
-                    <div className="sermon-starter-item-text">
-                       <span className="sermon-starter-item-title">{t.dailyReadings}</span>
-                    </div>
-                  </div>
-                  <div className={`sermon-starter-item${inputMode === 'suggestions' ? ' selected' : ''}`} onClick={() => { setInputMode('suggestions'); setShowInputModeOptions(false); }}>
-                    <List size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
-                    <div className="sermon-starter-item-text">
-                       <span className="sermon-starter-item-title">{t.starters}</span>
-                    </div>
-                  </div>
-                  <div className={`sermon-starter-item${inputMode === 'custom' ? ' selected' : ''}`} onClick={() => { setInputMode('custom'); setShowInputModeOptions(false); }}>
-                    <Type size={18} className="sermon-starter-item-icon" style={{ color: 'var(--sermon-gold)' }} />
-                    <div className="sermon-starter-item-text">
-                       <span className="sermon-starter-item-title">{t.custom}</span>
-                    </div>
-                  </div>
-              </div>
-            )}
           </div>
 
           {/* Dynamic Content based on Source */}
           {inputMode === 'readings' && (
-            <div className="sermon-control-group">
+            <div className="sermon-control-group" ref={readingDropdownRef}>
               <label className="sermon-label">{language === 'es' ? 'Lectura' : 'Reading'}</label>
-              <div className="sermon-style-summary" style={{ margin: 0 }} onClick={() => setShowReadingOptions(!showReadingOptions)}>
-                <div className="sermon-style-summary-content">
-                   <span className="sermon-style-summary-values" style={{ color: 'var(--sermon-text)' }}>
-                     {loadingReadings ? (language === 'es' ? 'Cargando...' : 'Loading...') : readingOptions.length > 0 ? (readingOptions[selectedReadingIdx]?.label + (readingOptions[selectedReadingIdx]?.citation ? ` — ${readingOptions[selectedReadingIdx].citation}` : '')) : (language === 'es' ? 'No hay lecturas' : 'No readings')}
-                   </span>
+              <div style={{ position: 'relative' }}>
+                <div 
+                  className="sermon-style-summary" 
+                  style={{ 
+                    margin: 0,
+                    opacity: showReadingOptions ? 0 : 1,
+                    pointerEvents: showReadingOptions ? 'none' : 'auto'
+                  }} 
+                  onClick={() => setShowReadingOptions(true)}
+                >
+                  <div className="sermon-style-summary-content">
+                     <span className="sermon-style-summary-values" style={{ color: 'var(--sermon-text)' }}>
+                       {loadingReadings ? (language === 'es' ? 'Cargando...' : 'Loading...') : readingOptions.length > 0 ? (readingOptions[selectedReadingIdx]?.label + (readingOptions[selectedReadingIdx]?.citation ? ` — ${readingOptions[selectedReadingIdx].citation}` : '')) : (language === 'es' ? 'No hay lecturas' : 'No readings')}
+                     </span>
+                  </div>
+                  <ChevronDown size={18} className={`sermon-style-expand-icon${showReadingOptions ? ' expanded' : ''}`} />
                 </div>
-                <ChevronDown size={18} className={`sermon-style-expand-icon${showReadingOptions ? ' expanded' : ''}`} />
-              </div>
 
-              {showReadingOptions && readingOptions.length > 0 && (
-                <div className="sermon-starter-select-list" style={{ marginTop: '4px' }}>
-                  {readingOptions.map((opt, i) => (
-                    <div key={i} className={`sermon-starter-item${selectedReadingIdx === i ? ' selected' : ''}`} onClick={() => { setSelectedReadingIdx(i); setShowReadingOptions(false); }}>
-                      <div className="sermon-starter-item-text">
-                         <span className="sermon-starter-item-title">{opt.label}</span>
-                         {opt.citation && <span className="sermon-starter-item-sub">{opt.citation}</span>}
+                {showReadingOptions && readingOptions.length > 0 && (
+                  <div className="sermon-starter-select-list sermon-floating-dropdown">
+                    {readingOptions.map((opt, i) => (
+                      <div key={i} className={`sermon-starter-item${selectedReadingIdx === i ? ' selected' : ''}`} onClick={() => { setSelectedReadingIdx(i); setShowReadingOptions(false); }}>
+                        <div className="sermon-starter-item-text">
+                           <span className="sermon-starter-item-title">{opt.label}</span>
+                           {opt.citation && <span className="sermon-starter-item-sub">{opt.citation}</span>}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

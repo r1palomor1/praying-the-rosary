@@ -32,6 +32,7 @@ type AppScreen = 'language' | 'home' | 'mysteries' | 'prayers' | 'prayer' | 'com
 function AppContent() {
   const { language, clearSession, completeSession, currentMysterySet } = useApp();
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
+  const [sermonAIDate, setSermonAIDate] = useState<Date | undefined>(undefined);
 
   const [hasSelectedLanguage, setHasSelectedLanguage] = useState(false);
   const [startWithContinuous, setStartWithContinuous] = useState(false);
@@ -282,6 +283,10 @@ function AppContent() {
             onStartSacredWithContinuous={handleStartSacredWithContinuous}
             onSelectDailyReadings={() => setCurrentScreen('daily-readings')}
             onSelectBibleInYear={() => setCurrentScreen('bible-in-year')}
+            onSelectSermonAI={() => {
+              setSermonAIDate(undefined);
+              setCurrentScreen('sermon-ai');
+            }}
             onResetProgress={handleResetProgress}
           />
         )}
@@ -295,7 +300,6 @@ function AppContent() {
         {currentScreen === 'daily-readings' && (
           <DailyReadingsScreen
             onBack={() => setCurrentScreen('prayer-selection')}
-            onOpenSermon={() => setCurrentScreen('sermon-ai')}
           />
         )}
         {currentScreen === 'bible-in-year' && (
@@ -308,7 +312,11 @@ function AppContent() {
         )}
         {currentScreen === 'sermon-ai' && (
           <SermonAIScreen
-            onBack={() => setCurrentScreen('daily-readings')}
+            initialDate={sermonAIDate}
+            onBack={() => {
+              setSermonAIDate(undefined);
+              setCurrentScreen('prayer-selection');
+            }}
           />
         )}
       </Suspense>

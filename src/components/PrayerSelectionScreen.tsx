@@ -26,11 +26,12 @@ interface PrayerSelectionScreenProps {
     onSelectSacredPrayers: () => void;
     onSelectDailyReadings: () => void;
     onSelectBibleInYear?: () => void;
+    onSelectSermonAI: () => void;
     onResetProgress?: () => void;
     onStartSacredWithContinuous?: () => void;
 }
 
-export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinuous, onSelectSacredPrayers, onStartSacredWithContinuous, onSelectDailyReadings, onSelectBibleInYear, onResetProgress }: PrayerSelectionScreenProps) {
+export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinuous, onSelectSacredPrayers, onStartSacredWithContinuous, onSelectDailyReadings, onSelectBibleInYear, onSelectSermonAI, onResetProgress }: PrayerSelectionScreenProps) {
     const { language, currentMysterySet, playAudio } = useApp();
     const { aiEnabled } = useAI();
     const [showSettings, setShowSettings] = useState(false);
@@ -377,6 +378,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
             dailyReadingsSubtitle: 'The living word of God',
             bibleInAYear: 'Bible in a Year',
             bibleInAYearSubtitle: 'Day {day} of 365',
+            inspirationAI: 'Inspiration AI',
+            inspirationAISubtitle: 'Generate reflections of faith',
             settings: 'Settings',
             prayed: 'Prayed'
         },
@@ -390,6 +393,8 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
             dailyReadingsSubtitle: 'La palabra viva de Dios',
             bibleInAYear: 'Biblia en un Año',
             bibleInAYearSubtitle: 'Día {day} de 365',
+            inspirationAI: 'IA de Inspiración',
+            inspirationAISubtitle: 'Genera reflexiones de fe',
             settings: 'Ajustes',
             prayed: 'Completado'
         }
@@ -1028,6 +1033,43 @@ export function PrayerSelectionScreen({ onSelectRosary, onStartRosaryWithContinu
                     ) : (
                         <ChevronRight className="card-chevron" size={24} />
                     )}
+                </button>
+
+                {/* Divider (Between Sacred Prayers & Inspiration AI) */}
+                <div className="decorative-divider" style={{ opacity: 0.6 }}>
+                    <div className="divider-line divider-line-left"></div>
+                    <span className="material-symbols-outlined divider-icon">auto_awesome</span>
+                    <div className="divider-line divider-line-right"></div>
+                </div>
+
+                {/* Inspiration AI Card */}
+                <button
+                    onClick={onSelectSermonAI}
+                    className="prayer-card"
+                    style={{
+                        position: 'relative',
+                        overflow: 'hidden',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
+                    <div className="card-image-container">
+                        <div className="card-image">
+                            <img src="/images/inspiration_ai_icon.png" alt={t.inspirationAI} />
+                        </div>
+                    </div>
+                    <div className="card-content" style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
+                        {/* Title Row */}
+                        <div className="card-title-row">
+                            <h2 className="card-title">
+                                {t.inspirationAI.toUpperCase()}
+                            </h2>
+                        </div>
+                        {/* Subtitle */}
+                        <p className="card-subtitle" style={{ margin: 0 }}>
+                            {t.inspirationAISubtitle}
+                        </p>
+                    </div>
+                    <ChevronRight className="card-chevron" size={24} />
                 </button>
             </main>
 
